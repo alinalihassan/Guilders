@@ -1,0 +1,46 @@
+import { relations } from "drizzle-orm";
+import {
+  boolean,
+  index,
+  integer,
+  pgTable,
+  serial,
+  varchar,
+} from "drizzle-orm/pg-core";
+import { country } from "./countries";
+import { institutionConnection } from "./institution-connections";
+import { provider } from "./providers";
+
+export const institution = pgTable(
+  "institution",
+  {
+    id: serial("id").primaryKey(),
+    country: varchar("country", { length: 2 }).references(() => country.code),
+    enabled: boolean("enabled").notNull().default(true),
+    logo_url: varchar("logo_url", { length: 255 }).notNull(),
+    name: varchar("name", { length: 100 }).notNull(),
+    provider_id: integer("provider_id")
+      .notNull()
+      .references(() => provider.id),
+    provider_institution_id: varchar("provider_institution_id", {
+      length: 255,
+    }).notNull(),
+  },
+  (table) => [
+    index("institution_id_idx").on(table.id),
+    index("institution_provider_idx").on(table.provider_id),
+    index("institution_country_idx").on(table.country),
+  ],
+);
+
+export const institutionRelations = relations(institution, ({ one, many }) => ({
+  provider: one(provider, {
+    fields: [institution.provider_id],
+    references: [provider.id],
+  }),
+  country: one(country, {
+    fields: [institution.country],
+    references: [country.code],
+  }),
+  institutionConnections: many(institutionConnection),
+}));
