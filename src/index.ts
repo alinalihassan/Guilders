@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import { Elysia } from "elysia";
 import { CloudflareAdapter } from "elysia/adapter/cloudflare-worker";
 import { asset } from "./db/schema/assets";
+import { account } from "./db/schema/auth";
 import { OpenAPI } from "./lib/auth-openapi";
 import { db } from "./lib/db";
 import { authPlugin } from "./middleware/auth";
@@ -17,7 +18,7 @@ const app = new Elysia({ adapter: CloudflareAdapter })
       },
     }),
   )
-  .get("/", () => "Hello World")
+  .get("/", () => db.select().from(account))
   .use(authPlugin)
   .get(
     "/assets",

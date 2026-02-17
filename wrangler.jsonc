@@ -2,9 +2,16 @@
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "guilders-api",
   "main": "src/index.ts",
-  "compatibility_date": "2026-02-16",
+  "compatibility_date": "2026-02-12",
   "compatibility_flags": ["nodejs_compat"],
   "dev": {
     "port": 3000
-  }
+  },
+  "hyperdrive": [
+    {
+      "binding": "HYPERDRIVE",
+      "id": "bbfffc278fb944f8b438b81c1b0ef798",
+      "localConnectionString": "postgresql://guilders-db_owner:Sdi4nhaV0HOl@ep-royal-tooth-a2a4r89q-pooler.eu-central-1.aws.neon.tech/guilders-db?sslmode=verify-full&channel_binding=require"
+    }
+  ]
 }
