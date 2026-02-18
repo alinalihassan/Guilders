@@ -4,7 +4,13 @@ import { db } from "../../lib/db";
 import { authPlugin } from "../../middleware/auth";
 import { errorSchema } from "../../utils/error";
 
-export const rateRoutes = new Elysia({ prefix: "/rate" })
+export const rateRoutes = new Elysia({
+  prefix: "/rate",
+  detail: {
+    tags: ["Rates"],
+    security: [{ bearerAuth: [] }],
+  }
+})
   .use(authPlugin)
   .model({
     Rate: selectRateSchema,
@@ -39,14 +45,13 @@ export const rateRoutes = new Elysia({ prefix: "/rate" })
       }),
       response: {
         200: t.Array(t.Ref("#/components/schemas/Rate")),
+        401: errorSchema,
         404: errorSchema,
       },
       detail: {
         summary: "Get all exchange rates",
         description:
           "Retrieve exchange rates with optional base currency conversion",
-        tags: ["Rates"],
-        security: [{ bearerAuth: [] }],
       },
     },
   )
@@ -93,15 +98,14 @@ export const rateRoutes = new Elysia({ prefix: "/rate" })
         base: t.Optional(t.String({ minLength: 3, maxLength: 3 })),
       }),
       response: {
-        200: t.Ref("#/components/schemas/Rate"),
+        200: "Rate",
+        401: errorSchema,
         404: errorSchema,
       },
       detail: {
         summary: "Get rate by currency code",
         description:
           "Retrieve exchange rate for a specific currency with optional base conversion",
-        tags: ["Rates"],
-        security: [{ bearerAuth: [] }],
       },
     },
   );

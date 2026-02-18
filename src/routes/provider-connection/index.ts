@@ -6,6 +6,10 @@ import { errorSchema } from "../../utils/error";
 
 export const providerConnectionRoutes = new Elysia({
   prefix: "/provider-connection",
+  detail: {
+    tags: ["Provider Connections"],
+    security: [{ bearerAuth: [] }],
+  }
 })
   .use(authPlugin)
   .model({
@@ -27,8 +31,6 @@ export const providerConnectionRoutes = new Elysia({
         summary: "Get all provider connections",
         description:
           "Retrieve all provider connections for the authenticated user",
-        tags: ["Provider Connections"],
-        security: [{ bearerAuth: [] }],
       },
     },
   )
@@ -60,8 +62,6 @@ export const providerConnectionRoutes = new Elysia({
       detail: {
         summary: "Get provider connection by ID",
         description: "Retrieve a specific provider connection by its ID",
-        tags: ["Provider Connections"],
-        security: [{ bearerAuth: [] }],
       },
     },
   );

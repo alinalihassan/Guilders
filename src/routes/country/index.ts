@@ -3,7 +3,13 @@ import { selectCountrySchema } from "../../db/schema/countries";
 import { db } from "../../lib/db";
 import { authPlugin } from "../../middleware/auth";
 
-export const countryRoutes = new Elysia({ prefix: '/country' })
+export const countryRoutes = new Elysia({
+  prefix: '/country',
+  detail: {
+    tags: ["Countries"],
+    security: [{ bearerAuth: [] }],
+  }
+})
   .use(authPlugin)
   .model({
     Country: selectCountrySchema,
@@ -16,7 +22,5 @@ export const countryRoutes = new Elysia({ prefix: '/country' })
     detail: {
       summary: "Get all countries",
       description: "Retrieve a list of all countries with their ISO codes and names",
-      tags: ["Countries"],
-      security: [{ bearerAuth: [] }]
     }
   });

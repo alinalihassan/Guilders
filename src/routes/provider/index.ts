@@ -4,7 +4,13 @@ import { db } from "../../lib/db";
 import { authPlugin } from "../../middleware/auth";
 import { errorSchema } from "../../utils/error";
 
-export const providerRoutes = new Elysia({ prefix: "/provider" })
+export const providerRoutes = new Elysia({
+  prefix: "/provider",
+  detail: {
+    tags: ["Providers"],
+    security: [{ bearerAuth: [] }],
+  }
+})
   .use(authPlugin)
   .model({
     Provider: selectProviderSchema,
@@ -20,8 +26,6 @@ export const providerRoutes = new Elysia({ prefix: "/provider" })
       detail: {
         summary: "Get all providers",
         description: "Retrieve a list of all financial data providers",
-        tags: ["Providers"],
-        security: [{ bearerAuth: [] }],
       },
     },
   )
@@ -44,14 +48,12 @@ export const providerRoutes = new Elysia({ prefix: "/provider" })
         id: t.Number(),
       }),
       response: {
-        200: t.Ref("#/components/schemas/Provider"),
+        200: 'Provider',
         404: errorSchema,
       },
       detail: {
         summary: "Get provider by ID",
         description: "Retrieve a specific provider by its ID",
-        tags: ["Providers"],
-        security: [{ bearerAuth: [] }],
       },
     },
   );

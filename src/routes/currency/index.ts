@@ -4,7 +4,13 @@ import { db } from "../../lib/db";
 import { authPlugin } from "../../middleware/auth";
 import { errorSchema } from "../../utils/error";
 
-export const currencyRoutes = new Elysia({ prefix: "/currency" })
+export const currencyRoutes = new Elysia({
+  prefix: "/currency",
+  detail: {
+    tags: ["Currencies"],
+    security: [{ bearerAuth: [] }],
+  }
+})
   .use(authPlugin)
   .model({
     Currency: selectCurrencySchema,
@@ -20,8 +26,6 @@ export const currencyRoutes = new Elysia({ prefix: "/currency" })
       detail: {
         summary: "Get all currencies",
         description: "Retrieve a list of all supported currencies",
-        tags: ["Currencies"],
-        security: [{ bearerAuth: [] }],
       },
     },
   )
@@ -46,14 +50,12 @@ export const currencyRoutes = new Elysia({ prefix: "/currency" })
         code: t.String({ minLength: 3, maxLength: 3 }),
       }),
       response: {
-        200: t.Ref("#/components/schemas/Currency"),
+        200: 'Currency',
         404: errorSchema,
       },
       detail: {
         summary: "Get currency by code",
         description: "Retrieve a specific currency by its ISO code",
-        tags: ["Currencies"],
-        security: [{ bearerAuth: [] }],
       },
     },
   );

@@ -10,7 +10,13 @@ import { db } from "../../lib/db";
 import { authPlugin } from "../../middleware/auth";
 import { errorSchema } from "../../utils/error";
 
-export const transactionRoutes = new Elysia({ prefix: "/transaction" })
+export const transactionRoutes = new Elysia({
+  prefix: "/transaction",
+  detail: {
+    tags: ["Transactions"],
+    security: [{ bearerAuth: [] }],
+  }
+})
   .use(authPlugin)
   .model({
     Transaction: selectTransactionSchema,
@@ -39,8 +45,6 @@ export const transactionRoutes = new Elysia({ prefix: "/transaction" })
         summary: "Get all transactions",
         description:
           "Retrieve all transactions for the authenticated user, optionally filtered by asset",
-        tags: ["Transactions"],
-        security: [{ bearerAuth: [] }],
       },
     },
   )
@@ -100,7 +104,7 @@ export const transactionRoutes = new Elysia({ prefix: "/transaction" })
       auth: true,
       body: insertTransactionSchema,
       response: {
-        200: t.Ref("#/components/schemas/Transaction"),
+        200: 'Transaction',
         404: errorSchema,
         500: errorSchema,
       },
@@ -108,8 +112,6 @@ export const transactionRoutes = new Elysia({ prefix: "/transaction" })
         summary: "Create transaction",
         description:
           "Create a new transaction and update the associated account balance",
-        tags: ["Transactions"],
-        security: [{ bearerAuth: [] }],
       },
     },
   )
@@ -137,14 +139,12 @@ export const transactionRoutes = new Elysia({ prefix: "/transaction" })
         id: t.Number(),
       }),
       response: {
-        200: t.Ref("#/components/schemas/Transaction"),
+        200: 'Transaction',
         404: errorSchema,
       },
       detail: {
         summary: "Get transaction by ID",
         description: "Retrieve a specific transaction by its ID",
-        tags: ["Transactions"],
-        security: [{ bearerAuth: [] }],
       },
     },
   )
@@ -228,7 +228,7 @@ export const transactionRoutes = new Elysia({ prefix: "/transaction" })
       }),
       body: insertTransactionSchema,
       response: {
-        200: t.Ref("#/components/schemas/Transaction"),
+        200: 'Transaction',
         404: errorSchema,
         500: errorSchema,
       },
@@ -236,8 +236,6 @@ export const transactionRoutes = new Elysia({ prefix: "/transaction" })
         summary: "Update transaction",
         description:
           "Update a transaction and adjust the associated account balance",
-        tags: ["Transactions"],
-        security: [{ bearerAuth: [] }],
       },
     },
   )
@@ -302,8 +300,6 @@ export const transactionRoutes = new Elysia({ prefix: "/transaction" })
         summary: "Delete transaction",
         description:
           "Delete a transaction and revert the associated account balance",
-        tags: ["Transactions"],
-        security: [{ bearerAuth: [] }],
       },
     },
   );

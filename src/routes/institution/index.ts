@@ -5,7 +5,13 @@ import { authPlugin } from "../../middleware/auth";
 import { errorSchema } from "../../utils/error";
 
 
-export const institutionRoutes = new Elysia({ prefix: "/institution" })
+export const institutionRoutes = new Elysia({
+  prefix: "/institution",
+  detail: {
+    tags: ["Institutions"],
+    security: [{ bearerAuth: [] }],
+  }
+})
   .use(authPlugin)
   .model({
     Institution: selectInstitutionSchema,
@@ -25,8 +31,6 @@ export const institutionRoutes = new Elysia({ prefix: "/institution" })
       detail: {
         summary: "Get all institutions",
         description: "Retrieve a list of all enabled financial institutions",
-        tags: ["Institutions"],
-        security: [{ bearerAuth: [] }],
       },
     },
   )
@@ -52,14 +56,12 @@ export const institutionRoutes = new Elysia({ prefix: "/institution" })
         id: t.Number(),
       }),
       response: {
-        200: t.Ref("#/components/schemas/Institution"),
+        200: 'Institution',
         404: errorSchema,
       },
       detail: {
         summary: "Get institution by ID",
         description: "Retrieve a specific institution by its ID",
-        tags: ["Institutions"],
-        security: [{ bearerAuth: [] }],
       },
     },
   );
