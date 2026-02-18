@@ -1,5 +1,8 @@
-import { relations } from "drizzle-orm";
 import { index, numeric, pgTable, varchar } from "drizzle-orm/pg-core";
+import {
+  createInsertSchema,
+  createSelectSchema,
+} from "drizzle-orm/typebox-legacy";
 import { currency } from "./currencies";
 
 export const rate = pgTable(
@@ -14,9 +17,8 @@ export const rate = pgTable(
   (table) => [index("rate_currency_idx").on(table.currency_code)],
 );
 
-export const rateRelations = relations(rate, ({ one }) => ({
-  currency: one(currency, {
-    fields: [rate.currency_code],
-    references: [currency.code],
-  }),
-}));
+export type Rate = typeof rate.$inferSelect;
+export type InsertRate = typeof rate.$inferInsert;
+
+export const selectRateSchema = createSelectSchema(rate);
+export const insertRateSchema = createInsertSchema(rate);

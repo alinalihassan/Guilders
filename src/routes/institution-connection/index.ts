@@ -1,17 +1,11 @@
 import { and, eq, inArray } from "drizzle-orm";
-import { createSelectSchema } from "drizzle-typebox";
 import { Elysia, t } from "elysia";
-import { institutionConnection } from "../../db/schema/institution-connections";
+import { institutionConnection, selectInstitutionConnectionSchema } from "../../db/schema/institution-connections";
 import { institution } from "../../db/schema/institutions";
 import { providerConnection } from "../../db/schema/provider-connections";
 import { db } from "../../lib/db";
 import { authPlugin } from "../../middleware/auth";
 
-const selectInstitutionConnectionSchema = createSelectSchema(
-  institutionConnection,
-);
-
-// Extended schema with relations
 const InstitutionConnectionWithRelations = t.Object({
   id: t.Number(),
   institution_id: t.Number(),
@@ -48,9 +42,11 @@ export const institutionConnectionRoutes = new Elysia({
     async ({ user }) => {
       // First get user's provider connections
       const userProviderConnections = await db
-        .select({ id: providerConnection.id })
-        .from(providerConnection)
-        .where(eq(providerConnection.user_id, user.id));
+        .query.providerConnection.findMany({
+          where: {
+            user_id: user.id,
+          },
+        });
 
       const providerConnectionIds = userProviderConnections.map((pc) => pc.id);
 
@@ -103,6 +99,7 @@ export const institutionConnectionRoutes = new Elysia({
         description:
           "Retrieve all institution connections for the authenticated user with institution and provider details",
         tags: ["Institution Connections"],
+        security: [{ bearerAuth: [] }],
       },
     },
   )
@@ -111,9 +108,11 @@ export const institutionConnectionRoutes = new Elysia({
     async ({ params, user }) => {
       // First get user's provider connections
       const userProviderConnections = await db
-        .select({ id: providerConnection.id })
-        .from(providerConnection)
-        .where(eq(providerConnection.user_id, user.id));
+        .query.providerConnection.findMany({
+          where: {
+            user_id: user.id,
+          },
+        });
 
       const providerConnectionIds = userProviderConnections.map((pc) => pc.id);
 
@@ -178,6 +177,7 @@ export const institutionConnectionRoutes = new Elysia({
         description:
           "Retrieve a specific institution connection by its ID with details",
         tags: ["Institution Connections"],
+        security: [{ bearerAuth: [] }],
       },
     },
   );

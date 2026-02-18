@@ -1,0 +1,60 @@
+-- INSERT INTO public.account (
+--   id,
+--   name,
+--   type,
+--   subtype,
+--   currency,
+--   value,
+--   user_id,
+--   investable,
+--   taxability
+-- ) VALUES (
+--   1000, -- Using 1000 as ID to avoid conflicts
+--   'Sample Checking Account',
+--   'asset',
+--   'depository',
+--   'EUR',
+--   5234.67,
+--   '7ecce42b-56d6-4350-a389-ed33120010e4', -- Replace with actual user_id
+--   'non_investable',
+--   'taxable'
+-- );
+
+-- INSERT INTO public.transaction (
+--   account_id,
+--   amount,
+--   currency,
+--   date,
+--   description,
+--   category
+-- ) VALUES
+--   (1000, -2500.00, 'EUR', '2024-01-01', 'Monthly Rent Payment', 'Housing'),
+--   (1000, 3750.00, 'EUR', '2024-01-01', 'Salary Deposit', 'Income'),
+--   (1000, -89.99, 'EUR', '2024-01-02', 'Internet Bill', 'Utilities'),
+--   (1000, -65.43, 'EUR', '2024-01-02', 'Electric Bill', 'Utilities'),
+--   (1000, -42.50, 'EUR', '2024-01-03', 'Water Bill', 'Utilities'),
+--   (1000, -125.30, 'EUR', '2024-01-03', 'Grocery Shopping - Whole Foods', 'Food'),
+--   (1000, -45.00, 'EUR', '2024-01-04', 'Gas Station Fill-up', 'Transportation'),
+--   (1000, -12.99, 'EUR', '2024-01-05', 'Netflix Subscription', 'Entertainment'),
+--   (1000, -9.99, 'EUR', '2024-01-05', 'Spotify Premium', 'Entertainment'),
+--   (1000, -78.50, 'EUR', '2024-01-06', 'Restaurant - Italian Night', 'Food'),
+--   (1000, -150.00, 'EUR', '2024-01-07', 'Car Insurance', 'Insurance'),
+--   (1000, -35.00, 'EUR', '2024-01-08', 'Gym Membership', 'Health'),
+--   (1000, -95.67, 'EUR', '2024-01-09', 'Amazon Purchase', 'Shopping'),
+--   (1000, -42.00, 'EUR', '2024-01-10', 'Pharmacy', 'Health'),
+--   (1000, 150.00, 'EUR', '2024-01-11', 'Freelance Payment', 'Income'),
+--   (1000, -67.89, 'EUR', '2024-01-12', 'Home Depot', 'Home'),
+--   (1000, -23.45, 'EUR', '2024-01-13', 'Starbucks Coffee', 'Food'),
+--   (1000, -189.99, 'EUR', '2024-01-14', 'Mobile Phone Bill', 'Utilities'),
+--   (1000, -55.00, 'EUR', '2024-01-15', 'Haircut', 'Personal Care'),
+--   (1000, 3750.00, 'EUR', '2024-01-15', 'Salary Deposit', 'Income'),
+--   (1000, -112.34, 'EUR', '2024-01-16', 'Target Shopping', 'Shopping'),
+--   (1000, -45.67, 'EUR', '2024-01-17', 'Pet Supplies', 'Pets'),
+--   (1000, -78.90, 'EUR', '2024-01-18', 'Dentist Co-pay', 'Health'),
+--   (1000, -234.56, 'EUR', '2024-01-19', 'Car Maintenance', 'Transportation'),
+--   (1000, -98.76, 'EUR', '2024-01-20', 'Grocery Shopping - Trader Joe''s', 'Food'),
+--   (1000, -45.00, 'EUR', '2024-01-21', 'Movie Theater', 'Entertainment'),
+--   (1000, -67.89, 'EUR', '2024-01-22', 'Clothing Store', 'Shopping'),
+--   (1000, -23.45, 'EUR', '2024-01-23', 'Lunch with Colleagues', 'Food'),
+--   (1000, -145.67, 'EUR', '2024-01-24', 'Internet Shopping', 'Shopping'),
+--   (1000, 200.00, 'EUR', '2024-01-25', 'Birthday Gift from Mom', 'Income');

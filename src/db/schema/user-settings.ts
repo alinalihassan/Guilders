@@ -1,4 +1,4 @@
-import { relations } from "drizzle-orm";
+// import { relations } from "drizzle-orm/relations";
 import { index, pgTable, varchar } from "drizzle-orm/pg-core";
 import { currency } from "./currencies";
 
@@ -19,9 +19,3 @@ export const userSetting = pgTable(
   ],
 );
 
-export const userSettingRelations = relations(userSetting, ({ one }) => ({
-  currency: one(currency, {
-    fields: [userSetting.currency],
-    references: [currency.code],
-  }),
-}));

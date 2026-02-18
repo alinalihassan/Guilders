@@ -1,4 +1,4 @@
-import { relations } from "drizzle-orm";
+// import { relations } from "drizzle-orm/relations";
 import {
   boolean,
   index,
@@ -35,4 +35,3 @@ export const subscription = pgTable(
   ],
 );
 
-export const subscriptionRelations = relations(subscription, () => ({}));

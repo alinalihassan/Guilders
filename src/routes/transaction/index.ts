@@ -1,13 +1,13 @@
 import { and, eq } from "drizzle-orm";
-import { createInsertSchema, createSelectSchema } from "drizzle-typebox";
 import { Elysia, t } from "elysia";
 import { asset } from "../../db/schema/assets";
-import { transaction } from "../../db/schema/transactions";
+import {
+  insertTransactionSchema,
+  selectTransactionSchema,
+  transaction,
+} from "../../db/schema/transactions";
 import { db } from "../../lib/db";
 import { authPlugin } from "../../middleware/auth";
-
-const selectTransactionSchema = createSelectSchema(transaction);
-const insertTransactionSchema = createInsertSchema(transaction);
 
 export const transactionRoutes = new Elysia({ prefix: "/transaction" })
   .use(authPlugin)
@@ -20,9 +20,11 @@ export const transactionRoutes = new Elysia({ prefix: "/transaction" })
     async ({ user, query }) => {
       // Get user's assets first
       const userAssets = await db
-        .select({ id: asset.id })
-        .from(asset)
-        .where(eq(asset.user_id, user.id));
+        .query.asset.findMany({
+          where: {
+            user_id: user.id,
+          },
+        });
 
       const assetIds = userAssets.map((a) => a.id);
 
@@ -30,7 +32,7 @@ export const transactionRoutes = new Elysia({ prefix: "/transaction" })
         return [];
       }
 
-      // If assetId filter provided
+      // If assetId query parameter provided
       if (query.assetId) {
         const assetIdsSet = new Set(assetIds);
         if (!assetIdsSet.has(query.assetId)) {
@@ -38,18 +40,22 @@ export const transactionRoutes = new Elysia({ prefix: "/transaction" })
         }
 
         return await db
-          .select()
-          .from(transaction)
-          .where(eq(transaction.asset_id, query.assetId));
+          .query.transaction.findMany({
+            where: {
+              asset_id: query.assetId,
+            },
+          });
       }
 
       // Get all transactions for user's assets
       const allTransactions: (typeof transaction.$inferSelect)[] = [];
       for (const assetId of assetIds) {
         const assetTransactions = await db
-          .select()
-          .from(transaction)
-          .where(eq(transaction.asset_id, assetId));
+          .query.transaction.findMany({
+            where: {
+              asset_id: assetId,
+            },
+          });
         allTransactions.push(...assetTransactions);
       }
 
@@ -69,6 +75,7 @@ export const transactionRoutes = new Elysia({ prefix: "/transaction" })
         description:
           "Retrieve all transactions for the authenticated user, optionally filtered by asset",
         tags: ["Transactions"],
+        security: [{ bearerAuth: [] }],
       },
     },
   )
@@ -79,17 +86,18 @@ export const transactionRoutes = new Elysia({ prefix: "/transaction" })
 
       // Verify the asset belongs to the user
       const assetResult = await db
-        .select()
-        .from(asset)
-        .where(
-          and(eq(asset.id, bodyTyped.asset_id), eq(asset.user_id, user.id)),
-        );
+        .query.asset.findFirst({
+          where: {
+            id: bodyTyped.asset_id,
+            user_id: user.id,
+          },
+        });
 
-      if (assetResult.length === 0 || !assetResult[0]) {
+      if (!assetResult) {
         throw new Error("Asset not found or access denied");
       }
 
-      const targetAsset = assetResult[0];
+      const targetAsset = assetResult;
       const amount = parseFloat(bodyTyped.amount.toString());
 
       // Update asset value
@@ -133,6 +141,7 @@ export const transactionRoutes = new Elysia({ prefix: "/transaction" })
         description:
           "Create a new transaction and update the associated account balance",
         tags: ["Transactions"],
+        security: [{ bearerAuth: [] }],
       },
     },
   )
@@ -141,9 +150,11 @@ export const transactionRoutes = new Elysia({ prefix: "/transaction" })
     async ({ params, user }) => {
       // Get user's assets
       const userAssets = await db
-        .select({ id: asset.id })
-        .from(asset)
-        .where(eq(asset.user_id, user.id));
+        .query.asset.findMany({
+          where: {
+            user_id: user.id,
+          },
+        });
 
       const assetIds = userAssets.map((a) => a.id);
 
@@ -153,15 +164,17 @@ export const transactionRoutes = new Elysia({ prefix: "/transaction" })
 
       // Get transaction and verify ownership through asset
       const result = await db
-        .select()
-        .from(transaction)
-        .where(eq(transaction.id, params.id));
+        .query.transaction.findFirst({
+          where: {
+            id: params.id,
+          },
+        });
 
-      if (result.length === 0 || !result[0]) {
+      if (!result) {
         throw new Error("Transaction not found");
       }
 
-      const transactionData = result[0];
+      const transactionData = result;
       if (!assetIds.includes(transactionData.asset_id)) {
         throw new Error("Transaction not found");
       }
@@ -178,6 +191,7 @@ export const transactionRoutes = new Elysia({ prefix: "/transaction" })
         summary: "Get transaction by ID",
         description: "Retrieve a specific transaction by its ID",
         tags: ["Transactions"],
+        security: [{ bearerAuth: [] }],
       },
     },
   )
@@ -188,28 +202,31 @@ export const transactionRoutes = new Elysia({ prefix: "/transaction" })
 
       // Verify the asset belongs to the user
       const assetResult = await db
-        .select()
-        .from(asset)
-        .where(
-          and(eq(asset.id, bodyTyped.asset_id), eq(asset.user_id, user.id)),
-        );
+        .query.asset.findFirst({
+          where: {
+            id: bodyTyped.asset_id,
+            user_id: user.id,
+          },
+        });
 
-      if (assetResult.length === 0 || !assetResult[0]) {
+      if (!assetResult) {
         throw new Error("Asset not found or access denied");
       }
 
       // Get existing transaction
       const existingResult = await db
-        .select()
-        .from(transaction)
-        .where(eq(transaction.id, params.id));
+        .query.transaction.findFirst({
+          where: {
+            id: params.id,
+          },
+        });
 
-      if (existingResult.length === 0 || !existingResult[0]) {
+      if (!existingResult) {
         throw new Error("Transaction not found");
       }
 
-      const existingTransaction = existingResult[0];
-      const targetAsset = assetResult[0];
+      const existingTransaction = existingResult;
+      const targetAsset = assetResult;
 
       // Verify ownership of existing transaction
       if (targetAsset.user_id !== user.id) {
@@ -267,6 +284,7 @@ export const transactionRoutes = new Elysia({ prefix: "/transaction" })
         description:
           "Update a transaction and adjust the associated account balance",
         tags: ["Transactions"],
+        security: [{ bearerAuth: [] }],
       },
     },
   )
@@ -275,9 +293,11 @@ export const transactionRoutes = new Elysia({ prefix: "/transaction" })
     async ({ params, user }) => {
       // Get user's assets
       const userAssets = await db
-        .select({ id: asset.id })
-        .from(asset)
-        .where(eq(asset.user_id, user.id));
+        .query.asset.findMany({
+          where: {
+            user_id: user.id,
+          },
+        });
 
       const assetIds = userAssets.map((a) => a.id);
 
@@ -287,15 +307,17 @@ export const transactionRoutes = new Elysia({ prefix: "/transaction" })
 
       // Get existing transaction
       const existingResult = await db
-        .select()
-        .from(transaction)
-        .where(eq(transaction.id, params.id));
+        .query.transaction.findFirst({
+          where: {
+            id: params.id,
+          },
+        });
 
-      if (existingResult.length === 0 || !existingResult[0]) {
+      if (!existingResult) {
         throw new Error("Transaction not found");
       }
 
-      const existingTransaction = existingResult[0];
+      const existingTransaction = existingResult;
 
       // Verify ownership
       if (!assetIds.includes(existingTransaction.asset_id)) {
@@ -304,15 +326,17 @@ export const transactionRoutes = new Elysia({ prefix: "/transaction" })
 
       // Get asset for balance update
       const assetResult = await db
-        .select()
-        .from(asset)
-        .where(eq(asset.id, existingTransaction.asset_id));
+        .query.asset.findFirst({
+          where: {
+            id: existingTransaction.asset_id,
+          },
+        });
 
-      if (assetResult.length === 0 || !assetResult[0]) {
+      if (!assetResult) {
         throw new Error("Associated asset not found");
       }
 
-      const targetAsset = assetResult[0];
+      const targetAsset = assetResult;
       const amount = parseFloat(existingTransaction.amount.toString());
 
       // Revert asset value
@@ -340,6 +364,7 @@ export const transactionRoutes = new Elysia({ prefix: "/transaction" })
         description:
           "Delete a transaction and revert the associated account balance",
         tags: ["Transactions"],
+        security: [{ bearerAuth: [] }],
       },
     },
   );

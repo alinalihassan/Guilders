@@ -1,11 +1,8 @@
-import { eq } from "drizzle-orm";
-import { createSelectSchema } from "drizzle-typebox";
-import { Elysia, t } from "elysia";
-import { rate } from "../../db/schema/rates";
+import { Elysia, status, t } from "elysia";
+import { selectRateSchema } from "../../db/schema/rates";
 import { db } from "../../lib/db";
 import { authPlugin } from "../../middleware/auth";
-
-const selectRateSchema = createSelectSchema(rate);
+import { errorSchema } from "../../utils/error";
 
 export const rateRoutes = new Elysia({ prefix: "/rate" })
   .use(authPlugin)
@@ -16,7 +13,7 @@ export const rateRoutes = new Elysia({ prefix: "/rate" })
     "",
     async ({ query }) => {
       const base = query.base || "USD";
-      const rates = await db.select().from(rate);
+      const rates = await db.query.rate.findMany();
 
       if (base === "USD") {
         return rates;
@@ -25,7 +22,7 @@ export const rateRoutes = new Elysia({ prefix: "/rate" })
       // Convert rates to base currency
       const baseRate = rates.find((r) => r.currency_code === base);
       if (!baseRate) {
-        throw new Error("Base currency not found");
+        return status(404, { error: "Base currency not found" });
       }
 
       const baseRateValue = parseFloat(baseRate.rate);
@@ -40,12 +37,16 @@ export const rateRoutes = new Elysia({ prefix: "/rate" })
       query: t.Object({
         base: t.Optional(t.String({ minLength: 3, maxLength: 3 })),
       }),
-      response: t.Array(selectRateSchema),
+      response: {
+        200: t.Array(t.Ref("#/components/schemas/Rate")),
+        404: errorSchema,
+      },
       detail: {
         summary: "Get all exchange rates",
         description:
           "Retrieve exchange rates with optional base currency conversion",
         tags: ["Rates"],
+        security: [{ bearerAuth: [] }],
       },
     },
   )
@@ -54,34 +55,34 @@ export const rateRoutes = new Elysia({ prefix: "/rate" })
     async ({ params, query }) => {
       const base = query.base || "USD";
 
-      const result = await db
-        .select()
-        .from(rate)
-        .where(eq(rate.currency_code, params.code));
-
-      if (result.length === 0 || !result[0]) {
-        throw new Error("Rate not found");
+      const result = await db.query.rate.findFirst({
+        where: {
+          currency_code: params.code,
+        },
+      });
+      if (!result) {
+        return status(404, { error: "Rate not found" });
       }
 
-      const rateValue = result[0];
-
       if (base !== "USD") {
-        const baseRateResult = await db
-          .select()
-          .from(rate)
-          .where(eq(rate.currency_code, base));
-        if (baseRateResult.length === 0 || !baseRateResult[0]) {
-          throw new Error("Base currency not found");
+        const baseRateResult = await db.query.rate.findFirst({
+          where: {
+            currency_code: base,
+          },
+        });
+
+        if (!baseRateResult) {
+          return status(404, { error: "Base currency not found" });
         }
 
-        const baseRateValue = parseFloat(baseRateResult[0].rate);
+        const baseRateValue = parseFloat(baseRateResult.rate);
         return {
-          currency_code: rateValue.currency_code,
-          rate: (parseFloat(rateValue.rate) / baseRateValue).toString(),
+          currency_code: result.currency_code,
+          rate: (parseFloat(result.rate) / baseRateValue).toString(),
         };
       }
 
-      return rateValue;
+      return result;
     },
     {
       auth: true,
@@ -91,12 +92,16 @@ export const rateRoutes = new Elysia({ prefix: "/rate" })
       query: t.Object({
         base: t.Optional(t.String({ minLength: 3, maxLength: 3 })),
       }),
-      response: selectRateSchema,
+      response: {
+        200: t.Ref("#/components/schemas/Rate"),
+        404: errorSchema,
+      },
       detail: {
         summary: "Get rate by currency code",
         description:
           "Retrieve exchange rate for a specific currency with optional base conversion",
         tags: ["Rates"],
+        security: [{ bearerAuth: [] }],
       },
     },
   );

@@ -20,15 +20,7 @@ try {
       password: "test123@test.com",
     },
   });
-  console.log("Sign in successful:", user);
-
-  const currencies = await app.api.currency({ code: "USD" }).get({
-    headers: {
-      Authorization: `Bearer ${user.token}`,
-    },
-  });
-  console.log("headers", `Bearer ${user.token}`);
-  console.log("Currencies:", currencies);
+  console.log("Token:", user.token);
 } catch (error) {
   console.log("Sign up failed:", error);
 }

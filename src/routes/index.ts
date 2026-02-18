@@ -1,5 +1,5 @@
 import Elysia from "elysia";
-import { assetRoutes } from "./asset";
+// import { assetRoutes } from "./asset";
 import { countryRoutes } from "./country";
 import { currencyRoutes } from "./currency";
 import { institutionRoutes } from "./institution";
@@ -17,5 +17,5 @@ export const api = new Elysia({ prefix: "/api", })
   .use(institutionRoutes)
   .use(providerConnectionRoutes)
   .use(institutionConnectionRoutes)
-  .use(transactionRoutes)
-  .use(assetRoutes);
+  .use(transactionRoutes);
+// .use(assetRoutes);

@@ -1,7 +1,6 @@
-import { relations } from "drizzle-orm";
+
 import { index, pgTable, serial, varchar } from "drizzle-orm/pg-core";
-import { institution } from "./institutions";
-import { providerConnection } from "./provider-connections";
+import { createInsertSchema, createSelectSchema } from "drizzle-orm/typebox-legacy";
 
 export const provider = pgTable(
   "provider",
@@ -12,8 +11,8 @@ export const provider = pgTable(
   },
   (table) => [index("provider_id_idx").on(table.id)],
 );
+export type Provider = typeof provider.$inferSelect;
+export type InsertProvider = typeof provider.$inferInsert;
 
-export const providerRelations = relations(provider, ({ many }) => ({
-  institutions: many(institution),
-  connections: many(providerConnection),
-}));
+export const selectProviderSchema = createSelectSchema(provider);
+export const insertProviderSchema = createInsertSchema(provider);

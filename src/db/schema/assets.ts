@@ -1,4 +1,3 @@
-import { relations } from "drizzle-orm";
 import {
   index,
   integer,
@@ -9,6 +8,10 @@ import {
   timestamp,
   varchar,
 } from "drizzle-orm/pg-core";
+import {
+  createInsertSchema,
+  createSelectSchema,
+} from "drizzle-orm/typebox-legacy";
 import { currency } from "./currencies";
 import {
   accountSubtypeEnum,
@@ -19,7 +22,6 @@ import {
   taxabilityEnum,
 } from "./enums";
 import { institutionConnection } from "./institution-connections";
-import { transaction } from "./transactions";
 
 export const asset = pgTable(
   "asset",
@@ -65,14 +67,8 @@ export const asset = pgTable(
   ],
 );
 
-export const assetRelations = relations(asset, ({ one, many }) => ({
-  currency: one(currency, {
-    fields: [asset.currency],
-    references: [currency.code],
-  }),
-  institutionConnection: one(institutionConnection, {
-    fields: [asset.institution_connection_id],
-    references: [institutionConnection.id],
-  }),
-  transactions: many(transaction),
-}));
+export type Asset = typeof asset.$inferSelect;
+export type InsertAsset = typeof asset.$inferInsert;
+
+export const selectAssetSchema = createSelectSchema(asset);
+export const insertAssetSchema = createInsertSchema(asset);

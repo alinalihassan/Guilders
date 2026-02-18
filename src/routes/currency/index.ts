@@ -1,11 +1,7 @@
-import { eq } from "drizzle-orm";
-import { createSelectSchema } from "drizzle-typebox";
-import { Elysia, t } from "elysia";
-import { currency } from "../../db/schema/currencies";
+import { Elysia, status, t } from "elysia";
+import { selectCurrencySchema } from "../../db/schema/currencies";
 import { db } from "../../lib/db";
 import { authPlugin } from "../../middleware/auth";
-
-const selectCurrencySchema = createSelectSchema(currency);
 
 export const currencyRoutes = new Elysia({ prefix: "/currency" })
   .use(authPlugin)
@@ -15,7 +11,7 @@ export const currencyRoutes = new Elysia({ prefix: "/currency" })
   .get(
     "",
     async () => {
-      return await db.select().from(currency);
+      return db.query.currency.findMany();
     },
     {
       auth: true,
@@ -24,20 +20,24 @@ export const currencyRoutes = new Elysia({ prefix: "/currency" })
         summary: "Get all currencies",
         description: "Retrieve a list of all supported currencies",
         tags: ["Currencies"],
+        security: [{ bearerAuth: [] }],
       },
     },
   )
   .get(
     "/:code",
     async ({ params }) => {
-      const result = await db
-        .select()
-        .from(currency)
-        .where(eq(currency.code, params.code));
-      if (result.length === 0) {
-        throw new Error("Currency not found");
+      const result = await db.query.currency.findFirst({
+        where: {
+          code: params.code,
+        }
+      });
+
+      if (!result) {
+        return status(404, { error: "Currency not found" });
       }
-      return result[0];
+
+      return result;
     },
     {
       auth: true,
@@ -49,6 +49,7 @@ export const currencyRoutes = new Elysia({ prefix: "/currency" })
         summary: "Get currency by code",
         description: "Retrieve a specific currency by its ISO code",
         tags: ["Currencies"],
+        security: [{ bearerAuth: [] }],
       },
     },
   );

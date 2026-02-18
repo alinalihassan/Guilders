@@ -1,4 +1,3 @@
-import { relations } from "drizzle-orm";
 import {
   index,
   integer,
@@ -7,7 +6,10 @@ import {
   timestamp,
   varchar,
 } from "drizzle-orm/pg-core";
-import { institutionConnection } from "./institution-connections";
+import {
+  createInsertSchema,
+  createSelectSchema,
+} from "drizzle-orm/typebox-legacy";
 import { provider } from "./providers";
 
 export const providerConnection = pgTable(
@@ -29,13 +31,10 @@ export const providerConnection = pgTable(
   ],
 );
 
-export const providerConnectionRelations = relations(
-  providerConnection,
-  ({ one, many }) => ({
-    provider: one(provider, {
-      fields: [providerConnection.provider_id],
-      references: [provider.id],
-    }),
-    institutionConnections: many(institutionConnection),
-  }),
-);
+export type ProviderConnection = typeof providerConnection.$inferSelect;
+export type InsertProviderConnection = typeof providerConnection.$inferInsert;
+
+export const selectProviderConnectionSchema =
+  createSelectSchema(providerConnection);
+export const insertProviderConnectionSchema =
+  createInsertSchema(providerConnection);

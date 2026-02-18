@@ -1,11 +1,8 @@
-import { and, eq } from "drizzle-orm";
-import { createSelectSchema } from "drizzle-typebox";
-import { Elysia, t } from "elysia";
-import { institution } from "../../db/schema/institutions";
+import { Elysia, status, t } from "elysia";
+import { selectInstitutionSchema } from "../../db/schema/institutions";
 import { db } from "../../lib/db";
 import { authPlugin } from "../../middleware/auth";
 
-const selectInstitutionSchema = createSelectSchema(institution);
 
 export const institutionRoutes = new Elysia({ prefix: "/institution" })
   .use(authPlugin)
@@ -15,11 +12,11 @@ export const institutionRoutes = new Elysia({ prefix: "/institution" })
   .get(
     "",
     async () => {
-      // Only return enabled institutions (matching the old API behavior)
-      return await db
-        .select()
-        .from(institution)
-        .where(eq(institution.enabled, true));
+      return db.query.institution.findMany({
+        where: {
+          enabled: true,
+        },
+      });
     },
     {
       auth: true,
@@ -28,22 +25,25 @@ export const institutionRoutes = new Elysia({ prefix: "/institution" })
         summary: "Get all institutions",
         description: "Retrieve a list of all enabled financial institutions",
         tags: ["Institutions"],
+        security: [{ bearerAuth: [] }],
       },
     },
   )
   .get(
     "/:id",
     async ({ params }) => {
-      const result = await db
-        .select()
-        .from(institution)
-        .where(
-          and(eq(institution.id, params.id), eq(institution.enabled, true)),
-        );
-      if (result.length === 0) {
-        throw new Error("Institution not found");
+      const result = await db.query.institution.findFirst({
+        where: {
+          id: params.id,
+          enabled: true,
+        },
+      });
+
+      if (!result) {
+        return status(404, { error: "Institution not found" });
       }
-      return result[0];
+
+      return result;
     },
     {
       auth: true,
@@ -55,6 +55,7 @@ export const institutionRoutes = new Elysia({ prefix: "/institution" })
         summary: "Get institution by ID",
         description: "Retrieve a specific institution by its ID",
         tags: ["Institutions"],
+        security: [{ bearerAuth: [] }],
       },
     },
   );

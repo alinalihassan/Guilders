@@ -1,11 +1,7 @@
-import { and, eq } from "drizzle-orm";
-import { createSelectSchema } from "drizzle-typebox";
-import { Elysia, t } from "elysia";
-import { providerConnection } from "../../db/schema/provider-connections";
+import { Elysia, status, t } from "elysia";
+import { selectProviderConnectionSchema } from "../../db/schema/provider-connections";
 import { db } from "../../lib/db";
 import { authPlugin } from "../../middleware/auth";
-
-const selectProviderConnectionSchema = createSelectSchema(providerConnection);
 
 export const providerConnectionRoutes = new Elysia({
   prefix: "/provider-connection",
@@ -17,10 +13,11 @@ export const providerConnectionRoutes = new Elysia({
   .get(
     "",
     async ({ user }) => {
-      return await db
-        .select()
-        .from(providerConnection)
-        .where(eq(providerConnection.user_id, user.id));
+      return db.query.providerConnection.findMany({
+        where: {
+          user_id: user.id,
+        },
+      });
     },
     {
       auth: true,
@@ -30,25 +27,25 @@ export const providerConnectionRoutes = new Elysia({
         description:
           "Retrieve all provider connections for the authenticated user",
         tags: ["Provider Connections"],
+        security: [{ bearerAuth: [] }],
       },
     },
   )
   .get(
     "/:id",
     async ({ params, user }) => {
-      const result = await db
-        .select()
-        .from(providerConnection)
-        .where(
-          and(
-            eq(providerConnection.id, params.id),
-            eq(providerConnection.user_id, user.id),
-          ),
-        );
-      if (result.length === 0) {
-        throw new Error("Provider connection not found");
+      const result = await db.query.providerConnection.findFirst({
+        where: {
+          id: params.id,
+          user_id: user.id,
+        },
+      });
+
+      if (!result) {
+        return status(404, { error: "Provider connection not found" });
       }
-      return result[0];
+
+      return result;
     },
     {
       auth: true,
@@ -60,6 +57,7 @@ export const providerConnectionRoutes = new Elysia({
         summary: "Get provider connection by ID",
         description: "Retrieve a specific provider connection by its ID",
         tags: ["Provider Connections"],
+        security: [{ bearerAuth: [] }],
       },
     },
   );

@@ -1,4 +1,3 @@
-import { relations } from "drizzle-orm";
 import {
   boolean,
   index,
@@ -7,8 +6,11 @@ import {
   serial,
   varchar,
 } from "drizzle-orm/pg-core";
+import {
+  createInsertSchema,
+  createSelectSchema,
+} from "drizzle-orm/typebox-legacy";
 import { country } from "./countries";
-import { institutionConnection } from "./institution-connections";
 import { provider } from "./providers";
 
 export const institution = pgTable(
@@ -33,14 +35,8 @@ export const institution = pgTable(
   ],
 );
 
-export const institutionRelations = relations(institution, ({ one, many }) => ({
-  provider: one(provider, {
-    fields: [institution.provider_id],
-    references: [provider.id],
-  }),
-  country: one(country, {
-    fields: [institution.country],
-    references: [country.code],
-  }),
-  institutionConnections: many(institutionConnection),
-}));
+export type Institution = typeof institution.$inferSelect;
+export type InsertInstitution = typeof institution.$inferInsert;
+
+export const selectInstitutionSchema = createSelectSchema(institution);
+export const insertInstitutionSchema = createInsertSchema(institution);

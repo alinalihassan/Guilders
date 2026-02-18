@@ -1,11 +1,7 @@
-import { eq } from "drizzle-orm";
-import { createSelectSchema } from "drizzle-typebox";
-import { Elysia, t } from "elysia";
-import { provider } from "../../db/schema/providers";
+import { Elysia, status, t } from "elysia";
+import { selectProviderSchema } from "../../db/schema/providers";
 import { db } from "../../lib/db";
 import { authPlugin } from "../../middleware/auth";
-
-const selectProviderSchema = createSelectSchema(provider);
 
 export const providerRoutes = new Elysia({ prefix: "/provider" })
   .use(authPlugin)
@@ -15,7 +11,7 @@ export const providerRoutes = new Elysia({ prefix: "/provider" })
   .get(
     "",
     async () => {
-      return await db.select().from(provider);
+      return db.query.provider.findMany();
     },
     {
       auth: true,
@@ -24,20 +20,22 @@ export const providerRoutes = new Elysia({ prefix: "/provider" })
         summary: "Get all providers",
         description: "Retrieve a list of all financial data providers",
         tags: ["Providers"],
+        security: [{ bearerAuth: [] }],
       },
     },
   )
   .get(
     "/:id",
     async ({ params }) => {
-      const result = await db
-        .select()
-        .from(provider)
-        .where(eq(provider.id, params.id));
-      if (result.length === 0 || !result[0]) {
-        throw new Error("Provider not found");
+      const result = await db.query.provider.findFirst({
+        where: {
+          id: params.id,
+        },
+      });
+      if (!result) {
+        return status(404, { error: "Provider not found" });
       }
-      return result[0];
+      return result;
     },
     {
       auth: true,
@@ -49,6 +47,7 @@ export const providerRoutes = new Elysia({ prefix: "/provider" })
         summary: "Get provider by ID",
         description: "Retrieve a specific provider by its ID",
         tags: ["Providers"],
+        security: [{ bearerAuth: [] }],
       },
     },
   );

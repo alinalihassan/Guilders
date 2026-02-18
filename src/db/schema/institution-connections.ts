@@ -1,4 +1,3 @@
-import { relations } from "drizzle-orm";
 import {
   boolean,
   index,
@@ -8,7 +7,10 @@ import {
   timestamp,
   varchar,
 } from "drizzle-orm/pg-core";
-import { asset } from "./assets";
+import {
+  createInsertSchema,
+  createSelectSchema,
+} from "drizzle-orm/typebox-legacy";
 import { institution } from "./institutions";
 import { providerConnection } from "./provider-connections";
 
@@ -35,17 +37,13 @@ export const institutionConnection = pgTable(
   ],
 );
 
-export const institutionConnectionRelations = relations(
+export type InstitutionConnection = typeof institutionConnection.$inferSelect;
+export type InsertInstitutionConnection =
+  typeof institutionConnection.$inferInsert;
+
+export const selectInstitutionConnectionSchema = createSelectSchema(
   institutionConnection,
-  ({ one, many }) => ({
-    institution: one(institution, {
-      fields: [institutionConnection.institution_id],
-      references: [institution.id],
-    }),
-    providerConnection: one(providerConnection, {
-      fields: [institutionConnection.provider_connection_id],
-      references: [providerConnection.id],
-    }),
-    assets: many(asset),
-  }),
+);
+export const insertInstitutionConnectionSchema = createInsertSchema(
+  institutionConnection,
 );
