@@ -17,6 +17,7 @@
     "@neondatabase/serverless": "^1.0.2",
     "better-auth": "^1.4.18",
     "drizzle-orm": "^0.45.1",
+    "drizzle-typebox": "^0.3.3",
     "elysia": "latest"
   },
   "devDependencies": {

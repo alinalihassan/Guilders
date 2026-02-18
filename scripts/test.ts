@@ -1,5 +1,5 @@
 import { treaty } from "@elysiajs/eden";
-import type { App } from "../src/index";
+import type { App } from "../src/app";
 import { auth } from "../src/lib/auth";
 
 const app = treaty<App>("http://localhost:3000");
@@ -22,12 +22,12 @@ try {
   });
   console.log("Sign in successful:", user);
 
-  const assets = await app.assets.get({
+  const countries = await app.api.country.get({
     headers: {
       Authorization: `Bearer ${user.token}`,
     },
   });
-  console.log("Assets:", assets);
+  console.log("Countries:", countries);
 } catch (error) {
   console.log("Sign up failed:", error);
 }
