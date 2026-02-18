@@ -2,6 +2,7 @@ import { Elysia, status, t } from "elysia";
 import { selectInstitutionSchema } from "../../db/schema/institutions";
 import { db } from "../../lib/db";
 import { authPlugin } from "../../middleware/auth";
+import { errorSchema } from "../../utils/error";
 
 
 export const institutionRoutes = new Elysia({ prefix: "/institution" })
@@ -50,7 +51,10 @@ export const institutionRoutes = new Elysia({ prefix: "/institution" })
       params: t.Object({
         id: t.Number(),
       }),
-      response: t.Ref("#/components/schemas/Institution"),
+      response: {
+        200: t.Ref("#/components/schemas/Institution"),
+        404: errorSchema,
+      },
       detail: {
         summary: "Get institution by ID",
         description: "Retrieve a specific institution by its ID",

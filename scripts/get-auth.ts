@@ -20,7 +20,15 @@ try {
       password: "test123@test.com",
     },
   });
-  console.log("Token:", user.token);
+  console.log("Token for test123@test.com:", user.token);
+
+  const user2 = await auth.api.signInEmail({
+    body: {
+      email: "test1234@test.com",
+      password: "test1234@test.com",
+    },
+  });
+  console.log("Token for test1234@test.com:", user2.token);
 } catch (error) {
   console.log("Sign up failed:", error);
 }

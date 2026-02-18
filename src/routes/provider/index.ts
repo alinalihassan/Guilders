@@ -2,6 +2,7 @@ import { Elysia, status, t } from "elysia";
 import { selectProviderSchema } from "../../db/schema/providers";
 import { db } from "../../lib/db";
 import { authPlugin } from "../../middleware/auth";
+import { errorSchema } from "../../utils/error";
 
 export const providerRoutes = new Elysia({ prefix: "/provider" })
   .use(authPlugin)
@@ -42,7 +43,10 @@ export const providerRoutes = new Elysia({ prefix: "/provider" })
       params: t.Object({
         id: t.Number(),
       }),
-      response: t.Ref("#/components/schemas/Provider"),
+      response: {
+        200: t.Ref("#/components/schemas/Provider"),
+        404: errorSchema,
+      },
       detail: {
         summary: "Get provider by ID",
         description: "Retrieve a specific provider by its ID",

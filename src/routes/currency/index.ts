@@ -2,6 +2,7 @@ import { Elysia, status, t } from "elysia";
 import { selectCurrencySchema } from "../../db/schema/currencies";
 import { db } from "../../lib/db";
 import { authPlugin } from "../../middleware/auth";
+import { errorSchema } from "../../utils/error";
 
 export const currencyRoutes = new Elysia({ prefix: "/currency" })
   .use(authPlugin)
@@ -44,7 +45,10 @@ export const currencyRoutes = new Elysia({ prefix: "/currency" })
       params: t.Object({
         code: t.String({ minLength: 3, maxLength: 3 }),
       }),
-      response: t.Ref("#/components/schemas/Currency"),
+      response: {
+        200: t.Ref("#/components/schemas/Currency"),
+        404: errorSchema,
+      },
       detail: {
         summary: "Get currency by code",
         description: "Retrieve a specific currency by its ISO code",
