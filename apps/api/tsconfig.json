@@ -15,7 +15,7 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedIndexedAccess": true,
     "noImplicitOverride": true,
-    "types": ["./worker-configuration.d.ts", "node"]
+    "types": ["./worker-configuration.d.ts"]
   },
   "exclude": ["node_modules"],
   "include": ["src", "scripts", "./worker-configuration.d.ts", "drizzle.config.ts"]

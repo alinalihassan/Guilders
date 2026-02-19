@@ -12,8 +12,9 @@ export const auth = betterAuth({
   },
   plugins: [bearer(), openAPI({ disableDefaultReference: true }), expo()],
   database: drizzleAdapter(db, { provider: "pg", schema: authSchema }),
+  // biome-ignore lint/suspicious/noDuplicateObjectKeys: <explanation>
   trustedOrigins: [
-    "mobile://",
+    "guilders-mobile://",
     ...(process.env.NODE_ENV === "development" ? [
       "exp://",
       "exp://**",
