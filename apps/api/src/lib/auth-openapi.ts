@@ -5,7 +5,7 @@ let _schema: ReturnType<typeof auth.api.generateOpenAPISchema>
 const getSchema = async () => (_schema ??= auth.api.generateOpenAPISchema())
 
 export const OpenAPI = {
-  getPaths: (prefix = '/auth/api') =>
+  getPaths: (prefix = '/api/auth') =>
     getSchema().then(({ paths }) => {
       const reference: typeof paths = Object.create(null)
 
