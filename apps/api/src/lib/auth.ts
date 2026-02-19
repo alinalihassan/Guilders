@@ -1,4 +1,5 @@
 import { drizzleAdapter } from "@better-auth/drizzle-adapter/relations-v2";
+import { expo } from "@better-auth/expo";
 import { betterAuth } from "better-auth";
 import { bearer, openAPI } from "better-auth/plugins";
 import * as authSchema from "../db/schema/auth";
@@ -9,6 +10,14 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
   },
-  plugins: [bearer(), openAPI({ disableDefaultReference: true })],
+  plugins: [bearer(), openAPI({ disableDefaultReference: true }), expo()],
   database: drizzleAdapter(db, { provider: "pg", schema: authSchema }),
+  trustedOrigins: [
+    "mobile://",
+    ...(process.env.NODE_ENV === "development" ? [
+      "exp://",
+      "exp://**",
+      "exp://192.168.*.*:*/**",
+    ] : [])
+  ],
 });
