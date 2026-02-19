@@ -10,9 +10,10 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
   },
-  plugins: [bearer(), openAPI({ disableDefaultReference: true }), expo()],
+  // TODO: Remove disableOriginOverride when Better Auth fixes the issue in v1.4.19
+  plugins: [bearer(), openAPI({ disableDefaultReference: true }), expo({ disableOriginOverride: true })],
   database: drizzleAdapter(db, { provider: "pg", schema: authSchema }),
-  // biome-ignore lint/suspicious/noDuplicateObjectKeys: <explanation>
+  // biome-ignore lint/suspicious/noDuplicateObjectKeys: Unknown
   trustedOrigins: [
     "guilders-mobile://",
     ...(process.env.NODE_ENV === "development" ? [

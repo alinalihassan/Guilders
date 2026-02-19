@@ -23,6 +23,11 @@ export const app = new Elysia({ adapter: CloudflareAdapter })
     }),
   )
   .use(api)
+  .onError(({ code, error, set }) => {
+    console.error(`API Error [${code}]:`, error);
+    set.status = 500;
+    return { error: error instanceof Error ? error.message : "Internal server error" };
+  })
   .compile();
 
 export type App = typeof app;
