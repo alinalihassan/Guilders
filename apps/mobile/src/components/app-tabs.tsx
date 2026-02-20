@@ -13,11 +13,11 @@ export default function AppTabs() {
       backgroundColor={colors.background}
       indicatorColor={colors.backgroundElement}
       labelStyle={{ selected: { color: colors.text } }}>
-      <NativeTabs.Trigger name="index">
-        <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
+      <NativeTabs.Trigger name="assets">
+        <NativeTabs.Trigger.Label>Assets</NativeTabs.Trigger.Label>
         {Platform.select({
-          ios: <NativeTabs.Trigger.Icon sf={{ default: 'house', selected: 'house.fill' }} />,
-          android: <NativeTabs.Trigger.Icon md="home" />,
+          ios: <NativeTabs.Trigger.Icon sf={{ default: 'creditcard', selected: 'creditcard.fill' }} />,
+          android: <NativeTabs.Trigger.Icon md="account_balance_wallet" />,
         })}
       </NativeTabs.Trigger>
 
@@ -29,7 +29,7 @@ export default function AppTabs() {
         })}
       </NativeTabs.Trigger>
 
-      <NativeTabs.Trigger name="explore">
+      <NativeTabs.Trigger name="settings">
         <NativeTabs.Trigger.Label>Settings</NativeTabs.Trigger.Label>
         {Platform.select({
           ios: <NativeTabs.Trigger.Icon sf="gearshape" />,

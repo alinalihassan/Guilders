@@ -298,19 +298,6 @@ export default function HomeScreen() {
 			contentContainerStyle={{
 				paddingBottom: insets.bottom + Spacing.six,
 			}}>
-			{/* Header */}
-			<View style={{ paddingHorizontal: Spacing.four, paddingTop: Spacing.two }}>
-				<Text
-					style={{
-						fontSize: 28,
-						fontWeight: "700",
-						color: colors.text,
-						fontFamily: Fonts?.rounded,
-					}}>
-					My Wallet
-				</Text>
-			</View>
-
 			{/* Balance Section */}
 			<View style={{ paddingHorizontal: Spacing.four, marginTop: Spacing.four }}>
 				<View style={{ flexDirection: "row", alignItems: "center", gap: Spacing.two }}>
