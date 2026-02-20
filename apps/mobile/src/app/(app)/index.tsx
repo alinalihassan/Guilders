@@ -1,5 +1,6 @@
-import { router } from "expo-router";
-import { useCallback, useMemo, useRef } from "react";
+import { Image } from 'expo-image';
+import { Link, router } from "expo-router";
+import { useCallback, useMemo, useRef, useState } from "react";
 import {
 	ActivityIndicator,
 	Animated,
@@ -7,7 +8,7 @@ import {
 	type NativeSyntheticEvent,
 	Pressable,
 	RefreshControl,
-	SectionList,
+	ScrollView,
 	Text,
 	useColorScheme,
 	View,
@@ -16,6 +17,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Colors, Fonts, Spacing } from "@/constants/theme";
 import {
+	type Asset,
 	type Transaction,
 	useAssets,
 	useTransactions,
@@ -23,28 +25,15 @@ import {
 
 type ColorSet = (typeof Colors)["light"] | (typeof Colors)["dark"];
 
-// ─── Constants ───────────────────────────────────────────────────────────────
-
-// How far the user must scroll before the header collapses
-const COLLAPSE_THRESHOLD = 80;
-
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function formatCurrency(
-	value: number,
-	currency = "USD",
-): { whole: string; decimal: string } {
-	const formatted = new Intl.NumberFormat("en-US", {
+function formatCurrency(value: number, currency = "USD"): string {
+	return new Intl.NumberFormat("en-US", {
 		style: "currency",
 		currency,
 		minimumFractionDigits: 2,
 		maximumFractionDigits: 2,
-	}).format(Math.abs(value));
-	const parts = formatted.split(".");
-	return {
-		whole: (value < 0 ? "-" : "") + (parts[0] ?? ""),
-		decimal: parts[1] ?? "00",
-	};
+	}).format(value);
 }
 
 function formatTransactionAmount(amount: string, currency: string): string {
@@ -56,15 +45,6 @@ function formatTransactionAmount(amount: string, currency: string): string {
 		maximumFractionDigits: 2,
 		signDisplay: "always",
 	}).format(num);
-}
-
-function formatDate(dateStr: string): string {
-	const date = new Date(dateStr);
-	return date.toLocaleDateString("en-US", {
-		weekday: "long",
-		month: "long",
-		day: "numeric",
-	});
 }
 
 function formatDateShort(dateStr: string): string {
@@ -93,141 +73,128 @@ function getCategoryIcon(category: string): string {
 	return map[category.toLowerCase()] ?? "📋";
 }
 
+function getAssetIcon(subtype: string): string {
+	const map: Record<string, string> = {
+		depository: "🏦",
+		brokerage: "📈",
+		crypto: "₿",
+		property: "🏠",
+		vehicle: "🚗",
+		creditcard: "💳",
+		loan: "📄",
+		stock: "📊",
+	};
+	return map[subtype.toLowerCase()] ?? "💰";
+}
+
 // ─── Components ──────────────────────────────────────────────────────────────
 
-function NetWorthHero({
-	totalValue,
-	loading,
+function Sparkline({ color }: { color: string }) {
+	// Simple SVG sparkline - in a real app you'd use actual data
+	return (
+		<View style={{ height: 40, marginTop: Spacing.three }}>
+			<svg width="100%" height="40" viewBox="0 0 300 40" preserveAspectRatio="none">
+				<path
+					d="M0,35 Q30,30 60,32 T120,25 T180,28 T240,20 T300,15"
+					fill="none"
+					stroke={color}
+					strokeWidth="2"
+					strokeLinecap="round"
+				/>
+			</svg>
+		</View>
+	);
+}
+
+function TimeSelector({
+	selected,
+	onSelect,
 	colors,
-	insetTop,
-	collapsed,
 }: {
-	totalValue: number;
-	loading: boolean;
+	selected: string;
+	onSelect: (period: string) => void;
 	colors: ColorSet;
-	insetTop: number;
-	collapsed: Animated.Value;
 }) {
-	const isNegative = totalValue < 0;
-	const { whole, decimal } = formatCurrency(totalValue);
-
-	// Interpolations driven by `collapsed` (0 = expanded, 1 = collapsed)
-	const bigFontSize = collapsed.interpolate({
-		inputRange: [0, 1],
-		outputRange: [64, 28],
-		extrapolate: "clamp",
-	});
-	const bigLineHeight = collapsed.interpolate({
-		inputRange: [0, 1],
-		outputRange: [72, 34],
-		extrapolate: "clamp",
-	});
-	const bigLetterSpacing = collapsed.interpolate({
-		inputRange: [0, 1],
-		outputRange: [-2, -0.5],
-		extrapolate: "clamp",
-	});
-
-	const decimalFontSize = collapsed.interpolate({
-		inputRange: [0, 1],
-		outputRange: [28, 18],
-		extrapolate: "clamp",
-	});
-	const decimalPaddingBottom = collapsed.interpolate({
-		inputRange: [0, 1],
-		outputRange: [8, 3],
-		extrapolate: "clamp",
-	});
-
-	const labelOpacity = collapsed.interpolate({
-		inputRange: [0, 0.5],
-		outputRange: [1, 0],
-		extrapolate: "clamp",
-	});
-	const labelHeight = collapsed.interpolate({
-		inputRange: [0, 0.5],
-		outputRange: [20, 0],
-		extrapolate: "clamp",
-	});
-
-	const containerPaddingBottom = collapsed.interpolate({
-		inputRange: [0, 1],
-		outputRange: [Spacing.four, Spacing.two],
-		extrapolate: "clamp",
-	});
-	const containerPaddingTop = collapsed.interpolate({
-		inputRange: [0, 1],
-		outputRange: [insetTop + Spacing.two, insetTop + Spacing.one],
-		extrapolate: "clamp",
-	});
+	const periods = ["1D", "1W", "1M", "6M", "1Y"];
 
 	return (
-		<Animated.View
+		<View
 			style={{
-				paddingTop: containerPaddingTop,
-				paddingBottom: containerPaddingBottom,
-				paddingHorizontal: Spacing.four,
-				backgroundColor: colors.background,
-				gap: Spacing.one,
-			}}
-		>
-			{/* "Net Worth" label — fades out */}
-			<Animated.View
-				style={{
-					height: labelHeight,
-					opacity: labelOpacity,
-					overflow: "hidden",
-					justifyContent: "center",
-				}}
-			>
-				<Text
+				flexDirection: "row",
+				justifyContent: "center",
+				gap: Spacing.four,
+				marginTop: Spacing.three,
+			}}>
+			{periods.map((period) => (
+				<Pressable
+					key={period}
+					onPress={() => onSelect(period)}
 					style={{
-						fontSize: 13,
-						fontWeight: "500",
-						color: colors.textSecondary,
-						letterSpacing: 0.5,
-						textTransform: "uppercase",
-					}}
-				>
-					Net Worth
-				</Text>
-			</Animated.View>
+						paddingVertical: Spacing.one,
+						paddingHorizontal: Spacing.two,
+					}}>
+					<Text
+						style={{
+							fontSize: 13,
+							fontWeight: selected === period ? "600" : "400",
+							color: selected === period ? colors.text : colors.textSecondary,
+						}}>
+						{period}
+					</Text>
+				</Pressable>
+			))}
+		</View>
+	);
+}
 
-			{/* Big number — shrinks in place */}
-			{loading ? (
-				<View style={{ height: 72, justifyContent: "center" }}>
-					<ActivityIndicator size="large" color={colors.textSecondary} />
-				</View>
-			) : (
-				<View style={{ flexDirection: "row", alignItems: "flex-end", gap: 2 }}>
-					<Animated.Text
-						style={{
-							fontSize: bigFontSize,
-							fontWeight: "700",
-							color: isNegative ? "#EF4444" : colors.text,
-							fontFamily: Fonts?.rounded,
-							lineHeight: bigLineHeight,
-							fontVariant: ["tabular-nums"],
-							letterSpacing: bigLetterSpacing,
-						}}
-					>
-						{whole}
-					</Animated.Text>
-					<Animated.Text
-						style={{
-							fontSize: decimalFontSize,
-							fontWeight: "600",
-							color: isNegative ? "#EF4444" : colors.textSecondary,
-							fontFamily: Fonts?.rounded,
-							paddingBottom: decimalPaddingBottom,
-							fontVariant: ["tabular-nums"],
-						}}
-					>
-						.{decimal}
-					</Animated.Text>
-				</View>
-			)}
-		</Animated.View>
+function AssetCard({
+	asset,
+	colors,
+}: {
+	asset: Asset;
+	colors: ColorSet;
+}) {
+	const value = parseFloat(asset.value);
+
+	return (
+		<Pressable
+			style={{
+				flex: 1,
+				backgroundColor: colors.backgroundElement,
+				borderRadius: 16,
+				padding: Spacing.three,
+				minHeight: 100,
+			}}>
+			<View
+				style={{
+					width: 40,
+					height: 40,
+					borderRadius: 10,
+					backgroundColor: colors.backgroundSelected,
+					justifyContent: "center",
+					alignItems: "center",
+					marginBottom: Spacing.two,
+				}}>
+				<Text style={{ fontSize: 20 }}>{getAssetIcon(asset.subtype)}</Text>
+			</View>
+			<Text
+				style={{
+					fontSize: 13,
+					color: colors.textSecondary,
+					marginBottom: Spacing.one,
+				}}>
+				{asset.name}
+			</Text>
+			<Text
+				style={{
+					fontSize: 17,
+					fontWeight: "600",
+					color: colors.text,
+					fontVariant: ["tabular-nums"],
+				}}>
+				{formatCurrency(value, asset.currency)}
+			</Text>
+		</Pressable>
 	);
 }
 
@@ -245,71 +212,50 @@ function TransactionRow({
 	const formattedAmount = formatTransactionAmount(item.amount, item.currency);
 
 	return (
-		<Pressable
-			onPress={() => router.push(`/transaction/${item.id}`)}
-			style={({ pressed }) => ({
-				flexDirection: "row",
-				alignItems: "center",
-				paddingVertical: Spacing.two + 2,
-				paddingHorizontal: Spacing.four,
-				gap: Spacing.three,
-				borderBottomWidth: isLast ? 0 : 0.5,
-				borderBottomColor: colors.backgroundElement,
-				opacity: pressed ? 0.7 : 1,
-			})}
-		>
-			<View
-				style={{
-					width: 44,
-					height: 44,
-					borderRadius: 14,
-					borderCurve: "continuous",
-					backgroundColor: colors.backgroundElement,
-					justifyContent: "center",
+		<Link href={`/transaction/${item.id}`} asChild>
+			<Pressable
+				style={({ pressed }) => ({
+					flexDirection: "row",
 					alignItems: "center",
-				}}
-			>
-				<Text style={{ fontSize: 20 }}>{getCategoryIcon(item.category)}</Text>
-			</View>
-			<View style={{ flex: 1, gap: 2 }}>
+					paddingVertical: Spacing.two + 2,
+					gap: Spacing.three,
+					borderBottomWidth: isLast ? 0 : 0.5,
+					borderBottomColor: colors.backgroundElement,
+					opacity: pressed ? 0.7 : 1,
+				})}>
+				<View
+					style={{
+						width: 44,
+						height: 44,
+						borderRadius: 14,
+						borderCurve: "continuous",
+						backgroundColor: colors.backgroundElement,
+						justifyContent: "center",
+						alignItems: "center",
+					}}>
+					<Text style={{ fontSize: 20 }}>{getCategoryIcon(item.category)}</Text>
+				</View>
+				<View style={{ flex: 1, gap: 2 }}>
+					<Text
+						numberOfLines={1}
+						style={{ fontSize: 15, fontWeight: "600", color: colors.text }}>
+						{item.description}
+					</Text>
+					<Text style={{ fontSize: 13, color: colors.textSecondary }}>
+						{formatDateShort(item.date)} · {item.category}
+					</Text>
+				</View>
 				<Text
-					numberOfLines={1}
-					style={{ fontSize: 15, fontWeight: "600", color: colors.text }}
-				>
-					{item.description}
+					style={{
+						fontSize: 15,
+						fontWeight: "600",
+						color: isPositive ? "#22C55E" : colors.text,
+						fontVariant: ["tabular-nums"],
+					}}>
+					{formattedAmount}
 				</Text>
-				<Text style={{ fontSize: 13, color: colors.textSecondary }}>
-					{formatDateShort(item.date)} · {item.category}
-				</Text>
-			</View>
-			<Text
-				style={{
-					fontSize: 15,
-					fontWeight: "600",
-					color: isPositive ? "#22C55E" : colors.text,
-					fontVariant: ["tabular-nums"],
-				}}
-			>
-				{formattedAmount}
-			</Text>
-		</Pressable>
-	);
-}
-
-function EmptyTransactions({ colors }: { colors: ColorSet }) {
-	return (
-		<View
-			style={{
-				alignItems: "center",
-				paddingVertical: Spacing.six,
-				gap: Spacing.two,
-			}}
-		>
-			<Text style={{ fontSize: 32 }}>📭</Text>
-			<Text style={{ fontSize: 15, color: colors.textSecondary }}>
-				No transactions yet
-			</Text>
-		</View>
+			</Pressable>
+		</Link>
 	);
 }
 
@@ -320,65 +266,17 @@ export default function HomeScreen() {
 	const colors = Colors[colorScheme === "dark" ? "dark" : "light"];
 	const insets = useSafeAreaInsets();
 
-	const {
-		data: assetsData,
-		loading: assetsLoading,
-		refetch: refetchAssets,
-	} = useAssets();
-	const {
-		data: transactions,
-		loading: txLoading,
-		refetch: refetchTx,
-	} = useTransactions();
+	const { data: assetsData, loading: assetsLoading, refetch: refetchAssets } = useAssets();
+	const { data: transactions, loading: txLoading, refetch: refetchTx } = useTransactions();
 
-	// Animated value: 0 = expanded, 1 = collapsed
-	const collapsed = useRef(new Animated.Value(0)).current;
-	// Track the current scroll Y to know when we're truly at the top
-	const scrollY = useRef(0);
-	const isCollapsed = useRef(false);
-
-	const handleScroll = useCallback(
-		(e: NativeSyntheticEvent<NativeScrollEvent>) => {
-			const y = e.nativeEvent.contentOffset.y;
-			scrollY.current = y;
-
-			if (!isCollapsed.current && y > COLLAPSE_THRESHOLD) {
-				// Scroll down past threshold → collapse
-				isCollapsed.current = true;
-				Animated.spring(collapsed, {
-					toValue: 1,
-					useNativeDriver: false,
-					tension: 120,
-					friction: 14,
-				}).start();
-			} else if (isCollapsed.current && y <= 0) {
-				// Only expand when back at the very top
-				isCollapsed.current = false;
-				Animated.spring(collapsed, {
-					toValue: 0,
-					useNativeDriver: false,
-					tension: 120,
-					friction: 14,
-				}).start();
-			}
-		},
-		[collapsed],
-	);
+	const [selectedPeriod, setSelectedPeriod] = useState("1M");
 
 	const totalValue = useMemo(
 		() => parseFloat(assetsData?.totalValue ?? "0"),
 		[assetsData],
 	);
 
-	const transactionSections = useMemo(() => {
-		const grouped: Record<string, Transaction[]> = {};
-		for (const tx of transactions) {
-			const key = formatDate(tx.date);
-			if (!grouped[key]) grouped[key] = [];
-			grouped[key].push(tx);
-		}
-		return Object.entries(grouped).map(([title, data]) => ({ title, data }));
-	}, [transactions]);
+	const assets = assetsData?.assets ?? [];
 
 	const onRefresh = useCallback(async () => {
 		await Promise.all([refetchAssets(), refetchTx()]);
@@ -387,72 +285,134 @@ export default function HomeScreen() {
 	const isLoading = assetsLoading && txLoading;
 
 	return (
-		<View style={{ flex: 1, backgroundColor: colors.background }}>
-			<NetWorthHero
-				totalValue={totalValue}
-				loading={assetsLoading}
-				colors={colors}
-				insetTop={insets.top}
-				collapsed={collapsed}
-			/>
-			<View
-				style={{ height: 0.5, backgroundColor: colors.backgroundElement }}
-			/>
-			<SectionList
-				style={{ flex: 1 }}
-				contentInsetAdjustmentBehavior="never"
-				stickySectionHeadersEnabled={false}
-				onScroll={handleScroll}
-				scrollEventThrottle={16}
-				refreshControl={
-					<RefreshControl
-						refreshing={isLoading}
-						onRefresh={onRefresh}
-						tintColor={colors.textSecondary}
-					/>
-				}
-				sections={transactionSections}
-				keyExtractor={(item) => String(item.id)}
-				renderSectionHeader={({ section }) => (
+		<ScrollView
+			style={{ flex: 1, backgroundColor: colors.background }}
+			contentInsetAdjustmentBehavior="automatic"
+			refreshControl={
+				<RefreshControl
+					refreshing={isLoading}
+					onRefresh={onRefresh}
+					tintColor={colors.textSecondary}
+				/>
+			}
+			contentContainerStyle={{
+				paddingBottom: insets.bottom + Spacing.six,
+			}}>
+			{/* Header */}
+			<View style={{ paddingHorizontal: Spacing.four, paddingTop: Spacing.two }}>
+				<Text
+					style={{
+						fontSize: 28,
+						fontWeight: "700",
+						color: colors.text,
+						fontFamily: Fonts?.rounded,
+					}}>
+					My Wallet
+				</Text>
+			</View>
+
+			{/* Balance Section */}
+			<View style={{ paddingHorizontal: Spacing.four, marginTop: Spacing.four }}>
+				<View style={{ flexDirection: "row", alignItems: "center", gap: Spacing.two }}>
+					<Text style={{ fontSize: 15, color: colors.textSecondary }}>
+						Total Balance
+					</Text>
 					<View
 						style={{
-							paddingHorizontal: Spacing.four,
-							paddingTop: Spacing.four,
-							paddingBottom: Spacing.one,
-							backgroundColor: colors.background,
-						}}
-					>
-						<Text
-							style={{
-								fontSize: 13,
-								fontWeight: "600",
-								color: colors.textSecondary,
-								textTransform: "uppercase",
-								letterSpacing: 0.5,
-							}}
-						>
-							{section.title}
+							flexDirection: "row",
+							alignItems: "center",
+							backgroundColor: "#22C55E20",
+							paddingHorizontal: Spacing.two,
+							paddingVertical: 2,
+							borderRadius: 12,
+						}}>
+						<Image
+							source="sf:arrow.up.forward"
+							style={{ width: 12, height: 12, tintColor: "#22C55E" }}
+						/>
+						<Text style={{ fontSize: 13, color: "#22C55E", fontWeight: "600" }}>
+							12.5%
 						</Text>
 					</View>
+				</View>
+
+				{/* Large Amount */}
+				{assetsLoading ? (
+					<ActivityIndicator size="large" color={colors.textSecondary} style={{ marginTop: Spacing.two }} />
+				) : (
+					<Text
+						style={{
+							fontSize: 48,
+							fontWeight: "700",
+							color: colors.text,
+							fontFamily: Fonts?.rounded,
+							marginTop: Spacing.one,
+							fontVariant: ["tabular-nums"],
+						}}>
+						{formatCurrency(totalValue)}
+					</Text>
 				)}
-				renderItem={({ item, index, section }) => (
-					<TransactionRow
-						item={item}
-						colors={colors}
-						isLast={index === section.data.length - 1}
-					/>
-				)}
-				SectionSeparatorComponent={() => (
-					<View style={{ height: Spacing.two }} />
-				)}
-				ListEmptyComponent={
-					txLoading ? null : <EmptyTransactions colors={colors} />
-				}
-				ListFooterComponent={
-					<View style={{ height: insets.bottom + Spacing.six }} />
-				}
-				contentContainerStyle={{ flexGrow: 1 }}
-			/>
-		</View>
+
+				{/* Simple sparkline placeholder */}
+				<View
+					style={{
+						height: 60,
+						marginTop: Spacing.three,
+						flexDirection: "row",
+						alignItems: "flex-end",
+						gap: 2,
+						opacity: 0.3,
+					}}>
+					{[40, 35, 45, 30, 50, 40, 55, 45, 60, 50, 65, 55, 70, 60, 75, 65, 80, 70, 85, 75].map((h, i) => (
+						<View
+							key={i}
+							style={{
+								flex: 1,
+								height: `${h}%`,
+								backgroundColor: colors.text,
+								borderRadius: 1,
+								minHeight: 4,
+							}}
+						/>
+					))}
+				</View>
+
+				{/* Time Selector */}
+				<TimeSelector
+					selected={selectedPeriod}
+					onSelect={setSelectedPeriod}
+					colors={colors}
+				/>
+			</View>
+
+			{/* Assets Grid - 2 columns */}
+			<View style={{ paddingHorizontal: Spacing.four, marginTop: Spacing.five }}>
+				<Text
+					style={{
+						fontSize: 20,
+						fontWeight: "700",
+						color: colors.text,
+						marginBottom: Spacing.three,
+						fontFamily: Fonts?.rounded,
+					}}>
+					Assets
+				</Text>
+				<View style={{ flexDirection: "row", flexWrap: "wrap", gap: Spacing.two }}>
+					{assetsLoading ? (
+						<ActivityIndicator size="large" color={colors.textSecondary} style={{ flex: 1, marginTop: Spacing.four }} />
+					) : assets.length === 0 ? (
+						<Text style={{ color: colors.textSecondary, textAlign: "center", flex: 1 }}>
+							No assets yet
+						</Text>
+					) : (
+						assets.map((asset) => (
+							<View key={asset.id} style={{ width: "48%" }}>
+								<AssetCard asset={asset} colors={colors} />
+							</View>
+						))
+					)}
+				</View>
+			</View>
+		</ScrollView>
 	);
 }

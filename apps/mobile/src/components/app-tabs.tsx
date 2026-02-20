@@ -21,6 +21,14 @@ export default function AppTabs() {
         })}
       </NativeTabs.Trigger>
 
+      <NativeTabs.Trigger name="transactions">
+        <NativeTabs.Trigger.Label>Transactions</NativeTabs.Trigger.Label>
+        {Platform.select({
+          ios: <NativeTabs.Trigger.Icon sf="list.bullet" />,
+          android: <NativeTabs.Trigger.Icon md="format_list_bulleted" />,
+        })}
+      </NativeTabs.Trigger>
+
       <NativeTabs.Trigger name="explore">
         <NativeTabs.Trigger.Label>Settings</NativeTabs.Trigger.Label>
         {Platform.select({
