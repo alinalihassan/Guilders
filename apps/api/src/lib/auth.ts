@@ -18,6 +18,9 @@ export const auth = betterAuth({
     expo({ disableOriginOverride: true }),
   ],
   database: drizzleAdapter(db, { provider: "pg", schema: authSchema }),
+  advanced: {
+    disableOriginCheck: process.env.NODE_ENV === "development",
+  },
   trustedOrigins: [
     "guilders-mobile://",
     ...(process.env.NODE_ENV === "development" ? [
