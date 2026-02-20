@@ -173,36 +173,14 @@ export default function SettingsScreen() {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.background }}>
-      {/* Sticky header */}
-      <View
-        style={{
-          paddingTop: insets.top + Spacing.two,
-          paddingBottom: Spacing.three,
-          paddingHorizontal: Spacing.four,
-          backgroundColor: colors.background,
-        }}>
-        <Text
-          style={{
-            fontSize: 34,
-            fontWeight: '700',
-            color: colors.text,
-            fontFamily: Fonts?.rounded,
-          }}>
-          Settings
-        </Text>
-      </View>
-      <View style={{ height: 0.5, backgroundColor: colors.backgroundElement }} />
-
-      <ScrollView
-        style={{ flex: 1 }}
-        contentInsetAdjustmentBehavior="never"
-        contentContainerStyle={{
-          paddingTop: Spacing.four,
-          paddingBottom: insets.bottom + Spacing.six,
-          paddingHorizontal: Spacing.three,
-          gap: Spacing.four,
-        }}>
+    <ScrollView
+      style={{ flex: 1, backgroundColor: colors.background }}
+      contentInsetAdjustmentBehavior="automatic"
+      contentContainerStyle={{
+        paddingBottom: insets.bottom + Spacing.six,
+        paddingHorizontal: Spacing.three,
+        gap: Spacing.four,
+      }}>
 
       {/* Account section */}
       <View style={{ gap: Spacing.two }}>
@@ -324,7 +302,6 @@ export default function SettingsScreen() {
         />
       </SettingsGroup>
 
-      </ScrollView>
-    </View>
+    </ScrollView>
   );
 }
