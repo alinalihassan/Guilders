@@ -29,6 +29,14 @@ export default function AppTabs() {
         })}
       </NativeTabs.Trigger>
 
+      <NativeTabs.Trigger name="chat">
+        <NativeTabs.Trigger.Label>AI Chat</NativeTabs.Trigger.Label>
+        {Platform.select({
+          ios: <NativeTabs.Trigger.Icon sf="bubble.left.and.bubble.right" />,
+          android: <NativeTabs.Trigger.Icon md="chat" />,
+        })}
+      </NativeTabs.Trigger>
+
       <NativeTabs.Trigger name="settings">
         <NativeTabs.Trigger.Label>Settings</NativeTabs.Trigger.Label>
         {Platform.select({

@@ -1,0 +1,239 @@
+import { type ModelMessage, streamText } from "ai";
+import { Elysia, status, t } from "elysia";
+import type { Asset } from "../../db/schema/assets";
+import type { Rate } from "../../db/schema/rates";
+import type { Transaction } from "../../db/schema/transactions";
+import { db } from "../../lib/db";
+import { authPlugin } from "../../middleware/auth";
+import { errorSchema } from "../../utils/error";
+
+// Types for financial context
+interface FinancialContext {
+  text: string;
+}
+
+interface FinancialSummary {
+  netWorth: number;
+  assets: Asset[];
+  transactions: Transaction[];
+  exchangeRates: Rate[];
+  primaryCurrency: string;
+}
+
+// UI Message types (AI SDK 6 format)
+interface UIPart {
+  type: string;
+  text?: string;
+}
+
+interface UIMessage {
+  id?: string;
+  role: "user" | "assistant" | "system";
+  parts: UIPart[];
+}
+
+// Schemas - AI SDK 6 UIMessage format
+const uiPartSchema = t.Object({
+  type: t.String(),
+  text: t.Optional(t.String()),
+});
+
+const uiMessageSchema = t.Object({
+  id: t.Optional(t.String()),
+  role: t.Union([
+    t.Literal("user"),
+    t.Literal("assistant"),
+    t.Literal("system"),
+  ]),
+  parts: t.Array(uiPartSchema),
+});
+
+const chatRequestSchema = t.Object({
+  messages: t.Array(uiMessageSchema),
+});
+
+// Convert UIMessages to ModelMessages for the AI SDK
+function convertToModelMessages(uiMessages: UIMessage[]): ModelMessage[] {
+  return uiMessages.map((msg): ModelMessage => {
+    // Extract text content from parts
+    const textContent = msg.parts
+      .filter((part) => part.type === "text" && part.text)
+      .map((part) => part.text)
+      .join("");
+
+    return {
+      role: msg.role,
+      content: textContent,
+    };
+  });
+}
+
+// Helper functions
+const getFinancialContext = async (
+  userId: string,
+): Promise<FinancialContext> => {
+  // Get all assets
+  const assets = await db.query.asset.findMany({
+    where: {
+      user_id: userId,
+    },
+    with: {
+      institutionConnection: {
+        with: {
+          institution: {
+            with: {
+              provider: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  // Get recent transactions
+  const transactions = await db.query.transaction.findMany({
+    where: {
+      asset: {
+        user_id: userId,
+      },
+    },
+    orderBy: (transactions, { desc }) => desc(transactions.date),
+    limit: 50,
+  });
+
+  // Get exchange rates
+  const exchangeRates = await db.query.rate.findMany();
+
+  // Get user settings for primary currency
+  const userSettings = await db.query.userSetting.findFirst({
+    where: {
+      user_id: userId,
+    },
+  });
+
+  // Calculate net worth
+  const netWorth = assets.reduce((sum, asset) => {
+    const value = parseFloat(asset.value.toString());
+    return asset.type === "liability" ? sum - value : sum + value;
+  }, 0);
+
+  const summary: FinancialSummary = {
+    netWorth,
+    assets,
+    transactions,
+    exchangeRates,
+    primaryCurrency: userSettings?.currency || "EUR",
+  };
+
+  const prompt = generateSystemPrompt(summary);
+
+  return {
+    text: prompt,
+  };
+};
+
+const generateSystemPrompt = (summary: FinancialSummary): string => {
+  return `You are a helpful financial advisor assistant. You have access to the user's financial data and can provide personalized advice and insights.
+
+Financial Overview:
+- Net Worth: ${summary.netWorth.toFixed(2)} ${summary.primaryCurrency}
+- Number of Accounts: ${summary.assets.length}
+
+Exchange Rates (Base: EUR):
+${summary.exchangeRates.map((rate) => `- 1 EUR = ${rate.rate} ${rate.currency_code}`).join("\n")}
+
+Account Details:${summary.assets
+      .map(
+        (asset) => `
+• ${asset.name} (${asset.type}/${asset.subtype})
+  - Value: ${asset.value} ${asset.currency}${asset.cost
+            ? `
+  - Cost Basis: ${asset.cost} ${asset.currency}`
+            : ""
+          }`,
+      )
+      .join("")}
+
+Recent Transactions:${summary.transactions
+      .map(
+        (t) => `
+• Account ID ${t.asset_id}:
+  - ${t.date}: ${t.amount} ${t.currency} (${t.category}) - ${t.description}`,
+      )
+      .join("")}
+
+Use this financial data and exchange rates to provide personalized advice and insights when relevant.
+Consider exchange rates when discussing amounts in different currencies.
+
+Be concise, helpful, and professional in your responses. If you don't have enough information to answer a specific question, say so clearly.`;
+};
+
+export const chatRoutes = new Elysia({
+  prefix: "/chat",
+  detail: {
+    tags: ["Chat"],
+    security: [{ bearerAuth: [] }],
+  },
+})
+  .use(authPlugin)
+  .model({
+    ChatRequest: chatRequestSchema,
+    UIMessage: uiMessageSchema,
+  })
+  .post(
+    "/",
+    async ({ body, user }) => {
+      try {
+        const { messages } = body as { messages: UIMessage[] };
+
+        // Get financial context for the user
+        const context = await getFinancialContext(user.id);
+
+        // Convert UIMessages to ModelMessages
+        const modelMessages: ModelMessage[] = [
+          {
+            role: "system",
+            content: context.text,
+          },
+          ...convertToModelMessages(messages),
+        ];
+
+        // Stream the response using AI Gateway
+        const result = streamText({
+          model: 'moonshotai/kimi-k2.5',
+          messages: modelMessages,
+        });
+
+        // Return streaming response
+        return result.toTextStreamResponse({
+          headers: {
+            "Content-Type": "text/event-stream",
+            "Cache-Control": "no-cache",
+            Connection: "keep-alive",
+          },
+        });
+      } catch (error) {
+        console.error("Chat error:", error);
+        return status(500, {
+          error:
+            error instanceof Error
+              ? error.message
+              : "An unknown error occurred",
+        });
+      }
+    },
+    {
+      auth: true,
+      body: chatRequestSchema,
+      response: {
+        200: t.Any(), // Streaming response
+        401: errorSchema,
+        500: errorSchema,
+      },
+      detail: {
+        summary: "Chat with AI financial advisor",
+        description:
+          "Stream a chat conversation with the AI financial advisor. Send messages and receive streaming responses based on your financial data.",
+      },
+    },
+  );

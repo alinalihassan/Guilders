@@ -7,5 +7,12 @@
   ],
   "devDependencies": {
     "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "@ai-sdk/gateway": "^3.0.53",
+    "@ai-sdk/provider": "^3.0.8",
+    "@ai-sdk/provider-utils": "^4.0.15",
+    "@ai-sdk/react": "^3.0.98",
+    "ai": "^6.0.96"
   }
 }
