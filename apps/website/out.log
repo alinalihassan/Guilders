@@ -1,0 +1,107 @@
+$ next dev
+ ⚠ Port 3000 is in use, trying 3001 instead.
+ ⚠ Port 3001 is in use, trying 3002 instead.
+  ▲ Next.js 14.2.3
+  - Local:        http://localhost:3002
+
+ ✓ Starting...
+ ✓ Ready in 686ms
+ ○ Compiling / ...
+ ✓ Compiled / in 3.2s (4987 modules)
+Warning: React.jsx: type is invalid -- expected a string (for built-in components) or a class/function (for composite components) but got: undefined. You likely forgot to export your component from the file it's defined in, or you might have mixed up default and named imports.
+    at Icon (webpack-internal:///(ssr)/./components/ui/icon.tsx:10:17)
+    at div
+    at div
+    at div
+    at div
+    at Marquee (webpack-internal:///(ssr)/../../node_modules/.bun/@devnomic+marquee@1.0.3+67d6bcf81333dcb0/node_modules/@devnomic/marquee/dist/index.js:37:3)
+    at div
+    at div
+    at section
+    at IntegrationsSection
+    at Lazy
+    at div
+    at InnerLayoutRouter (webpack-internal:///(ssr)/../../node_modules/.bun/next@14.2.3+1defbf50baff6439/node_modules/next/dist/client/components/layout-router.js:242:11)
+    at RedirectErrorBoundary (webpack-internal:///(ssr)/../../node_modules/.bun/next@14.2.3+1defbf50baff6439/node_modules/next/dist/client/components/redirect-boundary.js:73:9)
+    at RedirectBoundary (webpack-internal:///(ssr)/../../node_modules/.bun/next@14.2.3+1defbf50baff6439/node_modules/next/dist/client/components/redirect-boundary.js:81:11)
+    at NotFoundErrorBoundary (webpack-internal:///(ssr)/../../node_modules/.bun/next@14.2.3+1defbf50baff6439/node_modules/next/dist/client/components/not-found-boundary.js:76:9)
+    at NotFoundBoundary (webpack-internal:///(ssr)/../../node_modules/.bun/next@14.2.3+1defbf50baff6439/node_modules/next/dist/client/components/not-found-boundary.js:84:11)
+    at LoadingBoundary (webpack-internal:///(ssr)/../../node_modules/.bun/next@14.2.3+1defbf50baff6439/node_modules/next/dist/client/components/layout-router.js:346:11)
+    at ErrorBoundary (webpack-internal:///(ssr)/../../node_modules/.bun/next@14.2.3+1defbf50baff6439/node_modules/next/dist/client/components/error-boundary.js:158:11)
+    at InnerScrollAndFocusHandler (webpack-internal:///(ssr)/../../node_modules/.bun/next@14.2.3+1defbf50baff6439/node_modules/next/dist/client/components/layout-router.js:153:9)
+    at ScrollAndFocusHandler (webpack-internal:///(ssr)/../../node_modules/.bun/next@14.2.3+1defbf50baff6439/node_modules/next/dist/client/components/layout-router.js:228:11)
+    at RenderFromTemplateContext (webpack-internal:///(ssr)/../../node_modules/.bun/next@14.2.3+1defbf50baff6439/node_modules/next/dist/client/components/render-from-template-context.js:16:44)
+    at Lazy
+    at OuterLayoutRouter (webpack-internal:///(ssr)/../../node_modules/.bun/next@14.2.3+1defbf50baff6439/node_modules/next/dist/client/components/layout-router.js:366:11)
+    at Lazy
+    at V (webpack-internal:///(ssr)/../../node_modules/.bun/next-themes@0.4.6+6dbf9a050bc9aadb/node_modules/next-themes/dist/index.mjs:47:24)
+    at J (webpack-internal:///(ssr)/../../node_modules/.bun/next-themes@0.4.6+6dbf9a050bc9aadb/node_modules/next-themes/dist/index.mjs:42:48)
+    at ThemeProvider (webpack-internal:///(ssr)/./components/layout/theme-provider.tsx:13:26)
+    at Lazy
+    at body
+    at html
+    at RedirectErrorBoundary (webpack-internal:///(ssr)/../../node_modules/.bun/next@14.2.3+1defbf50baff6439/node_modules/next/dist/client/components/redirect-boundary.js:73:9)
+    at RedirectBoundary (webpack-internal:///(ssr)/../../node_modules/.bun/next@14.2.3+1defbf50baff6439/node_modules/next/dist/client/components/redirect-boundary.js:81:11)
+    at ReactDevOverlay (webpack-internal:///(ssr)/../../node_modules/.bun/next@14.2.3+1defbf50baff6439/node_modules/next/dist/client/components/react-dev-overlay/app/ReactDevOverlay.js:87:9)
+    at HotReload (webpack-internal:///(ssr)/../../node_modules/.bun/next@14.2.3+1defbf50baff6439/node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:322:11)
+    at Router (webpack-internal:///(ssr)/../../node_modules/.bun/next@14.2.3+1defbf50baff6439/node_modules/next/dist/client/components/app-router.js:202:11)
+    at ErrorBoundaryHandler (webpack-internal:///(ssr)/../../node_modules/.bun/next@14.2.3+1defbf50baff6439/node_modules/next/dist/client/components/error-boundary.js:112:9)
+    at ErrorBoundary (webpack-internal:///(ssr)/../../node_modules/.bun/next@14.2.3+1defbf50baff6439/node_modules/next/dist/client/components/error-boundary.js:158:11)
+    at AppRouter (webpack-internal:///(ssr)/../../node_modules/.bun/next@14.2.3+1defbf50baff6439/node_modules/next/dist/client/components/app-router.js:556:13)
+    at Lazy
+    at r1 (/Users/alinalihassan/Developer/guilders-elysia/node_modules/.bun/next@14.2.3+1defbf50baff6439/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:39:18701)
+    at r1 (/Users/alinalihassan/Developer/guilders-elysia/node_modules/.bun/next@14.2.3+1defbf50baff6439/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:39:18701)
+    at ServerInsertedHTMLProvider (/Users/alinalihassan/Developer/guilders-elysia/node_modules/.bun/next@14.2.3+1defbf50baff6439/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:39:24131)
+ ⨯ Internal error: Error: Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: undefined. You likely forgot to export your component from the file it's defined in, or you might have mixed up default and named imports.
+    at aw (/Users/alinalihassan/Developer/guilders-elysia/node_modules/.bun/next@14.2.3+1defbf50baff6439/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:46775)
+    at a_ (/Users/alinalihassan/Developer/guilders-elysia/node_modules/.bun/next@14.2.3+1defbf50baff6439/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:49776)
+    at ab (/Users/alinalihassan/Developer/guilders-elysia/node_modules/.bun/next@14.2.3+1defbf50baff6439/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:11808)
+    at /Users/alinalihassan/Developer/guilders-elysia/node_modules/.bun/next@14.2.3+1defbf50baff6439/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:16871
+    at aw (/Users/alinalihassan/Developer/guilders-elysia/node_modules/.bun/next@14.2.3+1defbf50baff6439/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:16908)
+    at a_ (/Users/alinalihassan/Developer/guilders-elysia/node_modules/.bun/next@14.2.3+1defbf50baff6439/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:49776)
+    at aj (/Users/alinalihassan/Developer/guilders-elysia/node_modules/.bun/next@14.2.3+1defbf50baff6439/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:53793)
+    at /Users/alinalihassan/Developer/guilders-elysia/node_modules/.bun/next@14.2.3+1defbf50baff6439/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:42336
+    at aw (/Users/alinalihassan/Developer/guilders-elysia/node_modules/.bun/next@14.2.3+1defbf50baff6439/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:42822)
+    at a_ (/Users/alinalihassan/Developer/guilders-elysia/node_modules/.bun/next@14.2.3+1defbf50baff6439/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:49776)
+    at aj (/Users/alinalihassan/Developer/guilders-elysia/node_modules/.bun/next@14.2.3+1defbf50baff6439/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:53793)
+    at aC (/Users/alinalihassan/Developer/guilders-elysia/node_modules/.bun/next@14.2.3+1defbf50baff6439/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:52874)
+    at a_ (/Users/alinalihassan/Developer/guilders-elysia/node_modules/.bun/next@14.2.3+1defbf50baff6439/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:50095)
+    at aj (/Users/alinalihassan/Developer/guilders-elysia/node_modules/.bun/next@14.2.3+1defbf50baff6439/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:53793)
+    at /Users/alinalihassan/Developer/guilders-elysia/node_modules/.bun/next@14.2.3+1defbf50baff6439/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:42336
+    at aw (/Users/alinalihassan/Developer/guilders-elysia/node_modules/.bun/next@14.2.3+1defbf50baff6439/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:42822)
+    at a_ (/Users/alinalihassan/Developer/guilders-elysia/node_modules/.bun/next@14.2.3+1defbf50baff6439/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:49776)
+    at aj (/Users/alinalihassan/Developer/guilders-elysia/node_modules/.bun/next@14.2.3+1defbf50baff6439/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:53793)
+    at aC (/Users/alinalihassan/Developer/guilders-elysia/node_modules/.bun/next@14.2.3+1defbf50baff6439/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:52874)
+    at a_ (/Users/alinalihassan/Developer/guilders-elysia/node_modules/.bun/next@14.2.3+1defbf50baff6439/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:50095)
+    at aj (/Users/alinalihassan/Developer/guilders-elysia/node_modules/.bun/next@14.2.3+1defbf50baff6439/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:53793)
+    at /Users/alinalihassan/Developer/guilders-elysia/node_modules/.bun/next@14.2.3+1defbf50baff6439/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:42336
+    at aw (/Users/alinalihassan/Developer/guilders-elysia/node_modules/.bun/next@14.2.3+1defbf50baff6439/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:42822)
+    at a_ (/Users/alinalihassan/Developer/guilders-elysia/node_modules/.bun/next@14.2.3+1defbf50baff6439/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:49776)
+    at aj (/Users/alinalihassan/Developer/guilders-elysia/node_modules/.bun/next@14.2.3+1defbf50baff6439/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:53793)
+    at aC (/Users/alinalihassan/Developer/guilders-elysia/node_modules/.bun/next@14.2.3+1defbf50baff6439/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:52874)
+    at a_ (/Users/alinalihassan/Developer/guilders-elysia/node_modules/.bun/next@14.2.3+1defbf50baff6439/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:50095)
+    at aj (/Users/alinalihassan/Developer/guilders-elysia/node_modules/.bun/next@14.2.3+1defbf50baff6439/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:53793)
+    at /Users/alinalihassan/Developer/guilders-elysia/node_modules/.bun/next@14.2.3+1defbf50baff6439/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:42336
+    at aw (/Users/alinalihassan/Developer/guilders-elysia/node_modules/.bun/next@14.2.3+1defbf50baff6439/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:42822)
+    at a_ (/Users/alinalihassan/Developer/guilders-elysia/node_modules/.bun/next@14.2.3+1defbf50baff6439/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:49776)
+    at ab (/Users/alinalihassan/Developer/guilders-elysia/node_modules/.bun/next@14.2.3+1defbf50baff6439/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:11808)
+    at /Users/alinalihassan/Developer/guilders-elysia/node_modules/.bun/next@14.2.3+1defbf50baff6439/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:16871
+    at aw (/Users/alinalihassan/Developer/guilders-elysia/node_modules/.bun/next@14.2.3+1defbf50baff6439/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:16908)
+    at a_ (/Users/alinalihassan/Developer/guilders-elysia/node_modules/.bun/next@14.2.3+1defbf50baff6439/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:49776)
+    at aj (/Users/alinalihassan/Developer/guilders-elysia/node_modules/.bun/next@14.2.3+1defbf50baff6439/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:53793)
+    at /Users/alinalihassan/Developer/guilders-elysia/node_modules/.bun/next@14.2.3+1defbf50baff6439/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:42336
+    at aw (/Users/alinalihassan/Developer/guilders-elysia/node_modules/.bun/next@14.2.3+1defbf50baff6439/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:42822)
+    at a_ (/Users/alinalihassan/Developer/guilders-elysia/node_modules/.bun/next@14.2.3+1defbf50baff6439/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:49776)
+    at aj (/Users/alinalihassan/Developer/guilders-elysia/node_modules/.bun/next@14.2.3+1defbf50baff6439/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:53793)
+    at aC (/Users/alinalihassan/Developer/guilders-elysia/node_modules/.bun/next@14.2.3+1defbf50baff6439/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:52874)
+    at a_ (/Users/alinalihassan/Developer/guilders-elysia/node_modules/.bun/next@14.2.3+1defbf50baff6439/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:50095)
+    at aj (/Users/alinalihassan/Developer/guilders-elysia/node_modules/.bun/next@14.2.3+1defbf50baff6439/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:53793)
+    at /Users/alinalihassan/Developer/guilders-elysia/node_modules/.bun/next@14.2.3+1defbf50baff6439/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:42336
+    at aw (/Users/alinalihassan/Developer/guilders-elysia/node_modules/.bun/next@14.2.3+1defbf50baff6439/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:42822)
+    at a_ (/Users/alinalihassan/Developer/guilders-elysia/node_modules/.bun/next@14.2.3+1defbf50baff6439/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:49776)
+    at aj (/Users/alinalihassan/Developer/guilders-elysia/node_modules/.bun/next@14.2.3+1defbf50baff6439/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:53793)
+    at aC (/Users/alinalihassan/Developer/guilders-elysia/node_modules/.bun/next@14.2.3+1defbf50baff6439/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:52874)
+    at a_ (/Users/alinalihassan/Developer/guilders-elysia/node_modules/.bun/next@14.2.3+1defbf50baff6439/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:50095)
+    at aj (/Users/alinalihassan/Developer/guilders-elysia/node_modules/.bun/next@14.2.3+1defbf50baff6439/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:53793)
+digest: "3707533402"
+ GET / 500 i ✓ Compiled in 583ms (4965 modules)
