@@ -198,6 +198,51 @@ function AssetCard({
 	);
 }
 
+function AddAssetCard({
+	colors,
+}: {
+	colors: ColorSet;
+}) {
+	return (
+		<Pressable
+			onPress={() => router.push("/asset/create")}
+			style={({ pressed }) => ({
+				flex: 1,
+				backgroundColor: colors.backgroundElement,
+				borderRadius: 16,
+				padding: Spacing.three,
+				minHeight: 100,
+				justifyContent: "center",
+				alignItems: "center",
+				borderWidth: 2,
+				borderColor: colors.backgroundSelected,
+				borderStyle: "dashed",
+				opacity: pressed ? 0.7 : 1,
+			})}>
+			<View
+				style={{
+					width: 40,
+					height: 40,
+					borderRadius: 10,
+					backgroundColor: colors.backgroundSelected,
+					justifyContent: "center",
+					alignItems: "center",
+					marginBottom: Spacing.two,
+				}}>
+				<Text style={{ fontSize: 24, color: colors.textSecondary }}>+</Text>
+			</View>
+			<Text
+				style={{
+					fontSize: 13,
+					color: colors.textSecondary,
+					fontWeight: "500",
+				}}>
+				Add Asset
+			</Text>
+		</Pressable>
+	);
+}
+
 function TransactionRow({
 	item,
 	colors,
@@ -387,16 +432,17 @@ export default function HomeScreen() {
 				<View style={{ flexDirection: "row", flexWrap: "wrap", gap: Spacing.two }}>
 					{assetsLoading ? (
 						<ActivityIndicator size="large" color={colors.textSecondary} style={{ flex: 1, marginTop: Spacing.four }} />
-					) : assets.length === 0 ? (
-						<Text style={{ color: colors.textSecondary, textAlign: "center", flex: 1 }}>
-							No assets yet
-						</Text>
 					) : (
-						assets.map((asset) => (
-							<View key={asset.id} style={{ width: "48%" }}>
-								<AssetCard asset={asset} colors={colors} />
+						<>
+							{assets.map((asset) => (
+								<View key={asset.id} style={{ width: "48%" }}>
+									<AssetCard asset={asset} colors={colors} />
+								</View>
+							))}
+							<View style={{ width: "48%" }}>
+								<AddAssetCard colors={colors} />
 							</View>
-						))
+						</>
 					)}
 				</View>
 			</View>
