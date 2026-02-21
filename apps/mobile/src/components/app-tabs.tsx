@@ -12,7 +12,8 @@ export default function AppTabs() {
     <NativeTabs
       backgroundColor={colors.background}
       indicatorColor={colors.backgroundElement}
-      labelStyle={{ selected: { color: colors.text } }}>
+      labelStyle={{ selected: { color: colors.text } }}
+      minimizeBehavior="onScrollDown">
       <NativeTabs.Trigger name="assets">
         <NativeTabs.Trigger.Label>Assets</NativeTabs.Trigger.Label>
         {Platform.select({
@@ -26,6 +27,14 @@ export default function AppTabs() {
         {Platform.select({
           ios: <NativeTabs.Trigger.Icon sf="list.bullet" />,
           android: <NativeTabs.Trigger.Icon md="format_list_bulleted" />,
+        })}
+      </NativeTabs.Trigger>
+
+      <NativeTabs.Trigger name="search" role="search">
+        <NativeTabs.Trigger.Label>Search</NativeTabs.Trigger.Label>
+        {Platform.select({
+          ios: <NativeTabs.Trigger.Icon sf="magnifyingglass" />,
+          android: <NativeTabs.Trigger.Icon md="search" />,
         })}
       </NativeTabs.Trigger>
 
