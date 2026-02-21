@@ -1,6 +1,5 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { Stack } from 'expo-router';
-import React from 'react';
 import { useColorScheme } from 'react-native';
 
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
@@ -12,19 +11,26 @@ export default function RootLayout() {
       <AnimatedSplashOverlay />
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(app)" />
-        <Stack.Screen 
-          name="transaction/[id]" 
-          options={{ 
+        <Stack.Screen
+          name="transaction/[id]"
+          options={{
             presentation: 'modal',
             animation: 'slide_from_bottom'
-          }} 
+          }}
         />
-        <Stack.Screen 
-          name="asset/create" 
-          options={{ 
+        <Stack.Screen
+          name="asset/create"
+          options={{
             presentation: 'modal',
             animation: 'slide_from_bottom'
-          }} 
+          }}
+        />
+        <Stack.Screen
+          name="transaction/create"
+          options={{
+            presentation: 'modal',
+            animation: 'slide_from_bottom'
+          }}
         />
       </Stack>
     </ThemeProvider>
