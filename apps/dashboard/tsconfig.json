@@ -1,0 +1,28 @@
+{
+  "extends": "../../packages/tsconfig/nextjs.json",
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "next-env.d.ts",
+    ".next/types/**/*.ts",
+    "../../packages/ui/src/submit-button.tsx"
+  ],
+  "exclude": ["node_modules"],
+  "compilerOptions": {
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  // Required for Hono RPC to work
+  "references": [
+    {
+      "path": "../api/tsconfig.json"
+    }
+  ],
+  "files": []
+}

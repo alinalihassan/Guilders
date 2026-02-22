@@ -24,6 +24,8 @@ export const auth = betterAuth({
   trustedOrigins: [
     "guilders-mobile://",
     ...(process.env.NODE_ENV === "development" ? [
+      "http://localhost:3002",
+      "http://localhost:3000",
       "exp://",
       "exp://**",
       "exp://192.168.*.*:*/**",

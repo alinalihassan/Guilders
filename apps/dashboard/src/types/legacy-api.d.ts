@@ -1,0 +1,30 @@
+declare module "@guilders/api/types" {
+  export type Account = any;
+  export type AccountSubtype = any;
+  export type CreateAccount = any;
+  export type UpdateAccount = any;
+  export type Transaction = any;
+  export type TransactionInsert = any;
+  export type User = any;
+  export type UpdateUser = any;
+  export type Country = any;
+  export type Countries = any;
+  export type Currency = any;
+  export type Currencies = any;
+  export type Provider = any;
+  export type Providers = any;
+  export type ProviderConnection = any;
+  export type ProviderConnections = any;
+  export type Institution = any;
+  export type Institutions = any;
+  export type InstitutionConnection = any;
+  export type InstitutionConnections = any;
+  export type Rate = any;
+  export type Rates = any;
+  export type Message = any;
+  export type CheckoutResponse = any;
+  export type PortalResponse = any;
+  export type ConnectionResponse = any;
+  export type CreateDocumentResponse = any;
+  export type DocumentEntityType = any;
+}
