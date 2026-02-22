@@ -3,16 +3,23 @@ import type { CheckoutResponse, PortalResponse } from "@guilders/api/types";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 
+async function handleSubscriptionResponse<T>(response: Response): Promise<T> {
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    if (response.status === 404 || response.status === 501) {
+      throw new Error("Billing is not available yet");
+    }
+    throw new Error(errorData.error || `Error: ${response.status}`);
+  }
+  return response.json();
+}
+
 export function useSubscription() {
   return useMutation({
     mutationFn: async (): Promise<CheckoutResponse> => {
       const api = await getApiClient();
       const response = await api.subscription.$post();
-      const { data, error } = await response.json();
-      if (error || !data) {
-        throw new Error(error || "Failed to create subscription");
-      }
-      return data;
+      return handleSubscriptionResponse(response);
     },
     onError: (error) => {
       toast.error("Failed to create subscription", {
@@ -27,11 +34,7 @@ export function usePortalSession() {
     mutationFn: async (): Promise<PortalResponse> => {
       const api = await getApiClient();
       const response = await api.subscription.portal.$post();
-      const { data, error } = await response.json();
-      if (error || !data) {
-        throw new Error(error || "Failed to create portal session");
-      }
-      return data;
+      return handleSubscriptionResponse(response);
     },
     onError: (error) => {
       toast.error("Failed to open customer portal", {

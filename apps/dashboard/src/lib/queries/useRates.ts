@@ -9,8 +9,15 @@ export function useRates() {
     queryFn: async () => {
       const api = await getApiClient();
       const response = await api.rates.$get({ query: { base: "EUR" } });
-      const { data, error } = await response.json();
-      if (error || !data) throw new Error(error);
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        // Return undefined if endpoint not implemented (financial.ts handles undefined)
+        if (response.status === 404 || response.status === 501) {
+          return undefined;
+        }
+        throw new Error(errorData.error || "Failed to fetch rates");
+      }
+      const data = await response.json();
       return data;
     },
   });

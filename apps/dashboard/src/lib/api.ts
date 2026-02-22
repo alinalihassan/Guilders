@@ -1,6 +1,6 @@
-import { env } from "@/lib/env";
 import { treaty } from "@elysiajs/eden";
-import type { App as ApiApp } from "../../../api/src/app";
+import { env } from "@/lib/env";
+import type { App as ApiApp } from "../../../api/src";
 
 type ApiOptions = {
   param?: Record<string, string>;
@@ -74,32 +74,48 @@ async function request(
 
   const call = (() => {
     if (method === "GET")
-      return (cursor as { get: (opts: unknown) => Promise<unknown> }).get(requestOptions);
+      return (cursor as { get: (opts: unknown) => Promise<unknown> }).get(
+        requestOptions,
+      );
     if (method === "DELETE")
-      return (cursor as {
-        delete: (body: unknown, opts: unknown) => Promise<unknown>;
-      }).delete(options?.json ?? null, requestOptions);
+      return (
+        cursor as {
+          delete: (body: unknown, opts: unknown) => Promise<unknown>;
+        }
+      ).delete(options?.json ?? null, requestOptions);
     if (method === "POST")
-      return (cursor as {
-        post: (body: unknown, opts: unknown) => Promise<unknown>;
-      }).post(options?.form ?? options?.json ?? null, requestOptions);
+      return (
+        cursor as {
+          post: (body: unknown, opts: unknown) => Promise<unknown>;
+        }
+      ).post(options?.form ?? options?.json ?? null, requestOptions);
     if (method === "PUT")
-      return (cursor as {
-        put: (body: unknown, opts: unknown) => Promise<unknown>;
-      }).put(options?.json ?? null, requestOptions);
-    return (cursor as {
-      patch: (body: unknown, opts: unknown) => Promise<unknown>;
-    }).patch(options?.json ?? null, requestOptions);
+      return (
+        cursor as {
+          put: (body: unknown, opts: unknown) => Promise<unknown>;
+        }
+      ).put(options?.json ?? null, requestOptions);
+    return (
+      cursor as {
+        patch: (body: unknown, opts: unknown) => Promise<unknown>;
+      }
+    ).patch(options?.json ?? null, requestOptions);
   })();
 
   const result = (await call) as {
     data: unknown;
-    error: { value?: { error?: string; message?: string }; status?: number } | null;
+    error: {
+      value?: { error?: string; message?: string };
+      status?: number;
+    } | null;
   };
 
   if (result.error) {
-    const errorPayload = result.error.value as { error?: string; message?: string } | undefined;
-    const message = errorPayload?.error || errorPayload?.message || "Request failed";
+    const errorPayload = result.error.value as
+      | { error?: string; message?: string }
+      | undefined;
+    const message =
+      errorPayload?.error || errorPayload?.message || "Request failed";
     return new Response(JSON.stringify({ error: message }), {
       status: result.error.status ?? 500,
       headers: { "content-type": "application/json" },

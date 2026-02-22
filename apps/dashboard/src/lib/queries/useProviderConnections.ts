@@ -13,9 +13,15 @@ export function useProviderConnections() {
     queryFn: async () => {
       const api = await getApiClient();
       const response = await api["provider-connections"].$get();
-      const { data, error } = await response.json();
-      if (error || !data) throw new Error(error);
-      return data;
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        if (response.status === 404 || response.status === 501) {
+          return [];
+        }
+        throw new Error(errorData.error || "Failed to fetch connections");
+      }
+      const data = await response.json();
+      return data ?? [];
     },
   });
 }
@@ -30,8 +36,11 @@ export function useProviderConnection(connectionId: number) {
           id: connectionId.toString(),
         },
       });
-      const { data, error } = await response.json();
-      if (error || !data) throw new Error(error);
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || "Failed to fetch connection");
+      }
+      const data = await response.json();
       return data;
     },
     enabled: !!connectionId,

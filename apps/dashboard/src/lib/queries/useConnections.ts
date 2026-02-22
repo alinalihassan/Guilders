@@ -3,6 +3,20 @@ import type { ConnectionResponse } from "@guilders/api/types";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 
+// Connection endpoints are not implemented in the new backend yet.
+// These mutations will fail gracefully with a toast message.
+
+async function handleConnectionResponse(response: Response) {
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    if (response.status === 404 || response.status === 501) {
+      throw new Error("Connection management is not available yet");
+    }
+    throw new Error(errorData.error || `Error: ${response.status}`);
+  }
+  return response.json();
+}
+
 export function useRegisterConnection() {
   return useMutation({
     mutationFn: async (providerId: string) => {
@@ -10,10 +24,7 @@ export function useRegisterConnection() {
       const response = await api.connections.register.$post({
         json: { provider_id: providerId },
       });
-      const { data, error } = await response.json();
-      if (error || !data)
-        throw new Error(error || "Failed to register connection");
-      return data;
+      return handleConnectionResponse(response);
     },
     onError: (error) => {
       toast.error("Failed to register connection", {
@@ -30,13 +41,7 @@ export function useDeregisterConnection() {
       const response = await api.connections.deregister.$post({
         json: { provider_id: providerId },
       });
-      const { data, error } = await response.json();
-      if (error || !data) {
-        console.error(data, error);
-        throw new Error(error || "Failed to deregister connection");
-      }
-
-      return data;
+      return handleConnectionResponse(response);
     },
     onError: (error) => {
       toast.error("Failed to deregister connection", {
@@ -59,12 +64,7 @@ export function useCreateConnection() {
       const response = await api.connections.$post({
         json: { provider_id: providerId, institution_id: institutionId },
       });
-      const { data, error } = await response.json();
-      if (error || !data) {
-        throw new Error(error || "Failed to create connection");
-      }
-
-      return data;
+      return handleConnectionResponse(response);
     },
     onError: (error) => {
       console.error(error);
@@ -94,10 +94,7 @@ export function useReconnectConnection() {
           account_id: accountId,
         },
       });
-      const { data, error } = await response.json();
-      if (error || !data) throw new Error(error || "Failed to reconnect");
-
-      return data;
+      return handleConnectionResponse(response);
     },
     onError: (error) => {
       toast.error("Failed to reconnect", {
@@ -123,8 +120,7 @@ export function useRefreshConnection() {
           connection_id: connectionId,
         },
       });
-      const { error } = await response.json();
-      if (error) throw new Error(error);
+      await handleConnectionResponse(response);
     },
     onError: (error) => {
       toast.error("Failed to refresh connection", {

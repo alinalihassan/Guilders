@@ -11,6 +11,17 @@ interface UseFilesOptions {
   onSuccess?: (file: CreateDocumentResponse) => void;
 }
 
+async function handleFileResponse<T>(response: Response): Promise<T> {
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    if (response.status === 404 || response.status === 501) {
+      throw new Error("Document management is not available yet");
+    }
+    throw new Error(errorData.error || `Error: ${response.status}`);
+  }
+  return response.json();
+}
+
 export function useFiles({ entityType, entityId, onSuccess }: UseFilesOptions) {
   const queryClient = useQueryClient();
 
@@ -27,9 +38,7 @@ export function useFiles({ entityType, entityId, onSuccess }: UseFilesOptions) {
             file,
           },
         });
-        const { data, error } = await response.json();
-        if (error || !data) throw new Error(error);
-
+        const data = await handleFileResponse<CreateDocumentResponse>(response);
         uploadedFiles.push(data);
         onSuccess?.(data);
       }
@@ -48,8 +57,7 @@ export function useFiles({ entityType, entityId, onSuccess }: UseFilesOptions) {
     mutationFn: async (id: number) => {
       const api = await getApiClient();
       const response = await api.documents.$delete({ json: { id } });
-      const { error } = await response.json();
-      if (error) throw new Error(error);
+      await handleFileResponse(response);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [entityType, entityId] });
@@ -62,9 +70,8 @@ export function useFiles({ entityType, entityId, onSuccess }: UseFilesOptions) {
       const response = await api.documents[":id"].$get({
         param: { id: id.toString() },
       });
-      const { data, error } = await response.json();
-      if (error || !data) throw new Error(error);
-      return data.url as string;
+      const data = await handleFileResponse<{ url: string }>(response);
+      return data.url;
     },
   });
 
