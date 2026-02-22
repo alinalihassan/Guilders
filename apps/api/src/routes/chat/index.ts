@@ -1,4 +1,7 @@
+import { env } from "cloudflare:workers";
 import { type ModelMessage, streamText } from "ai";
+import { createAiGateway } from "ai-gateway-provider";
+import { unified } from "ai-gateway-provider/providers/unified";
 import { Elysia, status, t } from "elysia";
 import type { Asset } from "../../db/schema/assets";
 import type { Rate } from "../../db/schema/rates";
@@ -198,9 +201,15 @@ export const chatRoutes = new Elysia({
           ...convertToModelMessages(messages),
         ];
 
+        const aiGateway = createAiGateway({
+          accountId: env.CLOUDFLARE_ACCOUNT_ID,
+          gateway: env.CLOUDFLARE_AI_GATEWAY,
+          apiKey: env.CLOUDFLARE_AI_GATEWAY_TOKEN,
+        });
+
         // Stream the response using AI Gateway
         const result = streamText({
-          model: 'moonshotai/kimi-k2.5',
+          model: aiGateway(unified("google-ai-studio/gemini-2.5-flash")),
           messages: modelMessages,
         });
 

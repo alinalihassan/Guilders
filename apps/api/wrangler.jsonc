@@ -7,4 +7,19 @@
   "dev": {
     "port": 3000
   },
+  "triggers": {
+    "crons": [
+      "0 * * * *"
+    ]
+  },
+  "r2_buckets": [
+    {
+      "binding": "PUBLIC_BUCKET",
+      "bucket_name": "guilders-bucket"
+    },
+    {
+      "binding": "USER_BUCKET",
+      "bucket_name": "guilders-user-bucket"
+    }
+  ]
 }
