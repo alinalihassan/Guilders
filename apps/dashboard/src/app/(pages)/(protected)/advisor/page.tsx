@@ -9,8 +9,8 @@ import {
 	Mic,
 	Paperclip,
 	RefreshCcw,
-	Square,
 	Sparkles,
+	Square,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -66,13 +66,7 @@ export default function AdvisorPage() {
 		[],
 	);
 
-	const {
-		messages,
-		sendMessage,
-		regenerate,
-		stop,
-		status,
-	} = useChat({
+	const { messages, sendMessage, regenerate, stop, status } = useChat({
 		transport,
 		onError(error) {
 			console.error("Chat error:", error);
@@ -269,7 +263,10 @@ export default function AdvisorPage() {
 			<div className="min-h-0 flex-1">
 				{hasMessages ? (
 					<div className="h-full overflow-y-auto">
-						<ChatMessageList ref={messagesRef} className="mx-auto w-full max-w-4xl px-2 pt-6">
+						<ChatMessageList
+							ref={messagesRef}
+							className="mx-auto w-full max-w-4xl px-2 pt-6"
+						>
 							{messages?.map((message, index) => {
 								if (shouldHideAssistantPlaceholder(message, index)) return null;
 								return (
