@@ -3,12 +3,13 @@
 import { useChat } from "@ai-sdk/react";
 import { TextStreamChatTransport } from "ai";
 import {
+	ArrowUp,
 	Check,
 	CopyIcon,
-	CornerDownLeft,
 	Mic,
 	Paperclip,
 	RefreshCcw,
+	Square,
 	Sparkles,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -69,6 +70,7 @@ export default function AdvisorPage() {
 		messages,
 		sendMessage,
 		regenerate,
+		stop,
 		status,
 	} = useChat({
 		transport,
@@ -138,6 +140,61 @@ export default function AdvisorPage() {
 		return getMessageText(message).trim().length === 0;
 	};
 
+	const hasMessages = messages.length > 0;
+
+	const renderComposer = (className?: string) => (
+		<form onSubmit={onSubmit} className={className}>
+			<div className="rounded-[26px] border bg-background/95 shadow-sm backdrop-blur-xl transition-shadow focus-within:shadow-md">
+				<ChatInput
+					value={inputText}
+					onKeyDown={onKeyDown}
+					onChange={(event) => setInputText(event.target.value)}
+					placeholder="Ask me anything about your finances..."
+					className="min-h-14 resize-none rounded-[26px] border-0 bg-transparent px-5 pt-4 pb-2 text-[15px] focus-visible:ring-0 focus-visible:ring-offset-0"
+				/>
+				<div className="flex items-center gap-2 px-3 pb-3">
+					<div className="flex items-center gap-1 rounded-full border bg-muted/40 px-1.5 py-1">
+						<Button
+							type="button"
+							variant="ghost"
+							size="icon"
+							className="h-7 w-7 rounded-full text-muted-foreground"
+						>
+							<Paperclip className="size-3.5" />
+							<span className="sr-only">Attach file</span>
+						</Button>
+						<Button
+							type="button"
+							variant="ghost"
+							size="icon"
+							className="h-7 w-7 rounded-full text-muted-foreground"
+						>
+							<Mic className="size-3.5" />
+							<span className="sr-only">Use Microphone</span>
+						</Button>
+					</div>
+
+					<Button
+						type={isGenerating ? "button" : "submit"}
+						onClick={isGenerating ? () => stop() : undefined}
+						disabled={isGenerating ? false : !token || !inputText.trim()}
+						size="icon"
+						className="ml-auto h-9 w-9 rounded-full"
+					>
+						{isGenerating ? (
+							<Square className="size-3.5 fill-current" />
+						) : (
+							<ArrowUp className="size-4" />
+						)}
+						<span className="sr-only">
+							{isGenerating ? "Stop generating" : "Send message"}
+						</span>
+					</Button>
+				</div>
+			</div>
+		</form>
+	);
+
 	const handleActionClick = async (action: string, messageIndex: number) => {
 		if (action === "Refresh") {
 			if (!token) {
@@ -167,7 +224,7 @@ export default function AdvisorPage() {
 	}
 
 	return (
-		<div className="relative flex h-[calc(100vh-4rem)] w-full max-w-4xl flex-col justify-between mx-auto">
+		<div className="relative mx-auto flex h-[calc(100vh-4rem)] w-full max-w-5xl flex-col px-4">
 			{!isSubscribed && (
 				<div className="absolute inset-0 z-50 backdrop-blur-sm flex items-center justify-center">
 					<Card className="max-w-md p-6 space-y-4 shadow-lg border-2">
@@ -209,130 +266,98 @@ export default function AdvisorPage() {
 				</div>
 			)}
 
-			<div className="flex-1 overflow-y-auto min-h-0 px-4">
-				<ChatMessageList ref={messagesRef}>
-					{/* Initial Message */}
-					{messages.length === 0 && (
-						<div className="w-full bg-background shadow-sm border rounded-lg p-8 flex flex-col gap-2">
-							<h1 className="text-xl font-semibold">
-								Welcome to your personal advisor.
+			<div className="min-h-0 flex-1">
+				{hasMessages ? (
+					<div className="h-full overflow-y-auto">
+						<ChatMessageList ref={messagesRef} className="mx-auto w-full max-w-4xl px-2 pt-6">
+							{messages?.map((message, index) => {
+								if (shouldHideAssistantPlaceholder(message, index)) return null;
+								return (
+									<ChatBubble
+										key={message.id}
+										variant={message.role === "user" ? "sent" : "received"}
+										className="max-w-[85%]"
+									>
+										<ChatBubbleAvatar
+											src={message.role === "user" ? "/assets/user.png" : ""}
+											fallback={message.role === "user" ? "👨🏽" : "✦"}
+										/>
+										<ChatBubbleMessage className="rounded-2xl">
+											{message.role === "assistant" ? (
+												<Markdown>{getMessageText(message)}</Markdown>
+											) : (
+												getMessageText(message)
+											)}
+
+											{message.role === "assistant" &&
+												messages.length - 1 === index && (
+													<div className="mt-1.5 flex items-center gap-1">
+														{!isGenerating &&
+															ChatAiIcons.map((icon) => {
+																const Icon = icon.icon;
+																return (
+																	<ChatBubbleAction
+																		className="size-5"
+																		key={icon.label}
+																		icon={<Icon className="size-3" />}
+																		onClick={() =>
+																			handleActionClick(icon.label, index)
+																		}
+																	/>
+																);
+															})}
+													</div>
+												)}
+										</ChatBubbleMessage>
+									</ChatBubble>
+								);
+							})}
+
+							{isGenerating && (
+								<ChatBubble variant="received" className="max-w-[85%]">
+									<ChatBubbleAvatar src="" fallback="✦" />
+									<ChatBubbleMessage isLoading className="rounded-2xl" />
+								</ChatBubble>
+							)}
+						</ChatMessageList>
+					</div>
+				) : (
+					<div className="mx-auto flex h-full w-full max-w-3xl flex-col items-center justify-center gap-7">
+						<div className="space-y-2 text-center">
+							<div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-foreground text-background">
+								<Sparkles className="size-5" />
+							</div>
+							<h1 className="text-3xl font-semibold tracking-tight">
+								What would you like to know?
 							</h1>
-							<p className="text-muted-foreground text-sm">
-								Ask me anything about your finances. If you have any questions
-								about your finances, I can help you answer them.
-							</p>
-							<p className="text-muted-foreground text-xs">
-								This is not financial advice. AI can make mistakes. If you use
-								the advisor, please do your own research and consult a
-								professional if needed. When a message is sent, the data is
-								processed by an AI model. Your data is not stored or trained on
-								by the AI.
+							<p className="mx-auto max-w-xl text-sm text-muted-foreground">
+								Ask about spending, savings, investments, or your net worth.
 							</p>
 						</div>
-					)}
 
-					{/* Messages */}
-					{messages?.map((message, index) => {
-						if (shouldHideAssistantPlaceholder(message, index)) return null;
-						return (
-							<ChatBubble
-								key={message.id}
-								variant={message.role === "user" ? "sent" : "received"}
-							>
-								<ChatBubbleAvatar
-									src={message.role === "user" ? "/assets/user.png" : ""}
-									fallback={message.role === "user" ? "👨🏽" : "🤖"}
-								/>
-								<ChatBubbleMessage>
-									{message.role === "assistant" ? (
-										<Markdown>{getMessageText(message)}</Markdown>
-									) : (
-										getMessageText(message)
-									)}
-
-									{message.role === "assistant" &&
-										messages.length - 1 === index && (
-											<div className="flex items-center mt-1.5 gap-1">
-												{!isGenerating &&
-													ChatAiIcons.map((icon) => {
-														const Icon = icon.icon;
-														return (
-															<ChatBubbleAction
-																className="size-5"
-																key={icon.label}
-																icon={<Icon className="size-3" />}
-																onClick={() =>
-																	handleActionClick(icon.label, index)
-																}
-															/>
-														);
-													})}
-											</div>
-										)}
-								</ChatBubbleMessage>
-							</ChatBubble>
-						);
-					})}
-
-					{/* Loading */}
-					{isGenerating && (
-						<ChatBubble variant="received">
-							<ChatBubbleAvatar src="" fallback="🤖" />
-							<ChatBubbleMessage isLoading />
-						</ChatBubble>
-					)}
-				</ChatMessageList>
-			</div>
-			<div className="w-full px-4 py-4">
-				{messages.length === 0 && (
-					<div className="flex flex-wrap gap-2 mb-4">
-						{ExampleQuestions.map((question) => (
-							<Badge
-								key={question}
-								variant="outline"
-								className="cursor-pointer bg-background hover:bg-secondary/80 px-3 py-2"
-								onClick={() => handleExampleClick(question)}
-							>
-								{question}
-							</Badge>
-						))}
+						<div className="w-full max-w-2xl space-y-3">
+							{renderComposer()}
+							<div className="flex flex-wrap justify-center gap-2">
+								{ExampleQuestions.map((question) => (
+									<Badge
+										key={question}
+										variant="outline"
+										className="cursor-pointer rounded-full bg-background px-3 py-1.5 text-xs hover:bg-secondary/80"
+										onClick={() => handleExampleClick(question)}
+									>
+										{question}
+									</Badge>
+								))}
+							</div>
+						</div>
 					</div>
 				)}
-
-				<form
-					onSubmit={onSubmit}
-					className="relative rounded-lg border bg-background"
-				>
-					<ChatInput
-						value={inputText}
-						onKeyDown={onKeyDown}
-						onChange={(event) => setInputText(event.target.value)}
-						placeholder="Ask me anything about your finances..."
-						className="min-h-12 resize-none rounded-lg bg-background p-3 focus-visible:ring-0 focus-visible:ring-offset-0 border-0"
-					/>
-					<div className="flex items-center p-3 pt-0">
-						<Button variant="ghost" size="icon">
-							<Paperclip className="size-4" />
-							<span className="sr-only">Attach file</span>
-						</Button>
-
-						<Button variant="ghost" size="icon">
-							<Mic className="size-4" />
-							<span className="sr-only">Use Microphone</span>
-						</Button>
-
-						<Button
-							disabled={!token || !inputText.trim() || isGenerating}
-							type="submit"
-							size="sm"
-							className="ml-auto gap-1.5"
-						>
-							Send Message
-							<CornerDownLeft className="size-3.5" />
-						</Button>
-					</div>
-				</form>
 			</div>
+			{hasMessages && (
+				<div className="sticky bottom-0 mx-auto w-full max-w-4xl pb-4 pt-2">
+					{renderComposer()}
+				</div>
+			)}
 		</div>
 	);
 }
