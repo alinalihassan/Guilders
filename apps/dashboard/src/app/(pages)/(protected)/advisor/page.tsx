@@ -1,6 +1,7 @@
 "use client";
 
 import { useChat } from "@ai-sdk/react";
+import { TextStreamChatTransport } from "ai";
 import {
 	Check,
 	CopyIcon,
@@ -11,7 +12,7 @@ import {
 	Sparkles,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Markdown } from "@/components/common/markdown-component";
 import { Badge } from "@/components/ui/badge";
@@ -54,79 +55,105 @@ export default function AdvisorPage() {
 	const { data: user, isLoading } = useUser();
 	const { data: token } = useUserToken();
 	const isSubscribed = isPro(user);
-	const [isGenerating, setIsGenerating] = useState(false);
+	const [inputText, setInputText] = useState("");
+
+	const transport = useMemo(
+		() =>
+			new TextStreamChatTransport({
+				api: `${process.env.NEXT_PUBLIC_API_URL}/api/chat`,
+			}),
+		[],
+	);
 
 	const {
 		messages,
-		input,
-		handleInputChange,
-		handleSubmit,
-		isLoading: chatIsLoading,
-		reload,
-		append,
+		sendMessage,
+		regenerate,
+		status,
 	} = useChat({
-		api: `${process.env.NEXT_PUBLIC_API_URL}/api/chat`,
-		streamProtocol: "text",
-		onResponse(response) {
-			console.log("response", response);
-			if (response) setIsGenerating(false);
-		},
-		headers: token ? { Authorization: `Bearer ${token}` } : {},
+		transport,
 		onError(error) {
 			console.error("Chat error:", error);
 			toast.error(error.message || "An error occurred. Please try again.");
-			setIsGenerating(false);
 		},
 	});
 
+	const isGenerating = status === "submitted" || status === "streaming";
+
 	const messagesRef = useRef<HTMLDivElement>(null);
-	const formRef = useRef<HTMLFormElement>(null);
 
 	useEffect(() => {
+		if (!messages.length) return;
 		if (messagesRef.current) {
 			messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
 		}
-	}, []);
+	}, [messages]);
+
+	const sendUserMessage = async (text: string) => {
+		const trimmedText = text.trim();
+		if (!trimmedText || isGenerating) return;
+		if (!token) {
+			toast.error("Authentication is not ready yet. Please try again.");
+			return;
+		}
+
+		setInputText("");
+		await sendMessage(
+			{ text: trimmedText },
+			{ headers: { Authorization: `Bearer ${token}` } },
+		);
+	};
 
 	const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
-		setIsGenerating(true);
-		handleSubmit(e);
+		await sendUserMessage(inputText);
 	};
 
 	const handleExampleClick = (question: string) => {
-		if (isGenerating || chatIsLoading) return;
-
-		setIsGenerating(true);
-		append({
-			role: "user",
-			content: question,
-		});
+		if (isGenerating) return;
+		void sendUserMessage(question);
 	};
 
 	const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
 		if (e.key === "Enter" && !e.shiftKey) {
 			e.preventDefault();
-			if (isGenerating || chatIsLoading || !input) return;
-			setIsGenerating(true);
-			onSubmit(e as unknown as React.FormEvent<HTMLFormElement>);
+			if (isGenerating || !inputText.trim()) return;
+			void sendUserMessage(inputText);
 		}
+	};
+
+	const getMessageText = (message: (typeof messages)[number]) =>
+		message.parts
+			.filter((part) => part.type === "text")
+			.map((part) => ("text" in part ? part.text : ""))
+			.join("");
+
+	const shouldHideAssistantPlaceholder = (
+		message: (typeof messages)[number],
+		index: number,
+	) => {
+		if (message.role !== "assistant") return false;
+		if (!isGenerating) return false;
+		if (index !== messages.length - 1) return false;
+		return getMessageText(message).trim().length === 0;
 	};
 
 	const handleActionClick = async (action: string, messageIndex: number) => {
 		if (action === "Refresh") {
-			setIsGenerating(true);
+			if (!token) {
+				toast.error("Authentication is not ready yet. Please try again.");
+				return;
+			}
 			try {
-				await reload();
+				await regenerate({ headers: { Authorization: `Bearer ${token}` } });
 			} catch (error) {
 				console.error("Error reloading:", error);
-			} finally {
-				setIsGenerating(false);
 			}
 		} else if (action === "Copy") {
 			const message = messages[messageIndex];
 			if (message && message.role === "assistant") {
-				navigator.clipboard.writeText(message.content);
+				const content = getMessageText(message);
+				navigator.clipboard.writeText(content);
 			}
 		}
 	};
@@ -205,44 +232,47 @@ export default function AdvisorPage() {
 					)}
 
 					{/* Messages */}
-					{messages?.map((message, index) => (
-						<ChatBubble
-							key={message.id}
-							variant={message.role === "user" ? "sent" : "received"}
-						>
-							<ChatBubbleAvatar
-								src={message.role === "user" ? "/assets/user.png" : ""}
-								fallback={message.role === "user" ? "👨🏽" : "🤖"}
-							/>
-							<ChatBubbleMessage>
-								{message.role === "assistant" ? (
-									<Markdown>{message.content}</Markdown>
-								) : (
-									message.content
-								)}
-
-								{message.role === "assistant" &&
-									messages.length - 1 === index && (
-										<div className="flex items-center mt-1.5 gap-1">
-											{!isGenerating &&
-												ChatAiIcons.map((icon) => {
-													const Icon = icon.icon;
-													return (
-														<ChatBubbleAction
-															className="size-5"
-															key={icon.label}
-															icon={<Icon className="size-3" />}
-															onClick={() =>
-																handleActionClick(icon.label, index)
-															}
-														/>
-													);
-												})}
-										</div>
+					{messages?.map((message, index) => {
+						if (shouldHideAssistantPlaceholder(message, index)) return null;
+						return (
+							<ChatBubble
+								key={message.id}
+								variant={message.role === "user" ? "sent" : "received"}
+							>
+								<ChatBubbleAvatar
+									src={message.role === "user" ? "/assets/user.png" : ""}
+									fallback={message.role === "user" ? "👨🏽" : "🤖"}
+								/>
+								<ChatBubbleMessage>
+									{message.role === "assistant" ? (
+										<Markdown>{getMessageText(message)}</Markdown>
+									) : (
+										getMessageText(message)
 									)}
-							</ChatBubbleMessage>
-						</ChatBubble>
-					))}
+
+									{message.role === "assistant" &&
+										messages.length - 1 === index && (
+											<div className="flex items-center mt-1.5 gap-1">
+												{!isGenerating &&
+													ChatAiIcons.map((icon) => {
+														const Icon = icon.icon;
+														return (
+															<ChatBubbleAction
+																className="size-5"
+																key={icon.label}
+																icon={<Icon className="size-3" />}
+																onClick={() =>
+																	handleActionClick(icon.label, index)
+																}
+															/>
+														);
+													})}
+											</div>
+										)}
+								</ChatBubbleMessage>
+							</ChatBubble>
+						);
+					})}
 
 					{/* Loading */}
 					{isGenerating && (
@@ -270,14 +300,13 @@ export default function AdvisorPage() {
 				)}
 
 				<form
-					ref={formRef}
 					onSubmit={onSubmit}
 					className="relative rounded-lg border bg-background"
 				>
 					<ChatInput
-						value={input}
+						value={inputText}
 						onKeyDown={onKeyDown}
-						onChange={handleInputChange}
+						onChange={(event) => setInputText(event.target.value)}
 						placeholder="Ask me anything about your finances..."
 						className="min-h-12 resize-none rounded-lg bg-background p-3 focus-visible:ring-0 focus-visible:ring-offset-0 border-0"
 					/>
@@ -293,7 +322,7 @@ export default function AdvisorPage() {
 						</Button>
 
 						<Button
-							disabled={!input || chatIsLoading}
+							disabled={!token || !inputText.trim() || isGenerating}
 							type="submit"
 							size="sm"
 							className="ml-auto gap-1.5"
