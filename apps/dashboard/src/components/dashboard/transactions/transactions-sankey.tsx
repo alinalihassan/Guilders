@@ -32,6 +32,26 @@ interface SankeyData {
   links: SankeyLink[];
 }
 
+function toFiniteNumber(value: unknown): number {
+  const numberValue = typeof value === "number" ? value : Number(value);
+  return Number.isFinite(numberValue) ? numberValue : 0;
+}
+
+function convertAmountSafely(
+  amount: unknown,
+  fromCurrency: string,
+  userCurrency: string,
+): number {
+  const normalizedAmount = toFiniteNumber(amount);
+  const convertedAmount = convertToUserCurrency(
+    normalizedAmount,
+    fromCurrency,
+    [],
+    userCurrency,
+  );
+  return Number.isFinite(convertedAmount) ? convertedAmount : 0;
+}
+
 // Define chart color config with theme support
 const chartConfig: ChartConfig = {
   income: {
@@ -131,14 +151,18 @@ function CustomNode({
   userCurrency,
   // biome-ignore lint/suspicious/noExplicitAny: <explanation>
 }: any) {
-  const isIncome = payload.name.includes("Income");
+  if (![x, y, width, height].every(Number.isFinite)) return null;
+
+  const nodeName = String(payload?.name ?? "");
+  const isIncome = nodeName.includes("Income");
+  const nodeValue = toFiniteNumber(payload.value);
   const formattedValue = new Intl.NumberFormat(undefined, {
     style: "currency",
     currency: userCurrency,
     maximumFractionDigits: 0,
-  }).format(Math.round(payload.value));
+  }).format(Math.round(nodeValue));
 
-  const categoryName = payload.name
+  const categoryName = nodeName
     .replace(/ \(Income\)$/, "")
     .replace(/ \(Expense\)$/, "");
 
@@ -216,16 +240,29 @@ export function TransactionsSankey({
   const sankeyData = useMemo<SankeyData>(() => {
     if (!transactions) return { nodes: [], links: [] };
 
+    const normalizedTransactions = transactions.map((transaction) => {
+      const amount = toFiniteNumber(transaction.amount);
+      const category = transaction.category || "uncategorized";
+      const convertedAmount = convertAmountSafely(
+        amount,
+        transaction.currency,
+        userCurrency,
+      );
+
+      return {
+        amount,
+        category,
+        convertedAmount,
+      };
+    });
+
     // Separate income and expense transactions
     const incomeCategories = new Set<string>();
     const expenseCategories = new Set<string>();
 
-    for (const t of transactions) {
-      if (t.amount > 0) {
-        incomeCategories.add(t.category);
-      } else {
-        expenseCategories.add(t.category);
-      }
+    for (const t of normalizedTransactions) {
+      if (t.amount > 0) incomeCategories.add(t.category);
+      if (t.amount < 0) expenseCategories.add(t.category);
     }
 
     // Convert sets to arrays for mapping
@@ -235,10 +272,9 @@ export function TransactionsSankey({
     // Calculate total values for each category
     const categoryTotals = new Map<string, number>();
 
-    for (const t of transactions) {
-      const amount = Math.abs(
-        convertToUserCurrency(t.amount, t.currency, [], userCurrency),
-      );
+    for (const t of normalizedTransactions) {
+      if (t.amount === 0) continue;
+      const amount = Math.abs(t.convertedAmount);
       const key = `${t.category} (${t.amount > 0 ? "Income" : "Expense"})`;
       categoryTotals.set(key, (categoryTotals.get(key) || 0) + amount);
     }
@@ -274,13 +310,9 @@ export function TransactionsSankey({
 
     // First set of links: from income categories to central Income node
     for (const incomeCat of incomeArray) {
-      const incomeForCategory = transactions
+      const incomeForCategory = normalizedTransactions
         .filter((t) => t.amount > 0 && t.category === incomeCat)
-        .reduce(
-          (sum, t) =>
-            sum + convertToUserCurrency(t.amount, t.currency, [], userCurrency),
-          0,
-        );
+        .reduce((sum, t) => sum + t.convertedAmount, 0);
 
       if (incomeForCategory > 0) {
         links.push({
@@ -299,14 +331,9 @@ export function TransactionsSankey({
     // Second set of links: from central Income node to expense categories
     for (const expenseCat of expenseArray) {
       const expenseForCategory = Math.abs(
-        transactions
+        normalizedTransactions
           .filter((t) => t.amount < 0 && t.category === expenseCat)
-          .reduce(
-            (sum, t) =>
-              sum +
-              convertToUserCurrency(t.amount, t.currency, [], userCurrency),
-            0,
-          ),
+          .reduce((sum, t) => sum + t.convertedAmount, 0),
       );
 
       if (expenseForCategory > 0) {

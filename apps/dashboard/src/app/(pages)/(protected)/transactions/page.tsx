@@ -16,42 +16,53 @@ import { useUser } from "@/lib/queries/useUser";
 import { cn } from "@/lib/utils";
 import { convertToUserCurrency } from "@/lib/utils/financial";
 
+function toFiniteNumber(value: unknown): number {
+	const numberValue = typeof value === "number" ? value : Number(value);
+	return Number.isFinite(numberValue) ? numberValue : 0;
+}
+
+function convertAmountSafely(
+	amount: unknown,
+	fromCurrency: string,
+	userCurrency: string,
+): number {
+	const normalizedAmount = toFiniteNumber(amount);
+	const convertedAmount = convertToUserCurrency(
+		normalizedAmount,
+		fromCurrency,
+		[],
+		userCurrency,
+	);
+	return Number.isFinite(convertedAmount) ? convertedAmount : 0;
+}
+
 export default function TransactionsPage() {
 	const { data: transactions, isLoading } = useTransactions();
 	const { data: user, isLoading: isLoadingUser } = useUser();
 	const { open: openAddTransaction } = useDialog("addTransaction");
 	const [searchQuery, setSearchQuery] = useState("");
 	const searchInputRef = useRef<HTMLInputElement>(null);
+	const userCurrency = user?.settings.currency ?? "EUR";
 
 	const totalIncome =
 		transactions?.reduce(
-			(sum, t) =>
-				sum +
-				(t.amount > 0
-					? convertToUserCurrency(
-							t.amount,
-							t.currency,
-							[],
-							user?.settings.currency ?? "EUR",
-						)
-					: 0),
+			(sum, t) => {
+				const amount = toFiniteNumber(t.amount);
+				if (amount <= 0) return sum;
+				return sum + convertAmountSafely(amount, t.currency, userCurrency);
+			},
 			0,
 		) ?? 0;
 
 	const totalExpenses =
 		transactions?.reduce(
-			(sum, t) =>
-				sum +
-				(t.amount < 0
-					? Math.abs(
-							convertToUserCurrency(
-								t.amount,
-								t.currency,
-								[],
-								user?.settings.currency ?? "EUR",
-							),
-						)
-					: 0),
+			(sum, t) => {
+				const amount = toFiniteNumber(t.amount);
+				if (amount >= 0) return sum;
+				return (
+					sum + Math.abs(convertAmountSafely(amount, t.currency, userCurrency))
+				);
+			},
 			0,
 		) ?? 0;
 
@@ -62,7 +73,7 @@ export default function TransactionsPage() {
 		return (
 			transaction.description?.toLowerCase().includes(searchLower) ||
 			transaction.category?.toLowerCase().includes(searchLower) ||
-			transaction.amount.toString().includes(searchLower) ||
+			toFiniteNumber(transaction.amount).toString().includes(searchLower) ||
 			transaction.currency.toLowerCase().includes(searchLower)
 		);
 	});
@@ -143,7 +154,7 @@ export default function TransactionsPage() {
 									value={totalIncome}
 									format={{
 										style: "currency",
-										currency: user?.settings.currency ?? "EUR",
+										currency: userCurrency,
 									}}
 								/>
 							)}
@@ -163,7 +174,7 @@ export default function TransactionsPage() {
 									value={totalExpenses}
 									format={{
 										style: "currency",
-										currency: user?.settings.currency ?? "EUR",
+										currency: userCurrency,
 									}}
 								/>
 							)}
@@ -175,7 +186,7 @@ export default function TransactionsPage() {
 			<TransactionsSankey
 				transactions={transactions}
 				isLoading={isLoading || isLoadingUser}
-				userCurrency={user?.settings.currency ?? "EUR"}
+				userCurrency={userCurrency}
 			/>
 
 			<TransactionsCard menuComponent={menuComponent}>
