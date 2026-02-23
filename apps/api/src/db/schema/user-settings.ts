@@ -9,7 +9,7 @@ export const userSetting = pgTable(
     currency: varchar("currency", { length: 3 })
       .notNull()
       .references(() => currency.code)
-      .default("USD"),
+      .default("EUR"),
     profile_url: varchar("profile_url", { length: 255 }),
     user_id: varchar("user_id", { length: 255 }).primaryKey(),
   },
@@ -18,4 +18,3 @@ export const userSetting = pgTable(
     index("user_setting_currency_idx").on(table.currency),
   ],
 );
-

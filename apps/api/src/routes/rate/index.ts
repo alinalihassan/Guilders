@@ -58,7 +58,7 @@ export const rateRoutes = new Elysia({
   .get(
     "/:code",
     async ({ params, query }) => {
-      const base = query.base || "USD";
+      const base = query.base || "EUR";
 
       const result = await db.query.rate.findFirst({
         where: {
@@ -69,7 +69,7 @@ export const rateRoutes = new Elysia({
         return status(404, { error: "Rate not found" });
       }
 
-      if (base !== "USD") {
+      if (base !== "EUR") {
         const baseRateResult = await db.query.rate.findFirst({
           where: {
             currency_code: base,

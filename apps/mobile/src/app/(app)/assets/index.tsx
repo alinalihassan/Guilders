@@ -27,7 +27,7 @@ type ColorSet = (typeof Colors)["light"] | (typeof Colors)["dark"];
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function formatCurrency(value: number, currency = "USD"): string {
+function formatCurrency(value: number, currency = "EUR"): string {
 	return new Intl.NumberFormat("en-US", {
 		style: "currency",
 		currency,

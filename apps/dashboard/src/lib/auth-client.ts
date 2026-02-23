@@ -1,3 +1,7 @@
+import { passkeyClient } from "@better-auth/passkey/client";
+import { createAuthClient } from "better-auth/client";
+import { apiKeyClient, twoFactorClient } from "better-auth/client/plugins";
+
 const baseUrl = process.env.NEXT_PUBLIC_API_URL;
 
 type AuthResult<T = unknown> = {
@@ -5,50 +9,35 @@ type AuthResult<T = unknown> = {
   error: { message: string } | null;
 };
 
-async function parseResult<T>(response: Response): Promise<AuthResult<T>> {
-  const payload = (await response.json().catch(() => null)) as
-    | { error?: { message?: string } | string; message?: string }
-    | T
-    | null;
+type BetterAuthResponse<T> = {
+  data: T | null;
+  error: { message?: string } | null;
+};
 
-  if (!response.ok) {
-    const message =
-      typeof payload === "object" && payload !== null
-        ? typeof (payload as { error?: unknown }).error === "string"
-          ? ((payload as { error: string }).error ?? "Authentication error")
-          : ((payload as { error?: { message?: string } }).error?.message ??
-            (payload as { message?: string }).message ??
-            "Authentication error")
-        : "Authentication error";
+const authClient = createAuthClient({
+  baseURL: baseUrl,
+  plugins: [twoFactorClient(), apiKeyClient(), passkeyClient()],
+  fetchOptions: {
+    credentials: "include",
+  },
+});
 
-    return { data: null, error: { message } };
-  }
-
-  return { data: (payload as T) ?? null, error: null };
+function toAuthResult<T>(response: BetterAuthResponse<T>): AuthResult<T> {
+  return {
+    data: response.data ?? null,
+    error: response.error
+      ? { message: response.error.message ?? "Authentication error" }
+      : null,
+  };
 }
 
-async function authFetch(path: string, options?: RequestInit): Promise<Response> {
-  if (!baseUrl) throw new Error("NEXT_PUBLIC_API_URL is not defined");
+async function runClientRequest<T>(
+  handler: () => Promise<BetterAuthResponse<T>>,
+): Promise<AuthResult<T>> {
   try {
-    return await fetch(`${baseUrl}${path}`, {
-      ...options,
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-        ...(options?.headers ?? {}),
-      },
-    });
-  } catch {
-    throw new Error(
-      "Unable to reach the API. Make sure the API server is running and NEXT_PUBLIC_API_URL is correct.",
-    );
-  }
-}
-
-async function runAuthRequest<T>(path: string, options?: RequestInit): Promise<AuthResult<T>> {
-  try {
-    const response = await authFetch(path, options);
-    return parseResult<T>(response);
+    if (!baseUrl) throw new Error("NEXT_PUBLIC_API_URL is not defined");
+    const response = await handler();
+    return toAuthResult(response);
   } catch (error) {
     return {
       data: null,
@@ -63,28 +52,100 @@ async function runAuthRequest<T>(path: string, options?: RequestInit): Promise<A
 }
 
 export const authApi = {
+  authClient,
+
   async signInEmail(input: { email: string; password: string }) {
-    return runAuthRequest("/api/auth/sign-in/email", {
-      method: "POST",
-      body: JSON.stringify(input),
-    });
+    return runClientRequest(() => authClient.signIn.email(input));
   },
 
   async signUpEmail(input: { email: string; password: string; name: string }) {
-    return runAuthRequest("/api/auth/sign-up/email", {
-      method: "POST",
-      body: JSON.stringify(input),
-    });
+    return runClientRequest(() => authClient.signUp.email(input));
   },
 
   async signOut() {
-    return runAuthRequest("/api/auth/sign-out", { method: "POST" });
+    return runClientRequest(() => authClient.signOut());
   },
 
   async getSession() {
-    return runAuthRequest<{ user?: { email?: string }; session?: { token?: string } }>(
-      "/api/auth/get-session",
-      { method: "GET" },
+    return runClientRequest<{ user?: { email?: string }; session?: { token?: string } }>(
+      () => authClient.getSession(),
     );
   },
+
+  async enableTwoFactor(input: { password: string; issuer?: string }) {
+    return runClientRequest(() => authClient.twoFactor.enable(input));
+  },
+
+  async disableTwoFactor(input: { password: string }) {
+    return runClientRequest(() => authClient.twoFactor.disable(input));
+  },
+
+  async getTotpUri(input: { password: string }) {
+    return runClientRequest(() => authClient.twoFactor.getTotpUri(input));
+  },
+
+  async verifyTotp(input: { code: string; trustDevice?: boolean }) {
+    return runClientRequest(() => authClient.twoFactor.verifyTotp(input));
+  },
+
+  async generateBackupCodes(input: { password: string }) {
+    return runClientRequest(() => authClient.twoFactor.generateBackupCodes(input));
+  },
+
+  async listPasskeys() {
+    return runClientRequest(() => authClient.passkey.listUserPasskeys({}));
+  },
+
+  async addPasskey(input?: {
+    name?: string;
+    authenticatorAttachment?: "platform" | "cross-platform";
+  }) {
+    return runClientRequest(() => authClient.passkey.addPasskey(input ?? {}));
+  },
+
+  async updatePasskey(input: { id: string; name: string }) {
+    return runClientRequest(() => authClient.passkey.updatePasskey(input));
+  },
+
+  async deletePasskey(input: { id: string }) {
+    return runClientRequest(() => authClient.passkey.deletePasskey(input));
+  },
+
+  async signInPasskey(input?: { autoFill?: boolean }) {
+    return runClientRequest(() => authClient.signIn.passkey(input ?? {}));
+  },
+
+  async createApiKey(input: {
+    name?: string;
+    expiresIn?: number;
+    prefix?: string;
+    metadata?: unknown;
+  }) {
+    return runClientRequest(() => authClient.apiKey.create(input));
+  },
+
+  async listApiKeys() {
+    return runClientRequest(() => authClient.apiKey.list({}));
+  },
+
+  async getApiKey(input: { id: string }) {
+    return runClientRequest(() => authClient.apiKey.get({ query: input }));
+  },
+
+  async updateApiKey(input: {
+    keyId: string;
+    name?: string;
+    enabled?: boolean;
+    metadata?: unknown;
+    remaining?: number;
+    refillAmount?: number;
+    refillInterval?: number;
+  }) {
+    return runClientRequest(() => authClient.apiKey.update(input));
+  },
+
+  async deleteApiKey(input: { keyId: string }) {
+    return runClientRequest(() => authClient.apiKey.delete(input));
+  },
+
 };

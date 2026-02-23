@@ -5,6 +5,7 @@ import {
   bottomNavigation,
   mainNavigation,
 } from "@/lib/config/navigation";
+import { authApi } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
 import {
   Tooltip,
@@ -13,7 +14,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 interface NavItemProps {
   item: NavItemType;
@@ -66,6 +67,18 @@ const NavItem = ({ item, pathname }: NavItemProps) => (
 
 export function MainMenu() {
   const pathname = usePathname();
+  const router = useRouter();
+  const bottomItems = bottomNavigation.map((item) =>
+    item.name === "Log Out"
+      ? {
+          ...item,
+          onClick: async () => {
+            await authApi.signOut();
+            router.push("/login");
+          },
+        }
+      : item,
+  );
 
   return (
     <nav className="flex flex-col flex-1 mt-4 py-4">
@@ -82,7 +95,7 @@ export function MainMenu() {
       <div>
         <TooltipProvider delayDuration={0}>
           <ul className="flex flex-col items-center gap-1.5">
-            {bottomNavigation.map((item) => (
+            {bottomItems.map((item) => (
               <NavItem key={item.name} item={item} pathname={pathname} />
             ))}
           </ul>

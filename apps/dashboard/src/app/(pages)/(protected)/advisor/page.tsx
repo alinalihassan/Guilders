@@ -86,7 +86,7 @@ export default function AdvisorPage() {
 		if (messagesRef.current) {
 			messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
 		}
-	}, [messages]);
+	}, []);
 
 	const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
@@ -207,8 +207,7 @@ export default function AdvisorPage() {
 					{/* Messages */}
 					{messages?.map((message, index) => (
 						<ChatBubble
-							// biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
-							key={index}
+							key={message.id}
 							variant={message.role === "user" ? "sent" : "received"}
 						>
 							<ChatBubbleAvatar
@@ -226,13 +225,12 @@ export default function AdvisorPage() {
 									messages.length - 1 === index && (
 										<div className="flex items-center mt-1.5 gap-1">
 											{!isGenerating &&
-												ChatAiIcons.map((icon, iconIndex) => {
+												ChatAiIcons.map((icon) => {
 													const Icon = icon.icon;
 													return (
 														<ChatBubbleAction
 															className="size-5"
-															// biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
-															key={iconIndex}
+															key={icon.label}
 															icon={<Icon className="size-3" />}
 															onClick={() =>
 																handleActionClick(icon.label, index)
@@ -258,10 +256,9 @@ export default function AdvisorPage() {
 			<div className="w-full px-4 py-4">
 				{messages.length === 0 && (
 					<div className="flex flex-wrap gap-2 mb-4">
-						{ExampleQuestions.map((question, index) => (
+						{ExampleQuestions.map((question) => (
 							<Badge
-								// biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
-								key={index}
+								key={question}
 								variant="outline"
 								className="cursor-pointer bg-background hover:bg-secondary/80 px-3 py-2"
 								onClick={() => handleExampleClick(question)}

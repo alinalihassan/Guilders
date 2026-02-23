@@ -27,6 +27,11 @@ export const app = new Elysia({ adapter: CloudflareAdapter })
               scheme: "bearer",
               bearerFormat: "JWT",
             },
+            apiKeyAuth: {
+              type: "apiKey",
+              in: "header",
+              name: "x-api-key",
+            },
           },
         },
         paths: await OpenAPI.getPaths(),

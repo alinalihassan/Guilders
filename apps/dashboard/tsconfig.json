@@ -18,11 +18,5 @@
       "@/*": ["./src/*"]
     }
   },
-  // Required for Hono RPC to work
-  "references": [
-    {
-      "path": "../api/tsconfig.json"
-    }
-  ],
   "files": []
 }

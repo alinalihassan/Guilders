@@ -5,7 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { authApi } from "../auth-client";
 
 const queryKey = ["user-settings"] as const;
-const DEFAULT_CURRENCY = "USD";
+const DEFAULT_CURRENCY = "EUR";
 
 export function useUser() {
   return useQuery({

@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { useDialog } from "@/lib/hooks/useDialog";
+import { authApi } from "@/lib/auth-client";
 import { useUpdateUserSettings } from "@/lib/queries/useUser";
 import { useSecurityStore } from "@/lib/store/securityStore";
 import { Button } from "@/components/ui/button";
@@ -18,8 +19,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Shield, X } from "lucide-react";
-import { useEffect } from "react";
+import { Pencil, Shield, Trash2, X } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 const securityFormSchema = z
@@ -43,12 +44,39 @@ type SecurityFormValues = z.infer<typeof securityFormSchema>;
 export function SecurityForm() {
   const { hasMFA, isLoadingMFA, checkMFAStatus, unenrollMFA } =
     useSecurityStore();
-  const { open: openMFADialog, isOpen } = useDialog("mfa");
+  const { open: openMFADialog } = useDialog("mfa");
   const { mutateAsync: updateUserSettings } = useUpdateUserSettings();
+  const [passkeys, setPasskeys] = useState<Array<{ id: string; name?: string }>>(
+    [],
+  );
+  const [isLoadingPasskeys, setIsLoadingPasskeys] = useState(false);
+  const [isMutatingPasskey, setIsMutatingPasskey] = useState(false);
 
   useEffect(() => {
-    checkMFAStatus();
-  }, [checkMFAStatus, isOpen]);
+    checkMFAStatus().catch(() => {
+      toast.error("Unable to load 2FA status");
+    });
+  }, [checkMFAStatus]);
+
+  const loadPasskeys = useCallback(async () => {
+    setIsLoadingPasskeys(true);
+    const { data, error } = await authApi.listPasskeys();
+    if (error) {
+      toast.error("Unable to load passkeys", { description: error.message });
+      setIsLoadingPasskeys(false);
+      return;
+    }
+    setPasskeys(
+      ((data as Array<{ id: string; name?: string } | null>) ?? []).filter(
+        (item): item is { id: string; name?: string } => Boolean(item?.id),
+      ),
+    );
+    setIsLoadingPasskeys(false);
+  }, []);
+
+  useEffect(() => {
+    loadPasskeys();
+  }, [loadPasskeys]);
 
   const form = useForm<SecurityFormValues>({
     resolver: zodResolver(securityFormSchema),
@@ -82,8 +110,10 @@ export function SecurityForm() {
   }
 
   const handleUnenroll = async () => {
+    const password = window.prompt("Enter your current password to disable 2FA");
+    if (!password) return;
     try {
-      await unenrollMFA();
+      await unenrollMFA(password);
       toast.success("2FA Removed", {
         description: "Two-factor authentication has been removed.",
       });
@@ -92,6 +122,53 @@ export function SecurityForm() {
       toast.error("Failed to disable 2FA", {
         description: "Please try again.",
       });
+    }
+  };
+
+  const handleAddPasskey = async () => {
+    try {
+      setIsMutatingPasskey(true);
+      const { error } = await authApi.addPasskey();
+      if (error) {
+        toast.error("Failed to add passkey", { description: error.message });
+        return;
+      }
+      toast.success("Passkey added");
+      await loadPasskeys();
+    } finally {
+      setIsMutatingPasskey(false);
+    }
+  };
+
+  const handleRenamePasskey = async (id: string, currentName?: string) => {
+    const name = window.prompt("Enter a new passkey name", currentName ?? "");
+    if (!name || name === currentName) return;
+    try {
+      setIsMutatingPasskey(true);
+      const { error } = await authApi.updatePasskey({ id, name });
+      if (error) {
+        toast.error("Failed to rename passkey", { description: error.message });
+        return;
+      }
+      toast.success("Passkey renamed");
+      await loadPasskeys();
+    } finally {
+      setIsMutatingPasskey(false);
+    }
+  };
+
+  const handleDeletePasskey = async (id: string) => {
+    try {
+      setIsMutatingPasskey(true);
+      const { error } = await authApi.deletePasskey({ id });
+      if (error) {
+        toast.error("Failed to delete passkey", { description: error.message });
+        return;
+      }
+      toast.success("Passkey deleted");
+      await loadPasskeys();
+    } finally {
+      setIsMutatingPasskey(false);
     }
   };
 
@@ -131,6 +208,63 @@ export function SecurityForm() {
             </Button>
           )}
         </div>
+      </div>
+
+      <div className="space-y-4">
+        <h2 className="text-lg font-semibold">Passkeys</h2>
+        <p className="text-sm text-muted-foreground">
+          Manage biometric passkeys for passwordless sign-in.
+        </p>
+        <Button
+          variant="outline"
+          onClick={handleAddPasskey}
+          disabled={isMutatingPasskey}
+        >
+          Add passkey
+        </Button>
+        {isLoadingPasskeys ? (
+          <p className="text-sm text-muted-foreground">Loading passkeys...</p>
+        ) : passkeys.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            No passkeys registered yet.
+          </p>
+        ) : (
+          <div className="space-y-2">
+            {passkeys.map((passkey) => (
+              <div
+                key={passkey.id}
+                className="flex items-center justify-between rounded-md border px-3 py-2"
+              >
+                <div className="min-w-0">
+                  <p className="text-sm font-medium truncate">
+                    {passkey.name || "Unnamed passkey"}
+                  </p>
+                  <p className="text-xs text-muted-foreground truncate">
+                    {passkey.id}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleRenamePasskey(passkey.id, passkey.name)}
+                    disabled={isMutatingPasskey}
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleDeletePasskey(passkey.id)}
+                    disabled={isMutatingPasskey}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="space-y-4">
