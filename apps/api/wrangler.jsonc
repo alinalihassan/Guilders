@@ -9,7 +9,25 @@
   },
   "triggers": {
     "crons": [
-      "0 * * * *"
+      "0 * * * *",
+      "0 0 * * *"
+    ]
+  },
+  "queues": {
+    "producers": [
+      {
+        "binding": "WEBHOOK_QUEUE",
+        "queue": "guilders-webhook-events"
+      }
+    ],
+    "consumers": [
+      {
+        "queue": "guilders-webhook-events",
+        "max_batch_size": 10,
+        "max_batch_timeout": 5,
+        "max_retries": 5,
+        "dead_letter_queue": "guilders-webhook-events-dlq"
+      }
     ]
   },
   "r2_buckets": [

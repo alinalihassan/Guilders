@@ -1,5 +1,6 @@
 import { defineRelations } from "drizzle-orm";
 import { asset } from "./assets";
+import { account, session, subscription, user, verification } from "./auth";
 import { country } from "./countries";
 import { currency } from "./currencies";
 import { institutionConnection } from "./institution-connections";
@@ -11,6 +12,9 @@ import { transaction } from "./transactions";
 import { userSetting } from "./user-settings";
 
 const schema = {
+  account,
+  session,
+  user,
   asset,
   country,
   currency,
@@ -19,11 +23,35 @@ const schema = {
   providerConnection,
   provider,
   rate,
+  subscription,
   transaction,
   userSetting,
+  verification,
 };
 
 export const relations = defineRelations(schema, (r) => ({
+  user: {
+    sessions: r.many.session({
+      from: r.user.id,
+      to: r.session.userId,
+    }),
+    accounts: r.many.account({
+      from: r.user.id,
+      to: r.account.userId,
+    }),
+  },
+  session: {
+    user: r.one.user({
+      from: r.session.userId,
+      to: r.user.id,
+    }),
+  },
+  account: {
+    user: r.one.user({
+      from: r.account.userId,
+      to: r.user.id,
+    }),
+  },
   asset: {
     currencyRel: r.one.currency({
       from: r.asset.currency,

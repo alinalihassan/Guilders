@@ -55,6 +55,24 @@ CREATE TABLE "session" (
 	"user_id" text NOT NULL
 );
 --> statement-breakpoint
+CREATE TABLE "subscription" (
+	"id" text PRIMARY KEY,
+	"plan" text NOT NULL,
+	"reference_id" text NOT NULL,
+	"stripe_customer_id" text,
+	"stripe_subscription_id" text,
+	"status" text DEFAULT 'incomplete',
+	"period_start" timestamp,
+	"period_end" timestamp,
+	"trial_start" timestamp,
+	"trial_end" timestamp,
+	"cancel_at_period_end" boolean DEFAULT false,
+	"cancel_at" timestamp,
+	"canceled_at" timestamp,
+	"ended_at" timestamp,
+	"seats" integer
+);
+--> statement-breakpoint
 CREATE TABLE "user" (
 	"id" text PRIMARY KEY,
 	"name" text NOT NULL,
@@ -62,7 +80,8 @@ CREATE TABLE "user" (
 	"email_verified" boolean DEFAULT false NOT NULL,
 	"image" text,
 	"created_at" timestamp NOT NULL,
-	"updated_at" timestamp NOT NULL
+	"updated_at" timestamp NOT NULL,
+	"stripe_customer_id" text
 );
 --> statement-breakpoint
 CREATE TABLE "verification" (
@@ -137,22 +156,6 @@ CREATE TABLE "rate" (
 	"rate" numeric(19,8) NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "subscription" (
-	"cancel_at" timestamp,
-	"cancel_at_period_end" boolean,
-	"canceled_at" timestamp,
-	"created_at" timestamp DEFAULT now() NOT NULL,
-	"current_period_end" timestamp NOT NULL,
-	"current_period_start" timestamp NOT NULL,
-	"ended_at" timestamp,
-	"id" serial PRIMARY KEY,
-	"status" "subscription_status",
-	"stripe_customer_id" varchar(255) NOT NULL,
-	"trial_end" timestamp,
-	"trial_start" timestamp,
-	"user_id" varchar(255) NOT NULL
-);
---> statement-breakpoint
 CREATE TABLE "transaction" (
 	"asset_id" integer NOT NULL,
 	"amount" numeric(19,4) NOT NULL,
@@ -199,9 +202,6 @@ CREATE INDEX "provider_connection_user_idx" ON "provider_connection" ("user_id")
 CREATE INDEX "provider_connection_provider_idx" ON "provider_connection" ("provider_id");--> statement-breakpoint
 CREATE INDEX "provider_id_idx" ON "provider" ("id");--> statement-breakpoint
 CREATE INDEX "rate_currency_idx" ON "rate" ("currency_code");--> statement-breakpoint
-CREATE INDEX "subscription_id_idx" ON "subscription" ("id");--> statement-breakpoint
-CREATE INDEX "subscription_user_idx" ON "subscription" ("user_id");--> statement-breakpoint
-CREATE INDEX "subscription_stripe_customer_idx" ON "subscription" ("stripe_customer_id");--> statement-breakpoint
 CREATE INDEX "transaction_id_idx" ON "transaction" ("id");--> statement-breakpoint
 CREATE INDEX "transaction_asset_idx" ON "transaction" ("asset_id");--> statement-breakpoint
 CREATE INDEX "transaction_currency_idx" ON "transaction" ("currency");--> statement-breakpoint

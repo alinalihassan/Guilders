@@ -29,42 +29,62 @@ async function parseResult<T>(response: Response): Promise<AuthResult<T>> {
 
 async function authFetch(path: string, options?: RequestInit): Promise<Response> {
   if (!baseUrl) throw new Error("NEXT_PUBLIC_API_URL is not defined");
-  return fetch(`${baseUrl}${path}`, {
-    ...options,
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-      ...(options?.headers ?? {}),
-    },
-  });
+  try {
+    return await fetch(`${baseUrl}${path}`, {
+      ...options,
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        ...(options?.headers ?? {}),
+      },
+    });
+  } catch {
+    throw new Error(
+      "Unable to reach the API. Make sure the API server is running and NEXT_PUBLIC_API_URL is correct.",
+    );
+  }
+}
+
+async function runAuthRequest<T>(path: string, options?: RequestInit): Promise<AuthResult<T>> {
+  try {
+    const response = await authFetch(path, options);
+    return parseResult<T>(response);
+  } catch (error) {
+    return {
+      data: null,
+      error: {
+        message:
+          error instanceof Error
+            ? error.message
+            : "Unable to complete authentication request.",
+      },
+    };
+  }
 }
 
 export const authApi = {
   async signInEmail(input: { email: string; password: string }) {
-    const response = await authFetch("/api/auth/sign-in/email", {
+    return runAuthRequest("/api/auth/sign-in/email", {
       method: "POST",
       body: JSON.stringify(input),
     });
-    return parseResult(response);
   },
 
   async signUpEmail(input: { email: string; password: string; name: string }) {
-    const response = await authFetch("/api/auth/sign-up/email", {
+    return runAuthRequest("/api/auth/sign-up/email", {
       method: "POST",
       body: JSON.stringify(input),
     });
-    return parseResult(response);
   },
 
   async signOut() {
-    const response = await authFetch("/api/auth/sign-out", { method: "POST" });
-    return parseResult(response);
+    return runAuthRequest("/api/auth/sign-out", { method: "POST" });
   },
 
   async getSession() {
-    const response = await authFetch("/api/auth/get-session", { method: "GET" });
-    return parseResult<{ user?: { email?: string }; session?: { token?: string } }>(
-      response,
+    return runAuthRequest<{ user?: { email?: string }; session?: { token?: string } }>(
+      "/api/auth/get-session",
+      { method: "GET" },
     );
   },
 };

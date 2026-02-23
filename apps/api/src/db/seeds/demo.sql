@@ -15,7 +15,7 @@ INSERT INTO public.asset (
   'depository',
   'EUR',
   5234.67,
-  '25TE4gtjxSJCuzjH3FHUZIvEg9IOOo5k', -- Replace with actual user_id
+  'cq2gCaKfEbglIl6BLZuyab30ROtn15cj', -- Replace with actual user_id
   'non_investable',
   'taxable'
 );

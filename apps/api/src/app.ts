@@ -1,3 +1,4 @@
+import { cors } from "@elysiajs/cors";
 import { openapi } from "@elysiajs/openapi";
 import { Elysia } from "elysia";
 import { CloudflareAdapter } from "elysia/adapter/cloudflare-worker";
@@ -5,6 +6,16 @@ import { OpenAPI } from "./lib/auth-openapi";
 import { api } from "./routes";
 
 export const app = new Elysia({ adapter: CloudflareAdapter })
+  .use(
+    cors({
+      origin: [
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "http://localhost:3002",
+      ],
+      credentials: true,
+    }),
+  )
   .use(
     openapi({
       documentation: {

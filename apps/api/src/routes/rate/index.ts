@@ -18,10 +18,10 @@ export const rateRoutes = new Elysia({
   .get(
     "",
     async ({ query }) => {
-      const base = query.base || "USD";
+      const base = query.base || "EUR";
       const rates = await db.query.rate.findMany();
 
-      if (base === "USD") {
+      if (base === "EUR") {
         return rates;
       }
 
