@@ -20,13 +20,25 @@ export function NetWorthCategories() {
   const { data: rates } = useRates();
   const { data: user } = useUser();
 
+  const leafAccounts = useMemo(() => {
+    if (!accounts) return accounts;
+
+    const parentIds = new Set(
+      accounts
+        .filter((account) => (account as { parent?: number | null }).parent != null)
+        .map((account) => (account as { parent?: number | null }).parent as number),
+    );
+
+    return accounts.filter((account) => !parentIds.has(account.id));
+  }, [accounts]);
+
   const categories = useMemo(() => {
     return calculateCategories(
-      accounts,
+      leafAccounts,
       rates,
       user?.settings.currency ?? "EUR",
     );
-  }, [accounts, rates, user?.settings.currency]);
+  }, [leafAccounts, rates, user?.settings.currency]);
 
   const { positiveSum, negativeSum } = useMemo(() => {
     return calculateCategorySums(categories);
@@ -43,7 +55,7 @@ export function NetWorthCategories() {
       {isLoading && (
         <div className="grid grid-cols-2 gap-3">
           {[...Array(4)].map((_, index) => (
-            // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
+            // biome-ignore lint/suspicious/noArrayIndexKey: skeleton rows are static placeholders
             <div key={index} className="flex items-center">
               <Skeleton className="w-3 h-3 rounded-full mr-2" />
               <Skeleton className="h-4 w-24" />
