@@ -9,6 +9,7 @@ export interface FinancialDataJson {
     name: string;
     type: string;
     subtype: string;
+    image?: string;
     value: string;
     currency: string;
     cost?: string;
@@ -37,6 +38,7 @@ export interface ToFinancialDataJsonParams {
     name: string;
     type: string;
     subtype: string;
+    image?: string | null;
     value: string | number;
     currency: string;
     cost?: string | number | null;
