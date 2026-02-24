@@ -1,16 +1,6 @@
 import type { Account } from "@guilders/api/types";
-import {
-  Bitcoin,
-  CarFront,
-  ChartCandlestick,
-  CirclePercent,
-  CreditCard,
-  DollarSign,
-  HandCoins,
-  House,
-  Landmark,
-} from "lucide-react";
 import Image from "next/image";
+import { AccountFallbackIcon } from "./account-fallback-icon";
 
 interface AccountIconProps {
   account: Account;
@@ -27,31 +17,6 @@ export function AccountIcon({
   hasImageError,
   onImageError,
 }: AccountIconProps) {
-  const getFallbackIcon = () => {
-    switch (account.subtype) {
-      case "depository":
-        return <Landmark className={`w-[${width}px] h-[${height}px]`} />;
-      case "brokerage":
-        return (
-          <ChartCandlestick className={`w-[${width}px] h-[${height}px]`} />
-        );
-      case "crypto":
-        return <Bitcoin className={`w-[${width}px] h-[${height}px]`} />;
-      case "property":
-        return <House className={`w-[${width}px] h-[${height}px]`} />;
-      case "creditcard":
-        return <CreditCard className={`w-[${width}px] h-[${height}px]`} />;
-      case "loan":
-        return <HandCoins className={`w-[${width}px] h-[${height}px]`} />;
-      case "vehicle":
-        return <CarFront className={`w-[${width}px] h-[${height}px]`} />;
-      case "stock":
-        return <CirclePercent className={`w-[${width}px] h-[${height}px]`} />;
-      default:
-        return <DollarSign className={`w-[${width}px] h-[${height}px]`} />;
-    }
-  };
-
   if (account.image && !hasImageError) {
     return (
       <Image
@@ -70,7 +35,10 @@ export function AccountIcon({
       className="p-2 flex items-center justify-center text-muted-foreground rounded-full bg-muted"
       style={{ width, height }}
     >
-      {getFallbackIcon()}
+      <AccountFallbackIcon
+        subtype={account.subtype}
+        size={Math.max(14, Math.min(width ?? 20, height ?? 20))}
+      />
     </div>
   );
 }

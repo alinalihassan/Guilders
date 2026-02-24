@@ -1,7 +1,8 @@
 "use client";
 
 import { useChat } from "@ai-sdk/react";
-import { TextStreamChatTransport } from "ai";
+import { DefaultChatTransport } from "ai";
+import { useJsonRenderMessage } from "@json-render/react";
 import {
 	ArrowUp,
 	Check,
@@ -16,6 +17,8 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Markdown } from "@/components/common/markdown-component";
+import { APPROVED_COMPONENT_TYPES } from "@/lib/advisor/render/catalog";
+import { AdvisorJsonRenderer } from "@/lib/advisor/render/renderer";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -60,7 +63,7 @@ export default function AdvisorPage() {
 
 	const transport = useMemo(
 		() =>
-			new TextStreamChatTransport({
+			new DefaultChatTransport({
 				api: `${process.env.NEXT_PUBLIC_API_URL}/api/chat`,
 			}),
 		[],
@@ -124,6 +127,41 @@ export default function AdvisorPage() {
 			.map((part) => ("text" in part ? part.text : ""))
 			.join("");
 
+	const AssistantMessageContent = ({
+		message,
+		isGenerating,
+	}: {
+		message: (typeof messages)[number];
+		isGenerating: boolean;
+	}) => {
+		const { spec, text } = useJsonRenderMessage(message.parts);
+		const approvedSpec = isApprovedSpec(spec) ? spec : null;
+
+		return (
+			<div className="space-y-3">
+				{(text || "").trim().length > 0 ? <Markdown>{text}</Markdown> : null}
+				{approvedSpec ? (
+					<AdvisorJsonRenderer spec={approvedSpec} loading={isGenerating} />
+				) : null}
+			</div>
+		);
+	};
+
+	const isApprovedSpec = (spec: unknown): boolean => {
+		if (!spec || typeof spec !== "object") return false;
+		const specObj = spec as {
+			elements?: Record<string, { type?: string }>;
+		};
+		const elements = specObj.elements;
+		if (!elements) return false;
+
+		return Object.values(elements).every((element) =>
+			APPROVED_COMPONENT_TYPES.includes(
+				(element?.type ?? "") as (typeof APPROVED_COMPONENT_TYPES)[number],
+			),
+		);
+	};
+
 	const shouldHideAssistantPlaceholder = (
 		message: (typeof messages)[number],
 		index: number,
@@ -131,7 +169,9 @@ export default function AdvisorPage() {
 		if (message.role !== "assistant") return false;
 		if (!isGenerating) return false;
 		if (index !== messages.length - 1) return false;
-		return getMessageText(message).trim().length === 0;
+		const hasText = getMessageText(message).trim().length > 0;
+		const hasSpecPart = message.parts.some((part) => part.type === "data-spec");
+		return !hasText && !hasSpecPart;
 	};
 
 	const hasMessages = messages.length > 0;
@@ -281,7 +321,10 @@ export default function AdvisorPage() {
 										/>
 										<ChatBubbleMessage className="rounded-2xl">
 											{message.role === "assistant" ? (
-												<Markdown>{getMessageText(message)}</Markdown>
+												<AssistantMessageContent
+													message={message}
+													isGenerating={isGenerating}
+												/>
 											) : (
 												getMessageText(message)
 											)}
