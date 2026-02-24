@@ -13,9 +13,14 @@ export default function AccountsPage() {
 	const { data: accounts, isLoading, error } = useAccounts();
 	const { open: openAddAccount } = useDialog("addManualAccount");
 
-	const assets = accounts?.filter((account) => account.type === "asset") ?? [];
-	const liabilities =
-		accounts?.filter((account) => account.type === "liability") ?? [];
+	const topLevelAccounts =
+		accounts?.filter(
+			(account) => (account as { parent?: number | null }).parent == null,
+		) ?? [];
+	const assets = topLevelAccounts.filter((account) => account.type === "asset");
+	const liabilities = topLevelAccounts.filter(
+		(account) => account.type === "liability",
+	);
 
 	return (
 		<div className="py-4">
