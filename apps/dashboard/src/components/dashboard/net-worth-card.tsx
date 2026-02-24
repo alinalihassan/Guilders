@@ -11,8 +11,11 @@ export function NetWorthCard({ className }: { className?: string }) {
   const { data: rates } = useRates();
   const { data: user } = useUser();
 
+  const topLevelAccounts = accounts?.filter(
+    (a) => (a as { parent?: number | null }).parent == null,
+  );
   const totalValue =
-    accounts?.reduce((acc, account) => {
+    topLevelAccounts?.reduce((acc, account) => {
       const convertedValue = convertToUserCurrency(
         account.value,
         account.currency,
@@ -23,7 +26,7 @@ export function NetWorthCard({ className }: { className?: string }) {
     }, 0) ?? 0;
 
   const totalCost =
-    accounts?.reduce((acc, account) => {
+    topLevelAccounts?.reduce((acc, account) => {
       const cost = account.cost ?? account.value;
       const convertedCost = convertToUserCurrency(
         cost,

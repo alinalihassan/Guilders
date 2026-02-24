@@ -26,6 +26,11 @@ const nextConfig: NextConfig = {
       {
         hostname: "enablebanking.com",
       },
+      {
+        hostname: "logo.twelvedata.com",
+      }, {
+        hostname: "api.twelvedata.com",
+      },
     ],
   },
 };
