@@ -32,17 +32,15 @@ export const auth = betterAuth({
     }),
     twoFactor(),
     passkey({
-      rpID: "localhost",
+      rpID: "guilders",
       rpName: "Guilders",
-      origin:
-        process.env.BETTER_AUTH_PASSKEY_ORIGIN ?? "http://localhost:3002",
     }),
     bearer(),
     openAPI({ disableDefaultReference: true }),
     expo({ disableOriginOverride: true }),
     stripe({
       stripeClient,
-      stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET ?? "",
+      stripeWebhookSecret: env.STRIPE_WEBHOOK_SECRET ?? "",
       createCustomerOnSignUp: true,
       subscription: {
         enabled: true,
