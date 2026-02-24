@@ -1,10 +1,14 @@
 import { sql } from "drizzle-orm";
 import { institution } from "../db/schema/institutions";
 import { db } from "../lib/db";
+import { SnapTradeProvider } from "../providers/snaptrade/provider";
 import type { IProvider } from "../providers/types";
 
 function getProviderAdapters(): IProvider[] {
-  return [];
+  return [
+    // new SaltEdgeProvider(),
+    new SnapTradeProvider(),
+  ];
 }
 
 export async function syncInstitutions() {

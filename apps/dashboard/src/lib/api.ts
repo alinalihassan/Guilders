@@ -21,7 +21,7 @@ const routeAliases: Record<string, string> = {
   countries: "country",
 };
 
-const unsupportedRoots = new Set(["connections", "subscription", "documents"]);
+const unsupportedRoots = new Set(["subscription", "documents"]);
 let edenApi: ReturnType<typeof treaty<ApiApp>>["api"] | null = null;
 
 function getEdenApi() {

@@ -1,7 +1,7 @@
 {
   "version": "8",
   "dialect": "postgres",
-  "id": "3a7e9bb7-e07b-4ae1-af43-0863008126b5",
+  "id": "dff5c107-12f4-44cb-8b80-23e7f5c06f4e",
   "prevIds": [
     "00000000-0000-0000-0000-000000000000"
   ],
@@ -2261,7 +2261,7 @@
       "typeSchema": null,
       "notNull": true,
       "dimensions": 0,
-      "default": "'USD'",
+      "default": "'EUR'",
       "generated": null,
       "identity": null,
       "name": "currency",
@@ -2844,6 +2844,34 @@
       "method": "btree",
       "concurrently": false,
       "name": "institution_country_idx",
+      "entityType": "indexes",
+      "schema": "public",
+      "table": "institution"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "provider_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        },
+        {
+          "value": "provider_institution_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": true,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "institution_provider_provider_institution_unique",
       "entityType": "indexes",
       "schema": "public",
       "table": "institution"

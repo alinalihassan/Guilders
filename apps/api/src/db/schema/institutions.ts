@@ -4,6 +4,7 @@ import {
   integer,
   pgTable,
   serial,
+  uniqueIndex,
   varchar,
 } from "drizzle-orm/pg-core";
 import {
@@ -32,6 +33,10 @@ export const institution = pgTable(
     index("institution_id_idx").on(table.id),
     index("institution_provider_idx").on(table.provider_id),
     index("institution_country_idx").on(table.country),
+    uniqueIndex("institution_provider_provider_institution_unique").on(
+      table.provider_id,
+      table.provider_institution_id,
+    ),
   ],
 );
 

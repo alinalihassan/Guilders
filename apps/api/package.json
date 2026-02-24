@@ -6,10 +6,12 @@
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
     "cf-typegen": "wrangler types",
+    "ngrok": "bun --env-file=.env __ngrok-command",
     "auth:generate": "bunx --bun @better-auth/cli generate --output src/db/schema/auth.ts -y",
     "db:generate": "drizzle-kit generate --config drizzle.config.ts",
     "db:migrate": "drizzle-kit migrate --config drizzle.config.ts",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "__ngrok-command": "ngrok http 3000 --authtoken=$NGROK_AUTHTOKEN --url=${NGROK_URL}"
   },
   "dependencies": {
     "@better-auth/drizzle-adapter": "https://pkg.pr.new/better-auth/better-auth/@better-auth/drizzle-adapter@6913",
@@ -27,6 +29,7 @@
     "drizzle-orm": "1.0.0-beta.15-859cf75",
     "drizzle-typebox": "^0.3.3",
     "elysia": "1.4.25",
+    "snaptrade-typescript-sdk": "^9.0.166",
     "stripe": "^20.3.1"
   },
   "devDependencies": {

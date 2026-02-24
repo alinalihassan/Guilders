@@ -14,10 +14,11 @@ export default function ConnectionsPage() {
       <Separator />
       <Card className="p-6">
         <div className="space-y-2">
-          <h4 className="font-medium">Connections are temporarily unavailable</h4>
+          <h4 className="font-medium">Connection management is in app flows</h4>
           <p className="text-sm text-muted-foreground">
-            Provider connection management has not been migrated to the new API
-            yet. Core dashboard features remain available.
+            Create new provider connections from the command menu (`Add Account`
+            → `Add Synced Account`). Existing synced assets can be refreshed or
+            fixed from their asset detail and edit dialogs.
           </p>
         </div>
       </Card>

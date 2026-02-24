@@ -69,7 +69,7 @@ export function useCreateConnection() {
     onError: (error) => {
       console.error(error);
       toast.error("Failed to create connection", {
-        description: error.message,
+        description: "Failed to register with provider",
       });
     },
   });

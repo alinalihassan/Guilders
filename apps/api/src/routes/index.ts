@@ -2,6 +2,7 @@ import Elysia from "elysia";
 import { auth } from "../lib/auth";
 import { assetRoutes } from "./asset";
 import { chatRoutes } from "./chat";
+import { connectionsRoutes } from "./connections";
 import { countryRoutes } from "./country";
 import { currencyRoutes } from "./currency";
 import { institutionRoutes } from "./institution";
@@ -15,6 +16,7 @@ export const api = new Elysia({ prefix: "/api", })
   .all("/auth/*", (context) => auth.handler(context.request), { detail: { hide: true } })
   .use(assetRoutes)
   .use(chatRoutes)
+  .use(connectionsRoutes)
   .use(countryRoutes)
   .use(currencyRoutes)
   .use(rateRoutes)

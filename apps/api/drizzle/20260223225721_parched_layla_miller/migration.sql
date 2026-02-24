@@ -218,7 +218,7 @@ CREATE TABLE "transaction" (
 --> statement-breakpoint
 CREATE TABLE "user_setting" (
 	"api_key" varchar(255),
-	"currency" varchar(3) DEFAULT 'USD' NOT NULL,
+	"currency" varchar(3) DEFAULT 'EUR' NOT NULL,
 	"profile_url" varchar(255),
 	"user_id" varchar(255) PRIMARY KEY
 );
@@ -249,6 +249,7 @@ CREATE INDEX "institution_connection_provider_idx" ON "institution_connection" (
 CREATE INDEX "institution_id_idx" ON "institution" ("id");--> statement-breakpoint
 CREATE INDEX "institution_provider_idx" ON "institution" ("provider_id");--> statement-breakpoint
 CREATE INDEX "institution_country_idx" ON "institution" ("country");--> statement-breakpoint
+CREATE UNIQUE INDEX "institution_provider_provider_institution_unique" ON "institution" ("provider_id","provider_institution_id");--> statement-breakpoint
 CREATE INDEX "provider_connection_id_idx" ON "provider_connection" ("id");--> statement-breakpoint
 CREATE INDEX "provider_connection_user_idx" ON "provider_connection" ("user_id");--> statement-breakpoint
 CREATE INDEX "provider_connection_provider_idx" ON "provider_connection" ("provider_id");--> statement-breakpoint
