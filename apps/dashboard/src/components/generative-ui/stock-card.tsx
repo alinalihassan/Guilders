@@ -13,8 +13,82 @@ export type StockCardProps = {
   symbol: string;
   accountName: string;
   currency: string;
-  currentValue: string;
+  value: number;
+  cost?: number | null;
+  currentValue?: string | null;
   totalChange?: string | null;
+};
+
+const parseNumberFromMixed = (value: string | number | null | undefined) => {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value;
+  }
+
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const numeric = Number.parseFloat(
+    value.replaceAll(",", "").replace(/[^\d+-.]/g, ""),
+  );
+
+  return Number.isFinite(numeric) ? numeric : null;
+};
+
+const formatCurrencyValue = (value: number, currency: string) => {
+  const numeric = value;
+
+  if (!Number.isFinite(numeric)) {
+    return currency;
+  }
+
+  try {
+    return new Intl.NumberFormat(undefined, {
+      style: "currency",
+      currency,
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+    }).format(numeric);
+  } catch {
+    return `${numeric.toFixed(2)} ${currency}`.trim();
+  }
+};
+
+const formatPercentChange = ({
+  value,
+  cost,
+  currentValue,
+  totalChange,
+}: {
+  value: number;
+  cost?: number | null;
+  currentValue?: string | null;
+  totalChange?: string | null;
+}) => {
+  if (typeof cost === "number" && Number.isFinite(cost) && cost > 0) {
+    const pct = ((value - cost) / cost) * 100;
+    const sign = pct < 0 ? "-" : "+";
+    const abs = Math.abs(pct);
+    return `${sign}${abs.toFixed(2)}%`;
+  }
+
+  const currentValueNumber = parseNumberFromMixed(currentValue);
+  const totalChangeNumber = parseNumberFromMixed(totalChange);
+
+  if (
+    typeof currentValueNumber === "number" &&
+    Number.isFinite(currentValueNumber) &&
+    currentValueNumber !== 0 &&
+    typeof totalChangeNumber === "number" &&
+    Number.isFinite(totalChangeNumber)
+  ) {
+    const pct = (totalChangeNumber / currentValueNumber) * 100;
+    const sign = pct < 0 ? "-" : "+";
+    const abs = Math.abs(pct);
+    return `${sign}${abs.toFixed(2)}%`;
+  }
+
+  return null;
 };
 
 export function StockCard({
@@ -24,12 +98,15 @@ export function StockCard({
   symbol,
   accountName,
   currency,
+  value,
+  cost,
   currentValue,
   totalChange,
 }: StockCardProps) {
   const router = useRouter();
-
-  const isNegative = (totalChange ?? "").trim().startsWith("-");
+  const formattedCurrentValue = formatCurrencyValue(value, currency);
+  const formattedPercentChange = formatPercentChange({ value, cost, currentValue, totalChange });
+  const isNegative = (formattedPercentChange ?? "").startsWith("-");
 
   return (
     <button
@@ -65,8 +142,8 @@ export function StockCard({
 
         <div className="rounded-xl bg-muted/40 p-3">
           <p className="text-xs text-muted-foreground">Current value</p>
-          <p className="mt-1 text-2xl font-semibold leading-none">{currentValue}</p>
-          {totalChange ? (
+          <p className="mt-1 text-2xl font-semibold leading-none">{formattedCurrentValue}</p>
+          {formattedPercentChange ? (
             <p
               className={cn(
                 "mt-2 inline-flex rounded-full px-2 py-1 text-xs font-medium",
@@ -75,7 +152,7 @@ export function StockCard({
                   : "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300",
               )}
             >
-              {totalChange}
+              {formattedPercentChange}
             </p>
           ) : null}
         </div>

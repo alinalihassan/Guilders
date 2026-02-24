@@ -1,9 +1,10 @@
-import { pipeJsonRender } from "@json-render/core";
 import {
   convertToModelMessages,
   createUIMessageStream,
   createUIMessageStreamResponse,
   streamText,
+  jsonSchema,
+  tool,
   type UIMessage,
 } from "ai";
 import { createAiGateway } from "ai-gateway-provider";
@@ -16,33 +17,50 @@ import { errorSchema } from "../../utils/error";
 import { chatRequestSchema } from "./types";
 import { getFinancialContext } from "./utils";
 
-const JSON_RENDER_RULES = `You can render UI by emitting a JSONL spec wrapped in a fenced block:
-\`\`\`spec
-{"op":"add","path":"/root","value":"stock-card-1"}
-{"op":"add","path":"/elements/stock-card-1","value":{"type":"StockCard","props":{"accountId":123,"subtype":"stock","image":"https://example.com/logo.png","symbol":"NVDA","accountName":"Trading212","currency":"EUR","currentValue":"1,529.81 EUR","totalChange":"-1.27% (-19.73 EUR)"},"children":[]}}
-\`\`\`
+const STOCK_CARD_TOOL_RULES = `You can render a stock card by calling the tool "showStockCard".
 
-Always write a short text explanation first, then the \`\`\`spec block.
-Allowed components:
-- StockCard
+Always respond with a concise text explanation first. Then, if the user asks about a single stock account/asset, call "showStockCard" exactly once.
 
-IMPORTANT format rules:
-- Use valid JSON Patch lines only.
-- In an element object, children must be an array of child element IDs (strings), never patch operations.
-- Do not use any component outside the allowed list.
-- For single stock/account responses, emit exactly one StockCard as the root element.
-- StockCard props must be:
-  accountId: number
-  subtype: string | null
-  image: string | null
-  symbol: string
-  accountName: string
-  currency: string
-  currentValue: string
-  totalChange: string | null
+The tool input must be:
+- accountId: number
+- subtype: string | null
+- image: string | null
+- symbol: string
+- accountName: string
+- currency: string
+- value: number
+- cost: number | null
+- currentValue: string | null
+- totalChange: string | null
 
-When the user asks about a single stock account/asset, render one stable StockCard.
-Use values from provided financial JSON context; do not invent data.`;
+Use values from provided financial JSON context only. Do not invent data.
+Do not call the tool for non-stock requests.`;
+
+// For future "buy stock" / "sell stock" actions, add a mutating tool with `needsApproval: true`
+// so execution only continues after explicit user confirmation in the chat UI.
+
+const showStockCard = tool({
+  description:
+    "Render a stock account summary card in the UI when the user asks about a single stock account/asset.",
+  inputSchema: jsonSchema({
+    type: "object",
+    properties: {
+      accountId: { type: "number" },
+      subtype: { type: ["string", "null"] },
+      image: { type: ["string", "null"] },
+      symbol: { type: "string" },
+      accountName: { type: "string" },
+      currency: { type: "string" },
+      value: { type: "number" },
+      cost: { type: ["number", "null"] },
+      currentValue: { type: ["string", "null"] },
+      totalChange: { type: ["string", "null"] },
+    },
+    required: ["accountId", "symbol", "accountName", "currency", "value"],
+    additionalProperties: false,
+  }),
+  execute: async (input) => input,
+});
 
 export const chatRoutes = new Elysia({
   prefix: "/chat",
@@ -57,7 +75,17 @@ export const chatRoutes = new Elysia({
     "/",
     async ({ body, user }) => {
       try {
-        const { messages } = body;
+        const inputMessages = Array.isArray(body.messages)
+          ? body.messages
+          : body.message
+            ? [body.message]
+            : [];
+
+        if (inputMessages.length === 0) {
+          return status(400, {
+            error: "No chat messages were provided.",
+          });
+        }
 
         // Get financial context: standalone prompt + user data as JSON
         const { prompt, data } = await getFinancialContext(user.id);
@@ -68,7 +96,7 @@ export const chatRoutes = new Elysia({
           "User's financial data (JSON):",
           JSON.stringify(data, null, 2),
           "",
-          JSON_RENDER_RULES,
+          STOCK_CARD_TOOL_RULES,
         ].join("\n");
 
         // Convert UIMessages to ModelMessages (AI SDK handles text, tools, files, etc.)
@@ -77,7 +105,7 @@ export const chatRoutes = new Elysia({
             role: "system" as const,
             content: systemContent,
           },
-          ...(await convertToModelMessages(messages as UIMessage[])),
+          ...(await convertToModelMessages(inputMessages as UIMessage[])),
         ];
 
         const aiGateway = createAiGateway({
@@ -90,12 +118,16 @@ export const chatRoutes = new Elysia({
         const result = streamText({
           model: aiGateway(unified("google-ai-studio/gemini-2.5-flash")),
           messages: modelMessages,
+          tools: {
+            showStockCard,
+          },
+          experimental_activeTools: ["showStockCard"],
         });
 
-        // Convert mixed text/spec stream into AI SDK UI message stream
+        // Stream tool and text parts directly to the UI.
         const stream = createUIMessageStream({
           execute: async ({ writer }) => {
-            writer.merge(pipeJsonRender(result.toUIMessageStream()));
+            writer.merge(result.toUIMessageStream());
           },
         });
 
@@ -118,6 +150,7 @@ export const chatRoutes = new Elysia({
       body: chatRequestSchema,
       response: {
         200: t.Any(), // Streaming response
+        400: errorSchema,
         401: errorSchema,
         500: errorSchema,
       },

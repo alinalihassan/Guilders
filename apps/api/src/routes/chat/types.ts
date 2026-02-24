@@ -66,18 +66,7 @@ Use the financial data and exchange rates to provide personalized advice when re
 Consider exchange rates when discussing amounts in different currencies.
 Be concise, helpful, and professional in your responses. If you don't have enough information to answer a specific question, say so clearly.`;
 
-// Schemas for request validation (runtime) - matches UIMessage shape from useChat
-const uiPartSchema = t.Object({
-  type: t.String(),
-  text: t.Optional(t.String()),
-});
-
-const uiMessageSchema = t.Object({
-  id: t.Optional(t.String()),
-  role: t.Union([t.Literal("user"), t.Literal("assistant"), t.Literal("system")]),
-  parts: t.Array(uiPartSchema),
-});
-
 export const chatRequestSchema = t.Object({
-  messages: t.Array(uiMessageSchema),
+  messages: t.Optional(t.Array(t.Any())),
+  message: t.Optional(t.Any()),
 });

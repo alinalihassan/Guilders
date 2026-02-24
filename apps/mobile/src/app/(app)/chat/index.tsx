@@ -3,6 +3,7 @@ import { TextStreamChatTransport } from "ai";
 import { Image } from "expo-image";
 import { fetch as expoFetch } from "expo/fetch";
 import { useCallback, useMemo, useRef, useState } from "react";
+import Markdown from "react-native-markdown-display";
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -16,20 +17,15 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { FinanceResponse } from "@/components/chat/finance-response";
 import { Colors, Spacing } from "@/constants/theme";
 import { authClient } from "@/lib/auth-client";
 
 type ColorSet = (typeof Colors)["light"] | (typeof Colors)["dark"];
 
-type MessageType = "text" | "finance_summary" | "spending_chart" | "account_breakdown";
-
 interface Message {
   id: string;
   role: "user" | "assistant";
   content: string;
-  type: MessageType;
-  data?: unknown;
   timestamp: Date;
 }
 
@@ -94,6 +90,40 @@ function SuggestedPrompts({
 
 function MessageBubble({ message, colors }: { message: Message; colors: ColorSet }) {
   const isUser = message.role === "user";
+  const markdownStyles = {
+    body: {
+      color: colors.text,
+      fontSize: 15,
+      lineHeight: 22,
+      marginTop: 0,
+      marginBottom: 0,
+    },
+    paragraph: {
+      marginTop: 0,
+      marginBottom: 8,
+    },
+    bullet_list: {
+      marginTop: 4,
+      marginBottom: 8,
+    },
+    ordered_list: {
+      marginTop: 4,
+      marginBottom: 8,
+    },
+    code_inline: {
+      backgroundColor: colors.backgroundSelected,
+      color: colors.text,
+      borderRadius: 4,
+      paddingHorizontal: 4,
+      paddingVertical: 2,
+    },
+    code_block: {
+      backgroundColor: colors.backgroundSelected,
+      color: colors.text,
+      borderRadius: 8,
+      padding: 8,
+    },
+  } as const;
 
   return (
     <View
@@ -121,30 +151,30 @@ function MessageBubble({ message, colors }: { message: Message; colors: ColorSet
       )}
 
       <View style={{ maxWidth: "75%" }}>
-        {message.type === "text" ? (
-          <View
-            style={{
-              backgroundColor: isUser ? "#208AEF" : colors.backgroundElement,
-              paddingVertical: Spacing.two + 4,
-              paddingHorizontal: Spacing.three,
-              borderRadius: 18,
-              borderBottomRightRadius: isUser ? 4 : 18,
-              borderBottomLeftRadius: isUser ? 18 : 4,
-            }}
-          >
+        <View
+          style={{
+            backgroundColor: isUser ? "#208AEF" : colors.backgroundElement,
+            paddingVertical: Spacing.two + 4,
+            paddingHorizontal: Spacing.three,
+            borderRadius: 18,
+            borderBottomRightRadius: isUser ? 4 : 18,
+            borderBottomLeftRadius: isUser ? 18 : 4,
+          }}
+        >
+          {isUser ? (
             <Text
               style={{
                 fontSize: 15,
-                color: isUser ? "#fff" : colors.text,
+                color: "#fff",
                 lineHeight: 20,
               }}
             >
               {message.content}
             </Text>
-          </View>
-        ) : (
-          <FinanceResponse type={message.type} data={message.data} colors={colors} />
-        )}
+          ) : (
+            <Markdown style={markdownStyles}>{message.content}</Markdown>
+          )}
+        </View>
 
         <Text
           style={{
@@ -318,7 +348,6 @@ export default function ChatScreen() {
       role: "assistant",
       content:
         "Hi! I'm your AI financial assistant. I can help you understand your spending, track your net worth, and answer questions about your finances. What would you like to know?",
-      type: "text",
       timestamp: new Date(),
     },
     ...messages.map(
@@ -329,7 +358,6 @@ export default function ChatScreen() {
           .filter((part) => part.type === "text")
           .map((part) => part.text)
           .join(""),
-        type: "text",
         timestamp: new Date(),
       }),
     ),

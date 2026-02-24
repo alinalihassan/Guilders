@@ -1,14 +1,11 @@
 "use client";
 
 import { useChat } from "@ai-sdk/react";
-import { useJsonRenderMessage } from "@json-render/react";
-import { DefaultChatTransport } from "ai";
+import { DefaultChatTransport, type UIMessage } from "ai";
 import {
   ArrowUp,
   Check,
   CopyIcon,
-  Mic,
-  Paperclip,
   RefreshCcw,
   Sparkles,
   Square,
@@ -21,16 +18,7 @@ import { Markdown } from "@/components/common/markdown-component";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import {
-  ChatBubble,
-  ChatBubbleAction,
-  ChatBubbleAvatar,
-  ChatBubbleMessage,
-} from "@/components/ui/chat-bubble";
-import { ChatInput } from "@/components/ui/chat-input";
-import { ChatMessageList } from "@/components/ui/chat-message-list";
-import { APPROVED_COMPONENT_TYPES } from "@/lib/advisor/render/catalog";
-import { AdvisorJsonRenderer } from "@/lib/advisor/render/renderer";
+import { StockCard } from "@/components/generative-ui/stock-card";
 import { useUser, useUserToken } from "@/lib/queries/useUser";
 import { isPro } from "@/lib/utils";
 
@@ -55,6 +43,37 @@ const ExampleQuestions = [
   "How can I adjust my portfolio?",
 ];
 
+const getMessageText = (message: UIMessage) =>
+  message.parts
+    .filter((part) => part.type === "text")
+    .map((part) => ("text" in part ? part.text : ""))
+    .join("");
+
+type StockCardToolOutput = {
+  accountId: number;
+  subtype?: string | null;
+  image?: string | null;
+  symbol: string;
+  accountName: string;
+  currency: string;
+  value: number;
+  cost?: number | null;
+  currentValue?: string | null;
+  totalChange?: string | null;
+};
+
+const isStockCardToolOutput = (value: unknown): value is StockCardToolOutput => {
+  if (!value || typeof value !== "object") return false;
+  const record = value as Record<string, unknown>;
+  return (
+    typeof record.accountId === "number" &&
+    typeof record.symbol === "string" &&
+    typeof record.accountName === "string" &&
+    typeof record.currency === "string" &&
+    typeof record.value === "number"
+  );
+};
+
 export default function AdvisorPage() {
   const router = useRouter();
   const { data: user, isLoading } = useUser();
@@ -73,7 +92,6 @@ export default function AdvisorPage() {
   const { messages, sendMessage, regenerate, stop, status } = useChat({
     transport,
     onError(error) {
-      console.error("Chat error:", error);
       toast.error(error.message || "An error occurred. Please try again.");
     },
   });
@@ -119,94 +137,79 @@ export default function AdvisorPage() {
     }
   };
 
-  const getMessageText = (message: (typeof messages)[number]) =>
-    message.parts
-      .filter((part) => part.type === "text")
-      .map((part) => ("text" in part ? part.text : ""))
-      .join("");
-
-  const AssistantMessageContent = ({
-    message,
-    isGenerating,
-  }: {
-    message: (typeof messages)[number];
-    isGenerating: boolean;
-  }) => {
-    const { spec, text } = useJsonRenderMessage(message.parts);
-    const approvedSpec = isApprovedSpec(spec) ? spec : null;
-
-    return (
-      <div className="space-y-3">
-        {(text || "").trim().length > 0 ? <Markdown>{text}</Markdown> : null}
-        {approvedSpec ? <AdvisorJsonRenderer spec={approvedSpec} loading={isGenerating} /> : null}
-      </div>
-    );
-  };
-
-  const isApprovedSpec = (spec: unknown): boolean => {
-    if (!spec || typeof spec !== "object") return false;
-    const specObj = spec as {
-      elements?: Record<string, { type?: string }>;
-    };
-    const elements = specObj.elements;
-    if (!elements) return false;
-
-    return Object.values(elements).every((element) =>
-      APPROVED_COMPONENT_TYPES.includes(
-        (element?.type ?? "") as (typeof APPROVED_COMPONENT_TYPES)[number],
-      ),
-    );
-  };
-
   const shouldHideAssistantPlaceholder = (message: (typeof messages)[number], index: number) => {
     if (message.role !== "assistant") return false;
     if (!isGenerating) return false;
     if (index !== messages.length - 1) return false;
     const hasText = getMessageText(message).trim().length > 0;
-    const hasSpecPart = message.parts.some((part) => part.type === "data-spec");
-    return !hasText && !hasSpecPart;
+    const hasStockCardPart = message.parts.some((part) => part.type === "tool-showStockCard");
+    return !hasText && !hasStockCardPart;
   };
 
   const hasMessages = messages.length > 0;
 
+  const AssistantMessageContent = ({
+    message,
+    loading,
+  }: {
+    message: (typeof messages)[number];
+    loading: boolean;
+  }) => {
+    const text = getMessageText(message);
+
+    return (
+      <div className="space-y-3">
+        {text.trim().length > 0 ? (
+          <Markdown className="text-sm leading-6">{text}</Markdown>
+        ) : null}
+        {message.parts
+          .filter((part) => part.type === "tool-showStockCard")
+          .map((part, index) => {
+            const toolPart = part as {
+              toolCallId?: string;
+              state?: string;
+              output?: unknown;
+            };
+            const key = toolPart.toolCallId ?? `stock-card-${index}`;
+
+            if (toolPart.state === "output-available" && isStockCardToolOutput(toolPart.output)) {
+              return <StockCard key={key} {...toolPart.output} />;
+            }
+
+            if (loading) {
+              return (
+                <div
+                  key={key}
+                  className="rounded-xl border border-dashed px-3 py-2 text-sm text-muted-foreground"
+                >
+                  Preparing stock card...
+                </div>
+              );
+            }
+
+            return null;
+          })}
+      </div>
+    );
+  };
+
   const renderComposer = (className?: string) => (
     <form onSubmit={onSubmit} className={className}>
-      <div className="rounded-[26px] border bg-background/95 shadow-sm backdrop-blur-xl transition-shadow focus-within:shadow-md">
-        <ChatInput
+      <div className="rounded-2xl border bg-background p-2 shadow-xs transition-shadow focus-within:shadow-sm">
+        <textarea
           value={inputText}
           onKeyDown={onKeyDown}
           onChange={(event) => setInputText(event.target.value)}
           placeholder="Ask me anything about your finances..."
-          className="min-h-14 resize-none rounded-[26px] border-0 bg-transparent px-5 pb-2 pt-4 text-[15px] focus-visible:ring-0 focus-visible:ring-offset-0"
+          className="max-h-52 min-h-12 w-full resize-none bg-transparent px-3 py-2 text-[15px] outline-none placeholder:text-muted-foreground"
         />
-        <div className="flex items-center gap-2 px-3 pb-3">
-          <div className="flex items-center gap-1 rounded-full border bg-muted/40 px-1.5 py-1">
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="h-7 w-7 rounded-full text-muted-foreground"
-            >
-              <Paperclip className="size-3.5" />
-              <span className="sr-only">Attach file</span>
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="h-7 w-7 rounded-full text-muted-foreground"
-            >
-              <Mic className="size-3.5" />
-              <span className="sr-only">Use Microphone</span>
-            </Button>
-          </div>
-
+        <div className="flex items-center gap-2 px-2 pb-1">
           <Button
             type={isGenerating ? "button" : "submit"}
             onClick={isGenerating ? () => stop() : undefined}
             disabled={isGenerating ? false : !token || !inputText.trim()}
             size="icon"
-            className="ml-auto h-9 w-9 rounded-full"
+            className="ml-auto h-8 w-8 rounded-full"
           >
             {isGenerating ? (
               <Square className="size-3.5 fill-current" />
@@ -228,8 +231,8 @@ export default function AdvisorPage() {
       }
       try {
         await regenerate({ headers: { Authorization: `Bearer ${token}` } });
-      } catch (error) {
-        console.error("Error reloading:", error);
+      } catch {
+        toast.error("Couldn't regenerate the response. Please try again.");
       }
     } else if (action === "Copy") {
       const message = messages[messageIndex];
@@ -283,55 +286,74 @@ export default function AdvisorPage() {
 
       <div className="min-h-0 flex-1">
         {hasMessages ? (
-          <div className="h-full overflow-y-auto">
-            <ChatMessageList ref={messagesRef} className="mx-auto w-full max-w-4xl px-2 pt-6">
+          <div ref={messagesRef} className="h-full overflow-y-auto">
+            <div className="mx-auto flex w-full max-w-4xl flex-col gap-5 px-3 py-6">
               {messages?.map((message, index) => {
                 if (shouldHideAssistantPlaceholder(message, index)) return null;
-                return (
-                  <ChatBubble
-                    key={message.id}
-                    variant={message.role === "user" ? "sent" : "received"}
-                    className="max-w-[85%]"
-                  >
-                    <ChatBubbleAvatar
-                      src={message.role === "user" ? "/assets/user.png" : ""}
-                      fallback={message.role === "user" ? "👨🏽" : "✦"}
-                    />
-                    <ChatBubbleMessage className="rounded-2xl">
-                      {message.role === "assistant" ? (
-                        <AssistantMessageContent message={message} isGenerating={isGenerating} />
-                      ) : (
-                        getMessageText(message)
-                      )}
+                const isUser = message.role === "user";
 
-                      {message.role === "assistant" && messages.length - 1 === index && (
+                return (
+                  <div
+                    key={message.id}
+                    className={isUser ? "flex justify-end" : "flex items-start gap-3"}
+                  >
+                    {!isUser ? (
+                      <div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border bg-background text-xs">
+                        ✦
+                      </div>
+                    ) : null}
+
+                    <div className={isUser ? "max-w-[82%]" : "w-full max-w-[88%]"}>
+                      <div
+                        className={
+                          isUser
+                            ? "rounded-2xl bg-primary px-4 py-2.5 text-sm text-primary-foreground"
+                            : "space-y-3 rounded-2xl border bg-background px-4 py-3"
+                        }
+                      >
+                        {isUser ? (
+                          <div className="whitespace-pre-wrap">{getMessageText(message)}</div>
+                        ) : (
+                          <AssistantMessageContent message={message} loading={isGenerating} />
+                        )}
+                      </div>
+
+                      {!isUser && messages.length - 1 === index && !isGenerating ? (
                         <div className="mt-1.5 flex items-center gap-1">
-                          {!isGenerating &&
-                            ChatAiIcons.map((icon) => {
-                              const Icon = icon.icon;
-                              return (
-                                <ChatBubbleAction
-                                  className="size-5"
-                                  key={icon.label}
-                                  icon={<Icon className="size-3" />}
-                                  onClick={() => handleActionClick(icon.label, index)}
-                                />
-                              );
-                            })}
+                          {ChatAiIcons.map((icon) => {
+                            const Icon = icon.icon;
+                            return (
+                              <Button
+                                key={icon.label}
+                                size="icon"
+                                variant="ghost"
+                                className="h-7 w-7 text-muted-foreground"
+                                onClick={() => handleActionClick(icon.label, index)}
+                                type="button"
+                              >
+                                <Icon className="size-3.5" />
+                                <span className="sr-only">{icon.label}</span>
+                              </Button>
+                            );
+                          })}
                         </div>
-                      )}
-                    </ChatBubbleMessage>
-                  </ChatBubble>
+                      ) : null}
+                    </div>
+                  </div>
                 );
               })}
 
-              {isGenerating && (
-                <ChatBubble variant="received" className="max-w-[85%]">
-                  <ChatBubbleAvatar src="" fallback="✦" />
-                  <ChatBubbleMessage isLoading className="rounded-2xl" />
-                </ChatBubble>
-              )}
-            </ChatMessageList>
+              {isGenerating ? (
+                <div className="flex items-start gap-3">
+                  <div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border bg-background text-xs">
+                    ✦
+                  </div>
+                  <div className="rounded-2xl border bg-background px-4 py-3 text-sm text-muted-foreground">
+                    Thinking...
+                  </div>
+                </div>
+              ) : null}
+            </div>
           </div>
         ) : (
           <div className="mx-auto flex h-full w-full max-w-3xl flex-col items-center justify-center gap-7">
@@ -366,7 +388,9 @@ export default function AdvisorPage() {
         )}
       </div>
       {hasMessages && (
-        <div className="sticky bottom-0 mx-auto w-full max-w-4xl pb-4 pt-2">{renderComposer()}</div>
+        <div className="sticky bottom-0 mx-auto w-full max-w-4xl bg-gradient-to-t from-background px-2 pb-4 pt-2">
+          {renderComposer()}
+        </div>
       )}
     </div>
   );
