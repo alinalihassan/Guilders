@@ -1,27 +1,30 @@
-import { env } from "cloudflare:workers";
-import { drizzleAdapter } from "@better-auth/drizzle-adapter/relations-v2";
+// import { env } from "cloudflare:workers";
+import { drizzleAdapter } from "@better-auth/drizzle-adapter";
 import { expo } from "@better-auth/expo";
 import { passkey } from "@better-auth/passkey";
-import { stripe } from "@better-auth/stripe";
+// import { stripe } from "@better-auth/stripe";
 import { betterAuth } from "better-auth";
 import { apiKey, bearer, openAPI, twoFactor } from "better-auth/plugins";
-import Stripe from "stripe";
+// import Stripe from "stripe";
 import * as authSchema from "../db/schema/auth";
 import { db } from "./db";
-import { enqueueUserDeleteCleanupJobs } from "./user-delete-cleanup";
+// import { enqueueUserDeleteCleanupJobs } from "./user-delete-cleanup";
 
-const stripeClient = new Stripe(env.STRIPE_SECRET_KEY);
+// const stripeClient = new Stripe(env.STRIPE_SECRET_KEY);
 
 export const auth = betterAuth({
   appName: "Guilders",
-  secret: env.BETTER_AUTH_SECRET,
+  secret: process.env.BETTER_AUTH_SECRET,
   user: {
     deleteUser: {
       enabled: true,
-      beforeDelete: async (user) => {
-        await enqueueUserDeleteCleanupJobs(user.id);
-      },
+      // beforeDelete: async (user) => {
+      //   await enqueueUserDeleteCleanupJobs(user.id);
+      // },
     },
+  },
+  account: {
+    modelName: "user_account"
   },
   emailAndPassword: {
     enabled: true,
@@ -38,25 +41,25 @@ export const auth = betterAuth({
     bearer(),
     openAPI({ disableDefaultReference: true }),
     expo({ disableOriginOverride: true }),
-    stripe({
-      stripeClient,
-      stripeWebhookSecret: env.STRIPE_WEBHOOK_SECRET ?? "",
-      createCustomerOnSignUp: true,
-      subscription: {
-        enabled: true,
-        plans: [
-          // TODO: Replace with your actual Stripe price IDs
-          {
-            name: "pro",
-            priceId: "price_placeholder_monthly",
-            annualDiscountPriceId: "price_placeholder_annual",
-            freeTrial: {
-              days: 14,
-            },
-          },
-        ],
-      },
-    }),
+    // stripe({
+    //   stripeClient,
+    //   stripeWebhookSecret: env.STRIPE_WEBHOOK_SECRET ?? "",
+    //   createCustomerOnSignUp: true,
+    //   subscription: {
+    //     enabled: true,
+    //     plans: [
+    //       // TODO: Replace with your actual Stripe price IDs
+    //       {
+    //         name: "pro",
+    //         priceId: "price_placeholder_monthly",
+    //         annualDiscountPriceId: "price_placeholder_annual",
+    //         freeTrial: {
+    //           days: 14,
+    //         },
+    //       },
+    //     ],
+    //   },
+    // }),
   ],
   database: drizzleAdapter(db, { provider: "pg", schema: authSchema }),
   advanced: {

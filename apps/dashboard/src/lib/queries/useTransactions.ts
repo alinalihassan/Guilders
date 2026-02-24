@@ -14,14 +14,14 @@ export function useTransactions(accountId?: number) {
       const api = await getApiClient();
       const response = await api.transactions.$get({
         query: {
-          assetId: accountId,
+          accountId: accountId,
         },
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data?.error || "Failed to fetch transactions");
       return (data as ApiTransaction[]).map((transaction) => ({
         ...transaction,
-        account_id: transaction.asset_id ?? transaction.account_id,
+        account_id: transaction.account_id ?? transaction.asset_id,
       }));
     },
   });
@@ -56,7 +56,7 @@ export function useAddTransaction() {
       const response = await api.transactions.$post({
         json: {
           ...transaction,
-          asset_id: (transaction as ApiTransaction).account_id,
+          account_id: (transaction as ApiTransaction).account_id,
         },
       });
       const data = await response.json();
@@ -69,7 +69,7 @@ export function useAddTransaction() {
       return {
         ...(data as ApiTransaction),
         account_id:
-          (data as ApiTransaction).asset_id ??
+          (data as ApiTransaction).account_id ??
           (transaction as ApiTransaction).account_id,
       };
     },
@@ -113,7 +113,7 @@ export function useUpdateTransaction() {
         },
         json: {
           ...transaction,
-          asset_id: (transaction as ApiTransaction).account_id,
+          account_id: (transaction as ApiTransaction).account_id,
         },
       });
       const data = await response.json();
@@ -126,7 +126,7 @@ export function useUpdateTransaction() {
       return {
         ...(data as ApiTransaction),
         account_id:
-          (data as ApiTransaction).asset_id ??
+          (data as ApiTransaction).account_id ??
           (transaction as ApiTransaction).account_id,
       };
     },

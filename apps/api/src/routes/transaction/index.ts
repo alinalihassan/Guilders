@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { Elysia, status, t } from "elysia";
-import { asset } from "../../db/schema/assets";
+import { account } from "../../db/schema/accounts";
 import {
   insertTransactionSchema,
   selectTransactionSchema,
@@ -27,8 +27,8 @@ export const transactionRoutes = new Elysia({
     async ({ user, query }) => {
       return await db.query.transaction.findMany({
         where: {
-          asset_id: query.assetId,
-          asset: {
+          account_id: query.accountId,
+          account: {
             user_id: user.id,
           }
         },
@@ -38,49 +38,49 @@ export const transactionRoutes = new Elysia({
     {
       auth: true,
       query: t.Object({
-        assetId: t.Optional(t.Number()),
+        accountId: t.Optional(t.Number()),
       }),
       response: t.Array(t.Ref("#/components/schemas/Transaction")),
       detail: {
         summary: "Get all transactions",
         description:
-          "Retrieve all transactions for the authenticated user, optionally filtered by asset",
+          "Retrieve all transactions for the authenticated user, optionally filtered by account",
       },
     },
   )
   .post(
     "",
     async ({ body, user }) => {
-      // Verify the asset belongs to the user
-      const assetResult = await db
-        .query.asset.findFirst({
+      // Verify the account belongs to the user
+      const accountResult = await db
+        .query.account.findFirst({
           where: {
-            id: body.asset_id,
+            id: body.account_id,
             user_id: user.id,
           },
         });
 
-      if (!assetResult) {
-        return status(404, { error: "Asset not found" });
+      if (!accountResult) {
+        return status(404, { error: "Account not found" });
       }
 
       const amount = parseFloat(body.amount.toString());
 
-      // Update asset value
-      const currentValue = parseFloat(assetResult.value.toString());
+      // Update account value
+      const currentValue = parseFloat(accountResult.value.toString());
       const newValue = currentValue + amount;
 
       const newTransaction = await db.transaction(async (tx) => {
         await tx
-          .update(asset)
+          .update(account)
           .set({ value: newValue.toString(), updated_at: new Date() })
-          .where(eq(asset.id, body.asset_id));
+          .where(eq(account.id, body.account_id));
 
         // Create transaction
         const [transactionResult] = await tx
           .insert(transaction)
           .values({
-            asset_id: body.asset_id,
+            account_id: body.account_id,
             amount: body.amount,
             currency: body.currency,
             date: body.date,
@@ -121,7 +121,7 @@ export const transactionRoutes = new Elysia({
       const transactionResult = await db.query.transaction.findFirst({
         where: {
           id: params.id,
-          asset: {
+          account: {
             user_id: user.id,
           }
         },
@@ -151,17 +151,17 @@ export const transactionRoutes = new Elysia({
   .put(
     "/:id",
     async ({ params, body, user }) => {
-      // Verify the asset belongs to the user
-      const targetAsset = await db
-        .query.asset.findFirst({
+      // Verify the account belongs to the user
+      const targetAccount = await db
+        .query.account.findFirst({
           where: {
-            id: body.asset_id,
+            id: body.account_id,
             user_id: user.id,
           },
         });
 
-      if (!targetAsset) {
-        return status(404, { error: "Asset not found" });
+      if (!targetAccount) {
+        return status(404, { error: "Account not found" });
       }
 
       // Get existing transaction
@@ -169,7 +169,7 @@ export const transactionRoutes = new Elysia({
         .query.transaction.findFirst({
           where: {
             id: params.id,
-            asset: {
+            account: {
               user_id: user.id,
             }
           },
@@ -183,21 +183,21 @@ export const transactionRoutes = new Elysia({
       const oldTransactionAmount = parseFloat(existingTransaction.amount.toString());
       const newTransactionAmount = parseFloat(body.amount.toString());
       const amountDiff = newTransactionAmount - oldTransactionAmount;
-      const currentAssetValue = parseFloat(targetAsset.value.toString());
-      const newAssetValue = currentAssetValue + amountDiff;
+      const currentAccountValue = parseFloat(targetAccount.value.toString());
+      const newAccountValue = currentAccountValue + amountDiff;
 
       const updatedTransaction = await db.transaction(async (tx) => {
-        // Update asset value
+        // Update account value
         await tx
-          .update(asset)
-          .set({ value: newAssetValue.toString(), updated_at: new Date() })
-          .where(eq(asset.id, body.asset_id));
+          .update(account)
+          .set({ value: newAccountValue.toString(), updated_at: new Date() })
+          .where(eq(account.id, body.account_id));
 
         // Update transaction
         const [updatedTransactionResult] = await tx
           .update(transaction)
           .set({
-            asset_id: body.asset_id,
+            account_id: body.account_id,
             amount: body.amount,
             currency: body.currency,
             date: body.date,
@@ -245,7 +245,7 @@ export const transactionRoutes = new Elysia({
       const existingTransaction = await db.query.transaction.findFirst({
         where: {
           id: params.id,
-          asset: {
+          account: {
             user_id: user.id,
           }
         },
@@ -255,30 +255,30 @@ export const transactionRoutes = new Elysia({
         return status(404, { error: "Transaction not found" });
       }
 
-      // Get asset for balance update
-      const assetResult = await db
-        .query.asset.findFirst({
+      // Get account for balance update
+      const accountResult = await db
+        .query.account.findFirst({
           where: {
-            id: existingTransaction.asset_id,
+            id: existingTransaction.account_id,
           },
         });
 
-      if (!assetResult) {
-        return status(404, { error: "Associated asset not found" });
+      if (!accountResult) {
+        return status(404, { error: "Associated account not found" });
       }
 
-      const targetAsset = assetResult;
+      const targetAccount = accountResult;
       const amount = parseFloat(existingTransaction.amount.toString());
 
-      const currentValue = parseFloat(targetAsset.value.toString());
+      const currentValue = parseFloat(targetAccount.value.toString());
       const newValue = currentValue - amount;
 
       await db.transaction(async (tx) => {
-        // Update asset value
+        // Update account value
         await tx
-          .update(asset)
+          .update(account)
           .set({ value: newValue.toString(), updated_at: new Date() })
-          .where(eq(asset.id, existingTransaction.asset_id));
+          .where(eq(account.id, existingTransaction.account_id));
 
         // Delete transaction
         await tx.delete(transaction).where(eq(transaction.id, params.id));

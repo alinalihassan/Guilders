@@ -438,8 +438,8 @@ export default function TransactionDetailScreen() {
 						colors={colors}
 					/>
 					<DetailRow
-						label="Asset ID"
-						value={`#${transaction.asset_id}`}
+						label="Account ID"
+						value={`#${transaction.account_id}`}
 						icon="💳"
 						colors={colors}
 					/>

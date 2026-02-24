@@ -17,8 +17,8 @@ export default function ConnectionsPage() {
           <h4 className="font-medium">Connection management is in app flows</h4>
           <p className="text-sm text-muted-foreground">
             Create new provider connections from the command menu (`Add Account`
-            → `Add Synced Account`). Existing synced assets can be refreshed or
-            fixed from their asset detail and edit dialogs.
+            → `Add Synced Account`). Existing synced accounts can be refreshed or
+            fixed from their account detail and edit dialogs.
           </p>
         </div>
       </Card>

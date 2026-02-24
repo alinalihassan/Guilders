@@ -19,7 +19,7 @@ export default function RootLayout() {
           }}
         />
         <Stack.Screen
-          name="asset/create"
+          name="account/create"
           options={{
             presentation: 'modal',
             animation: 'slide_from_bottom'

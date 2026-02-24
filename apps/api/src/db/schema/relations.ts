@@ -1,6 +1,11 @@
 import { defineRelations } from "drizzle-orm";
-import { asset } from "./assets";
-import { account, session, subscription, user, verification } from "./auth";
+import { account } from "./accounts";
+import {
+  session,
+  user,
+  user_account,
+  verification,
+} from "./auth";
 import { country } from "./countries";
 import { currency } from "./currencies";
 import { institutionConnection } from "./institution-connections";
@@ -12,10 +17,10 @@ import { transaction } from "./transactions";
 import { userSetting } from "./user-settings";
 
 const schema = {
-  account,
+  user_account,
   session,
   user,
-  asset,
+  account,
   country,
   currency,
   institutionConnection,
@@ -23,7 +28,6 @@ const schema = {
   providerConnection,
   provider,
   rate,
-  subscription,
   transaction,
   userSetting,
   verification,
@@ -35,9 +39,9 @@ export const relations = defineRelations(schema, (r) => ({
       from: r.user.id,
       to: r.session.userId,
     }),
-    accounts: r.many.account({
+    accounts: r.many.user_account({
       from: r.user.id,
-      to: r.account.userId,
+      to: r.user_account.userId,
     }),
   },
   session: {
@@ -46,31 +50,31 @@ export const relations = defineRelations(schema, (r) => ({
       to: r.user.id,
     }),
   },
-  account: {
+  user_account: {
     user: r.one.user({
-      from: r.account.userId,
+      from: r.user_account.userId,
       to: r.user.id,
     }),
   },
-  asset: {
+  account: {
     currencyRel: r.one.currency({
-      from: r.asset.currency,
+      from: r.account.currency,
       to: r.currency.code,
       alias: "currencyRel",
     }),
     institutionConnection: r.one.institutionConnection({
-      from: r.asset.institution_connection_id,
+      from: r.account.institution_connection_id,
       to: r.institutionConnection.id,
     }),
     transactions: r.many.transaction({
-      from: r.asset.id,
-      to: r.transaction.asset_id,
+      from: r.account.id,
+      to: r.transaction.account_id,
     }),
   },
   transaction: {
-    asset: r.one.asset({
-      from: r.transaction.asset_id,
-      to: r.asset.id,
+    account: r.one.account({
+      from: r.transaction.account_id,
+      to: r.account.id,
     }),
     currencyRel: r.one.currency({
       from: r.transaction.currency,
@@ -79,9 +83,9 @@ export const relations = defineRelations(schema, (r) => ({
     }),
   },
   currency: {
-    assets: r.many.asset({
+    accounts: r.many.account({
       from: r.currency.code,
-      to: r.asset.currency,
+      to: r.account.currency,
     }),
     rates: r.many.rate({
       from: r.currency.code,
@@ -126,9 +130,9 @@ export const relations = defineRelations(schema, (r) => ({
       from: r.institutionConnection.institution_id,
       to: r.institution.id,
     }),
-    assets: r.many.asset({
+    accounts: r.many.account({
       from: r.institutionConnection.id,
-      to: r.asset.institution_connection_id,
+      to: r.account.institution_connection_id,
     }),
   },
   institution: {

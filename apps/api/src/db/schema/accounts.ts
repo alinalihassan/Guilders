@@ -24,8 +24,8 @@ import {
 } from "./enums";
 import { institutionConnection } from "./institution-connections";
 
-export const asset = pgTable(
-  "asset",
+export const account = pgTable(
+  "account",
   {
     cost: numeric("cost", { precision: 19, scale: 4 }),
     created_at: timestamp("created_at").notNull().defaultNow(),
@@ -67,18 +67,18 @@ export const asset = pgTable(
     value: numeric("value", { precision: 19, scale: 4 }).notNull(),
   },
   (table) => [
-    index("asset_id_idx").on(table.id),
-    index("asset_user_idx").on(table.user_id),
-    index("asset_currency_idx").on(table.currency),
-    index("asset_parent_idx").on(table.parent),
-    index("asset_institution_connection_idx").on(
+    index("account_id_idx").on(table.id),
+    index("account_user_idx").on(table.user_id),
+    index("account_currency_idx").on(table.currency),
+    index("account_parent_idx").on(table.parent),
+    index("account_institution_connection_idx").on(
       table.institution_connection_id,
     ),
   ],
 );
 
-export type Asset = typeof asset.$inferSelect;
-export type InsertAsset = typeof asset.$inferInsert;
+export type Account = typeof account.$inferSelect;
+export type InsertAccount = typeof account.$inferInsert;
 
-export const selectAssetSchema = createSelectSchema(asset);
-export const insertAssetSchema = createInsertSchema(asset);
+export const selectAccountSchema = createSelectSchema(account);
+export const insertAccountSchema = createInsertSchema(account);

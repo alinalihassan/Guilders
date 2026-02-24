@@ -15,9 +15,9 @@
   },
   "dependencies": {
     "@better-auth/drizzle-adapter": "https://pkg.pr.new/better-auth/better-auth/@better-auth/drizzle-adapter@6913",
-    "@better-auth/expo": "^1.4.18",
-    "@better-auth/passkey": "^1.4.18",
-    "@better-auth/stripe": "^1.4.18",
+    "@better-auth/expo": "^1.4.19",
+    "@better-auth/passkey": "^1.4.19",
+    "@better-auth/stripe": "^1.4.19",
     "@elysiajs/cors": "^1.4.1",
     "@elysiajs/eden": "^1.4.8",
     "@elysiajs/openapi": "^1.4.14",
@@ -25,7 +25,7 @@
     "@sinclair/typebox": "^0.34.48",
     "ai": "^6.0.96",
     "ai-gateway-provider": "^3.1.1",
-    "better-auth": "^1.4.18",
+    "better-auth": "^1.4.19",
     "drizzle-orm": "1.0.0-beta.15-859cf75",
     "drizzle-typebox": "^0.3.3",
     "elysia": "1.4.25",
@@ -33,7 +33,7 @@
     "stripe": "^20.3.1"
   },
   "devDependencies": {
-    "@better-auth/cli": "^1.4.18",
+    "@better-auth/cli": "^1.4.19",
     "@types/node": "^25.3.0",
     "drizzle-kit": "1.0.0-beta.15-859cf75",
     "wrangler": "^4.65.0"

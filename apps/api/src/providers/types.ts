@@ -1,4 +1,4 @@
-import type { InsertAsset } from "../db/schema/assets";
+import type { InsertAccount } from "../db/schema/accounts";
 import type { InsertTransaction } from "../db/schema/transactions";
 
 export type ProviderName = "SaltEdge" | "SnapTrade";
@@ -26,7 +26,7 @@ export type TransactionParams = {
   accountId: string;
 };
 
-export type ProviderAsset = InsertAsset & {
+export type ProviderAccount = InsertAccount & {
   user_id: string;
 };
 
@@ -67,6 +67,6 @@ export interface IProvider {
   connect(params: ConnectionParams): Promise<ConnectResult>;
   reconnect(params: ConnectionParams): Promise<ConnectResult>;
   refreshConnection(connectionId: string): Promise<RefreshConnectionResult>;
-  getAccounts(params: AccountParams): Promise<ProviderAsset[]>;
+  getAccounts(params: AccountParams): Promise<ProviderAccount[]>;
   getTransactions(params: TransactionParams): Promise<InsertTransaction[]>;
 }

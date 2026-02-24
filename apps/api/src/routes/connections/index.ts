@@ -131,7 +131,7 @@ export const connectionsRoutes = new Elysia({
       if (!institutionRecord)
         return status(404, { error: "Institution not found" });
 
-      const accountRecord = await db.query.asset.findFirst({
+      const accountRecord = await db.query.account.findFirst({
         where: {
           id: accountId,
           user_id: user.id,

@@ -1,4 +1,4 @@
-INSERT INTO public.asset (
+INSERT INTO public.account (
   id,
   name,
   type,
@@ -15,13 +15,13 @@ INSERT INTO public.asset (
   'depository',
   'EUR',
   5234.67,
-  'U4pHXI2d71OeLwQuSmZCbFesGWFK9iGN', -- Replace with actual user_id
+  'jBZHHAlETMGmSXnmQUWtQY5fzmaoTug7', -- Replace with actual user_id
   'non_investable',
   'taxable'
 );
 
 INSERT INTO public.transaction (
-  asset_id,
+  account_id,
   amount,
   currency,
   date,

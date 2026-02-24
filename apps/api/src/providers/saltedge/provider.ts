@@ -6,7 +6,7 @@ import type {
   ConnectResult,
   DeregisterUserResult,
   IProvider,
-  ProviderAsset,
+  ProviderAccount,
   ProviderInstitution,
   ProviderName,
   RefreshConnectionResult,
@@ -65,7 +65,7 @@ function mapSaltEdgeAccount(
   account: SaltEdgeAccount,
   userId: string,
   institutionConnectionId: number,
-): ProviderAsset {
+): ProviderAccount {
   return {
     user_id: userId,
     name: account.name,
@@ -222,7 +222,7 @@ export class SaltEdgeProvider implements IProvider {
     }
   }
 
-  async getAccounts(params: AccountParams): Promise<ProviderAsset[]> {
+  async getAccounts(params: AccountParams): Promise<ProviderAccount[]> {
     const config = getSaltEdgeConfig();
     const { db } = await import("../../lib/db");
 
@@ -247,24 +247,24 @@ export class SaltEdgeProvider implements IProvider {
     const config = getSaltEdgeConfig();
     const { db } = await import("../../lib/db");
 
-    const assetRecord = await db.query.asset.findFirst({
+    const accountRecord = await db.query.account.findFirst({
       where: { provider_account_id: params.accountId },
       with: { institutionConnection: true },
     });
-    if (!assetRecord?.institutionConnection?.connection_id) {
-      throw new Error("Asset or connection not found");
+    if (!accountRecord?.institutionConnection?.connection_id) {
+      throw new Error("Account or connection not found");
     }
 
     const transactions = await client.listAllTransactions(
       config,
-      assetRecord.institutionConnection.connection_id,
+      accountRecord.institutionConnection.connection_id,
       params.accountId,
     );
 
     return transactions
       .filter((t) => !t.duplicated)
       .map((t) => ({
-        asset_id: assetRecord.id,
+        account_id: accountRecord.id,
         amount: String(t.amount),
         currency: t.currency_code,
         date: t.made_on,

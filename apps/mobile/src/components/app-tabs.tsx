@@ -13,8 +13,8 @@ export default function AppTabs() {
       indicatorColor={colors.backgroundElement}
       labelStyle={{ selected: { color: colors.text } }}
       minimizeBehavior="onScrollDown">
-      <NativeTabs.Trigger name="assets">
-        <NativeTabs.Trigger.Label>Assets</NativeTabs.Trigger.Label>
+      <NativeTabs.Trigger name="accounts">
+        <NativeTabs.Trigger.Label>Accounts</NativeTabs.Trigger.Label>
         {Platform.select({
           ios: <NativeTabs.Trigger.Icon sf={{ default: 'creditcard', selected: 'creditcard.fill' }} />,
           android: <NativeTabs.Trigger.Icon md="account_balance_wallet" />,

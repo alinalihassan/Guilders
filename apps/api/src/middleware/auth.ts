@@ -15,7 +15,7 @@ import { db } from "../lib/db";
  * app
  *   .use(authPlugin)
  *   .get("/protected", async ({ user }) => {
- *     return db.query.asset.findMany({
+ *     return db.query.account.findMany({
  *       where: {
  *         user_id: user.id,
  *       },
@@ -23,7 +23,7 @@ import { db } from "../lib/db";
  *   }, {
  *     auth: true,
  *     response: {
- *       200: t.Array(selectAssetSchema),
+ *       200: t.Array(selectAccountSchema),
  *       401: errorSchema,
  *     }
  *   })

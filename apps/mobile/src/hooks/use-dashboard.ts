@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { api } from '@/lib/api';
 
-export type Asset = {
+export type Account = {
   id: number;
   name: string;
   type: string;
@@ -14,7 +14,7 @@ export type Asset = {
 
 export type Transaction = {
   id: number;
-  asset_id: number;
+  account_id: number;
   amount: string;
   currency: string;
   date: string;
@@ -22,8 +22,8 @@ export type Transaction = {
   category: string;
 };
 
-export function useAssets() {
-  const [data, setData] = useState<Asset[] | null>(null);
+export function useAccounts() {
+  const [data, setData] = useState<Account[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -31,10 +31,10 @@ export function useAssets() {
     setLoading(true);
     setError(null);
     try {
-      const result = await api.get<Asset[]>('/api/asset');
+      const result = await api.get<Account[]>('/api/account');
       setData(result);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to load assets');
+      setError(e instanceof Error ? e.message : 'Failed to load accounts');
     } finally {
       setLoading(false);
     }

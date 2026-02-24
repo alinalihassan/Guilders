@@ -2,29 +2,29 @@
 
 ## Overview
 
-This document explains the data model for Guilders, a personal finance application that supports both manual and synchronized financial assets.
+This document explains the data model for Guilders, a personal finance application that supports both manual and synchronized financial accounts.
 
 ## Core Concepts
 
-### Assets (The Central Entity)
+### Accounts (The Central Entity)
 
-Assets represent the user's financial accounts and holdings. Every asset belongs to a user and has a type and value.
+Accounts represent the user's financial accounts and holdings. Every account belongs to a user and has a type and value.
 
 **Key Fields:**
 - `id`: Unique identifier
-- `user_id`: Owner of the asset
-- `name`: Asset name (e.g., "Chase Checking", "Bitcoin Wallet")
+- `user_id`: Owner of the account
+- `name`: Account name (e.g., "Chase Checking", "Bitcoin Wallet")
 - `type`: "asset" or "liability"
 - `subtype`: depository, brokerage, crypto, property, vehicle, creditcard, loan, stock
 - `value`: Current value in the specified currency
 - `currency`: ISO currency code (e.g., "USD", "EUR")
-- `institution_connection_id`: Links to institution connection (optional, for synced assets)
+- `institution_connection_id`: Links to institution connection (optional, for synced accounts)
 
-**Asset Types:**
-- **Manual Assets**: Created and updated manually by the user (e.g., cash under mattress, physical gold)
-- **Synced Assets**: Automatically updated through financial providers (e.g., bank accounts via Plaid)
+**Account Types:**
+- **Manual Accounts**: Created and updated manually by the user (e.g., cash under mattress, physical gold)
+- **Synced Accounts**: Automatically updated through financial providers (e.g., bank accounts via Plaid)
 
-### Data Flow for Synced Assets
+### Data Flow for Synced Accounts
 
 ```
 Provider (e.g., Plaid)
@@ -35,7 +35,7 @@ Provider Connection (user ↔ provider link)
   ↓
 Institution Connection (connection to specific institution)
   ↓
-Assets (accounts/investments from the institution)
+Accounts (accounts/investments from the institution)
   ↓
 Transactions (transactions from those accounts)
 ```
@@ -100,11 +100,11 @@ Links a provider connection to a specific institution. Represents the user's acc
 
 ### Transactions
 
-Financial transactions associated with assets.
+Financial transactions associated with accounts.
 
 **Key Fields:**
 - `id`: Unique identifier
-- `asset_id`: Which asset this transaction belongs to
+- `account_id`: Which account this transaction belongs to
 - `amount`: Transaction amount
 - `currency`: Currency code
 - `date`: Transaction date
@@ -112,25 +112,22 @@ Financial transactions associated with assets.
 - `category`: Transaction category
 
 **Types:**
-- **Manual Transactions**: Created by the user for manual assets
-- **Synced Transactions**: Automatically imported from synced assets
+- **Manual Transactions**: Created by the user for manual accounts
+- **Synced Transactions**: Automatically imported from synced accounts
 
 ## API Endpoints
 
-### Assets
-**Not currently exposed** - Need to uncomment asset routes in `/apps/api/src/routes/index.ts`
-
-When enabled:
-- `GET /api/asset` - List all user's assets
-- `POST /api/asset` - Create manual asset
-- `GET /api/asset/:id` - Get specific asset
-- `PUT /api/asset/:id` - Update asset
-- `DELETE /api/asset/:id` - Delete asset
+### Accounts
+- `GET /api/account` - List all user's accounts
+- `POST /api/account` - Create manual account
+- `GET /api/account/:id` - Get specific account
+- `PUT /api/account/:id` - Update account
+- `DELETE /api/account/:id` - Delete account
 
 ### Transactions
 - `GET /api/transaction` - List user's transactions (should be ordered by date desc)
 - `POST /api/transaction` - Create transaction
-- `GET /api/asset/:id/transaction` - List transactions for specific asset
+- `GET /api/account/:id/transaction` - List transactions for specific account
 
 ### Institution Connections
 - `GET /api/institution-connection` - List institution connections with details
@@ -139,14 +136,14 @@ When enabled:
 
 ### Home Tab
 Should display:
-1. **Total Net Worth**: Sum of all asset values minus liabilities
-2. **Asset Breakdown**: List of assets grouped by type
-3. **Recent Transactions**: Latest transactions across all assets
+1. **Total Net Worth**: Sum of all account values minus liabilities
+2. **Account Breakdown**: List of accounts grouped by type
+3. **Recent Transactions**: Latest transactions across all accounts
 
 **Data Fetching:**
 ```typescript
-// Get all assets (both manual and synced)
-GET /api/asset
+// Get all accounts (both manual and synced)
+GET /api/account
 
 // Get recent transactions
 GET /api/transaction?limit=10
@@ -171,26 +168,26 @@ The mobile app uses Better Auth client with expo-secure-store for token persiste
 
 ### For Agents Working on This Codebase
 
-1. **Assets are the primary entities** - Always fetch assets for the home view, not institution connections
-2. **Transactions belong to assets** - When displaying transactions, show which asset they belong to
-3. **Synced vs Manual** - Check `institution_connection_id` to determine if an asset is synced
+1. **Accounts are the primary entities** - Always fetch accounts for the home view, not institution connections
+2. **Transactions belong to accounts** - When displaying transactions, show which account they belong to
+3. **Synced vs Manual** - Check `institution_connection_id` to determine if an account is synced
 4. **Single API client** - Use the Better Auth client for all requests; it handles authentication automatically
-5. **Currency handling** - Assets have their own currency; consider conversion for totals
+5. **Currency handling** - Accounts have their own currency; consider conversion for totals
 
 ### Common Patterns
 
 **Fetch Dashboard Data:**
 ```typescript
 // Home tab should fetch:
-const assets = await fetch('/api/asset').then(r => r.json());
-const totalValue = assets.reduce((sum, a) => sum + (a.type === 'liability' ? -1 : 1) * Number(a.value), 0);
+const accounts = await fetch('/api/account').then(r => r.json());
+const totalValue = accounts.reduce((sum, a) => sum + (a.type === 'liability' ? -1 : 1) * Number(a.value), 0);
 
 const transactions = await fetch('/api/transaction?limit=20').then(r => r.json());
 ```
 
-**Create Manual Asset:**
+**Create Manual Account:**
 ```typescript
-POST /api/asset
+POST /api/account
 {
   "name": "Emergency Cash",
   "type": "asset",
@@ -204,7 +201,7 @@ POST /api/asset
 ```typescript
 POST /api/transaction
 {
-  "asset_id": 123,
+  "account_id": 123,
   "amount": -150.00,
   "currency": "USD",
   "date": "2026-02-19",

@@ -13,15 +13,15 @@ import {
   createInsertSchema,
   createSelectSchema,
 } from "drizzle-orm/typebox-legacy";
-import { asset } from "./assets";
+import { account } from "./accounts";
 import { currency } from "./currencies";
 
 export const transaction = pgTable(
   "transaction",
   {
-    asset_id: integer("asset_id")
+    account_id: integer("account_id")
       .notNull()
-      .references(() => asset.id, {
+      .references(() => account.id, {
         onDelete: "cascade",
         onUpdate: "cascade",
       }),
@@ -44,7 +44,7 @@ export const transaction = pgTable(
   },
   (table) => [
     index("transaction_id_idx").on(table.id),
-    index("transaction_asset_idx").on(table.asset_id),
+    index("transaction_account_idx").on(table.account_id),
     index("transaction_currency_idx").on(table.currency),
     index("transaction_date_idx").on(table.date),
   ],

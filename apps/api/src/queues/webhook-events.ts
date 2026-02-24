@@ -1,6 +1,6 @@
 import { env } from "cloudflare:workers";
 import { and, eq } from "drizzle-orm";
-import { asset } from "../db/schema/assets";
+import { account } from "../db/schema/accounts";
 import { AccountSubtypeEnum, AccountTypeEnum } from "../db/schema/enums";
 import { institutionConnection } from "../db/schema/institution-connections";
 import { db } from "../lib/db";
@@ -244,7 +244,7 @@ async function handleSnapTradeAccountRemoved(
   payload: SnapTradeWebhookEvent["payload"],
 ): Promise<void> {
   if (!payload.accountId) return;
-  await db.delete(asset).where(eq(asset.provider_account_id, payload.accountId));
+  await db.delete(account).where(eq(account.provider_account_id, payload.accountId));
 }
 
 async function syncSnapTradeHoldings(
@@ -308,16 +308,16 @@ async function syncSnapTradeHoldings(
     accountId: payload.accountId,
   });
 
-  const account = response.data?.account;
-  if (!account) {
+  const snapAccount = response.data?.account;
+  if (!snapAccount) {
     throw new Error("SnapTrade holdings missing account payload");
   }
 
   if (trigger === "NEW_ACCOUNT_AVAILABLE") {
     const holdingsSynced =
-      account.sync_status?.holdings?.initial_sync_completed ?? false;
+      snapAccount.sync_status?.holdings?.initial_sync_completed ?? false;
     const txSynced =
-      account.sync_status?.transactions?.initial_sync_completed ?? false;
+      snapAccount.sync_status?.transactions?.initial_sync_completed ?? false;
     if (!holdingsSynced || !txSynced) {
       console.log("[SnapTrade holdings] NEW_ACCOUNT_AVAILABLE skipped", {
         reason: "initial sync not completed",
@@ -328,9 +328,9 @@ async function syncSnapTradeHoldings(
     }
   }
 
-  const totalValue = account.balance?.total?.amount ?? 0;
-  const totalCurrency = account.balance?.total?.currency?.toUpperCase() ?? "EUR";
-  const parentName = account.institution_name ?? "SnapTrade Account";
+  const totalValue = snapAccount.balance?.total?.amount ?? 0;
+  const totalCurrency = snapAccount.balance?.total?.currency?.toUpperCase() ?? "EUR";
+  const parentName = snapAccount.institution_name ?? "SnapTrade Account";
   const totalCost =
     response.data?.positions?.reduce(
       (acc, position) =>
@@ -339,12 +339,12 @@ async function syncSnapTradeHoldings(
     ) ?? totalValue;
 
   const [existingParent] = await db
-    .select({ id: asset.id })
-    .from(asset)
+    .select({ id: account.id })
+    .from(account)
     .where(
       and(
-        eq(asset.institution_connection_id, institutionConn.id),
-        eq(asset.provider_account_id, account.id),
+        eq(account.institution_connection_id, institutionConn.id),
+        eq(account.provider_account_id, snapAccount.id),
       ),
     )
     .limit(1);
@@ -353,7 +353,7 @@ async function syncSnapTradeHoldings(
 
   if (existingParent) {
     await db
-      .update(asset)
+      .update(account)
       .set({
         type: AccountTypeEnum.asset,
         subtype: AccountSubtypeEnum.brokerage,
@@ -363,17 +363,17 @@ async function syncSnapTradeHoldings(
         currency: totalCurrency,
         cost: totalCost.toString(),
         institution_connection_id: institutionConn.id,
-        provider_account_id: account.id,
+        provider_account_id: snapAccount.id,
         image: institutionRecord.logo_url,
         parent: null,
         updated_at: new Date(),
       })
-      .where(eq(asset.id, existingParent.id));
+      .where(eq(account.id, existingParent.id));
 
     parentId = existingParent.id;
   } else {
     const [createdParent] = await db
-      .insert(asset)
+      .insert(account)
       .values({
         type: AccountTypeEnum.asset,
         subtype: AccountSubtypeEnum.brokerage,
@@ -383,19 +383,19 @@ async function syncSnapTradeHoldings(
         currency: totalCurrency,
         cost: totalCost.toString(),
         institution_connection_id: institutionConn.id,
-        provider_account_id: account.id,
+        provider_account_id: snapAccount.id,
         image: institutionRecord.logo_url,
       })
-      .returning({ id: asset.id });
+      .returning({ id: account.id });
 
     if (!createdParent)
-      throw new Error("Failed to create SnapTrade parent asset");
+      throw new Error("Failed to create SnapTrade parent account");
     parentId = createdParent.id;
   }
 
   await db
-    .delete(asset)
-    .where(and(eq(asset.parent, parentId), eq(asset.user_id, payload.userId)));
+    .delete(account)
+    .where(and(eq(account.parent, parentId), eq(account.user_id, payload.userId)));
 
   const positions = response.data?.positions ?? [];
   const positionsValue = positions.reduce((acc, position) => {
@@ -405,8 +405,8 @@ async function syncSnapTradeHoldings(
   }, 0);
   const cashValue = totalValue - positionsValue;
 
-  // Add cash as a child asset so the portfolio reflects liquid balance explicitly.
-  await db.insert(asset).values({
+  // Add cash as a child account so the portfolio reflects liquid balance explicitly.
+  await db.insert(account).values({
     type: AccountTypeEnum.asset,
     subtype: AccountSubtypeEnum.depository,
     user_id: payload.userId,
@@ -428,7 +428,7 @@ async function syncSnapTradeHoldings(
     const average = position.average_purchase_price ?? 0;
     const symbol = position.symbol?.symbol;
 
-    await db.insert(asset).values({
+    await db.insert(account).values({
       type: AccountTypeEnum.asset,
       subtype: AccountSubtypeEnum.stock,
       user_id: payload.userId,
@@ -448,12 +448,12 @@ async function syncSnapTradeHoldings(
   const parentValue = cashValue + positionsValue;
 
   await db
-    .update(asset)
+    .update(account)
     .set({
       value: parentValue.toString(),
       updated_at: new Date(),
     })
-    .where(eq(asset.id, parentId));
+    .where(eq(account.id, parentId));
 
   console.log("[SnapTrade holdings] sync complete", {
     userId: payload.userId,

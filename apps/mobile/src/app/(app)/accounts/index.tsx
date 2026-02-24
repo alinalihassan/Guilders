@@ -3,9 +3,6 @@ import { Link, router } from "expo-router";
 import { useCallback, useState } from "react";
 import {
 	ActivityIndicator,
-	Animated,
-	type NativeScrollEvent,
-	type NativeSyntheticEvent,
 	Pressable,
 	RefreshControl,
 	ScrollView,
@@ -17,9 +14,9 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Colors, Fonts, Spacing } from "@/constants/theme";
 import {
-	type Asset,
+	type Account,
 	type Transaction,
-	useAssets,
+	useAccounts,
 	useTransactions,
 } from "@/hooks/use-dashboard";
 
@@ -73,7 +70,7 @@ function getCategoryIcon(category: string): string {
 	return map[category.toLowerCase()] ?? "📋";
 }
 
-function getAssetIcon(subtype: string): string {
+function getAccountIcon(subtype: string): string {
 	const map: Record<string, string> = {
 		depository: "🏦",
 		brokerage: "📈",
@@ -88,23 +85,6 @@ function getAssetIcon(subtype: string): string {
 }
 
 // ─── Components ──────────────────────────────────────────────────────────────
-
-function Sparkline({ color }: { color: string }) {
-	// Simple SVG sparkline - in a real app you'd use actual data
-	return (
-		<View style={{ height: 40, marginTop: Spacing.three }}>
-			<svg width="100%" height="40" viewBox="0 0 300 40" preserveAspectRatio="none">
-				<path
-					d="M0,35 Q30,30 60,32 T120,25 T180,28 T240,20 T300,15"
-					fill="none"
-					stroke={color}
-					strokeWidth="2"
-					strokeLinecap="round"
-				/>
-			</svg>
-		</View>
-	);
-}
 
 function TimeSelector({
 	selected,
@@ -147,14 +127,14 @@ function TimeSelector({
 	);
 }
 
-function AssetCard({
-	asset,
+function AccountCard({
+	account,
 	colors,
 }: {
-	asset: Asset;
+	account: Account;
 	colors: ColorSet;
 }) {
-	const value = parseFloat(asset.value);
+	const value = parseFloat(account.value);
 
 	return (
 		<Pressable
@@ -175,7 +155,7 @@ function AssetCard({
 					alignItems: "center",
 					marginBottom: Spacing.two,
 				}}>
-				<Text style={{ fontSize: 20 }}>{getAssetIcon(asset.subtype)}</Text>
+				<Text style={{ fontSize: 20 }}>{getAccountIcon(account.subtype)}</Text>
 			</View>
 			<Text
 				style={{
@@ -183,7 +163,7 @@ function AssetCard({
 					color: colors.textSecondary,
 					marginBottom: Spacing.one,
 				}}>
-				{asset.name}
+				{account.name}
 			</Text>
 			<Text
 				style={{
@@ -192,20 +172,20 @@ function AssetCard({
 					color: colors.text,
 					fontVariant: ["tabular-nums"],
 				}}>
-				{formatCurrency(value, asset.currency)}
+				{formatCurrency(value, account.currency)}
 			</Text>
 		</Pressable>
 	);
 }
 
-function AddAssetCard({
+function AddAccountCard({
 	colors,
 }: {
 	colors: ColorSet;
 }) {
 	return (
 		<Pressable
-			onPress={() => router.push("/asset/create")}
+			onPress={() => router.push("/account/create")}
 			style={({ pressed }) => ({
 				flex: 1,
 				backgroundColor: colors.backgroundElement,
@@ -237,7 +217,7 @@ function AddAssetCard({
 					color: colors.textSecondary,
 					fontWeight: "500",
 				}}>
-				Add Asset
+				Add Account
 			</Text>
 		</Pressable>
 	);
@@ -311,18 +291,18 @@ export default function HomeScreen() {
 	const colors = Colors[colorScheme === "dark" ? "dark" : "light"];
 	const insets = useSafeAreaInsets();
 
-	const { data: assets, totalValue, loading: assetsLoading, refetch: refetchAssets } = useAssets();
+	const { data: accounts, totalValue, loading: accountsLoading, refetch: refetchAccounts } = useAccounts();
 	const { data: transactions, loading: txLoading, refetch: refetchTx } = useTransactions();
 
 	const [selectedPeriod, setSelectedPeriod] = useState("1M");
 
-	const assetsList = assets ?? [];
+	const accountsList = accounts ?? [];
 
 	const onRefresh = useCallback(async () => {
-		await Promise.all([refetchAssets(), refetchTx()]);
-	}, [refetchAssets, refetchTx]);
+		await Promise.all([refetchAccounts(), refetchTx()]);
+	}, [refetchAccounts, refetchTx]);
 
-	const isLoading = assetsLoading && txLoading;
+	const isLoading = accountsLoading && txLoading;
 
 	return (
 		<ScrollView
@@ -364,7 +344,7 @@ export default function HomeScreen() {
 				</View>
 
 				{/* Large Amount */}
-				{assetsLoading ? (
+				{accountsLoading ? (
 					<ActivityIndicator size="large" color={colors.textSecondary} style={{ marginTop: Spacing.two }} />
 				) : (
 					<Text
@@ -412,7 +392,7 @@ export default function HomeScreen() {
 				/>
 			</View>
 
-			{/* Assets Grid - 2 columns */}
+			{/* Accounts Grid - 2 columns */}
 			<View style={{ paddingHorizontal: Spacing.four, marginTop: Spacing.five }}>
 				<Text
 					style={{
@@ -422,20 +402,20 @@ export default function HomeScreen() {
 						marginBottom: Spacing.three,
 						fontFamily: Fonts?.rounded,
 					}}>
-					Assets
+					Accounts
 				</Text>
 				<View style={{ flexDirection: "row", flexWrap: "wrap", gap: Spacing.two }}>
-					{assetsLoading ? (
+					{accountsLoading ? (
 						<ActivityIndicator size="large" color={colors.textSecondary} style={{ flex: 1, marginTop: Spacing.four }} />
 					) : (
 						<>
-							{assetsList.map((asset) => (
-								<View key={asset.id} style={{ width: "48%" }}>
-									<AssetCard asset={asset} colors={colors} />
+							{accountsList.map((account) => (
+								<View key={account.id} style={{ width: "48%" }}>
+									<AccountCard account={account} colors={colors} />
 								</View>
 							))}
 							<View style={{ width: "48%" }}>
-								<AddAssetCard colors={colors} />
+								<AddAccountCard colors={colors} />
 							</View>
 						</>
 					)}

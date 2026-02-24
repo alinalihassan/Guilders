@@ -1,10 +1,10 @@
 import { and, eq } from "drizzle-orm";
 import { Elysia, status, t } from "elysia";
 import {
-  asset,
-  insertAssetSchema,
-  selectAssetSchema,
-} from "../../db/schema/assets";
+  account,
+  insertAccountSchema,
+  selectAccountSchema,
+} from "../../db/schema/accounts";
 import { AccountSubtypeEnum, AccountTypeEnum } from "../../db/schema/enums";
 import { db } from "../../lib/db";
 import { authPlugin } from "../../middleware/auth";
@@ -22,22 +22,22 @@ const subtypeToType: Record<string, string> = {
   [AccountSubtypeEnum.stock]: AccountTypeEnum.asset,
 };
 
-export const assetRoutes = new Elysia({
-  prefix: "/asset",
+export const accountRoutes = new Elysia({
+  prefix: "/account",
   detail: {
-    tags: ["Assets"],
+    tags: ["Accounts"],
     security: [{ bearerAuth: [] }],
   }
 })
   .use(authPlugin)
   .model({
-    Asset: selectAssetSchema,
-    CreateAsset: insertAssetSchema,
+    Account: selectAccountSchema,
+    CreateAccount: insertAccountSchema,
   })
   .get(
     "",
     async ({ user }) => {
-      const assets = await db.query.asset.findMany({
+      const accounts = await db.query.account.findMany({
         where: {
           user_id: user.id,
         },
@@ -54,14 +54,14 @@ export const assetRoutes = new Elysia({
         },
       });
 
-      return assets;
+      return accounts;
     },
     {
       auth: true,
-      response: t.Array(t.Ref("#/components/schemas/Asset")),
+      response: t.Array(t.Ref("#/components/schemas/Account")),
       detail: {
-        summary: "Get all assets",
-        description: "Retrieve all assets for the authenticated user",
+        summary: "Get all accounts",
+        description: "Retrieve all accounts for the authenticated user",
       },
     },
   )
@@ -77,8 +77,8 @@ export const assetRoutes = new Elysia({
         value = -value;
       }
 
-      const [newAsset] = await db
-        .insert(asset)
+      const [newAccount] = await db
+        .insert(account)
         .values({
           ...body,
           user_id: user.id,
@@ -89,30 +89,30 @@ export const assetRoutes = new Elysia({
         })
         .returning();
 
-      if (!newAsset) {
-        return status(500, { error: "Failed to create asset" });
+      if (!newAccount) {
+        return status(500, { error: "Failed to create account" });
       }
 
-      return newAsset;
+      return newAccount;
     },
     {
       auth: true,
-      body: insertAssetSchema,
+      body: insertAccountSchema,
       response: {
-        200: t.Ref("#/components/schemas/Asset"),
+        200: t.Ref("#/components/schemas/Account"),
         500: errorSchema,
       },
       detail: {
-        summary: "Create asset",
+        summary: "Create account",
         description:
-          "Create a new asset with auto-calculated type from subtype",
+          "Create a new account with auto-calculated type from subtype",
       },
     },
   )
   .get(
     "/:id",
     async ({ params, user }) => {
-      const assetResult = await db.query.asset.findFirst({
+      const accountResult = await db.query.account.findFirst({
         where: {
           id: params.id,
           user_id: user.id,
@@ -130,19 +130,19 @@ export const assetRoutes = new Elysia({
         },
       });
 
-      if (!assetResult) {
-        return status(404, { error: "Asset not found" });
+      if (!accountResult) {
+        return status(404, { error: "Account not found" });
       }
 
       // Get children
-      const children = await db.query.asset.findMany({
+      const children = await db.query.account.findMany({
         where: {
           parent: params.id,
         },
       });
 
       return {
-        asset: assetResult,
+        account: accountResult,
         children,
       };
     },
@@ -153,35 +153,35 @@ export const assetRoutes = new Elysia({
       }),
       response: {
         200: t.Object({
-          asset: t.Ref("#/components/schemas/Asset"),
-          children: t.Array(t.Ref("#/components/schemas/Asset")),
+          account: t.Ref("#/components/schemas/Account"),
+          children: t.Array(t.Ref("#/components/schemas/Account")),
         }),
         404: errorSchema,
       },
       detail: {
-        summary: "Get asset by ID",
-        description: "Retrieve a specific asset with its children",
+        summary: "Get account by ID",
+        description: "Retrieve a specific account with its children",
       },
     },
   )
   .put(
     "/:id",
     async ({ params, body, user }) => {
-      // Get existing asset
-      const existingAsset = await db.query.asset.findFirst({
+      // Get existing account
+      const existingAccount = await db.query.account.findFirst({
         where: {
           id: params.id,
           user_id: user.id,
         },
       });
 
-      if (!existingAsset) {
-        return status(404, { error: "Asset not found" });
+      if (!existingAccount) {
+        return status(404, { error: "Account not found" });
       }
 
       // Recalculate type if subtype changed
-      let type: AccountTypeEnum = existingAsset.type;
-      if (body.subtype && body.subtype !== existingAsset.subtype) {
+      let type: AccountTypeEnum = existingAccount.type;
+      if (body.subtype && body.subtype !== existingAccount.subtype) {
         type = (subtypeToType[body.subtype] || AccountTypeEnum.asset) as AccountTypeEnum;
       }
 
@@ -190,68 +190,68 @@ export const assetRoutes = new Elysia({
       if (body.value !== undefined) {
         value = parseFloat(body.value.toString());
       } else {
-        value = parseFloat(existingAsset.value.toString());
+        value = parseFloat(existingAccount.value.toString());
       }
 
       if (type === AccountTypeEnum.liability && value > 0) {
         value = -value;
       }
 
-      const [updatedAsset] = await db
-        .update(asset)
+      const [updatedAccount] = await db
+        .update(account)
         .set({
           ...body,
           type: type as AccountTypeEnum,
           value: value.toString(),
           updated_at: new Date(),
         })
-        .where(and(eq(asset.id, params.id), eq(asset.user_id, user.id)))
+        .where(and(eq(account.id, params.id), eq(account.user_id, user.id)))
         .returning();
 
-      if (!updatedAsset) {
-        return status(500, { error: "Failed to update asset" });
+      if (!updatedAccount) {
+        return status(500, { error: "Failed to update account" });
       }
 
-      return updatedAsset;
+      return updatedAccount;
     },
     {
       auth: true,
       params: t.Object({
         id: t.Number(),
       }),
-      body: insertAssetSchema,
+      body: insertAccountSchema,
       response: {
-        200: t.Ref("#/components/schemas/Asset"),
+        200: t.Ref("#/components/schemas/Account"),
         404: errorSchema,
         500: errorSchema,
       },
       detail: {
-        summary: "Update asset",
+        summary: "Update account",
         description:
-          "Update an asset with automatic type recalculation if subtype changed",
+          "Update an account with automatic type recalculation if subtype changed",
       },
     },
   )
   .delete(
     "/:id",
     async ({ params, user }) => {
-      // Verify asset exists and belongs to user
-      const existingAsset = await db.query.asset.findFirst({
+      // Verify account exists and belongs to user
+      const existingAccount = await db.query.account.findFirst({
         where: {
           id: params.id,
           user_id: user.id,
         },
       });
 
-      if (!existingAsset) {
-        return status(404, { error: "Asset not found" });
+      if (!existingAccount) {
+        return status(404, { error: "Account not found" });
       }
 
       await db.transaction(async (tx) => {
         // Delete children first
-        await tx.delete(asset).where(eq(asset.parent, params.id));
-        // Delete the asset
-        await tx.delete(asset).where(eq(asset.id, params.id));
+        await tx.delete(account).where(eq(account.parent, params.id));
+        // Delete the account
+        await tx.delete(account).where(eq(account.id, params.id));
       });
 
       return { success: true };
@@ -266,8 +266,8 @@ export const assetRoutes = new Elysia({
         404: errorSchema,
       },
       detail: {
-        summary: "Delete asset",
-        description: "Delete an asset and all its children",
+        summary: "Delete account",
+        description: "Delete an account and all its children",
       },
     },
   );

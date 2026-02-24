@@ -3,7 +3,7 @@ import { type ModelMessage, streamText } from "ai";
 import { createAiGateway } from "ai-gateway-provider";
 import { unified } from "ai-gateway-provider/providers/unified";
 import { Elysia, status, t } from "elysia";
-import type { Asset } from "../../db/schema/assets";
+import type { Account } from "../../db/schema/accounts";
 import type { Rate } from "../../db/schema/rates";
 import type { Transaction } from "../../db/schema/transactions";
 import { db } from "../../lib/db";
@@ -17,7 +17,7 @@ interface FinancialContext {
 
 interface FinancialSummary {
   netWorth: number;
-  assets: Asset[];
+  accounts: Account[];
   transactions: Transaction[];
   exchangeRates: Rate[];
   primaryCurrency: string;
@@ -75,8 +75,8 @@ function convertToModelMessages(uiMessages: UIMessage[]): ModelMessage[] {
 const getFinancialContext = async (
   userId: string,
 ): Promise<FinancialContext> => {
-  // Get all assets
-  const assets = await db.query.asset.findMany({
+  // Get all accounts
+  const accounts = await db.query.account.findMany({
     where: {
       user_id: userId,
     },
@@ -96,7 +96,7 @@ const getFinancialContext = async (
   // Get recent transactions
   const transactions = await db.query.transaction.findMany({
     where: {
-      asset: {
+      account: {
         user_id: userId,
       },
     },
@@ -115,14 +115,14 @@ const getFinancialContext = async (
   });
 
   // Calculate net worth
-  const netWorth = assets.reduce((sum, asset) => {
-    const value = parseFloat(asset.value.toString());
-    return asset.type === "liability" ? sum - value : sum + value;
+  const netWorth = accounts.reduce((sum, acc) => {
+    const value = parseFloat(acc.value.toString());
+    return acc.type === "liability" ? sum - value : sum + value;
   }, 0);
 
   const summary: FinancialSummary = {
     netWorth,
-    assets,
+    accounts,
     transactions,
     exchangeRates,
     primaryCurrency: userSettings?.currency || "EUR",
@@ -140,18 +140,18 @@ const generateSystemPrompt = (summary: FinancialSummary): string => {
 
 Financial Overview:
 - Net Worth: ${summary.netWorth.toFixed(2)} ${summary.primaryCurrency}
-- Number of Accounts: ${summary.assets.length}
+- Number of Accounts: ${summary.accounts.length}
 
 Exchange Rates (Base: EUR):
 ${summary.exchangeRates.map((rate) => `- 1 EUR = ${rate.rate} ${rate.currency_code}`).join("\n")}
 
-Account Details:${summary.assets
+Account Details:${summary.accounts
       .map(
-        (asset) => `
-• ${asset.name} (${asset.type}/${asset.subtype})
-  - Value: ${asset.value} ${asset.currency}${asset.cost
+        (acc) => `
+• ${acc.name} (${acc.type}/${acc.subtype})
+  - Value: ${acc.value} ${acc.currency}${acc.cost
             ? `
-  - Cost Basis: ${asset.cost} ${asset.currency}`
+  - Cost Basis: ${acc.cost} ${acc.currency}`
             : ""
           }`,
       )
@@ -160,7 +160,7 @@ Account Details:${summary.assets
 Recent Transactions:${summary.transactions
       .map(
         (t) => `
-• Account ID ${t.asset_id}:
+• Account ID ${t.account_id}:
   - ${t.date}: ${t.amount} ${t.currency} (${t.category}) - ${t.description}`,
       )
       .join("")}

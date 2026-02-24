@@ -7,7 +7,7 @@ import type {
   ConnectResult,
   DeregisterUserResult,
   IProvider,
-  ProviderAsset,
+  ProviderAccount,
   ProviderInstitution,
   ProviderName,
   RefreshConnectionResult,
@@ -273,7 +273,7 @@ export class SnapTradeProvider implements IProvider {
     }
   }
 
-  async getAccounts(_params: AccountParams): Promise<ProviderAsset[]> {
+  async getAccounts(_params: AccountParams): Promise<ProviderAccount[]> {
     throw new Error("Not implemented");
   }
 

@@ -22,7 +22,7 @@ import { authClient } from '@/lib/auth-client';
 
 type ColorSet = (typeof Colors)['light'] | (typeof Colors)['dark'];
 
-type MessageType = 'text' | 'finance_summary' | 'spending_chart' | 'asset_breakdown';
+type MessageType = 'text' | 'finance_summary' | 'spending_chart' | 'account_breakdown';
 
 interface Message {
   id: string;

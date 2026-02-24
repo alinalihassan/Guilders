@@ -10,7 +10,7 @@ type ApiOptions = {
 };
 
 const routeAliases: Record<string, string> = {
-  accounts: "asset",
+  accounts: "account",
   transactions: "transaction",
   institutions: "institution",
   "provider-connections": "provider-connection",

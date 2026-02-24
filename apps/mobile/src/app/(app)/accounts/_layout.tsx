@@ -4,7 +4,7 @@ import { Pressable, useColorScheme } from "react-native";
 
 import { Colors } from "@/constants/theme";
 
-export default function AssetsLayout() {
+export default function AccountsLayout() {
 	const colorScheme = useColorScheme() ?? "light";
 	const colors = Colors[colorScheme === "dark" ? "dark" : "light"];
 
@@ -13,12 +13,12 @@ export default function AssetsLayout() {
 			<Stack.Screen
 				name="index"
 				options={{
-					title: "Assets",
+					title: "Accounts",
 					headerLargeTitle: true,
 					headerTransparent: true,
 					headerRight: () => (
 						<Pressable
-							onPress={() => router.push("/asset/create")}
+							onPress={() => router.push("/account/create")}
 							style={() => ({
 								width: 32,
 								height: 32,

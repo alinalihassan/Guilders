@@ -1,7 +1,7 @@
 {
   "version": "8",
   "dialect": "postgres",
-  "id": "8629e1cc-7757-4d28-a05f-0af286139add",
+  "id": "b51c915f-9fdb-4776-850e-86f1007de91c",
   "prevIds": [
     "00000000-0000-0000-0000-000000000000"
   ],
@@ -77,12 +77,6 @@
     },
     {
       "isRlsEnabled": false,
-      "name": "asset",
-      "entityType": "tables",
-      "schema": "public"
-    },
-    {
-      "isRlsEnabled": false,
       "name": "account",
       "entityType": "tables",
       "schema": "public"
@@ -107,12 +101,6 @@
     },
     {
       "isRlsEnabled": false,
-      "name": "subscription",
-      "entityType": "tables",
-      "schema": "public"
-    },
-    {
-      "isRlsEnabled": false,
       "name": "two_factor",
       "entityType": "tables",
       "schema": "public"
@@ -120,6 +108,12 @@
     {
       "isRlsEnabled": false,
       "name": "user",
+      "entityType": "tables",
+      "schema": "public"
+    },
+    {
+      "isRlsEnabled": false,
+      "name": "user_account",
       "entityType": "tables",
       "schema": "public"
     },
@@ -200,7 +194,7 @@
       "name": "cost",
       "entityType": "columns",
       "schema": "public",
-      "table": "asset"
+      "table": "account"
     },
     {
       "type": "timestamp",
@@ -213,7 +207,7 @@
       "name": "created_at",
       "entityType": "columns",
       "schema": "public",
-      "table": "asset"
+      "table": "account"
     },
     {
       "type": "varchar(3)",
@@ -226,7 +220,7 @@
       "name": "currency",
       "entityType": "columns",
       "schema": "public",
-      "table": "asset"
+      "table": "account"
     },
     {
       "type": "varchar(255)",
@@ -239,7 +233,7 @@
       "name": "documents",
       "entityType": "columns",
       "schema": "public",
-      "table": "asset"
+      "table": "account"
     },
     {
       "type": "serial",
@@ -252,7 +246,7 @@
       "name": "id",
       "entityType": "columns",
       "schema": "public",
-      "table": "asset"
+      "table": "account"
     },
     {
       "type": "varchar(255)",
@@ -265,7 +259,7 @@
       "name": "image",
       "entityType": "columns",
       "schema": "public",
-      "table": "asset"
+      "table": "account"
     },
     {
       "type": "integer",
@@ -278,7 +272,7 @@
       "name": "institution_connection_id",
       "entityType": "columns",
       "schema": "public",
-      "table": "asset"
+      "table": "account"
     },
     {
       "type": "investable",
@@ -291,7 +285,7 @@
       "name": "investable",
       "entityType": "columns",
       "schema": "public",
-      "table": "asset"
+      "table": "account"
     },
     {
       "type": "varchar(100)",
@@ -304,7 +298,7 @@
       "name": "name",
       "entityType": "columns",
       "schema": "public",
-      "table": "asset"
+      "table": "account"
     },
     {
       "type": "text",
@@ -317,7 +311,7 @@
       "name": "notes",
       "entityType": "columns",
       "schema": "public",
-      "table": "asset"
+      "table": "account"
     },
     {
       "type": "integer",
@@ -330,7 +324,7 @@
       "name": "parent",
       "entityType": "columns",
       "schema": "public",
-      "table": "asset"
+      "table": "account"
     },
     {
       "type": "varchar(255)",
@@ -343,7 +337,7 @@
       "name": "provider_account_id",
       "entityType": "columns",
       "schema": "public",
-      "table": "asset"
+      "table": "account"
     },
     {
       "type": "account_subtype",
@@ -356,7 +350,7 @@
       "name": "subtype",
       "entityType": "columns",
       "schema": "public",
-      "table": "asset"
+      "table": "account"
     },
     {
       "type": "numeric(5,4)",
@@ -369,7 +363,7 @@
       "name": "tax_rate",
       "entityType": "columns",
       "schema": "public",
-      "table": "asset"
+      "table": "account"
     },
     {
       "type": "taxability",
@@ -382,7 +376,7 @@
       "name": "taxability",
       "entityType": "columns",
       "schema": "public",
-      "table": "asset"
+      "table": "account"
     },
     {
       "type": "varchar(20)",
@@ -395,7 +389,7 @@
       "name": "ticker",
       "entityType": "columns",
       "schema": "public",
-      "table": "asset"
+      "table": "account"
     },
     {
       "type": "account_type",
@@ -408,7 +402,7 @@
       "name": "type",
       "entityType": "columns",
       "schema": "public",
-      "table": "asset"
+      "table": "account"
     },
     {
       "type": "numeric(19,8)",
@@ -421,7 +415,7 @@
       "name": "units",
       "entityType": "columns",
       "schema": "public",
-      "table": "asset"
+      "table": "account"
     },
     {
       "type": "timestamp",
@@ -434,7 +428,7 @@
       "name": "updated_at",
       "entityType": "columns",
       "schema": "public",
-      "table": "asset"
+      "table": "account"
     },
     {
       "type": "varchar(255)",
@@ -447,7 +441,7 @@
       "name": "user_id",
       "entityType": "columns",
       "schema": "public",
-      "table": "asset"
+      "table": "account"
     },
     {
       "type": "numeric(19,4)",
@@ -458,175 +452,6 @@
       "generated": null,
       "identity": null,
       "name": "value",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "asset"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "account"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "account_id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "account"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "provider_id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "account"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "user_id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "account"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "access_token",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "account"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "refresh_token",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "account"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "id_token",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "account"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "access_token_expires_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "account"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "refresh_token_expires_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "account"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "scope",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "account"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "password",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "account"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "created_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "account"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "updated_at",
       "entityType": "columns",
       "schema": "public",
       "table": "account"
@@ -1162,201 +987,6 @@
       "name": "id",
       "entityType": "columns",
       "schema": "public",
-      "table": "subscription"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "plan",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "subscription"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "reference_id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "subscription"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "stripe_customer_id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "subscription"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "stripe_subscription_id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "subscription"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": "'incomplete'",
-      "generated": null,
-      "identity": null,
-      "name": "status",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "subscription"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "period_start",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "subscription"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "period_end",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "subscription"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "trial_start",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "subscription"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "trial_end",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "subscription"
-    },
-    {
-      "type": "boolean",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": "false",
-      "generated": null,
-      "identity": null,
-      "name": "cancel_at_period_end",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "subscription"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "cancel_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "subscription"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "canceled_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "subscription"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "ended_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "subscription"
-    },
-    {
-      "type": "integer",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "seats",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "subscription"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "id",
-      "entityType": "columns",
-      "schema": "public",
       "table": "two_factor"
     },
     {
@@ -1505,15 +1135,171 @@
     {
       "type": "text",
       "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "user_account"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "account_id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "user_account"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "provider_id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "user_account"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "user_id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "user_account"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
       "notNull": false,
       "dimensions": 0,
       "default": null,
       "generated": null,
       "identity": null,
-      "name": "stripe_customer_id",
+      "name": "access_token",
       "entityType": "columns",
       "schema": "public",
-      "table": "user"
+      "table": "user_account"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "refresh_token",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "user_account"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "id_token",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "user_account"
+    },
+    {
+      "type": "timestamp",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "access_token_expires_at",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "user_account"
+    },
+    {
+      "type": "timestamp",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "refresh_token_expires_at",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "user_account"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "scope",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "user_account"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "password",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "user_account"
+    },
+    {
+      "type": "timestamp",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "user_account"
+    },
+    {
+      "type": "timestamp",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "updated_at",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "user_account"
     },
     {
       "type": "text",
@@ -2108,7 +1894,7 @@
       "default": null,
       "generated": null,
       "identity": null,
-      "name": "asset_id",
+      "name": "account_id",
       "entityType": "columns",
       "schema": "public",
       "table": "transaction"
@@ -2244,19 +2030,6 @@
       "table": "transaction"
     },
     {
-      "type": "varchar(255)",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "api_key",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "user_setting"
-    },
-    {
       "type": "varchar(3)",
       "typeSchema": null,
       "notNull": true,
@@ -2265,19 +2038,6 @@
       "generated": null,
       "identity": null,
       "name": "currency",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "user_setting"
-    },
-    {
-      "type": "varchar(255)",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "profile_url",
       "entityType": "columns",
       "schema": "public",
       "table": "user_setting"
@@ -2311,10 +2071,10 @@
       "with": "",
       "method": "btree",
       "concurrently": false,
-      "name": "asset_id_idx",
+      "name": "account_id_idx",
       "entityType": "indexes",
       "schema": "public",
-      "table": "asset"
+      "table": "account"
     },
     {
       "nameExplicit": true,
@@ -2332,10 +2092,10 @@
       "with": "",
       "method": "btree",
       "concurrently": false,
-      "name": "asset_user_idx",
+      "name": "account_user_idx",
       "entityType": "indexes",
       "schema": "public",
-      "table": "asset"
+      "table": "account"
     },
     {
       "nameExplicit": true,
@@ -2353,10 +2113,10 @@
       "with": "",
       "method": "btree",
       "concurrently": false,
-      "name": "asset_currency_idx",
+      "name": "account_currency_idx",
       "entityType": "indexes",
       "schema": "public",
-      "table": "asset"
+      "table": "account"
     },
     {
       "nameExplicit": true,
@@ -2374,10 +2134,10 @@
       "with": "",
       "method": "btree",
       "concurrently": false,
-      "name": "asset_parent_idx",
+      "name": "account_parent_idx",
       "entityType": "indexes",
       "schema": "public",
-      "table": "asset"
+      "table": "account"
     },
     {
       "nameExplicit": true,
@@ -2395,28 +2155,7 @@
       "with": "",
       "method": "btree",
       "concurrently": false,
-      "name": "asset_institution_connection_idx",
-      "entityType": "indexes",
-      "schema": "public",
-      "table": "asset"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        {
-          "value": "user_id",
-          "isExpression": false,
-          "asc": true,
-          "nullsFirst": false,
-          "opclass": null
-        }
-      ],
-      "isUnique": false,
-      "where": null,
-      "with": "",
-      "method": "btree",
-      "concurrently": false,
-      "name": "account_userId_idx",
+      "name": "account_institution_connection_idx",
       "entityType": "indexes",
       "schema": "public",
       "table": "account"
@@ -2567,6 +2306,27 @@
       "entityType": "indexes",
       "schema": "public",
       "table": "two_factor"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "user_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "user_account_userId_idx",
+      "entityType": "indexes",
+      "schema": "public",
+      "table": "user_account"
     },
     {
       "nameExplicit": true,
@@ -3006,7 +2766,7 @@
       "nameExplicit": true,
       "columns": [
         {
-          "value": "asset_id",
+          "value": "account_id",
           "isExpression": false,
           "asc": true,
           "nullsFirst": false,
@@ -3018,7 +2778,7 @@
       "with": "",
       "method": "btree",
       "concurrently": false,
-      "name": "transaction_asset_idx",
+      "name": "transaction_account_idx",
       "entityType": "indexes",
       "schema": "public",
       "table": "transaction"
@@ -3119,10 +2879,10 @@
       ],
       "onUpdate": "NO ACTION",
       "onDelete": "NO ACTION",
-      "name": "asset_currency_currency_code_fkey",
+      "name": "account_currency_currency_code_fkey",
       "entityType": "fks",
       "schema": "public",
-      "table": "asset"
+      "table": "account"
     },
     {
       "nameExplicit": false,
@@ -3136,10 +2896,10 @@
       ],
       "onUpdate": "CASCADE",
       "onDelete": "CASCADE",
-      "name": "asset_institution_connection_id_institution_connection_id_fkey",
+      "name": "account_ok0j2ud8i0Kr_fkey",
       "entityType": "fks",
       "schema": "public",
-      "table": "asset"
+      "table": "account"
     },
     {
       "nameExplicit": false,
@@ -3152,23 +2912,6 @@
         "id"
       ],
       "onUpdate": "CASCADE",
-      "onDelete": "CASCADE",
-      "name": "asset_user_id_user_id_fkey",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "asset"
-    },
-    {
-      "nameExplicit": false,
-      "columns": [
-        "user_id"
-      ],
-      "schemaTo": "public",
-      "tableTo": "user",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "account_user_id_user_id_fkey",
       "entityType": "fks",
@@ -3242,6 +2985,23 @@
       "entityType": "fks",
       "schema": "public",
       "table": "two_factor"
+    },
+    {
+      "nameExplicit": false,
+      "columns": [
+        "user_id"
+      ],
+      "schemaTo": "public",
+      "tableTo": "user",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "name": "user_account_user_id_user_id_fkey",
+      "entityType": "fks",
+      "schema": "public",
+      "table": "user_account"
     },
     {
       "nameExplicit": false,
@@ -3399,16 +3159,16 @@
     {
       "nameExplicit": false,
       "columns": [
-        "asset_id"
+        "account_id"
       ],
       "schemaTo": "public",
-      "tableTo": "asset",
+      "tableTo": "account",
       "columnsTo": [
         "id"
       ],
       "onUpdate": "CASCADE",
       "onDelete": "CASCADE",
-      "name": "transaction_asset_id_asset_id_fkey",
+      "name": "transaction_account_id_account_id_fkey",
       "entityType": "fks",
       "schema": "public",
       "table": "transaction"
@@ -3469,16 +3229,6 @@
         "id"
       ],
       "nameExplicit": false,
-      "name": "asset_pkey",
-      "schema": "public",
-      "table": "asset",
-      "entityType": "pks"
-    },
-    {
-      "columns": [
-        "id"
-      ],
-      "nameExplicit": false,
       "name": "account_pkey",
       "schema": "public",
       "table": "account",
@@ -3519,16 +3269,6 @@
         "id"
       ],
       "nameExplicit": false,
-      "name": "subscription_pkey",
-      "schema": "public",
-      "table": "subscription",
-      "entityType": "pks"
-    },
-    {
-      "columns": [
-        "id"
-      ],
-      "nameExplicit": false,
       "name": "two_factor_pkey",
       "schema": "public",
       "table": "two_factor",
@@ -3542,6 +3282,16 @@
       "name": "user_pkey",
       "schema": "public",
       "table": "user",
+      "entityType": "pks"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "user_account_pkey",
+      "schema": "public",
+      "table": "user_account",
       "entityType": "pks"
     },
     {

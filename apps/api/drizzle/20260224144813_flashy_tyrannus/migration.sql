@@ -4,7 +4,7 @@ CREATE TYPE "document_entity_type" AS ENUM('account', 'transaction');--> stateme
 CREATE TYPE "investable" AS ENUM('non_investable', 'investable_easy_convert', 'investable_cash');--> statement-breakpoint
 CREATE TYPE "subscription_status" AS ENUM('unsubscribed', 'trialing', 'active', 'canceled', 'incomplete', 'incomplete_expired', 'past_due', 'unpaid', 'paused');--> statement-breakpoint
 CREATE TYPE "taxability" AS ENUM('taxable', 'tax_free', 'tax_deferred');--> statement-breakpoint
-CREATE TABLE "asset" (
+CREATE TABLE "account" (
 	"cost" numeric(19,4),
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"currency" varchar(3) NOT NULL,
@@ -26,22 +26,6 @@ CREATE TABLE "asset" (
 	"updated_at" timestamp DEFAULT now() NOT NULL,
 	"user_id" varchar(255) NOT NULL,
 	"value" numeric(19,4) NOT NULL
-);
---> statement-breakpoint
-CREATE TABLE "account" (
-	"id" text PRIMARY KEY,
-	"account_id" text NOT NULL,
-	"provider_id" text NOT NULL,
-	"user_id" text NOT NULL,
-	"access_token" text,
-	"refresh_token" text,
-	"id_token" text,
-	"access_token_expires_at" timestamp,
-	"refresh_token_expires_at" timestamp,
-	"scope" text,
-	"password" text,
-	"created_at" timestamp NOT NULL,
-	"updated_at" timestamp NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "apikey" (
@@ -93,24 +77,6 @@ CREATE TABLE "session" (
 	"user_id" text NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "subscription" (
-	"id" text PRIMARY KEY,
-	"plan" text NOT NULL,
-	"reference_id" text NOT NULL,
-	"stripe_customer_id" text,
-	"stripe_subscription_id" text,
-	"status" text DEFAULT 'incomplete',
-	"period_start" timestamp,
-	"period_end" timestamp,
-	"trial_start" timestamp,
-	"trial_end" timestamp,
-	"cancel_at_period_end" boolean DEFAULT false,
-	"cancel_at" timestamp,
-	"canceled_at" timestamp,
-	"ended_at" timestamp,
-	"seats" integer
-);
---> statement-breakpoint
 CREATE TABLE "two_factor" (
 	"id" text PRIMARY KEY,
 	"secret" text NOT NULL,
@@ -126,8 +92,23 @@ CREATE TABLE "user" (
 	"image" text,
 	"created_at" timestamp NOT NULL,
 	"updated_at" timestamp NOT NULL,
-	"two_factor_enabled" boolean DEFAULT false,
-	"stripe_customer_id" text
+	"two_factor_enabled" boolean DEFAULT false
+);
+--> statement-breakpoint
+CREATE TABLE "user_account" (
+	"id" text PRIMARY KEY,
+	"account_id" text NOT NULL,
+	"provider_id" text NOT NULL,
+	"user_id" text NOT NULL,
+	"access_token" text,
+	"refresh_token" text,
+	"id_token" text,
+	"access_token_expires_at" timestamp,
+	"refresh_token_expires_at" timestamp,
+	"scope" text,
+	"password" text,
+	"created_at" timestamp NOT NULL,
+	"updated_at" timestamp NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "verification" (
@@ -203,7 +184,7 @@ CREATE TABLE "rate" (
 );
 --> statement-breakpoint
 CREATE TABLE "transaction" (
-	"asset_id" integer NOT NULL,
+	"account_id" integer NOT NULL,
 	"amount" numeric(19,4) NOT NULL,
 	"category" varchar(100) DEFAULT 'uncategorized' NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
@@ -217,18 +198,15 @@ CREATE TABLE "transaction" (
 );
 --> statement-breakpoint
 CREATE TABLE "user_setting" (
-	"api_key" varchar(255),
 	"currency" varchar(3) DEFAULT 'EUR' NOT NULL,
-	"profile_url" varchar(255),
 	"user_id" varchar(255) PRIMARY KEY
 );
 --> statement-breakpoint
-CREATE INDEX "asset_id_idx" ON "asset" ("id");--> statement-breakpoint
-CREATE INDEX "asset_user_idx" ON "asset" ("user_id");--> statement-breakpoint
-CREATE INDEX "asset_currency_idx" ON "asset" ("currency");--> statement-breakpoint
-CREATE INDEX "asset_parent_idx" ON "asset" ("parent");--> statement-breakpoint
-CREATE INDEX "asset_institution_connection_idx" ON "asset" ("institution_connection_id");--> statement-breakpoint
-CREATE INDEX "account_userId_idx" ON "account" ("user_id");--> statement-breakpoint
+CREATE INDEX "account_id_idx" ON "account" ("id");--> statement-breakpoint
+CREATE INDEX "account_user_idx" ON "account" ("user_id");--> statement-breakpoint
+CREATE INDEX "account_currency_idx" ON "account" ("currency");--> statement-breakpoint
+CREATE INDEX "account_parent_idx" ON "account" ("parent");--> statement-breakpoint
+CREATE INDEX "account_institution_connection_idx" ON "account" ("institution_connection_id");--> statement-breakpoint
 CREATE INDEX "apikey_key_idx" ON "apikey" ("key");--> statement-breakpoint
 CREATE INDEX "apikey_userId_idx" ON "apikey" ("user_id");--> statement-breakpoint
 CREATE INDEX "passkey_userId_idx" ON "passkey" ("user_id");--> statement-breakpoint
@@ -236,6 +214,7 @@ CREATE INDEX "passkey_credentialID_idx" ON "passkey" ("credential_id");--> state
 CREATE INDEX "session_userId_idx" ON "session" ("user_id");--> statement-breakpoint
 CREATE INDEX "twoFactor_secret_idx" ON "two_factor" ("secret");--> statement-breakpoint
 CREATE INDEX "twoFactor_userId_idx" ON "two_factor" ("user_id");--> statement-breakpoint
+CREATE INDEX "user_account_userId_idx" ON "user_account" ("user_id");--> statement-breakpoint
 CREATE INDEX "verification_identifier_idx" ON "verification" ("identifier");--> statement-breakpoint
 CREATE INDEX "country_code_idx" ON "country" ("code");--> statement-breakpoint
 CREATE INDEX "country_currency_idx" ON "country" ("currency_code");--> statement-breakpoint
@@ -256,19 +235,19 @@ CREATE INDEX "provider_connection_provider_idx" ON "provider_connection" ("provi
 CREATE INDEX "provider_id_idx" ON "provider" ("id");--> statement-breakpoint
 CREATE INDEX "rate_currency_idx" ON "rate" ("currency_code");--> statement-breakpoint
 CREATE INDEX "transaction_id_idx" ON "transaction" ("id");--> statement-breakpoint
-CREATE INDEX "transaction_asset_idx" ON "transaction" ("asset_id");--> statement-breakpoint
+CREATE INDEX "transaction_account_idx" ON "transaction" ("account_id");--> statement-breakpoint
 CREATE INDEX "transaction_currency_idx" ON "transaction" ("currency");--> statement-breakpoint
 CREATE INDEX "transaction_date_idx" ON "transaction" ("date");--> statement-breakpoint
 CREATE INDEX "user_setting_user_idx" ON "user_setting" ("user_id");--> statement-breakpoint
 CREATE INDEX "user_setting_currency_idx" ON "user_setting" ("currency");--> statement-breakpoint
-ALTER TABLE "asset" ADD CONSTRAINT "asset_currency_currency_code_fkey" FOREIGN KEY ("currency") REFERENCES "currency"("code");--> statement-breakpoint
-ALTER TABLE "asset" ADD CONSTRAINT "asset_institution_connection_id_institution_connection_id_fkey" FOREIGN KEY ("institution_connection_id") REFERENCES "institution_connection"("id") ON DELETE CASCADE ON UPDATE CASCADE;--> statement-breakpoint
-ALTER TABLE "asset" ADD CONSTRAINT "asset_user_id_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;--> statement-breakpoint
-ALTER TABLE "account" ADD CONSTRAINT "account_user_id_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE;--> statement-breakpoint
+ALTER TABLE "account" ADD CONSTRAINT "account_currency_currency_code_fkey" FOREIGN KEY ("currency") REFERENCES "currency"("code");--> statement-breakpoint
+ALTER TABLE "account" ADD CONSTRAINT "account_ok0j2ud8i0Kr_fkey" FOREIGN KEY ("institution_connection_id") REFERENCES "institution_connection"("id") ON DELETE CASCADE ON UPDATE CASCADE;--> statement-breakpoint
+ALTER TABLE "account" ADD CONSTRAINT "account_user_id_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;--> statement-breakpoint
 ALTER TABLE "apikey" ADD CONSTRAINT "apikey_user_id_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE;--> statement-breakpoint
 ALTER TABLE "passkey" ADD CONSTRAINT "passkey_user_id_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE;--> statement-breakpoint
 ALTER TABLE "session" ADD CONSTRAINT "session_user_id_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE;--> statement-breakpoint
 ALTER TABLE "two_factor" ADD CONSTRAINT "two_factor_user_id_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE;--> statement-breakpoint
+ALTER TABLE "user_account" ADD CONSTRAINT "user_account_user_id_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE;--> statement-breakpoint
 ALTER TABLE "country" ADD CONSTRAINT "country_currency_code_currency_code_fkey" FOREIGN KEY ("currency_code") REFERENCES "currency"("code");--> statement-breakpoint
 ALTER TABLE "document" ADD CONSTRAINT "document_user_id_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;--> statement-breakpoint
 ALTER TABLE "institution_connection" ADD CONSTRAINT "institution_connection_institution_id_institution_id_fkey" FOREIGN KEY ("institution_id") REFERENCES "institution"("id") ON DELETE CASCADE ON UPDATE CASCADE;--> statement-breakpoint
@@ -278,7 +257,7 @@ ALTER TABLE "institution" ADD CONSTRAINT "institution_provider_id_provider_id_fk
 ALTER TABLE "provider_connection" ADD CONSTRAINT "provider_connection_provider_id_provider_id_fkey" FOREIGN KEY ("provider_id") REFERENCES "provider"("id") ON DELETE CASCADE ON UPDATE CASCADE;--> statement-breakpoint
 ALTER TABLE "provider_connection" ADD CONSTRAINT "provider_connection_user_id_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;--> statement-breakpoint
 ALTER TABLE "rate" ADD CONSTRAINT "rate_currency_code_currency_code_fkey" FOREIGN KEY ("currency_code") REFERENCES "currency"("code");--> statement-breakpoint
-ALTER TABLE "transaction" ADD CONSTRAINT "transaction_asset_id_asset_id_fkey" FOREIGN KEY ("asset_id") REFERENCES "asset"("id") ON DELETE CASCADE ON UPDATE CASCADE;--> statement-breakpoint
+ALTER TABLE "transaction" ADD CONSTRAINT "transaction_account_id_account_id_fkey" FOREIGN KEY ("account_id") REFERENCES "account"("id") ON DELETE CASCADE ON UPDATE CASCADE;--> statement-breakpoint
 ALTER TABLE "transaction" ADD CONSTRAINT "transaction_currency_currency_code_fkey" FOREIGN KEY ("currency") REFERENCES "currency"("code");--> statement-breakpoint
 ALTER TABLE "user_setting" ADD CONSTRAINT "user_setting_currency_currency_code_fkey" FOREIGN KEY ("currency") REFERENCES "currency"("code");--> statement-breakpoint
 ALTER TABLE "user_setting" ADD CONSTRAINT "user_setting_user_id_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;

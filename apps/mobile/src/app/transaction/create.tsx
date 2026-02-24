@@ -14,7 +14,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Colors, Fonts, Spacing } from "@/constants/theme";
 import { api } from "@/lib/api";
-import type { Asset } from "@/hooks/use-dashboard";
+import type { Account } from "@/hooks/use-dashboard";
 
 type ColorSet = (typeof Colors)["light"] | (typeof Colors)["dark"];
 
@@ -23,7 +23,7 @@ type ColorSet = (typeof Colors)["light"] | (typeof Colors)["dark"];
 type TransactionType = "expense" | "income";
 
 interface TransactionFormData {
-	assetId: number | null;
+	accountId: number | null;
 	amount: string;
 	currency: string;
 	date: string;
@@ -105,18 +105,18 @@ function InputField({
 	);
 }
 
-function AssetSelector({
-	assets,
+function AccountSelector({
+	accounts,
 	selected,
 	onSelect,
 	colors,
 }: {
-	assets: Asset[];
+	accounts: Account[];
 	selected: number | null;
-	onSelect: (assetId: number) => void;
+	onSelect: (accountId: number) => void;
 	colors: ColorSet;
 }) {
-	if (assets.length === 0) {
+	if (accounts.length === 0) {
 		return (
 			<View style={{ marginBottom: Spacing.three }}>
 				<Text
@@ -128,7 +128,7 @@ function AssetSelector({
 						letterSpacing: 0.5,
 						marginBottom: Spacing.two,
 					}}>
-					Asset
+					Account
 				</Text>
 				<View
 					style={{
@@ -137,7 +137,7 @@ function AssetSelector({
 						borderRadius: 12,
 					}}>
 					<Text style={{ fontSize: 14, color: colors.textSecondary }}>
-						No assets available. Create an asset first.
+						No accounts available. Create an account first.
 					</Text>
 				</View>
 			</View>
@@ -155,21 +155,21 @@ function AssetSelector({
 					letterSpacing: 0.5,
 					marginBottom: Spacing.two,
 				}}>
-				Asset
+				Account
 			</Text>
 			<ScrollView
 				horizontal
 				showsHorizontalScrollIndicator={false}
 				contentContainerStyle={{ gap: Spacing.two }}>
-				{assets.map((asset) => (
+				{accounts.map((account) => (
 					<Pressable
-						key={asset.id}
-						onPress={() => onSelect(asset.id)}
+						key={account.id}
+						onPress={() => onSelect(account.id)}
 						style={({ pressed }) => ({
 							paddingVertical: Spacing.two,
 							paddingHorizontal: Spacing.three,
 							backgroundColor:
-								selected === asset.id
+								selected === account.id
 									? colors.text
 									: colors.backgroundElement,
 							borderRadius: 12,
@@ -179,22 +179,22 @@ function AssetSelector({
 						<Text
 							style={{
 								fontSize: 14,
-								fontWeight: selected === asset.id ? "600" : "400",
+								fontWeight: selected === account.id ? "600" : "400",
 								color:
-									selected === asset.id ? colors.background : colors.text,
+									selected === account.id ? colors.background : colors.text,
 							}}>
-							{asset.name}
+							{account.name}
 						</Text>
 						<Text
 							style={{
 								fontSize: 12,
 								color:
-									selected === asset.id
+									selected === account.id
 										? colors.background
 										: colors.textSecondary,
 								marginTop: 2,
 							}}>
-							{asset.currency}
+							{account.currency}
 						</Text>
 					</Pressable>
 				))}
@@ -392,11 +392,11 @@ export default function CreateTransactionScreen() {
 	const colors = Colors[colorScheme === "dark" ? "dark" : "light"];
 	const insets = useSafeAreaInsets();
 
-	const [assets, setAssets] = useState<Asset[]>([]);
-	const [assetsLoading, setAssetsLoading] = useState(true);
+	const [accounts, setAccounts] = useState<Account[]>([]);
+	const [accountsLoading, setAccountsLoading] = useState(true);
 
 	const [formData, setFormData] = useState<TransactionFormData>({
-		assetId: null,
+		accountId: null,
 		amount: "",
 		currency: "EUR",
 		date: formatDateForInput(new Date()),
@@ -408,27 +408,27 @@ export default function CreateTransactionScreen() {
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 
-	// Fetch assets on mount
+	// Fetch accounts on mount
 	useEffect(() => {
-		const fetchAssets = async () => {
+		const fetchAccounts = async () => {
 			try {
-				const assets = await api.get<Asset[]>("/api/asset");
-				setAssets(assets);
-				// Auto-select first asset if available
-				if (assets.length > 0) {
+				const accounts = await api.get<Account[]>("/api/account");
+				setAccounts(accounts);
+				// Auto-select first account if available
+				if (accounts.length > 0) {
 					setFormData((prev) => ({
 						...prev,
-						assetId: assets[0].id,
-						currency: assets[0].currency,
+						accountId: accounts[0].id,
+						currency: accounts[0].currency,
 					}));
 				}
 			} catch (e) {
-				setError("Failed to load assets");
+				setError("Failed to load accounts");
 			} finally {
-				setAssetsLoading(false);
+				setAccountsLoading(false);
 			}
 		};
-		fetchAssets();
+		fetchAccounts();
 	}, []);
 
 	const updateField = useCallback(
@@ -441,21 +441,21 @@ export default function CreateTransactionScreen() {
 		[],
 	);
 
-	const handleAssetSelect = useCallback(
-		(assetId: number) => {
-			const selectedAsset = assets.find((a) => a.id === assetId);
+	const handleAccountSelect = useCallback(
+		(accountId: number) => {
+			const selectedAccount = accounts.find((a) => a.id === accountId);
 			setFormData((prev) => ({
 				...prev,
-				assetId,
-				currency: selectedAsset?.currency || prev.currency,
+				accountId,
+				currency: selectedAccount?.currency || prev.currency,
 			}));
 		},
-		[assets],
+		[accounts],
 	);
 
 	const handleSubmit = useCallback(async () => {
-		if (!formData.assetId) {
-			setError("Please select an asset");
+		if (!formData.accountId) {
+			setError("Please select an account");
 			return;
 		}
 
@@ -478,7 +478,7 @@ export default function CreateTransactionScreen() {
 			const finalAmount = formData.type === "expense" ? -Math.abs(rawAmount) : Math.abs(rawAmount);
 
 			await api.post("/api/transaction", {
-				asset_id: formData.assetId,
+				account_id: formData.accountId,
 				amount: finalAmount,
 				currency: formData.currency,
 				date: formData.date,
@@ -575,13 +575,13 @@ export default function CreateTransactionScreen() {
 					</Text>
 
 					{/* Asset Selector */}
-					{assetsLoading ? (
+					{accountsLoading ? (
 						<ActivityIndicator color={colors.textSecondary} />
 					) : (
-						<AssetSelector
-							assets={assets}
-							selected={formData.assetId}
-							onSelect={handleAssetSelect}
+						<AccountSelector
+							accounts={accounts}
+							selected={formData.accountId}
+							onSelect={handleAccountSelect}
 							colors={colors}
 						/>
 					)}

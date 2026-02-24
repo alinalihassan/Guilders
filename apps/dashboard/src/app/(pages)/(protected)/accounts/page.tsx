@@ -17,7 +17,7 @@ export default function AccountsPage() {
 		accounts?.filter(
 			(account) => (account as { parent?: number | null }).parent == null,
 		) ?? [];
-	const assets = topLevelAccounts.filter((account) => account.type === "asset");
+	const assetAccounts = topLevelAccounts.filter((account) => account.type === "asset");
 	const liabilities = topLevelAccounts.filter(
 		(account) => account.type === "liability",
 	);
@@ -48,7 +48,7 @@ export default function AccountsPage() {
 			) : (
 				<div className="space-y-4">
 					<div className="grid grid-cols-2 gap-4">
-						<CompactBalanceCard title="Assets" accounts={assets} />
+						<CompactBalanceCard title="Assets" accounts={assetAccounts} />
 						<CompactBalanceCard
 							title="Liabilities"
 							accounts={liabilities}
@@ -59,7 +59,7 @@ export default function AccountsPage() {
 						<AccountsCard
 							className="h-[500px]"
 							title="Assets"
-							accounts={assets}
+							accounts={assetAccounts}
 							// biome-ignore lint/complexity/noUselessFragments: Using it to override the default menu component
 							menuComponent={<></>}
 						/>

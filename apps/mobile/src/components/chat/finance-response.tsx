@@ -4,7 +4,7 @@ import { Colors, Spacing } from '@/constants/theme';
 type ColorSet = (typeof Colors)['light'] | (typeof Colors)['dark'];
 
 interface FinanceResponseProps {
-  type: 'finance_summary' | 'spending_chart' | 'asset_breakdown' | 'text';
+  type: 'finance_summary' | 'spending_chart' | 'account_breakdown' | 'text';
   data?: any;
   colors: ColorSet;
 }
@@ -159,14 +159,14 @@ export function FinanceResponse({ type, data, colors }: FinanceResponseProps) {
     );
   }
 
-  if (type === 'asset_breakdown') {
-    const assets = data?.assets || [
+  if (type === 'account_breakdown') {
+    const accounts = data?.accounts || data?.assets || [
       { name: 'Checking Account', value: 5234.67, type: 'cash' },
       { name: 'Savings', value: 12500.0, type: 'cash' },
       { name: 'Investment Portfolio', value: 8750.5, type: 'investment' },
     ];
 
-    const totalValue = assets.reduce((sum: number, asset: any) => sum + asset.value, 0);
+    const totalValue = accounts.reduce((sum: number, account: any) => sum + account.value, 0);
 
     return (
       <View
@@ -185,13 +185,13 @@ export function FinanceResponse({ type, data, colors }: FinanceResponseProps) {
             letterSpacing: 0.4,
             marginBottom: Spacing.two,
           }}>
-          Asset Breakdown
+          Account Breakdown
         </Text>
 
         <View style={{ gap: Spacing.two }}>
-          {assets.map((asset: any, index: number) => (
+          {accounts.map((account: any, index: number) => (
             <View
-              key={`${asset.name}-${index}`}
+              key={`${account.name}-${index}`}
               style={{
                 flexDirection: 'row',
                 alignItems: 'center',
@@ -205,29 +205,29 @@ export function FinanceResponse({ type, data, colors }: FinanceResponseProps) {
                     height: 36,
                     borderRadius: 8,
                     backgroundColor:
-                      asset.type === 'cash'
+                      account.type === 'cash'
                         ? '#22C55E20'
-                        : asset.type === 'investment'
+                        : account.type === 'investment'
                           ? '#8B5CF620'
                           : '#F59E0B20',
                     justifyContent: 'center',
                     alignItems: 'center',
                   }}>
                   <Text style={{ fontSize: 16 }}>
-                    {asset.type === 'cash' ? '💵' : asset.type === 'investment' ? '📈' : '🏦'}
+                    {account.type === 'cash' ? '💵' : account.type === 'investment' ? '📈' : '🏦'}
                   </Text>
                 </View>
                 <View>
                   <Text style={{ fontSize: 14, fontWeight: '500', color: colors.text }}>
-                    {asset.name}
+                    {account.name}
                   </Text>
                   <Text style={{ fontSize: 12, color: colors.textSecondary }}>
-                    {asset.type.charAt(0).toUpperCase() + asset.type.slice(1)}
+                    {account.type.charAt(0).toUpperCase() + account.type.slice(1)}
                   </Text>
                 </View>
               </View>
               <Text style={{ fontSize: 14, fontWeight: '600', color: colors.text }}>
-                €{asset.value.toFixed(2)}
+                €{account.value.toFixed(2)}
               </Text>
             </View>
           ))}

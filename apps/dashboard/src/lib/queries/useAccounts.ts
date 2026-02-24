@@ -34,7 +34,7 @@ export function useAccount(accountId: number) {
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data?.error || "Failed to fetch account");
-      return { ...data.asset, children: data.children ?? [] } as Account;
+      return { ...data.account, children: data.children ?? [] } as Account;
     },
     enabled: !!accountId,
   });

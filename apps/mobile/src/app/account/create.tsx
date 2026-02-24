@@ -19,19 +19,19 @@ type ColorSet = (typeof Colors)["light"] | (typeof Colors)["dark"];
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-type AssetSubtype = 
-	| "depository" 
-	| "brokerage" 
-	| "crypto" 
-	| "property" 
-	| "vehicle" 
-	| "creditcard" 
-	| "loan" 
+type AccountSubtype =
+	| "depository"
+	| "brokerage"
+	| "crypto"
+	| "property"
+	| "vehicle"
+	| "creditcard"
+	| "loan"
 	| "stock";
 
-interface AssetFormData {
+interface AccountFormData {
 	name: string;
-	subtype: AssetSubtype;
+	subtype: AccountSubtype;
 	value: string;
 	currency: string;
 	notes: string;
@@ -39,7 +39,7 @@ interface AssetFormData {
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-const ASSET_SUBTYPES: { value: AssetSubtype; label: string; icon: string; isLiability: boolean }[] = [
+const ACCOUNT_SUBTYPES: { value: AccountSubtype; label: string; icon: string; isLiability: boolean }[] = [
 	{ value: "depository", label: "Bank Account", icon: "🏦", isLiability: false },
 	{ value: "brokerage", label: "Investment", icon: "📈", isLiability: false },
 	{ value: "crypto", label: "Crypto", icon: "₿", isLiability: false },
@@ -106,8 +106,8 @@ function SubtypeSelector({
 	onSelect,
 	colors,
 }: {
-	selected: AssetSubtype | null;
-	onSelect: (subtype: AssetSubtype) => void;
+	selected: AccountSubtype | null;
+	onSelect: (subtype: AccountSubtype) => void;
 	colors: ColorSet;
 }) {
 	return (
@@ -121,10 +121,10 @@ function SubtypeSelector({
 					letterSpacing: 0.5,
 					marginBottom: Spacing.two,
 				}}>
-				Asset Type
+				Account Type
 			</Text>
 			<View style={{ flexDirection: "row", flexWrap: "wrap", gap: Spacing.two }}>
-				{ASSET_SUBTYPES.map((subtype) => (
+				{ACCOUNT_SUBTYPES.map((subtype) => (
 					<Pressable
 						key={subtype.value}
 						onPress={() => onSelect(subtype.value)}
@@ -213,12 +213,12 @@ function CurrencySelector({
 
 // ─── Screen ──────────────────────────────────────────────────────────────────
 
-export default function CreateAssetScreen() {
+export default function CreateAccountScreen() {
 	const colorScheme = useColorScheme() ?? "light";
 	const colors = Colors[colorScheme === "dark" ? "dark" : "light"];
 	const insets = useSafeAreaInsets();
 
-	const [formData, setFormData] = useState<AssetFormData>({
+	const [formData, setFormData] = useState<AccountFormData>({
 		name: "",
 		subtype: "depository",
 		value: "",
@@ -230,7 +230,7 @@ export default function CreateAssetScreen() {
 	const [error, setError] = useState<string | null>(null);
 
 	const updateField = useCallback(
-		<K extends keyof AssetFormData>(field: K, value: AssetFormData[K]) => {
+		<K extends keyof AccountFormData>(field: K, value: AccountFormData[K]) => {
 			setFormData((prev) => ({ ...prev, [field]: value }));
 		},
 		[]
@@ -238,7 +238,7 @@ export default function CreateAssetScreen() {
 
 	const handleSubmit = useCallback(async () => {
 		if (!formData.name.trim()) {
-			setError("Please enter an asset name");
+			setError("Please enter an account name");
 			return;
 		}
 
@@ -251,7 +251,7 @@ export default function CreateAssetScreen() {
 		setError(null);
 
 		try {
-			await api.post("/api/asset", {
+			await api.post("/api/account", {
 				name: formData.name.trim(),
 				subtype: formData.subtype,
 				value: parseFloat(formData.value),
@@ -261,13 +261,13 @@ export default function CreateAssetScreen() {
 
 			router.back();
 		} catch (e) {
-			setError(e instanceof Error ? e.message : "Failed to create asset");
+			setError(e instanceof Error ? e.message : "Failed to create account");
 		} finally {
 			setIsSubmitting(false);
 		}
 	}, [formData]);
 
-	const isLiability = ASSET_SUBTYPES.find((s) => s.value === formData.subtype)?.isLiability;
+	const isLiability = ACCOUNT_SUBTYPES.find((s) => s.value === formData.subtype)?.isLiability;
 
 	return (
 		<View style={{ flex: 1, backgroundColor: colors.background }}>
@@ -311,7 +311,7 @@ export default function CreateAssetScreen() {
 						color: colors.text,
 						fontFamily: Fonts?.rounded,
 					}}>
-					Add Manual Asset
+					Add Manual Account
 				</Text>
 				<Text
 					style={{
@@ -346,7 +346,7 @@ export default function CreateAssetScreen() {
 							letterSpacing: 0.5,
 							marginBottom: Spacing.two,
 						}}>
-						Asset Details
+						Account Details
 					</Text>
 
 					<InputField
@@ -427,7 +427,7 @@ export default function CreateAssetScreen() {
 								fontWeight: "600",
 								color: colors.background,
 							}}>
-							Create Asset
+							Create Account
 						</Text>
 					)}
 				</Pressable>
