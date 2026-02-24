@@ -17,7 +17,7 @@ export function useAccounts() {
       const response = await api.accounts.$get();
       const data = await response.json();
       if (!response.ok) throw new Error(data?.error || "Failed to fetch accounts");
-      return (data.assets || []) as Account[];
+      return (data ?? []) as Account[];
     },
   });
 }

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { api } from '@/lib/api';
 
 export type Asset = {
@@ -22,14 +22,8 @@ export type Transaction = {
   category: string;
 };
 
-type AssetsResponse = {
-  totalValue: string;
-  assets: Asset[];
-  assetsByType: Record<string, Asset[]>;
-};
-
 export function useAssets() {
-  const [data, setData] = useState<AssetsResponse | null>(null);
+  const [data, setData] = useState<Asset[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -37,7 +31,7 @@ export function useAssets() {
     setLoading(true);
     setError(null);
     try {
-      const result = await api.get<AssetsResponse>('/api/asset');
+      const result = await api.get<Asset[]>('/api/asset');
       setData(result);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to load assets');
@@ -50,7 +44,15 @@ export function useAssets() {
     fetch();
   }, [fetch]);
 
-  return { data, loading, error, refetch: fetch };
+  const totalValue = useMemo(() => {
+    if (!data) return 0;
+    return data.reduce((sum, a) => {
+      const v = parseFloat(a.value);
+      return sum + (a.type === 'liability' ? -v : v);
+    }, 0);
+  }, [data]);
+
+  return { data, totalValue, loading, error, refetch: fetch };
 }
 
 export function useTransactions() {

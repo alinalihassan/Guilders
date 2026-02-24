@@ -1,6 +1,6 @@
 import { Image } from 'expo-image';
 import { Link, router } from "expo-router";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 import {
 	ActivityIndicator,
 	Animated,
@@ -311,17 +311,12 @@ export default function HomeScreen() {
 	const colors = Colors[colorScheme === "dark" ? "dark" : "light"];
 	const insets = useSafeAreaInsets();
 
-	const { data: assetsData, loading: assetsLoading, refetch: refetchAssets } = useAssets();
+	const { data: assets, totalValue, loading: assetsLoading, refetch: refetchAssets } = useAssets();
 	const { data: transactions, loading: txLoading, refetch: refetchTx } = useTransactions();
 
 	const [selectedPeriod, setSelectedPeriod] = useState("1M");
 
-	const totalValue = useMemo(
-		() => parseFloat(assetsData?.totalValue ?? "0"),
-		[assetsData],
-	);
-
-	const assets = assetsData?.assets ?? [];
+	const assetsList = assets ?? [];
 
 	const onRefresh = useCallback(async () => {
 		await Promise.all([refetchAssets(), refetchTx()]);
@@ -434,7 +429,7 @@ export default function HomeScreen() {
 						<ActivityIndicator size="large" color={colors.textSecondary} style={{ flex: 1, marginTop: Spacing.four }} />
 					) : (
 						<>
-							{assets.map((asset) => (
+							{assetsList.map((asset) => (
 								<View key={asset.id} style={{ width: "48%" }}>
 									<AssetCard asset={asset} colors={colors} />
 								</View>

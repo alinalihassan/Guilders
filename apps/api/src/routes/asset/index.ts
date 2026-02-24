@@ -54,42 +54,14 @@ export const assetRoutes = new Elysia({
         },
       });
 
-      // Calculate total value and group by type
-      let totalValue = 0;
-      const assetsByType: Record<string, typeof assets> = {};
-
-      for (const ast of assets) {
-        const value = parseFloat(ast.value.toString());
-        if (ast.type === AccountTypeEnum.liability) {
-          totalValue -= value;
-        } else {
-          totalValue += value;
-        }
-
-        const assetType = ast.type as string;
-        if (!assetsByType[assetType]) {
-          assetsByType[assetType] = [];
-        }
-        assetsByType[assetType].push(ast);
-      }
-
-      return {
-        totalValue: totalValue.toString(),
-        assets,
-        assetsByType,
-      };
+      return assets;
     },
     {
       auth: true,
-      response: t.Object({
-        totalValue: t.String(),
-        assets: t.Array(t.Ref("#/components/schemas/Asset")),
-        assetsByType: t.Record(t.String(), t.Array(t.Ref("#/components/schemas/Asset"))),
-      }),
+      response: t.Array(t.Ref("#/components/schemas/Asset")),
       detail: {
         summary: "Get all assets",
-        description:
-          "Retrieve all assets for the authenticated user with total value calculation",
+        description: "Retrieve all assets for the authenticated user",
       },
     },
   )

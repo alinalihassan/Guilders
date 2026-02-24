@@ -121,7 +121,7 @@ Financial transactions associated with assets.
 **Not currently exposed** - Need to uncomment asset routes in `/apps/api/src/routes/index.ts`
 
 When enabled:
-- `GET /api/asset` - List all user's assets with total value
+- `GET /api/asset` - List all user's assets
 - `POST /api/asset` - Create manual asset
 - `GET /api/asset/:id` - Get specific asset
 - `PUT /api/asset/:id` - Update asset
@@ -183,7 +183,7 @@ The mobile app uses Better Auth client with expo-secure-store for token persiste
 ```typescript
 // Home tab should fetch:
 const assets = await fetch('/api/asset').then(r => r.json());
-const totalValue = assets.reduce((sum, a) => sum + Number(a.value), 0);
+const totalValue = assets.reduce((sum, a) => sum + (a.type === 'liability' ? -1 : 1) * Number(a.value), 0);
 
 const transactions = await fetch('/api/transaction?limit=20').then(r => r.json());
 ```

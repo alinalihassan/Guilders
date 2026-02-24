@@ -2,19 +2,24 @@ import type { Account, Rate } from "@guilders/api/types";
 import type { AccountSubtype } from "@/lib/account-types";
 
 export function convertToUserCurrency(
-  value: number,
+  value: number | string,
   fromCurrency: string,
   rates: Rate[] | undefined,
   userCurrency: string,
 ) {
-  if (!rates) return value;
-  if (fromCurrency === userCurrency) return value;
+  const numValue = Number(value);
+  if (Number.isNaN(numValue)) return 0;
+  if (!rates) return numValue;
+  if (fromCurrency === userCurrency) return numValue;
 
   const fromRate =
-    rates.find((r) => r.currency_code === fromCurrency)?.rate ?? 1;
-  const toRate = rates.find((r) => r.currency_code === userCurrency)?.rate ?? 1;
+    Number(rates.find((r) => r.currency_code === fromCurrency)?.rate ?? 1) ||
+    1;
+  const toRate =
+    Number(rates.find((r) => r.currency_code === userCurrency)?.rate ?? 1) ||
+    1;
 
-  return (value * fromRate) / toRate;
+  return (numValue * fromRate) / toRate;
 }
 
 interface CategoryGroups {

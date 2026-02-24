@@ -412,16 +412,14 @@ export default function CreateTransactionScreen() {
 	useEffect(() => {
 		const fetchAssets = async () => {
 			try {
-				const result = await api.get<{ totalValue: string; assets: Asset[] }>(
-					"/api/asset",
-				);
-				setAssets(result.assets);
+				const assets = await api.get<Asset[]>("/api/asset");
+				setAssets(assets);
 				// Auto-select first asset if available
-				if (result.assets.length > 0) {
+				if (assets.length > 0) {
 					setFormData((prev) => ({
 						...prev,
-						assetId: result.assets[0].id,
-						currency: result.assets[0].currency,
+						assetId: assets[0].id,
+						currency: assets[0].currency,
 					}));
 				}
 			} catch (e) {
