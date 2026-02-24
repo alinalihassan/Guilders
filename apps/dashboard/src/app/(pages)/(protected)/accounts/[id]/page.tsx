@@ -178,20 +178,21 @@ export default function AccountPage({
 						</div>
 					</div>
 
-					<div className="flex flex-col sm:flex-row gap-4">
-						<div className="min-w-0 flex-[65]">
+					<div className="flex flex-col sm:flex-row sm:items-stretch gap-4">
+						<div className="min-w-0 sm:flex-[65]">
 							<BalanceCard
 								title={account.subtype === "depository" ? "Balance" : "Value"}
 								value={account.value}
 								currency={account.currency}
 								change={change}
+								className="h-full"
 							/>
 						</div>
 						{account.children && account.children.length > 0 ? (
-							<div className="flex-[35] min-w-[240px]">
+							<div className="sm:flex-[35] min-w-[240px]">
 								<AccountHoldingsDonutCard
 									holdings={account.children}
-									className="h-full min-h-[320px]"
+									className="h-full"
 								/>
 							</div>
 						) : null}
