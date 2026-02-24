@@ -24,7 +24,10 @@ export const institution = pgTable(
     name: varchar("name", { length: 100 }).notNull(),
     provider_id: integer("provider_id")
       .notNull()
-      .references(() => provider.id),
+      .references(() => provider.id, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      }),
     provider_institution_id: varchar("provider_institution_id", {
       length: 255,
     }).notNull(),

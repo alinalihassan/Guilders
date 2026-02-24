@@ -1,5 +1,6 @@
 // import { relations } from "drizzle-orm/relations";
 import { index, pgTable, varchar } from "drizzle-orm/pg-core";
+import { user } from "./auth";
 import { currency } from "./currencies";
 
 export const userSetting = pgTable(
@@ -11,7 +12,12 @@ export const userSetting = pgTable(
       .references(() => currency.code)
       .default("EUR"),
     profile_url: varchar("profile_url", { length: 255 }),
-    user_id: varchar("user_id", { length: 255 }).primaryKey(),
+    user_id: varchar("user_id", { length: 255 })
+      .primaryKey()
+      .references(() => user.id, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      }),
   },
   (table) => [
     index("user_setting_user_idx").on(table.user_id),

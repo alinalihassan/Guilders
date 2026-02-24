@@ -262,19 +262,23 @@ CREATE INDEX "transaction_date_idx" ON "transaction" ("date");--> statement-brea
 CREATE INDEX "user_setting_user_idx" ON "user_setting" ("user_id");--> statement-breakpoint
 CREATE INDEX "user_setting_currency_idx" ON "user_setting" ("currency");--> statement-breakpoint
 ALTER TABLE "asset" ADD CONSTRAINT "asset_currency_currency_code_fkey" FOREIGN KEY ("currency") REFERENCES "currency"("code");--> statement-breakpoint
-ALTER TABLE "asset" ADD CONSTRAINT "asset_institution_connection_id_institution_connection_id_fkey" FOREIGN KEY ("institution_connection_id") REFERENCES "institution_connection"("id");--> statement-breakpoint
+ALTER TABLE "asset" ADD CONSTRAINT "asset_institution_connection_id_institution_connection_id_fkey" FOREIGN KEY ("institution_connection_id") REFERENCES "institution_connection"("id") ON DELETE CASCADE ON UPDATE CASCADE;--> statement-breakpoint
+ALTER TABLE "asset" ADD CONSTRAINT "asset_user_id_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;--> statement-breakpoint
 ALTER TABLE "account" ADD CONSTRAINT "account_user_id_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE;--> statement-breakpoint
 ALTER TABLE "apikey" ADD CONSTRAINT "apikey_user_id_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE;--> statement-breakpoint
 ALTER TABLE "passkey" ADD CONSTRAINT "passkey_user_id_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE;--> statement-breakpoint
 ALTER TABLE "session" ADD CONSTRAINT "session_user_id_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE;--> statement-breakpoint
 ALTER TABLE "two_factor" ADD CONSTRAINT "two_factor_user_id_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE;--> statement-breakpoint
 ALTER TABLE "country" ADD CONSTRAINT "country_currency_code_currency_code_fkey" FOREIGN KEY ("currency_code") REFERENCES "currency"("code");--> statement-breakpoint
-ALTER TABLE "institution_connection" ADD CONSTRAINT "institution_connection_institution_id_institution_id_fkey" FOREIGN KEY ("institution_id") REFERENCES "institution"("id");--> statement-breakpoint
-ALTER TABLE "institution_connection" ADD CONSTRAINT "institution_connection_Jy4P5KZYFGDz_fkey" FOREIGN KEY ("provider_connection_id") REFERENCES "provider_connection"("id");--> statement-breakpoint
+ALTER TABLE "document" ADD CONSTRAINT "document_user_id_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;--> statement-breakpoint
+ALTER TABLE "institution_connection" ADD CONSTRAINT "institution_connection_institution_id_institution_id_fkey" FOREIGN KEY ("institution_id") REFERENCES "institution"("id") ON DELETE CASCADE ON UPDATE CASCADE;--> statement-breakpoint
+ALTER TABLE "institution_connection" ADD CONSTRAINT "institution_connection_Jy4P5KZYFGDz_fkey" FOREIGN KEY ("provider_connection_id") REFERENCES "provider_connection"("id") ON DELETE CASCADE ON UPDATE CASCADE;--> statement-breakpoint
 ALTER TABLE "institution" ADD CONSTRAINT "institution_country_country_code_fkey" FOREIGN KEY ("country") REFERENCES "country"("code");--> statement-breakpoint
-ALTER TABLE "institution" ADD CONSTRAINT "institution_provider_id_provider_id_fkey" FOREIGN KEY ("provider_id") REFERENCES "provider"("id");--> statement-breakpoint
-ALTER TABLE "provider_connection" ADD CONSTRAINT "provider_connection_provider_id_provider_id_fkey" FOREIGN KEY ("provider_id") REFERENCES "provider"("id");--> statement-breakpoint
+ALTER TABLE "institution" ADD CONSTRAINT "institution_provider_id_provider_id_fkey" FOREIGN KEY ("provider_id") REFERENCES "provider"("id") ON DELETE CASCADE ON UPDATE CASCADE;--> statement-breakpoint
+ALTER TABLE "provider_connection" ADD CONSTRAINT "provider_connection_provider_id_provider_id_fkey" FOREIGN KEY ("provider_id") REFERENCES "provider"("id") ON DELETE CASCADE ON UPDATE CASCADE;--> statement-breakpoint
+ALTER TABLE "provider_connection" ADD CONSTRAINT "provider_connection_user_id_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;--> statement-breakpoint
 ALTER TABLE "rate" ADD CONSTRAINT "rate_currency_code_currency_code_fkey" FOREIGN KEY ("currency_code") REFERENCES "currency"("code");--> statement-breakpoint
-ALTER TABLE "transaction" ADD CONSTRAINT "transaction_asset_id_asset_id_fkey" FOREIGN KEY ("asset_id") REFERENCES "asset"("id");--> statement-breakpoint
+ALTER TABLE "transaction" ADD CONSTRAINT "transaction_asset_id_asset_id_fkey" FOREIGN KEY ("asset_id") REFERENCES "asset"("id") ON DELETE CASCADE ON UPDATE CASCADE;--> statement-breakpoint
 ALTER TABLE "transaction" ADD CONSTRAINT "transaction_currency_currency_code_fkey" FOREIGN KEY ("currency") REFERENCES "currency"("code");--> statement-breakpoint
-ALTER TABLE "user_setting" ADD CONSTRAINT "user_setting_currency_currency_code_fkey" FOREIGN KEY ("currency") REFERENCES "currency"("code");
+ALTER TABLE "user_setting" ADD CONSTRAINT "user_setting_currency_currency_code_fkey" FOREIGN KEY ("currency") REFERENCES "currency"("code");--> statement-breakpoint
+ALTER TABLE "user_setting" ADD CONSTRAINT "user_setting_user_id_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;

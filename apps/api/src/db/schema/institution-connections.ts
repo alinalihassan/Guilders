@@ -23,10 +23,16 @@ export const institutionConnection = pgTable(
     created_at: timestamp("created_at").notNull().defaultNow(),
     institution_id: integer("institution_id")
       .notNull()
-      .references(() => institution.id),
+      .references(() => institution.id, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      }),
     provider_connection_id: integer("provider_connection_id")
       .notNull()
-      .references(() => providerConnection.id),
+      .references(() => providerConnection.id, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      }),
   },
   (table) => [
     index("institution_connection_id_idx").on(table.id),

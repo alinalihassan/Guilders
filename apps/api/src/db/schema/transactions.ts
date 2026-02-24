@@ -21,7 +21,10 @@ export const transaction = pgTable(
   {
     asset_id: integer("asset_id")
       .notNull()
-      .references(() => asset.id),
+      .references(() => asset.id, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      }),
     amount: numeric("amount", { precision: 19, scale: 4 }).notNull(),
     category: varchar("category", { length: 100 })
       .notNull()

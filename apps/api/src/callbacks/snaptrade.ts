@@ -49,8 +49,22 @@ export async function handleSnapTradeCallback(
   }
 
   if (!HANDLED_EVENTS.has(body.eventType as SnapTradeEventType)) {
+    console.log("[SnapTrade callback] ignored event", {
+      eventType: body.eventType,
+      userId: body.userId,
+      webhookId: body.webhookId,
+    });
     return Response.json({ received: true, ignored: true });
   }
+
+  console.log("[SnapTrade callback] received event", {
+    eventType: body.eventType,
+    userId: body.userId,
+    webhookId: body.webhookId,
+    brokerageId: body.brokerageId,
+    brokerageAuthorizationId: body.brokerageAuthorizationId,
+    accountId: body.accountId,
+  });
 
   const event: SnapTradeWebhookEvent = {
     source: "snaptrade",
@@ -64,6 +78,13 @@ export async function handleSnapTradeCallback(
   };
 
   await env.WEBHOOK_QUEUE.send(event);
+  console.log("[SnapTrade callback] enqueued event", {
+    eventType: event.eventType,
+    userId: event.payload.userId,
+    brokerageId: event.payload.brokerageId,
+    brokerageAuthorizationId: event.payload.brokerageAuthorizationId,
+    accountId: event.payload.accountId,
+  });
 
   return Response.json({ received: true });
 }

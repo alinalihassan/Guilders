@@ -1,3 +1,5 @@
+import type { ProviderName } from "../providers/types";
+
 // --- SnapTrade ---
 
 export type SnapTradeEventType =
@@ -48,8 +50,29 @@ export type SaltEdgeWebhookEvent = {
   payload: SaltEdgeWebhookPayload;
 };
 
+// --- Provider cleanup ---
+
+export type ProviderUserCleanupEvent = {
+  source: "provider-user-cleanup";
+  eventType: "deregister-user";
+  payload: {
+    providerName: ProviderName;
+    userId: string;
+  };
+};
+
+export type UserFilesCleanupEvent = {
+  source: "user-files-cleanup";
+  eventType: "delete-user-files";
+  payload: {
+    userId: string;
+  };
+};
+
 // --- Union ---
 
 export type WebhookEvent =
   | SnapTradeWebhookEvent
-  | SaltEdgeWebhookEvent;
+  | SaltEdgeWebhookEvent
+  | ProviderUserCleanupEvent
+  | UserFilesCleanupEvent;

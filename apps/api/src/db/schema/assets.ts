@@ -12,6 +12,7 @@ import {
   createInsertSchema,
   createSelectSchema,
 } from "drizzle-orm/typebox-legacy";
+import { user } from "./auth";
 import { currency } from "./currencies";
 import {
   accountSubtypeEnum,
@@ -36,6 +37,10 @@ export const asset = pgTable(
     image: varchar("image", { length: 255 }),
     institution_connection_id: integer("institution_connection_id").references(
       () => institutionConnection.id,
+      {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      },
     ),
     investable: investableEnum("investable")
       .notNull()
@@ -53,7 +58,12 @@ export const asset = pgTable(
     type: accountTypeEnum("type").notNull(),
     units: numeric("units", { precision: 19, scale: 8 }),
     updated_at: timestamp("updated_at").notNull().defaultNow(),
-    user_id: varchar("user_id", { length: 255 }).notNull(),
+    user_id: varchar("user_id", { length: 255 })
+      .notNull()
+      .references(() => user.id, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      }),
     value: numeric("value", { precision: 19, scale: 4 }).notNull(),
   },
   (table) => [

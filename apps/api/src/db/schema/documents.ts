@@ -7,6 +7,7 @@ import {
   timestamp,
   varchar,
 } from "drizzle-orm/pg-core";
+import { user } from "./auth";
 import { documentEntityTypeEnum } from "./enums";
 
 export const document = pgTable(
@@ -21,7 +22,12 @@ export const document = pgTable(
     size: integer("size").notNull(),
     type: varchar("type", { length: 100 }).notNull(),
     updated_at: timestamp("updated_at").notNull().defaultNow(),
-    user_id: varchar("user_id", { length: 255 }).notNull(),
+    user_id: varchar("user_id", { length: 255 })
+      .notNull()
+      .references(() => user.id, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      }),
   },
   (table) => [
     index("document_id_idx").on(table.id),

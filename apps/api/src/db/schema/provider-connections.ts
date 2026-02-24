@@ -10,6 +10,7 @@ import {
   createInsertSchema,
   createSelectSchema,
 } from "drizzle-orm/typebox-legacy";
+import { user } from "./auth";
 import { provider } from "./providers";
 
 export const providerConnection = pgTable(
@@ -19,10 +20,18 @@ export const providerConnection = pgTable(
     created_at: timestamp("created_at").notNull().defaultNow(),
     provider_id: integer("provider_id")
       .notNull()
-      .references(() => provider.id),
+      .references(() => provider.id, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      }),
     secret: varchar("secret", { length: 255 }),
     updated_at: timestamp("updated_at").notNull().defaultNow(),
-    user_id: varchar("user_id", { length: 255 }).notNull(),
+    user_id: varchar("user_id", { length: 255 })
+      .notNull()
+      .references(() => user.id, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      }),
   },
   (table) => [
     index("provider_connection_id_idx").on(table.id),

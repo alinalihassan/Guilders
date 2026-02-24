@@ -1,7 +1,7 @@
 {
   "version": "8",
   "dialect": "postgres",
-  "id": "dff5c107-12f4-44cb-8b80-23e7f5c06f4e",
+  "id": "8629e1cc-7757-4d28-a05f-0af286139add",
   "prevIds": [
     "00000000-0000-0000-0000-000000000000"
   ],
@@ -3134,9 +3134,26 @@
       "columnsTo": [
         "id"
       ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "NO ACTION",
+      "onUpdate": "CASCADE",
+      "onDelete": "CASCADE",
       "name": "asset_institution_connection_id_institution_connection_id_fkey",
+      "entityType": "fks",
+      "schema": "public",
+      "table": "asset"
+    },
+    {
+      "nameExplicit": false,
+      "columns": [
+        "user_id"
+      ],
+      "schemaTo": "public",
+      "tableTo": "user",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "CASCADE",
+      "onDelete": "CASCADE",
+      "name": "asset_user_id_user_id_fkey",
       "entityType": "fks",
       "schema": "public",
       "table": "asset"
@@ -3246,6 +3263,23 @@
     {
       "nameExplicit": false,
       "columns": [
+        "user_id"
+      ],
+      "schemaTo": "public",
+      "tableTo": "user",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "CASCADE",
+      "onDelete": "CASCADE",
+      "name": "document_user_id_user_id_fkey",
+      "entityType": "fks",
+      "schema": "public",
+      "table": "document"
+    },
+    {
+      "nameExplicit": false,
+      "columns": [
         "institution_id"
       ],
       "schemaTo": "public",
@@ -3253,8 +3287,8 @@
       "columnsTo": [
         "id"
       ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "NO ACTION",
+      "onUpdate": "CASCADE",
+      "onDelete": "CASCADE",
       "name": "institution_connection_institution_id_institution_id_fkey",
       "entityType": "fks",
       "schema": "public",
@@ -3270,8 +3304,8 @@
       "columnsTo": [
         "id"
       ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "NO ACTION",
+      "onUpdate": "CASCADE",
+      "onDelete": "CASCADE",
       "name": "institution_connection_Jy4P5KZYFGDz_fkey",
       "entityType": "fks",
       "schema": "public",
@@ -3304,8 +3338,8 @@
       "columnsTo": [
         "id"
       ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "NO ACTION",
+      "onUpdate": "CASCADE",
+      "onDelete": "CASCADE",
       "name": "institution_provider_id_provider_id_fkey",
       "entityType": "fks",
       "schema": "public",
@@ -3321,9 +3355,26 @@
       "columnsTo": [
         "id"
       ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "NO ACTION",
+      "onUpdate": "CASCADE",
+      "onDelete": "CASCADE",
       "name": "provider_connection_provider_id_provider_id_fkey",
+      "entityType": "fks",
+      "schema": "public",
+      "table": "provider_connection"
+    },
+    {
+      "nameExplicit": false,
+      "columns": [
+        "user_id"
+      ],
+      "schemaTo": "public",
+      "tableTo": "user",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "CASCADE",
+      "onDelete": "CASCADE",
+      "name": "provider_connection_user_id_user_id_fkey",
       "entityType": "fks",
       "schema": "public",
       "table": "provider_connection"
@@ -3355,8 +3406,8 @@
       "columnsTo": [
         "id"
       ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "NO ACTION",
+      "onUpdate": "CASCADE",
+      "onDelete": "CASCADE",
       "name": "transaction_asset_id_asset_id_fkey",
       "entityType": "fks",
       "schema": "public",
@@ -3392,6 +3443,23 @@
       "onUpdate": "NO ACTION",
       "onDelete": "NO ACTION",
       "name": "user_setting_currency_currency_code_fkey",
+      "entityType": "fks",
+      "schema": "public",
+      "table": "user_setting"
+    },
+    {
+      "nameExplicit": false,
+      "columns": [
+        "user_id"
+      ],
+      "schemaTo": "public",
+      "tableTo": "user",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "CASCADE",
+      "onDelete": "CASCADE",
+      "name": "user_setting_user_id_user_id_fkey",
       "entityType": "fks",
       "schema": "public",
       "table": "user_setting"
