@@ -1,10 +1,12 @@
 "use client";
 
-import { useStore } from "@/lib/store";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import { Menu } from "lucide-react";
 import { useEffect, useState } from "react";
+
+import { Button } from "@/components/ui/button";
+import { useStore } from "@/lib/store";
+import { cn } from "@/lib/utils";
+
 import { SearchBar } from "../nav/search-bar";
 import { UserButton } from "../nav/user-button";
 import { DynamicBreadcrumbs } from "./dynamic-breadcrumbs";
@@ -35,12 +37,7 @@ export function AppTopBar() {
       )}
     >
       <div className="flex items-center gap-4 flex-1">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-9 w-9 md:hidden"
-          onClick={toggleMenu}
-        >
+        <Button variant="ghost" size="icon" className="h-9 w-9 md:hidden" onClick={toggleMenu}>
           <Menu className="h-5 w-5" />
         </Button>
         <DynamicBreadcrumbs />

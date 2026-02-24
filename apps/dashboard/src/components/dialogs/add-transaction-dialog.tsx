@@ -1,5 +1,11 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader2 } from "lucide-react";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -25,17 +31,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
-import { useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
+
 import { DateTimePicker } from "../../components/common/datetime-picker";
 import { useDialog } from "../../lib/hooks/useDialog";
 import { useAccounts } from "../../lib/queries/useAccounts";
 import { useCurrencies } from "../../lib/queries/useCurrencies";
 import { useAddTransaction } from "../../lib/queries/useTransactions";
 import { useUser } from "../../lib/queries/useUser";
+import type { Currency } from "@guilders/api/types";
 
 const formSchema = z.object({
   accountId: z.number({
@@ -60,9 +63,7 @@ export function AddTransactionDialog() {
   const { data: currencies } = useCurrencies();
   const { data: user } = useUser();
 
-  const manualAccounts = accounts?.filter(
-    (account) => !account.institution_connection_id,
-  );
+  const manualAccounts = accounts?.filter((account) => !account.institution_connection_id);
 
   const form = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
@@ -129,9 +130,7 @@ export function AddTransactionDialog() {
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Add Transaction</DialogTitle>
-          <DialogDescription>
-            Add a new transaction to your account.
-          </DialogDescription>
+          <DialogDescription>Add a new transaction to your account.</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -142,9 +141,7 @@ export function AddTransactionDialog() {
                 <FormItem>
                   <FormLabel>Account</FormLabel>
                   <Select
-                    onValueChange={(value) =>
-                      field.onChange(Number.parseInt(value))
-                    }
+                    onValueChange={(value) => field.onChange(Number.parseInt(value))}
                     defaultValue={field.value?.toString()}
                   >
                     <FormControl>
@@ -154,10 +151,7 @@ export function AddTransactionDialog() {
                     </FormControl>
                     <SelectContent>
                       {manualAccounts?.map((account) => (
-                        <SelectItem
-                          key={account.id}
-                          value={account.id.toString()}
-                        >
+                        <SelectItem key={account.id} value={account.id.toString()}>
                           {account.name}
                         </SelectItem>
                       ))}
@@ -182,21 +176,15 @@ export function AddTransactionDialog() {
                       control={form.control}
                       name="currency"
                       render={({ field }) => (
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger className="w-[100px]">
                               <SelectValue placeholder="Currency" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {currencies?.map((currency) => (
-                              <SelectItem
-                                key={currency.code}
-                                value={currency.code}
-                              >
+                            {currencies?.map((currency: Currency) => (
+                              <SelectItem key={currency.code} value={currency.code}>
                                 {currency.code}
                               </SelectItem>
                             ))}

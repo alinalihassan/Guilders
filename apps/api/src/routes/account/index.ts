@@ -1,10 +1,7 @@
 import { and, eq } from "drizzle-orm";
 import { Elysia, status, t } from "elysia";
-import {
-  account,
-  insertAccountSchema,
-  selectAccountSchema,
-} from "../../db/schema/accounts";
+
+import { account, insertAccountSchema, selectAccountSchema } from "../../db/schema/accounts";
 import { AccountTypeEnum } from "../../db/schema/enums";
 import { db } from "../../lib/db";
 import { authPlugin } from "../../middleware/auth";
@@ -16,7 +13,7 @@ export const accountRoutes = new Elysia({
   detail: {
     tags: ["Accounts"],
     security: [{ bearerAuth: [] }],
-  }
+  },
 })
   .use(authPlugin)
   .model({
@@ -93,8 +90,7 @@ export const accountRoutes = new Elysia({
       },
       detail: {
         summary: "Create account",
-        description:
-          "Create a new account with auto-calculated type from subtype",
+        description: "Create a new account with auto-calculated type from subtype",
       },
     },
   )
@@ -212,8 +208,7 @@ export const accountRoutes = new Elysia({
       },
       detail: {
         summary: "Update account",
-        description:
-          "Update an account with automatic type recalculation if subtype changed",
+        description: "Update an account with automatic type recalculation if subtype changed",
       },
     },
   )

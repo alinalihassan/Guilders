@@ -1,6 +1,10 @@
 import { and, eq, inArray } from "drizzle-orm";
 import { Elysia, t } from "elysia";
-import { institutionConnection, selectInstitutionConnectionSchema } from "../../db/schema/institution-connections";
+
+import {
+  institutionConnection,
+  selectInstitutionConnectionSchema,
+} from "../../db/schema/institution-connections";
 import { institution } from "../../db/schema/institutions";
 import { providerConnection } from "../../db/schema/provider-connections";
 import { db } from "../../lib/db";
@@ -21,12 +25,11 @@ export const institutionConnectionRoutes = new Elysia({
     "",
     async ({ user }) => {
       // First get user's provider connections
-      const userProviderConnections = await db
-        .query.providerConnection.findMany({
-          where: {
-            user_id: user.id,
-          },
-        });
+      const userProviderConnections = await db.query.providerConnection.findMany({
+        where: {
+          user_id: user.id,
+        },
+      });
 
       const providerConnectionIds = userProviderConnections.map((pc) => pc.id);
 
@@ -42,23 +45,12 @@ export const institutionConnectionRoutes = new Elysia({
           provider_connection: providerConnection,
         })
         .from(institutionConnection)
-        .innerJoin(
-          institution,
-          eq(institutionConnection.institution_id, institution.id),
-        )
+        .innerJoin(institution, eq(institutionConnection.institution_id, institution.id))
         .leftJoin(
           providerConnection,
-          eq(
-            institutionConnection.provider_connection_id,
-            providerConnection.id,
-          ),
+          eq(institutionConnection.provider_connection_id, providerConnection.id),
         )
-        .where(
-          inArray(
-            institutionConnection.provider_connection_id,
-            providerConnectionIds,
-          ),
-        );
+        .where(inArray(institutionConnection.provider_connection_id, providerConnectionIds));
 
       return connections.map((c) => ({
         id: c.institutionConnection.id,
@@ -87,12 +79,11 @@ export const institutionConnectionRoutes = new Elysia({
     "/:id",
     async ({ params, user }) => {
       // First get user's provider connections
-      const userProviderConnections = await db
-        .query.providerConnection.findMany({
-          where: {
-            user_id: user.id,
-          },
-        });
+      const userProviderConnections = await db.query.providerConnection.findMany({
+        where: {
+          user_id: user.id,
+        },
+      });
 
       const providerConnectionIds = userProviderConnections.map((pc) => pc.id);
 
@@ -108,24 +99,15 @@ export const institutionConnectionRoutes = new Elysia({
           provider_connection: providerConnection,
         })
         .from(institutionConnection)
-        .innerJoin(
-          institution,
-          eq(institutionConnection.institution_id, institution.id),
-        )
+        .innerJoin(institution, eq(institutionConnection.institution_id, institution.id))
         .leftJoin(
           providerConnection,
-          eq(
-            institutionConnection.provider_connection_id,
-            providerConnection.id,
-          ),
+          eq(institutionConnection.provider_connection_id, providerConnection.id),
         )
         .where(
           and(
             eq(institutionConnection.id, params.id),
-            inArray(
-              institutionConnection.provider_connection_id,
-              providerConnectionIds,
-            ),
+            inArray(institutionConnection.provider_connection_id, providerConnectionIds),
           ),
         );
 
@@ -152,8 +134,7 @@ export const institutionConnectionRoutes = new Elysia({
       response: institutionConnectionWithRelationsSchema,
       detail: {
         summary: "Get institution connection by ID",
-        description:
-          "Retrieve a specific institution connection by its ID with details",
+        description: "Retrieve a specific institution connection by its ID with details",
         tags: ["Institution Connections"],
         security: [{ bearerAuth: [] }],
       },

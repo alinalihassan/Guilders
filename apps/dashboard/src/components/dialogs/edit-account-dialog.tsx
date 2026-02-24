@@ -1,18 +1,12 @@
 "use client";
 
-import { useDialog } from "@/lib/hooks/useDialog";
-import { useRemoveAccount, useUpdateAccount } from "@/lib/queries/useAccounts";
-import { useReconnectConnection } from "@/lib/queries/useConnections";
-import { useCurrencies } from "@/lib/queries/useCurrencies";
-import { useFiles } from "@/lib/queries/useFiles";
-import { useInstitutionConnection } from "@/lib/queries/useInstitutionConnection";
-import { useInstitutionByAccountId } from "@/lib/queries/useInstitutions";
-import { useProviderConnections } from "@/lib/queries/useProviderConnections";
-import {
-  type AccountSubtype,
-  accountSubtypeLabels,
-  accountSubtypes,
-} from "@/lib/account-types";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { AlertTriangle, Loader2, Trash2 } from "lucide-react";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { z } from "zod";
+
 import {
   Accordion,
   AccordionContent,
@@ -39,12 +33,17 @@ import {
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { AlertTriangle, Loader2, Trash2 } from "lucide-react";
-import { useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { toast } from "sonner";
-import { z } from "zod";
+import { type AccountSubtype, accountSubtypeLabels, accountSubtypes } from "@/lib/account-types";
+import { useDialog } from "@/lib/hooks/useDialog";
+import { useRemoveAccount, useUpdateAccount } from "@/lib/queries/useAccounts";
+import { useReconnectConnection } from "@/lib/queries/useConnections";
+import { useCurrencies } from "@/lib/queries/useCurrencies";
+import { useFiles } from "@/lib/queries/useFiles";
+import { useInstitutionConnection } from "@/lib/queries/useInstitutionConnection";
+import { useInstitutionByAccountId } from "@/lib/queries/useInstitutions";
+import { useProviderConnections } from "@/lib/queries/useProviderConnections";
+import type { Currency } from "@guilders/api/types";
+
 import { FileUploader } from "../common/file-uploader";
 import { AccountIcon } from "../dashboard/accounts/account-icon";
 
@@ -59,11 +58,7 @@ const detailsSchema = z.object({
 });
 
 const taxSchema = z.object({
-  investable: z.enum([
-    "non_investable",
-    "investable_easy_convert",
-    "investable_cash",
-  ]),
+  investable: z.enum(["non_investable", "investable_easy_convert", "investable_cash"]),
   taxability: z.enum(["taxable", "tax_free", "tax_deferred"]),
   taxRate: z
     .string()
@@ -94,8 +89,7 @@ export function EditAccountDialog() {
   const { data: currencies } = useCurrencies();
 
   const { mutate: updateAccount, isPending: isUpdating } = useUpdateAccount();
-  const { mutateAsync: reconnectConnection, isPending: isReconnecting } =
-    useReconnectConnection();
+  const { mutateAsync: reconnectConnection, isPending: isReconnecting } = useReconnectConnection();
   const { mutate: deleteAccount, isPending: isDeleting } = useRemoveAccount();
 
   const { uploadFile, deleteFile, getSignedUrl, isUploading } = useFiles({
@@ -106,8 +100,7 @@ export function EditAccountDialog() {
   const form = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      accountType:
-        (data?.account?.subtype as AccountSubtype) ?? accountSubtypes[0],
+      accountType: (data?.account?.subtype as AccountSubtype) ?? accountSubtypes[0],
       accountName: data?.account?.name ?? "",
       value: data?.account?.value.toString() ?? "",
       currency: data?.account?.currency ?? "",
@@ -226,9 +219,7 @@ export function EditAccountDialog() {
               <div>
                 <h2 className="text-lg font-semibold">{account.name}</h2>
                 <p className="text-sm text-muted-foreground">
-                  {account.institution_connection_id
-                    ? "Connected Account"
-                    : "Manual Account"}
+                  {account.institution_connection_id ? "Connected Account" : "Manual Account"}
                 </p>
               </div>
             </div>
@@ -236,8 +227,7 @@ export function EditAccountDialog() {
 
           {isSyncedAccount && (
             <div className="text-sm text-muted-foreground bg-muted p-4 rounded-md mt-4">
-              This account is managed by an external connection. Some fields
-              cannot be edited.
+              This account is managed by an external connection. Some fields cannot be edited.
             </div>
           )}
 
@@ -350,11 +340,8 @@ export function EditAccountDialog() {
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                {currencies?.map((currency) => (
-                                  <SelectItem
-                                    key={currency.code}
-                                    value={currency.code}
-                                  >
+                                {currencies?.map((currency: Currency) => (
+                                  <SelectItem key={currency.code} value={currency.code}>
                                     {currency.code}
                                   </SelectItem>
                                 ))}
@@ -378,25 +365,18 @@ export function EditAccountDialog() {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Investability</FormLabel>
-                            <Select
-                              onValueChange={field.onChange}
-                              defaultValue={field.value}
-                            >
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
                               <FormControl>
                                 <SelectTrigger>
                                   <SelectValue placeholder="Select investability" />
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                <SelectItem value="non_investable">
-                                  Non-investable
-                                </SelectItem>
+                                <SelectItem value="non_investable">Non-investable</SelectItem>
                                 <SelectItem value="investable_easy_convert">
                                   Easily Convertible
                                 </SelectItem>
-                                <SelectItem value="investable_cash">
-                                  Cash
-                                </SelectItem>
+                                <SelectItem value="investable_cash">Cash</SelectItem>
                               </SelectContent>
                             </Select>
                             <FormMessage />
@@ -410,10 +390,7 @@ export function EditAccountDialog() {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Taxability</FormLabel>
-                            <Select
-                              onValueChange={field.onChange}
-                              defaultValue={field.value}
-                            >
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
                               <FormControl>
                                 <SelectTrigger>
                                   <SelectValue placeholder="Select taxability" />
@@ -421,12 +398,8 @@ export function EditAccountDialog() {
                               </FormControl>
                               <SelectContent>
                                 <SelectItem value="taxable">Taxable</SelectItem>
-                                <SelectItem value="tax_free">
-                                  Tax Free
-                                </SelectItem>
-                                <SelectItem value="tax_deferred">
-                                  Tax Deferred
-                                </SelectItem>
+                                <SelectItem value="tax_free">Tax Free</SelectItem>
+                                <SelectItem value="tax_deferred">Tax Deferred</SelectItem>
                               </SelectContent>
                             </Select>
                             <FormMessage />
@@ -441,11 +414,7 @@ export function EditAccountDialog() {
                           <FormItem>
                             <FormLabel>Tax Rate (%)</FormLabel>
                             <FormControl>
-                              <Input
-                                type="text"
-                                placeholder="Enter tax rate"
-                                {...field}
-                              />
+                              <Input type="text" placeholder="Enter tax rate" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -496,13 +465,11 @@ export function EditAccountDialog() {
                                 }}
                                 onUpload={uploadFile}
                                 disabled={isUploading}
-                                documents={data?.account?.documents?.map(
-                                  (id) => ({
-                                    id: Number(id),
-                                    name: `Document ${id}`,
-                                    path: "",
-                                  }),
-                                )}
+                                documents={data?.account?.documents?.map((id) => ({
+                                  id: Number(id),
+                                  name: `Document ${id}`,
+                                  path: "",
+                                }))}
                                 onRemoveExisting={deleteFile}
                                 onView={getSignedUrl}
                               />
@@ -519,9 +486,8 @@ export function EditAccountDialog() {
                     <AccordionContent>
                       <div className="space-y-4">
                         <p className="text-sm text-muted-foreground">
-                          Deleting this account will permanently remove it and
-                          all associated transactions. This action cannot be
-                          undone.
+                          Deleting this account will permanently remove it and all associated
+                          transactions. This action cannot be undone.
                         </p>
                         <Tooltip>
                           <TooltipTrigger asChild>
@@ -549,8 +515,7 @@ export function EditAccountDialog() {
                           </TooltipTrigger>
                           {isSyncedAccount && (
                             <TooltipContent>
-                              Connected accounts cannot be deleted. Remove the
-                              connection instead.
+                              Connected accounts cannot be deleted. Remove the connection instead.
                             </TooltipContent>
                           )}
                         </Tooltip>

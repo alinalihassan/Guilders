@@ -24,11 +24,7 @@ function headers(config: SaltEdgeConfig): HeadersInit {
   };
 }
 
-async function request<T>(
-  config: SaltEdgeConfig,
-  path: string,
-  options?: RequestInit,
-): Promise<T> {
+async function request<T>(config: SaltEdgeConfig, path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${BASE_URL}${path}`, {
     ...options,
     headers: { ...headers(config), ...options?.headers },
@@ -36,9 +32,7 @@ async function request<T>(
 
   if (!res.ok) {
     const body = await res.text();
-    throw new Error(
-      `SaltEdge API error ${res.status}: ${body}`,
-    );
+    throw new Error(`SaltEdge API error ${res.status}: ${body}`);
   }
 
   return res.json() as Promise<T>;
@@ -60,9 +54,7 @@ export async function listProviders(
   return request(config, `/providers?${qs}`);
 }
 
-export async function listAllProviders(
-  config: SaltEdgeConfig,
-): Promise<SaltEdgeProvider[]> {
+export async function listAllProviders(config: SaltEdgeConfig): Promise<SaltEdgeProvider[]> {
   const all: SaltEdgeProvider[] = [];
   let fromId: string | undefined;
 
@@ -85,14 +77,10 @@ export async function createCustomer(
   config: SaltEdgeConfig,
   identifier: string,
 ): Promise<SaltEdgeCustomer> {
-  const res = await request<SaltEdgeSingleResponse<SaltEdgeCustomer>>(
-    config,
-    "/customers",
-    {
-      method: "POST",
-      body: JSON.stringify({ data: { identifier } }),
-    },
-  );
+  const res = await request<SaltEdgeSingleResponse<SaltEdgeCustomer>>(config, "/customers", {
+    method: "POST",
+    body: JSON.stringify({ data: { identifier } }),
+  });
   return res.data;
 }
 
@@ -107,10 +95,7 @@ export async function showCustomer(
   return res.data;
 }
 
-export async function removeCustomer(
-  config: SaltEdgeConfig,
-  customerId: string,
-): Promise<void> {
+export async function removeCustomer(config: SaltEdgeConfig, customerId: string): Promise<void> {
   await request(config, `/customers/${customerId}`, { method: "DELETE" });
 }
 
@@ -254,8 +239,7 @@ export async function listTransactions(
   if (params.account_id) qs.set("account_id", params.account_id);
   if (params.from_id) qs.set("from_id", params.from_id);
   if (params.per_page) qs.set("per_page", String(params.per_page));
-  if (params.pending !== undefined)
-    qs.set("pending", String(params.pending));
+  if (params.pending !== undefined) qs.set("pending", String(params.pending));
 
   return request(config, `/transactions?${qs}`);
 }

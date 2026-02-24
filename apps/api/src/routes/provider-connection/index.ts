@@ -1,4 +1,5 @@
 import { Elysia, status, t } from "elysia";
+
 import { selectProviderConnectionSchema } from "../../db/schema/provider-connections";
 import { db } from "../../lib/db";
 import { authPlugin } from "../../middleware/auth";
@@ -10,7 +11,7 @@ export const providerConnectionRoutes = new Elysia({
   detail: {
     tags: ["Provider Connections"],
     security: [{ bearerAuth: [] }],
-  }
+  },
 })
   .use(authPlugin)
   .model({
@@ -30,8 +31,7 @@ export const providerConnectionRoutes = new Elysia({
       response: t.Array(t.Ref("#/components/schemas/ProviderConnection")),
       detail: {
         summary: "Get all provider connections",
-        description:
-          "Retrieve all provider connections for the authenticated user",
+        description: "Retrieve all provider connections for the authenticated user",
       },
     },
   )

@@ -12,10 +12,7 @@ export interface AnimatedListProps {
 export const AnimatedList = React.memo(
   ({ className, children, delay = 1000 }: AnimatedListProps) => {
     const [index, setIndex] = useState(0);
-    const childrenArray = useMemo(
-      () => React.Children.toArray(children),
-      [children],
-    );
+    const childrenArray = useMemo(() => React.Children.toArray(children), [children]);
 
     useEffect(() => {
       if (index < childrenArray.length - 1) {
@@ -28,7 +25,7 @@ export const AnimatedList = React.memo(
     }, [index, delay, childrenArray.length]);
 
     const itemsToShow = useMemo(() => {
-      const result = childrenArray.slice(0, index + 1).reverse();
+      const result = childrenArray.slice(0, index + 1).toReversed();
       return result;
     }, [index, childrenArray]);
 
@@ -36,9 +33,7 @@ export const AnimatedList = React.memo(
       <div className={`flex flex-col items-center gap-4 ${className}`}>
         <AnimatePresence>
           {itemsToShow.map((item) => (
-            <AnimatedListItem key={(item as React.ReactElement).key}>
-              {item}
-            </AnimatedListItem>
+            <AnimatedListItem key={(item as React.ReactElement).key}>{item}</AnimatedListItem>
           ))}
         </AnimatePresence>
       </div>

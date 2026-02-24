@@ -5,6 +5,7 @@ import { passkey } from "@better-auth/passkey";
 // import { stripe } from "@better-auth/stripe";
 import { betterAuth } from "better-auth";
 import { apiKey, bearer, openAPI, twoFactor } from "better-auth/plugins";
+
 // import Stripe from "stripe";
 import * as authSchema from "../db/schema/auth";
 import { db } from "./db";
@@ -24,7 +25,7 @@ export const auth = betterAuth({
     },
   },
   account: {
-    modelName: "user_account"
+    modelName: "user_account",
   },
   emailAndPassword: {
     enabled: true,
@@ -69,12 +70,12 @@ export const auth = betterAuth({
     "guilders-mobile://",
     ...(process.env.NODE_ENV === "development"
       ? [
-        "http://localhost:3002",
-        "http://localhost:3000",
-        "exp://",
-        "exp://**",
-        "exp://192.168.*.*:*/**",
-      ]
+          "http://localhost:3002",
+          "http://localhost:3000",
+          "exp://",
+          "exp://**",
+          "exp://192.168.*.*:*/**",
+        ]
       : []),
   ],
 });

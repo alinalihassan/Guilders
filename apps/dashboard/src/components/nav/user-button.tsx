@@ -1,5 +1,8 @@
 "use client";
 
+import { UserRound } from "lucide-react";
+import { useRouter } from "next/navigation";
+
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -9,8 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { UserRound } from "lucide-react";
-import { useRouter } from "next/navigation";
+
 import { authApi } from "../../lib/auth-client";
 
 export function UserButton() {
@@ -22,21 +24,14 @@ export function UserButton() {
         <Avatar>
           {/* <AvatarImage src="./avatar-80-07.jpg" alt="Kelly King" /> */}
           <AvatarFallback>
-            <UserRound
-              size={16}
-              strokeWidth={2}
-              className="opacity-60"
-              aria-hidden="true"
-            />
+            <UserRound size={16} strokeWidth={2} className="opacity-60" aria-hidden="true" />
           </AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">
         <DropdownMenuLabel>Account</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => router.push("/settings")}>
-          Settings
-        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => router.push("/settings")}>Settings</DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={async () => {

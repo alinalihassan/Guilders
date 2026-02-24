@@ -74,11 +74,7 @@ const uiPartSchema = t.Object({
 
 const uiMessageSchema = t.Object({
   id: t.Optional(t.String()),
-  role: t.Union([
-    t.Literal("user"),
-    t.Literal("assistant"),
-    t.Literal("system"),
-  ]),
+  role: t.Union([t.Literal("user"), t.Literal("assistant"), t.Literal("system")]),
   parts: t.Array(uiPartSchema),
 });
 

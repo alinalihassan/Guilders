@@ -1,21 +1,17 @@
 "use client";
 
+import type { CreateDocumentResponse } from "@guilders/api/types";
 import { Loader2, Upload, X } from "lucide-react";
 import * as React from "react";
 import { useState } from "react";
-import Dropzone, {
-  type DropEvent,
-  type DropzoneProps,
-  type FileRejection,
-} from "react-dropzone";
+import Dropzone, { type DropEvent, type DropzoneProps, type FileRejection } from "react-dropzone";
 import { toast } from "sonner";
 
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { useControllableState } from "@/lib/hooks/useControllableState";
 import { formatBytes } from "@/lib/utils";
-import type { CreateDocumentResponse } from "@guilders/api/types";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface FileUploaderProps extends React.HTMLAttributes<HTMLDivElement> {
   value?: File[];
@@ -51,15 +47,12 @@ export function FileUploader({
     onChange: onValueChange,
   });
 
-  const [uploadingFiles, setUploadingFiles] = useState<Record<string, boolean>>(
-    {},
-  );
+  const [uploadingFiles, setUploadingFiles] = useState<Record<string, boolean>>({});
 
   const handleUpload = async (newFiles: File[]) => {
     if (!onUpload) return;
 
     const uploading = newFiles.reduce(
-      // biome-ignore lint/performance/noAccumulatingSpread: <explanation>
       (acc, file) => ({ ...acc, [file.name]: true }),
       {} as Record<string, boolean>,
     );
@@ -121,8 +114,7 @@ export function FileUploader({
     }
   };
 
-  const isDisabled =
-    disabled || (files?.length ?? 0 + documents.length) >= maxFileCount;
+  const isDisabled = disabled || (files?.length ?? 0 + documents.length) >= maxFileCount;
 
   return (
     <div className="relative flex flex-col gap-6 overflow-hidden">
@@ -166,9 +158,7 @@ export function FileUploader({
                 file={{
                   name: doc.name,
                   size: 0,
-                  type: doc.path.toLowerCase().endsWith(".pdf")
-                    ? "application/pdf"
-                    : "image/*",
+                  type: doc.path.toLowerCase().endsWith(".pdf") ? "application/pdf" : "image/*",
                 }}
                 documentId={doc.id}
                 onRemove={() => handleRemoveExisting(doc.id)}
@@ -240,13 +230,7 @@ interface FileCardProps {
   isUploading?: boolean;
 }
 
-function FileCard({
-  file,
-  documentId,
-  isUploading,
-  onRemove,
-  onView,
-}: FileCardProps) {
+function FileCard({ file, documentId, isUploading, onRemove, onView }: FileCardProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isRemoving, setIsRemoving] = useState(false);
 
@@ -282,13 +266,9 @@ function FileCard({
       <div className="flex flex-1 gap-2.5">
         <div className="flex w-full flex-col gap-2">
           <div className="flex flex-col gap-px">
-            <p className="line-clamp-1 text-sm font-medium text-foreground/80">
-              {file.name}
-            </p>
+            <p className="line-clamp-1 text-sm font-medium text-foreground/80">{file.name}</p>
             {"size" in file && file.size > 0 && (
-              <p className="text-xs text-muted-foreground">
-                {formatBytes(file.size)}
-              </p>
+              <p className="text-xs text-muted-foreground">{formatBytes(file.size)}</p>
             )}
           </div>
         </div>
@@ -303,11 +283,7 @@ function FileCard({
             disabled={isLoading}
             onClick={handleView}
           >
-            {isLoading ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              "View"
-            )}
+            {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "View"}
           </Button>
         )}
         {isUploading ? (
@@ -323,11 +299,7 @@ function FileCard({
             onClick={handleRemove}
             disabled={isRemoving}
           >
-            {isRemoving ? (
-              <Loader2 className="size-4 animate-spin" />
-            ) : (
-              <X className="size-4" />
-            )}
+            {isRemoving ? <Loader2 className="size-4 animate-spin" /> : <X className="size-4" />}
             <span className="sr-only">Remove file</span>
           </Button>
         )}

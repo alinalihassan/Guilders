@@ -17,8 +17,7 @@ export const advisorCatalog = defineCatalog(schema, {
         currentValue: z.string(),
         totalChange: z.string().nullable(),
       }),
-      description:
-        "Stable single stock account card with click-through to account details.",
+      description: "Stable single stock account card with click-through to account details.",
       example: {
         accountId: 123,
         subtype: "stock",

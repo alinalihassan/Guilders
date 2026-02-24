@@ -1,5 +1,6 @@
 import type { Account } from "@guilders/api/types";
 import Image from "next/image";
+
 import { AccountFallbackIcon } from "./account-fallback-icon";
 
 interface AccountIconProps {

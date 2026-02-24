@@ -1,19 +1,14 @@
 "use client";
 
+import { WalletCards } from "lucide-react";
+import { useMemo } from "react";
+
+import { Skeleton } from "@/components/ui/skeleton";
+import { getCategoryColor, getCategoryDisplayName } from "@/lib/account-types";
 import { useAccounts } from "@/lib/queries/useAccounts";
 import { useRates } from "@/lib/queries/useRates";
 import { useUser } from "@/lib/queries/useUser";
-import {
-  calculateCategories,
-  calculateCategorySums,
-} from "@/lib/utils/financial";
-import {
-  getCategoryColor,
-  getCategoryDisplayName,
-} from "@/lib/account-types";
-import { Skeleton } from "@/components/ui/skeleton";
-import { WalletCards } from "lucide-react";
-import { useMemo } from "react";
+import { calculateCategories, calculateCategorySums } from "@/lib/utils/financial";
 
 export function NetWorthCategories() {
   const { data: accounts, isLoading, isError, error } = useAccounts();
@@ -33,11 +28,7 @@ export function NetWorthCategories() {
   }, [accounts]);
 
   const categories = useMemo(() => {
-    return calculateCategories(
-      leafAccounts,
-      rates,
-      user?.settings.currency ?? "EUR",
-    );
+    return calculateCategories(leafAccounts, rates, user?.settings.currency ?? "EUR");
   }, [leafAccounts, rates, user?.settings.currency]);
 
   const { positiveSum, negativeSum } = useMemo(() => {
@@ -46,16 +37,11 @@ export function NetWorthCategories() {
 
   return (
     <>
-      {isError && (
-        <div className="text-red-500">
-          Error loading accounts: {error.message}
-        </div>
-      )}
+      {isError && <div className="text-red-500">Error loading accounts: {error.message}</div>}
 
       {isLoading && (
         <div className="grid grid-cols-2 gap-3">
           {[...Array(4)].map((_, index) => (
-            // biome-ignore lint/suspicious/noArrayIndexKey: skeleton rows are static placeholders
             <div key={index} className="flex items-center">
               <Skeleton className="w-3 h-3 rounded-full mr-2" />
               <Skeleton className="h-4 w-24" />
@@ -67,14 +53,11 @@ export function NetWorthCategories() {
 
       {!isLoading &&
         !isError &&
-        (categories.positive.length === 0 &&
-        categories.negative.length === 0 ? (
+        (categories.positive.length === 0 && categories.negative.length === 0 ? (
           <div className="flex shrink-0 items-center justify-center rounded-md py-8">
             <div className="mx-auto flex flex-col items-center justify-center text-center">
               <WalletCards className="h-10 w-10 text-muted-foreground" />
-              <h3 className="mt-4 text-lg font-semibold">
-                No categories to show
-              </h3>
+              <h3 className="mt-4 text-lg font-semibold">No categories to show</h3>
               <p className="mb-4 mt-2 text-sm text-muted-foreground">
                 Add some accounts to see your net worth breakdown.
               </p>
@@ -84,15 +67,10 @@ export function NetWorthCategories() {
           <>
             {categories.positive.length > 0 && (
               <>
-                <h3 className="text-md font-medium mb-2 text-foreground/80">
-                  Assets
-                </h3>
+                <h3 className="text-md font-medium mb-2 text-foreground/80">Assets</h3>
                 <div className="flex mb-2">
                   {categories.positive.map((category, index) => {
-                    const percentage = (
-                      (category.value / positiveSum) *
-                      100
-                    ).toFixed(0);
+                    const percentage = ((category.value / positiveSum) * 100).toFixed(0);
                     return (
                       <div
                         key={category.name}
@@ -112,10 +90,7 @@ export function NetWorthCategories() {
                 </div>
                 <div className="grid grid-cols-2 gap-3 mb-4">
                   {categories.positive.map((category) => {
-                    const percentage = (
-                      (category.value / positiveSum) *
-                      100
-                    ).toFixed(0);
+                    const percentage = ((category.value / positiveSum) * 100).toFixed(0);
                     return (
                       <div key={category.name} className="flex items-center">
                         <div
@@ -139,15 +114,10 @@ export function NetWorthCategories() {
 
             {categories.negative.length > 0 && (
               <>
-                <h3 className="text-md font-medium mb-2 text-foreground/80">
-                  Liabilities
-                </h3>
+                <h3 className="text-md font-medium mb-2 text-foreground/80">Liabilities</h3>
                 <div className="flex mb-2">
                   {categories.negative.map((category, index) => {
-                    const percentage = (
-                      (Math.abs(category.value) / negativeSum) *
-                      100
-                    ).toFixed(0);
+                    const percentage = ((Math.abs(category.value) / negativeSum) * 100).toFixed(0);
                     return (
                       <div
                         key={category.name}
@@ -168,10 +138,7 @@ export function NetWorthCategories() {
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   {categories.negative.map((category) => {
-                    const percentage = (
-                      (Math.abs(category.value) / negativeSum) *
-                      100
-                    ).toFixed(0);
+                    const percentage = ((Math.abs(category.value) / negativeSum) * 100).toFixed(0);
                     return (
                       <div key={category.name} className="flex items-center">
                         <div

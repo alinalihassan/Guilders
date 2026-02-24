@@ -13,10 +13,7 @@ interface UseAccountFilesOptions {
   onSuccess?: (file: UploadedFile) => void;
 }
 
-export function useAccountFiles({
-  accountId,
-  onSuccess,
-}: UseAccountFilesOptions) {
+export function useAccountFiles({ accountId, onSuccess }: UseAccountFilesOptions) {
   const queryClient = useQueryClient();
 
   const { mutateAsync: uploadFile, isPending: isUploading } = useMutation({

@@ -1,4 +1,3 @@
-
 import { index, pgTable, serial, varchar } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-orm/typebox-legacy";
 

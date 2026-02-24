@@ -1,5 +1,7 @@
 import { treaty } from "@elysiajs/eden";
+
 import { env } from "@/lib/env";
+
 import type { App as ApiApp } from "../../../api/src";
 
 type ApiOptions = {
@@ -50,10 +52,10 @@ async function request(
       const key = segment.slice(1);
       const value = options?.param?.[key];
       if (!value) {
-        return new Response(
-          JSON.stringify({ error: `Missing route parameter: ${key}` }),
-          { status: 400, headers: { "content-type": "application/json" } },
-        );
+        return new Response(JSON.stringify({ error: `Missing route parameter: ${key}` }), {
+          status: 400,
+          headers: { "content-type": "application/json" },
+        });
       }
       cursor = (cursor as (params: Record<string, string>) => unknown)({
         [key]: value,
@@ -74,9 +76,7 @@ async function request(
 
   const call = (() => {
     if (method === "GET")
-      return (cursor as { get: (opts: unknown) => Promise<unknown> }).get(
-        requestOptions,
-      );
+      return (cursor as { get: (opts: unknown) => Promise<unknown> }).get(requestOptions);
     if (method === "DELETE")
       return (
         cursor as {
@@ -111,11 +111,8 @@ async function request(
   };
 
   if (result.error) {
-    const errorPayload = result.error.value as
-      | { error?: string; message?: string }
-      | undefined;
-    const message =
-      errorPayload?.error || errorPayload?.message || "Request failed";
+    const errorPayload = result.error.value as { error?: string; message?: string } | undefined;
+    const message = errorPayload?.error || errorPayload?.message || "Request failed";
     return new Response(JSON.stringify({ error: message }), {
       status: result.error.status ?? 500,
       headers: { "content-type": "application/json" },
@@ -133,12 +130,10 @@ function createPathProxy(segments: string[]): unknown {
     {},
     {
       get(_target, property: string) {
-        if (property === "$get")
-          return (options?: ApiOptions) => request("GET", segments, options);
+        if (property === "$get") return (options?: ApiOptions) => request("GET", segments, options);
         if (property === "$post")
           return (options?: ApiOptions) => request("POST", segments, options);
-        if (property === "$put")
-          return (options?: ApiOptions) => request("PUT", segments, options);
+        if (property === "$put") return (options?: ApiOptions) => request("PUT", segments, options);
         if (property === "$patch")
           return (options?: ApiOptions) => request("PATCH", segments, options);
         if (property === "$delete")
@@ -150,8 +145,6 @@ function createPathProxy(segments: string[]): unknown {
   );
 }
 
-// biome-ignore lint/suspicious/noExplicitAny: dynamic proxy exposes RPC-like client paths.
 export async function getApiClient(): Promise<any> {
-  // biome-ignore lint/suspicious/noExplicitAny: dynamic proxy exposes RPC-like client paths.
   return createPathProxy([]) as any;
 }

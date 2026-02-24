@@ -1,17 +1,10 @@
 import { useStore } from "../store";
 import type { DialogState } from "../store/dialogStore";
 
-type DialogData<T extends DialogState["type"]> = Omit<
-  Extract<DialogState, { type: T }>,
-  "type"
->;
+type DialogData<T extends DialogState["type"]> = Omit<Extract<DialogState, { type: T }>, "type">;
 
-type OpenFunction<T extends DialogState["type"]> = DialogData<T> extends Record<
-  string,
-  never
->
-  ? () => void
-  : (data: DialogData<T>) => void;
+type OpenFunction<T extends DialogState["type"]> =
+  DialogData<T> extends Record<string, never> ? () => void : (data: DialogData<T>) => void;
 
 export function useDialog<T extends DialogState["type"]>(type: T) {
   const dialogs = useStore((state) => state.dialogs);
@@ -25,15 +18,11 @@ export function useDialog<T extends DialogState["type"]>(type: T) {
 
   return {
     isOpen: dialog?.isOpen ?? false,
-    data:
-      dialog &&
-      ((({ type, isOpen, ...rest }) => rest)(dialog) as
-        | DialogData<T>
-        | undefined),
+    data: dialog && ((({ type, isOpen, ...rest }) => rest)(dialog) as DialogData<T> | undefined),
     open: ((data?: DialogData<T>) =>
       openDialog({
         type,
-        ...(data || {}),
+        ...data,
       } as DialogState)) as OpenFunction<T>,
     close: () => closeDialog(type),
     update: (data: DialogData<T>) =>

@@ -1,13 +1,12 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Pencil, Shield, Trash2, X } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { z } from "zod";
 
-import { useDialog } from "@/lib/hooks/useDialog";
-import { authApi } from "@/lib/auth-client";
-import { useUpdateUserSettings } from "@/lib/queries/useUser";
-import { useSecurityStore } from "@/lib/store/securityStore";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -19,9 +18,10 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Pencil, Shield, Trash2, X } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
-import { toast } from "sonner";
+import { authApi } from "@/lib/auth-client";
+import { useDialog } from "@/lib/hooks/useDialog";
+import { useUpdateUserSettings } from "@/lib/queries/useUser";
+import { useSecurityStore } from "@/lib/store/securityStore";
 
 const securityFormSchema = z
   .object({
@@ -42,13 +42,10 @@ const securityFormSchema = z
 type SecurityFormValues = z.infer<typeof securityFormSchema>;
 
 export function SecurityForm() {
-  const { hasMFA, isLoadingMFA, checkMFAStatus, unenrollMFA } =
-    useSecurityStore();
+  const { hasMFA, isLoadingMFA, checkMFAStatus, unenrollMFA } = useSecurityStore();
   const { open: openMFADialog } = useDialog("mfa");
   const { mutateAsync: updateUserSettings } = useUpdateUserSettings();
-  const [passkeys, setPasskeys] = useState<Array<{ id: string; name?: string }>>(
-    [],
-  );
+  const [passkeys, setPasskeys] = useState<Array<{ id: string; name?: string }>>([]);
   const [isLoadingPasskeys, setIsLoadingPasskeys] = useState(false);
   const [isMutatingPasskey, setIsMutatingPasskey] = useState(false);
 
@@ -177,8 +174,8 @@ export function SecurityForm() {
       <div className="space-y-4">
         <h2 className="text-lg font-semibold">Two-Factor Authentication</h2>
         <p className="text-sm text-muted-foreground">
-          Add an extra layer of security to your account by requiring both a
-          password and authentication code.
+          Add an extra layer of security to your account by requiring both a password and
+          authentication code.
         </p>
 
         <div className="flex items-center gap-4 h-10">
@@ -189,11 +186,7 @@ export function SecurityForm() {
             disabled={isLoadingMFA || hasMFA}
           >
             <Shield className="mr-2 h-4 w-4" />
-            {isLoadingMFA
-              ? "Loading..."
-              : hasMFA
-                ? "2FA is Enabled"
-                : "Enable 2FA"}
+            {isLoadingMFA ? "Loading..." : hasMFA ? "2FA is Enabled" : "Enable 2FA"}
           </Button>
 
           {hasMFA && (
@@ -215,19 +208,13 @@ export function SecurityForm() {
         <p className="text-sm text-muted-foreground">
           Manage biometric passkeys for passwordless sign-in.
         </p>
-        <Button
-          variant="outline"
-          onClick={handleAddPasskey}
-          disabled={isMutatingPasskey}
-        >
+        <Button variant="outline" onClick={handleAddPasskey} disabled={isMutatingPasskey}>
           Add passkey
         </Button>
         {isLoadingPasskeys ? (
           <p className="text-sm text-muted-foreground">Loading passkeys...</p>
         ) : passkeys.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            No passkeys registered yet.
-          </p>
+          <p className="text-sm text-muted-foreground">No passkeys registered yet.</p>
         ) : (
           <div className="space-y-2">
             {passkeys.map((passkey) => (
@@ -239,9 +226,7 @@ export function SecurityForm() {
                   <p className="text-sm font-medium truncate">
                     {passkey.name || "Unnamed passkey"}
                   </p>
-                  <p className="text-xs text-muted-foreground truncate">
-                    {passkey.id}
-                  </p>
+                  <p className="text-xs text-muted-foreground truncate">{passkey.id}</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <Button
@@ -286,8 +271,8 @@ export function SecurityForm() {
                     />
                   </FormControl>
                   <FormDescription>
-                    Password must be at least 8 characters and contain at least
-                    one uppercase letter, one lowercase letter, and one number.
+                    Password must be at least 8 characters and contain at least one uppercase
+                    letter, one lowercase letter, and one number.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -307,9 +292,7 @@ export function SecurityForm() {
                       autoComplete="new-password"
                     />
                   </FormControl>
-                  <FormDescription>
-                    Please confirm your new password.
-                  </FormDescription>
+                  <FormDescription>Please confirm your new password.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -317,9 +300,7 @@ export function SecurityForm() {
             <Button
               type="submit"
               disabled={
-                !form.formState.isDirty ||
-                form.formState.isSubmitting ||
-                !form.formState.isValid
+                !form.formState.isDirty || form.formState.isSubmitting || !form.formState.isValid
               }
             >
               {form.formState.isSubmitting ? "Updating..." : "Update password"}

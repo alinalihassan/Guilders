@@ -11,10 +11,7 @@ export enum AccountTypeEnum {
   liability = "liability",
 }
 
-export const accountTypeEnum = pgEnum(
-  "account_type",
-  enumToPgEnum(AccountTypeEnum),
-);
+export const accountTypeEnum = pgEnum("account_type", enumToPgEnum(AccountTypeEnum));
 
 export enum AccountSubtypeEnum {
   depository = "depository",
@@ -27,10 +24,7 @@ export enum AccountSubtypeEnum {
   stock = "stock",
 }
 
-export const accountSubtypeEnum = pgEnum(
-  "account_subtype",
-  enumToPgEnum(AccountSubtypeEnum),
-);
+export const accountSubtypeEnum = pgEnum("account_subtype", enumToPgEnum(AccountSubtypeEnum));
 
 export enum DocumentEntityTypeEnum {
   account = "account",
@@ -48,10 +42,7 @@ export enum InvestableEnum {
   investable_cash = "investable_cash",
 }
 
-export const investableEnum = pgEnum(
-  "investable",
-  enumToPgEnum(InvestableEnum),
-);
+export const investableEnum = pgEnum("investable", enumToPgEnum(InvestableEnum));
 
 export enum SubscriptionStatusEnum {
   unsubscribed = "unsubscribed",
@@ -76,7 +67,4 @@ export enum TaxabilityEnum {
   tax_deferred = "tax_deferred",
 }
 
-export const taxabilityEnum = pgEnum(
-  "taxability",
-  enumToPgEnum(TaxabilityEnum),
-);
+export const taxabilityEnum = pgEnum("taxability", enumToPgEnum(TaxabilityEnum));

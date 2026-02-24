@@ -15,7 +15,8 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@guilders/api/types": ["../api/src/types.ts"]
     }
   },
   "files": []

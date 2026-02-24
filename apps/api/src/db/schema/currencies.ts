@@ -8,9 +8,7 @@ export const currency = pgTable(
     code: varchar("code", { length: 3 }).primaryKey(),
     name: varchar("name", { length: 100 }).notNull(),
   },
-  (table) => [
-    index("currency_code_idx").on(table.code),
-  ],
+  (table) => [index("currency_code_idx").on(table.code)],
 );
 
 export type Currency = typeof currency.$inferSelect;

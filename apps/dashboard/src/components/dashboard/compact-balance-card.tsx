@@ -1,10 +1,10 @@
 "use client";
 
-import { ChangeIndicator } from "@/components/common/change-indicator";
-import { useRates } from "@/lib/queries/useRates";
-import { useUser } from "@/lib/queries/useUser";
-import { convertToUserCurrency } from "@/lib/utils/financial";
 import type { Account } from "@guilders/api/types";
+import NumberFlow from "@number-flow/react";
+import { Area, AreaChart, ResponsiveContainer } from "recharts";
+
+import { ChangeIndicator } from "@/components/common/change-indicator";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   type ChartConfig,
@@ -12,8 +12,9 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import NumberFlow from "@number-flow/react";
-import { Area, AreaChart, ResponsiveContainer } from "recharts";
+import { useRates } from "@/lib/queries/useRates";
+import { useUser } from "@/lib/queries/useUser";
+import { convertToUserCurrency } from "@/lib/utils/financial";
 
 interface CompactBalanceCardProps {
   title: string;
@@ -52,25 +53,13 @@ export function CompactBalanceCard({
   // Calculate total value and cost in user's currency
   const totalValue = accounts.reduce(
     (sum, account) =>
-      sum +
-      convertToUserCurrency(
-        account.value,
-        account.currency,
-        rates,
-        userCurrency,
-      ),
+      sum + convertToUserCurrency(account.value, account.currency, rates, userCurrency),
     0,
   );
 
   const totalCost = accounts.reduce(
     (sum, account) =>
-      sum +
-      convertToUserCurrency(
-        account.cost || 0,
-        account.currency,
-        rates,
-        userCurrency,
-      ),
+      sum + convertToUserCurrency(account.cost || 0, account.currency, rates, userCurrency),
     0,
   );
 
@@ -85,9 +74,7 @@ export function CompactBalanceCard({
     <Card className={className}>
       <CardContent className="p-6 flex gap-4">
         <div className="flex-1">
-          <h3 className="text-sm font-medium text-muted-foreground mb-1">
-            {title}
-          </h3>
+          <h3 className="text-sm font-medium text-muted-foreground mb-1">{title}</h3>
           <NumberFlow
             value={totalValue}
             format={{
@@ -106,22 +93,11 @@ export function CompactBalanceCard({
               <AreaChart data={chartData}>
                 <defs>
                   <linearGradient id="fillValue" x1="0" y1="0" x2="0" y2="1">
-                    <stop
-                      offset="5%"
-                      stopColor="var(--color-value)"
-                      stopOpacity={0.8}
-                    />
-                    <stop
-                      offset="95%"
-                      stopColor="var(--color-value)"
-                      stopOpacity={0.1}
-                    />
+                    <stop offset="5%" stopColor="var(--color-value)" stopOpacity={0.8} />
+                    <stop offset="95%" stopColor="var(--color-value)" stopOpacity={0.1} />
                   </linearGradient>
                 </defs>
-                <ChartTooltip
-                  cursor={false}
-                  content={<ChartTooltipContent />}
-                />
+                <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
                 <Area
                   dataKey="value"
                   type="monotone"

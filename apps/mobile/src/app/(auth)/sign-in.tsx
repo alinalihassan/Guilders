@@ -1,5 +1,5 @@
-import { Link, router } from 'expo-router';
-import { useState } from 'react';
+import { Link, router } from "expo-router";
+import { useState } from "react";
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -8,38 +8,38 @@ import {
   ScrollView,
   Text,
   TextInput,
+  useColorScheme,
   View,
-} from 'react-native';
+} from "react-native";
 
-import { authClient } from '@/lib/auth-client';
-import { Colors, Fonts, Spacing } from '@/constants/theme';
-import { useColorScheme } from 'react-native';
+import { Colors, Fonts, Spacing } from "@/constants/theme";
+import { authClient } from "@/lib/auth-client";
 
 export default function SignInScreen() {
-  const colorScheme = useColorScheme() ?? 'light';
-  const colors = Colors[colorScheme === 'dark' ? 'dark' : 'light'];
+  const colorScheme = useColorScheme() ?? "light";
+  const colors = Colors[colorScheme === "dark" ? "dark" : "light"];
 
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSignIn = async () => {
     if (!email || !password) {
-      setError('Please fill in all fields.');
+      setError("Please fill in all fields.");
       return;
     }
-    setError('');
+    setError("");
     setLoading(true);
     try {
       const { error: authError } = await authClient.signIn.email({ email, password });
       if (authError) {
-        setError(authError.message ?? 'Sign in failed.');
+        setError(authError.message ?? "Sign in failed.");
       } else {
-        router.replace('/(app)');
+        router.replace("/(app)");
       }
     } catch {
-      setError('Something went wrong. Please try again.');
+      setError("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -48,24 +48,27 @@ export default function SignInScreen() {
   return (
     <KeyboardAvoidingView
       style={{ flex: 1, backgroundColor: colors.background }}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={{
           flexGrow: 1,
-          justifyContent: 'center',
+          justifyContent: "center",
           paddingHorizontal: Spacing.four,
           gap: Spacing.three,
-        }}>
+        }}
+      >
         {/* Header */}
         <View style={{ gap: Spacing.one, marginBottom: Spacing.two }}>
           <Text
             style={{
               fontSize: 32,
-              fontWeight: '700',
+              fontWeight: "700",
               color: colors.text,
               fontFamily: Fonts?.rounded,
-            }}>
+            }}
+          >
             Welcome back
           </Text>
           <Text style={{ fontSize: 16, color: colors.textSecondary }}>
@@ -76,7 +79,7 @@ export default function SignInScreen() {
         {/* Form */}
         <View style={{ gap: Spacing.two }}>
           <View style={{ gap: Spacing.one }}>
-            <Text style={{ fontSize: 14, fontWeight: '500', color: colors.textSecondary }}>
+            <Text style={{ fontSize: 14, fontWeight: "500", color: colors.textSecondary }}>
               Email
             </Text>
             <TextInput
@@ -91,7 +94,7 @@ export default function SignInScreen() {
               style={{
                 backgroundColor: colors.backgroundElement,
                 borderRadius: 12,
-                borderCurve: 'continuous',
+                borderCurve: "continuous",
                 paddingHorizontal: Spacing.three,
                 paddingVertical: Spacing.two + 4,
                 fontSize: 16,
@@ -101,7 +104,7 @@ export default function SignInScreen() {
           </View>
 
           <View style={{ gap: Spacing.one }}>
-            <Text style={{ fontSize: 14, fontWeight: '500', color: colors.textSecondary }}>
+            <Text style={{ fontSize: 14, fontWeight: "500", color: colors.textSecondary }}>
               Password
             </Text>
             <TextInput
@@ -114,7 +117,7 @@ export default function SignInScreen() {
               style={{
                 backgroundColor: colors.backgroundElement,
                 borderRadius: 12,
-                borderCurve: 'continuous',
+                borderCurve: "continuous",
                 paddingHorizontal: Spacing.three,
                 paddingVertical: Spacing.two + 4,
                 fontSize: 16,
@@ -124,37 +127,38 @@ export default function SignInScreen() {
           </View>
 
           {error ? (
-            <Text style={{ fontSize: 14, color: '#EF4444', textAlign: 'center' }}>{error}</Text>
+            <Text style={{ fontSize: 14, color: "#EF4444", textAlign: "center" }}>{error}</Text>
           ) : null}
 
           <Pressable
             onPress={handleSignIn}
             disabled={loading}
             style={({ pressed }) => ({
-              backgroundColor: '#208AEF',
+              backgroundColor: "#208AEF",
               borderRadius: 12,
-              borderCurve: 'continuous',
+              borderCurve: "continuous",
               paddingVertical: Spacing.two + 4,
-              alignItems: 'center',
+              alignItems: "center",
               marginTop: Spacing.one,
               opacity: pressed || loading ? 0.7 : 1,
-            })}>
+            })}
+          >
             {loading ? (
               <ActivityIndicator color="#fff" />
             ) : (
-              <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>Sign In</Text>
+              <Text style={{ color: "#fff", fontSize: 16, fontWeight: "600" }}>Sign In</Text>
             )}
           </Pressable>
         </View>
 
         {/* Footer */}
-        <View style={{ flexDirection: 'row', justifyContent: 'center', gap: Spacing.one }}>
+        <View style={{ flexDirection: "row", justifyContent: "center", gap: Spacing.one }}>
           <Text style={{ color: colors.textSecondary, fontSize: 14 }}>
             Don&apos;t have an account?
           </Text>
           <Link href="/(auth)/sign-up" asChild>
             <Pressable>
-              <Text style={{ color: '#208AEF', fontSize: 14, fontWeight: '500' }}>Sign Up</Text>
+              <Text style={{ color: "#208AEF", fontSize: 14, fontWeight: "500" }}>Sign Up</Text>
             </Pressable>
           </Link>
         </View>

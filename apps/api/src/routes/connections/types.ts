@@ -24,3 +24,8 @@ export const refreshSchema = t.Object({
   provider_id: t.String(),
   connection_id: t.String(),
 });
+
+export type ConnectionResponse = {
+  redirectURI: string;
+  type: "redirect" | "popup";
+};

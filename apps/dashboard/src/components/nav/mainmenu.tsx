@@ -1,20 +1,16 @@
 "use client";
 
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { authApi } from "@/lib/auth-client";
 import {
   type NavItem as NavItemType,
   bottomNavigation,
   mainNavigation,
 } from "@/lib/config/navigation";
-import { authApi } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
 
 interface NavItemProps {
   item: NavItemType;

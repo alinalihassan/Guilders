@@ -1,5 +1,6 @@
-import { getApiClient } from "@/lib/api";
 import { useQuery } from "@tanstack/react-query";
+
+import { getApiClient } from "@/lib/api";
 
 const queryKey = ["institution-connections"] as const;
 

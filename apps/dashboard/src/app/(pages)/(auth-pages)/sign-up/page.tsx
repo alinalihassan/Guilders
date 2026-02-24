@@ -1,14 +1,15 @@
 "use client";
 
-import { authApi } from "@/lib/auth-client";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { PasswordInput } from "@/components/ui/password-input";
-import { SubmitButton } from "@/components/ui/submit-button";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { PasswordInput } from "@/components/ui/password-input";
+import { SubmitButton } from "@/components/ui/submit-button";
+import { authApi } from "@/lib/auth-client";
 
 export default function Signup() {
   const router = useRouter();
@@ -54,20 +55,13 @@ export default function Signup() {
         </div>
 
         <h1 className="text-2xl font-bold text-center">Create Account</h1>
-        <p className="text-muted-foreground text-center">
-          Sign up to get started
-        </p>
+        <p className="text-muted-foreground text-center">Sign up to get started</p>
 
         <form className="flex flex-col gap-4 mt-4" action={handleSubmit}>
           <div className="grid gap-4">
             <div className="grid w-full items-center gap-1.5">
               <Label htmlFor="email">Email</Label>
-              <Input
-                name="email"
-                type="email"
-                placeholder="john@doe.com"
-                required
-              />
+              <Input name="email" type="email" placeholder="john@doe.com" required />
             </div>
 
             <div className="grid w-full items-center gap-1.5">
@@ -81,10 +75,7 @@ export default function Signup() {
               />
             </div>
 
-            <SubmitButton
-              className="mt-2 w-full"
-              pendingText="Creating account..."
-            >
+            <SubmitButton className="mt-2 w-full" pendingText="Creating account...">
               Create account
             </SubmitButton>
           </div>
@@ -92,27 +83,18 @@ export default function Signup() {
           <p className="text-xs text-muted-foreground text-center">
             By continuing to sign up, you agree to our
             <br />
-            <Link
-              href="/terms-of-service"
-              className="font-medium text-primary hover:underline"
-            >
+            <Link href="/terms-of-service" className="font-medium text-primary hover:underline">
               Terms of Service
             </Link>{" "}
             and{" "}
-            <Link
-              href="/privacy-policy"
-              className="font-medium text-primary hover:underline"
-            >
+            <Link href="/privacy-policy" className="font-medium text-primary hover:underline">
               Privacy Policy
             </Link>
           </p>
 
           <div className="flex justify-center gap-1 text-xs text-muted-foreground">
             <p>Already have an account?</p>
-            <Link
-              href="/login"
-              className="font-medium text-primary hover:underline"
-            >
+            <Link href="/login" className="font-medium text-primary hover:underline">
               Sign in
             </Link>
           </div>

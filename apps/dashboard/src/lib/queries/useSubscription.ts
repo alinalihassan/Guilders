@@ -1,7 +1,8 @@
-import { getApiClient } from "@/lib/api";
 import type { CheckoutResponse, PortalResponse } from "@guilders/api/types";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
+
+import { getApiClient } from "@/lib/api";
 
 async function handleSubscriptionResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {

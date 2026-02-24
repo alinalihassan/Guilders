@@ -1,18 +1,13 @@
 "use client";
 
-import { authApi } from "@/lib/auth-client";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Check, Copy, Loader2, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { authApi } from "@/lib/auth-client";
 
 type ApiKeyRecord = {
   id: string;
@@ -48,9 +43,9 @@ export function ApiKeyForm() {
             (item) =>
               ({
                 id: String((item as { id?: unknown }).id ?? ""),
-                name: ((item as { name?: string | null }).name ?? null),
-                start: ((item as { start?: string | null }).start ?? null),
-                prefix: ((item as { prefix?: string | null }).prefix ?? null),
+                name: (item as { name?: string | null }).name ?? null,
+                start: (item as { start?: string | null }).start ?? null,
+                prefix: (item as { prefix?: string | null }).prefix ?? null,
               }) satisfies ApiKeyRecord,
           )
           .filter((item) => item.id.length > 0)
@@ -80,10 +75,7 @@ export function ApiKeyForm() {
       if (error) {
         throw new Error(error.message);
       }
-      setGeneratedKey(
-        (data as { key?: string } | null)?.key ??
-          null,
-      );
+      setGeneratedKey((data as { key?: string } | null)?.key ?? null);
       await loadApiKeys();
 
       toast.success("API Key generated", {
@@ -115,9 +107,7 @@ export function ApiKeyForm() {
   };
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-6">Loading...</div>
-    );
+    return <div className="flex items-center justify-center py-6">Loading...</div>;
   }
 
   return (
@@ -125,15 +115,12 @@ export function ApiKeyForm() {
       <CardHeader>
         <CardTitle>API Key</CardTitle>
         <CardDescription>
-          Use API keys to access your data programmatically. Store generated keys
-          securely because they are shown only once.
+          Use API keys to access your data programmatically. Store generated keys securely because
+          they are shown only once.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <Button
-          onClick={handleGenerate}
-          disabled={generating}
-        >
+        <Button onClick={handleGenerate} disabled={generating}>
           {generating ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -149,17 +136,8 @@ export function ApiKeyForm() {
             <p className="text-sm font-medium">New API Key (shown once)</p>
             <div className="flex space-x-2">
               <Input readOnly value={generatedKey} className="font-mono text-xs" />
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={handleCopy}
-                disabled={copying}
-              >
-                {copying ? (
-                  <Check className="h-4 w-4" />
-                ) : (
-                  <Copy className="h-4 w-4" />
-                )}
+              <Button variant="outline" size="icon" onClick={handleCopy} disabled={copying}>
+                {copying ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
               </Button>
             </div>
           </div>
@@ -175,9 +153,7 @@ export function ApiKeyForm() {
             className="rounded-md border p-3 flex items-center justify-between gap-3"
           >
             <div className="min-w-0">
-              <p className="text-sm font-medium truncate">
-                {key.name || "API key"}
-              </p>
+              <p className="text-sm font-medium truncate">{key.name || "API key"}</p>
               <p className="text-xs text-muted-foreground truncate">
                 {key.prefix || "key"}-{key.start || key.id.slice(0, 8)}...
               </p>

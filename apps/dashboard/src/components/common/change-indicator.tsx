@@ -9,20 +9,13 @@ interface ChangeIndicatorProps {
   invertColors?: boolean;
 }
 
-export function ChangeIndicator({
-  change,
-  invertColors = false,
-}: ChangeIndicatorProps) {
+export function ChangeIndicator({ change, invertColors = false }: ChangeIndicatorProps) {
   const isPositive = change.value >= 0;
   const absValue = Math.abs(change.value);
   const absPercentage = Math.abs(change.percentage);
 
   if (change.value === 0) {
-    return (
-      <div className="text-sm text-muted-foreground">
-        No change vs last month
-      </div>
-    );
+    return <div className="text-sm text-muted-foreground">No change vs last month</div>;
   }
 
   const getColorClass = () => {

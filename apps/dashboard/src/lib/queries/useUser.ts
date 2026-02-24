@@ -1,14 +1,16 @@
 "use client";
 
 import type { UpdateUser } from "@guilders/api/types";
+import type { User } from "@guilders/api/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+
 import { authApi } from "../auth-client";
 
 const queryKey = ["user-settings"] as const;
 const DEFAULT_CURRENCY = "EUR";
 
 export function useUser() {
-  return useQuery({
+  return useQuery<User, Error>({
     queryKey,
     queryFn: async () => {
       const { data: payload } = await authApi.getSession();
@@ -26,7 +28,7 @@ export function useUser() {
           current_period_end: null,
           trial_end: null,
         },
-      };
+      } as User;
     },
   });
 }

@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+
 import { AccountFallbackIcon } from "@/components/dashboard/accounts/account-fallback-icon";
 import { cn } from "@/lib/utils";
 
@@ -53,9 +54,7 @@ export function StockCard({
               </div>
             )}
             <div>
-              <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                {accountName}
-              </p>
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">{accountName}</p>
               <h3 className="text-lg font-semibold leading-tight">{symbol}</h3>
             </div>
           </div>

@@ -8,7 +8,7 @@ export type AccountSubtype =
   | "loan"
   | "stock";
 
-export const accountSubtypes: AccountSubtype[] = [
+export const accountSubtypes = [
   "depository",
   "brokerage",
   "crypto",
@@ -17,7 +17,7 @@ export const accountSubtypes: AccountSubtype[] = [
   "creditcard",
   "loan",
   "stock",
-];
+] as const satisfies readonly AccountSubtype[];
 
 export const accountSubtypeLabels: Record<AccountSubtype, string> = {
   depository: "Depository",

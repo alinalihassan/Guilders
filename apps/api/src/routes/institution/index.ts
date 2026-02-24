@@ -1,4 +1,5 @@
 import { Elysia, status, t } from "elysia";
+
 import { selectInstitutionSchema } from "../../db/schema/institutions";
 import { db } from "../../lib/db";
 import { authPlugin } from "../../middleware/auth";
@@ -10,7 +11,7 @@ export const institutionRoutes = new Elysia({
   detail: {
     tags: ["Institutions"],
     security: [{ bearerAuth: [] }],
-  }
+  },
 })
   .use(authPlugin)
   .model({
@@ -54,7 +55,7 @@ export const institutionRoutes = new Elysia({
       auth: true,
       params: institutionIdParamSchema,
       response: {
-        200: 'Institution',
+        200: "Institution",
         404: errorSchema,
       },
       detail: {

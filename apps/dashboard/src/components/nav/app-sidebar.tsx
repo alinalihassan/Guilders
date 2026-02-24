@@ -1,9 +1,11 @@
 "use client";
 
-import { useStore } from "@/lib/store";
-import { cn } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
+
+import { useStore } from "@/lib/store";
+import { cn } from "@/lib/utils";
+
 import { MainMenu } from "./mainmenu";
 
 export function AppSidebar() {

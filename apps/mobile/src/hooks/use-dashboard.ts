@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { api } from '@/lib/api';
+import { useCallback, useEffect, useMemo, useState } from "react";
+
+import { api } from "@/lib/api";
 
 export type Account = {
   id: number;
@@ -31,10 +32,10 @@ export function useAccounts() {
     setLoading(true);
     setError(null);
     try {
-      const result = await api.get<Account[]>('/api/account');
+      const result = await api.get<Account[]>("/api/account");
       setData(result);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to load accounts');
+      setError(e instanceof Error ? e.message : "Failed to load accounts");
     } finally {
       setLoading(false);
     }
@@ -48,7 +49,7 @@ export function useAccounts() {
     if (!data) return 0;
     return data.reduce((sum, a) => {
       const v = parseFloat(a.value);
-      return sum + (a.type === 'liability' ? -v : v);
+      return sum + (a.type === "liability" ? -v : v);
     }, 0);
   }, [data]);
 
@@ -64,10 +65,10 @@ export function useTransactions() {
     setLoading(true);
     setError(null);
     try {
-      const result = await api.get<Transaction[]>('/api/transaction');
+      const result = await api.get<Transaction[]>("/api/transaction");
       setData(result);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to load transactions');
+      setError(e instanceof Error ? e.message : "Failed to load transactions");
     } finally {
       setLoading(false);
     }

@@ -1,4 +1,5 @@
 import { Elysia, status, t } from "elysia";
+
 import { selectCurrencySchema } from "../../db/schema/currencies";
 import { db } from "../../lib/db";
 import { authPlugin } from "../../middleware/auth";
@@ -10,7 +11,7 @@ export const currencyRoutes = new Elysia({
   detail: {
     tags: ["Currencies"],
     security: [{ bearerAuth: [] }],
-  }
+  },
 })
   .use(authPlugin)
   .model({
@@ -36,7 +37,7 @@ export const currencyRoutes = new Elysia({
       const result = await db.query.currency.findFirst({
         where: {
           code: params.code,
-        }
+        },
       });
 
       if (!result) {
@@ -49,7 +50,7 @@ export const currencyRoutes = new Elysia({
       auth: true,
       params: currencyCodeParamSchema,
       response: {
-        200: 'Currency',
+        200: "Currency",
         404: errorSchema,
       },
       detail: {

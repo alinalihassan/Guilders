@@ -1,10 +1,11 @@
-import { Stack } from 'expo-router';
-import { useColorScheme } from 'react-native';
-import { Colors } from '@/constants/theme';
+import { Stack } from "expo-router";
+import { useColorScheme } from "react-native";
+
+import { Colors } from "@/constants/theme";
 
 export default function SearchLayout() {
   const scheme = useColorScheme();
-  const colors = Colors[scheme === 'unspecified' ? 'light' : scheme ?? 'light'];
+  const colors = Colors[scheme === "unspecified" ? "light" : (scheme ?? "light")];
 
   return (
     <Stack

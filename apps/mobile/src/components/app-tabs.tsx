@@ -1,22 +1,25 @@
-import { NativeTabs } from 'expo-router/unstable-native-tabs';
-import { Platform, useColorScheme } from 'react-native';
+import { NativeTabs } from "expo-router/unstable-native-tabs";
+import { Platform, useColorScheme } from "react-native";
 
-import { Colors } from '@/constants/theme';
+import { Colors } from "@/constants/theme";
 
 export default function AppTabs() {
   const scheme = useColorScheme();
-  const colors = Colors[scheme === 'unspecified' ? 'light' : scheme ?? 'light'];
+  const colors = Colors[scheme === "unspecified" ? "light" : (scheme ?? "light")];
 
   return (
     <NativeTabs
       backgroundColor={colors.background}
       indicatorColor={colors.backgroundElement}
       labelStyle={{ selected: { color: colors.text } }}
-      minimizeBehavior="onScrollDown">
+      minimizeBehavior="onScrollDown"
+    >
       <NativeTabs.Trigger name="accounts">
         <NativeTabs.Trigger.Label>Accounts</NativeTabs.Trigger.Label>
         {Platform.select({
-          ios: <NativeTabs.Trigger.Icon sf={{ default: 'creditcard', selected: 'creditcard.fill' }} />,
+          ios: (
+            <NativeTabs.Trigger.Icon sf={{ default: "creditcard", selected: "creditcard.fill" }} />
+          ),
           android: <NativeTabs.Trigger.Icon md="account_balance_wallet" />,
         })}
       </NativeTabs.Trigger>

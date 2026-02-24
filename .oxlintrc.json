@@ -1,0 +1,32 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["react", "import", "nextjs", "unicorn", "typescript"],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "warn"
+  },
+  "rules": {
+    "typescript/no-explicit-any": "warn",
+    "import/no-cycle": "error",
+    "import/no-duplicates": "error",
+    "react/self-closing-comp": "warn",
+    "unicorn/no-useless-spread": "warn",
+    "react/jsx-uses-react": "off",
+    "react/react-in-jsx-scope": "off"
+  },
+  "settings": {
+    "react": {
+      "version": "19"
+    }
+  },
+  "ignorePatterns": [
+    ".agents/**",
+    "**/.next/**",
+    "**/.turbo/**",
+    "**/.expo/**",
+    "**/coverage/**",
+    "**/dist/**",
+    "**/build/**",
+    "apps/api/drizzle/**"
+  ]
+}

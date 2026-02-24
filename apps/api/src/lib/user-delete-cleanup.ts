@@ -1,12 +1,10 @@
 import { env } from "cloudflare:workers";
 import { eq } from "drizzle-orm";
+
 import { providerConnection } from "../db/schema/provider-connections";
 import { provider } from "../db/schema/providers";
 import type { ProviderName } from "../providers/types";
-import type {
-  ProviderUserCleanupEvent,
-  UserFilesCleanupEvent,
-} from "../queues/types";
+import type { ProviderUserCleanupEvent, UserFilesCleanupEvent } from "../queues/types";
 import { db } from "./db";
 
 function isProviderName(name: string): name is ProviderName {
@@ -16,10 +14,7 @@ function isProviderName(name: string): name is ProviderName {
 export async function enqueueUserDeleteCleanupJobs(userId: string): Promise<void> {
   if (!env?.WEBHOOK_QUEUE) return;
 
-  await Promise.all([
-    enqueueProviderCleanupJobs(userId),
-    enqueueUserFilesCleanupJob(userId),
-  ]);
+  await Promise.all([enqueueProviderCleanupJobs(userId), enqueueUserFilesCleanupJob(userId)]);
 }
 
 async function enqueueProviderCleanupJobs(userId: string): Promise<void> {

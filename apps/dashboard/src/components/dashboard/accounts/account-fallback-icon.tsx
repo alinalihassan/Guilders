@@ -16,11 +16,7 @@ type AccountFallbackIconProps = {
   className?: string;
 };
 
-export function AccountFallbackIcon({
-  subtype,
-  size = 20,
-  className,
-}: AccountFallbackIconProps) {
+export function AccountFallbackIcon({ subtype, size = 20, className }: AccountFallbackIconProps) {
   switch (subtype) {
     case "depository":
       return <Landmark size={size} className={className} />;

@@ -1,5 +1,6 @@
 import { eq } from "drizzle-orm";
 import { Elysia, status, t } from "elysia";
+
 import { account } from "../../db/schema/accounts";
 import {
   insertTransactionSchema,
@@ -9,17 +10,14 @@ import {
 import { db } from "../../lib/db";
 import { authPlugin } from "../../middleware/auth";
 import { errorSchema } from "../../utils/error";
-import {
-  transactionIdParamSchema,
-  transactionQuerySchema,
-} from "./types";
+import { transactionIdParamSchema, transactionQuerySchema } from "./types";
 
 export const transactionRoutes = new Elysia({
   prefix: "/transaction",
   detail: {
     tags: ["Transactions"],
     security: [{ bearerAuth: [] }],
-  }
+  },
 })
   .use(authPlugin)
   .model({
@@ -34,7 +32,7 @@ export const transactionRoutes = new Elysia({
           account_id: query.accountId,
           account: {
             user_id: user.id,
-          }
+          },
         },
         orderBy: (transactions, { desc }) => desc(transactions.date),
       });
@@ -54,13 +52,12 @@ export const transactionRoutes = new Elysia({
     "",
     async ({ body, user }) => {
       // Verify the account belongs to the user
-      const accountResult = await db
-        .query.account.findFirst({
-          where: {
-            id: body.account_id,
-            user_id: user.id,
-          },
-        });
+      const accountResult = await db.query.account.findFirst({
+        where: {
+          id: body.account_id,
+          user_id: user.id,
+        },
+      });
 
       if (!accountResult) {
         return status(404, { error: "Account not found" });
@@ -106,14 +103,13 @@ export const transactionRoutes = new Elysia({
       auth: true,
       body: insertTransactionSchema,
       response: {
-        200: 'Transaction',
+        200: "Transaction",
         404: errorSchema,
         500: errorSchema,
       },
       detail: {
         summary: "Create transaction",
-        description:
-          "Create a new transaction and update the associated account balance",
+        description: "Create a new transaction and update the associated account balance",
       },
     },
   )
@@ -125,7 +121,7 @@ export const transactionRoutes = new Elysia({
           id: params.id,
           account: {
             user_id: user.id,
-          }
+          },
         },
       });
 
@@ -139,7 +135,7 @@ export const transactionRoutes = new Elysia({
       auth: true,
       params: transactionIdParamSchema,
       response: {
-        200: 'Transaction',
+        200: "Transaction",
         404: errorSchema,
       },
       detail: {
@@ -152,28 +148,26 @@ export const transactionRoutes = new Elysia({
     "/:id",
     async ({ params, body, user }) => {
       // Verify the account belongs to the user
-      const targetAccount = await db
-        .query.account.findFirst({
-          where: {
-            id: body.account_id,
-            user_id: user.id,
-          },
-        });
+      const targetAccount = await db.query.account.findFirst({
+        where: {
+          id: body.account_id,
+          user_id: user.id,
+        },
+      });
 
       if (!targetAccount) {
         return status(404, { error: "Account not found" });
       }
 
       // Get existing transaction
-      const existingTransaction = await db
-        .query.transaction.findFirst({
-          where: {
-            id: params.id,
-            account: {
-              user_id: user.id,
-            }
+      const existingTransaction = await db.query.transaction.findFirst({
+        where: {
+          id: params.id,
+          account: {
+            user_id: user.id,
           },
-        });
+        },
+      });
 
       if (!existingTransaction) {
         return status(404, { error: "Transaction not found" });
@@ -204,8 +198,7 @@ export const transactionRoutes = new Elysia({
             description: body.description,
             category: body.category || existingTransaction.category,
             provider_transaction_id:
-              body.provider_transaction_id ||
-              existingTransaction.provider_transaction_id,
+              body.provider_transaction_id || existingTransaction.provider_transaction_id,
             documents: body.documents || existingTransaction.documents,
             updated_at: new Date(),
           })
@@ -226,14 +219,13 @@ export const transactionRoutes = new Elysia({
       params: transactionIdParamSchema,
       body: insertTransactionSchema,
       response: {
-        200: 'Transaction',
+        200: "Transaction",
         404: errorSchema,
         500: errorSchema,
       },
       detail: {
         summary: "Update transaction",
-        description:
-          "Update a transaction and adjust the associated account balance",
+        description: "Update a transaction and adjust the associated account balance",
       },
     },
   )
@@ -245,7 +237,7 @@ export const transactionRoutes = new Elysia({
           id: params.id,
           account: {
             user_id: user.id,
-          }
+          },
         },
       });
 
@@ -254,12 +246,11 @@ export const transactionRoutes = new Elysia({
       }
 
       // Get account for balance update
-      const accountResult = await db
-        .query.account.findFirst({
-          where: {
-            id: existingTransaction.account_id,
-          },
-        });
+      const accountResult = await db.query.account.findFirst({
+        where: {
+          id: existingTransaction.account_id,
+        },
+      });
 
       if (!accountResult) {
         return status(404, { error: "Associated account not found" });
@@ -294,8 +285,7 @@ export const transactionRoutes = new Elysia({
       },
       detail: {
         summary: "Delete transaction",
-        description:
-          "Delete a transaction and revert the associated account balance",
+        description: "Delete a transaction and revert the associated account balance",
       },
     },
   );

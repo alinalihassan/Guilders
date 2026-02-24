@@ -1,5 +1,6 @@
-import { env } from "@/lib/env";
 import type { Metadata } from "next/types";
+
+import { env } from "@/lib/env";
 
 export const defaultMetadata: Metadata = {
   metadataBase: new URL(env.NEXT_PUBLIC_DASHBOARD_URL),

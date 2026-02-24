@@ -1,4 +1,5 @@
 import { create } from "zustand";
+
 import { authApi } from "@/lib/auth-client";
 
 type MfaSetup = {

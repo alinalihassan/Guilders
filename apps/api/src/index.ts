@@ -3,6 +3,8 @@ import { handleCallback } from "./callbacks";
 import { handleScheduled } from "./cron";
 import type { WebhookEvent } from "./queues/types";
 import { handleWebhookQueue } from "./queues/webhook-events";
+export type { App } from "./app";
+export type * from "./types";
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {

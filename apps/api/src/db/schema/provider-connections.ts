@@ -1,15 +1,6 @@
-import {
-  index,
-  integer,
-  pgTable,
-  serial,
-  timestamp,
-  varchar,
-} from "drizzle-orm/pg-core";
-import {
-  createInsertSchema,
-  createSelectSchema,
-} from "drizzle-orm/typebox-legacy";
+import { index, integer, pgTable, serial, timestamp, varchar } from "drizzle-orm/pg-core";
+import { createInsertSchema, createSelectSchema } from "drizzle-orm/typebox-legacy";
+
 import { user } from "./auth";
 import { provider } from "./providers";
 
@@ -43,7 +34,5 @@ export const providerConnection = pgTable(
 export type ProviderConnection = typeof providerConnection.$inferSelect;
 export type InsertProviderConnection = typeof providerConnection.$inferInsert;
 
-export const selectProviderConnectionSchema =
-  createSelectSchema(providerConnection);
-export const insertProviderConnectionSchema =
-  createInsertSchema(providerConnection);
+export const selectProviderConnectionSchema = createSelectSchema(providerConnection);
+export const insertProviderConnectionSchema = createInsertSchema(providerConnection);

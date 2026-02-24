@@ -1,5 +1,6 @@
 // import { relations } from "drizzle-orm/relations";
 import { index, pgTable, varchar } from "drizzle-orm/pg-core";
+
 import { user } from "./auth";
 import { currency } from "./currencies";
 

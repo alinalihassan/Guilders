@@ -1,10 +1,7 @@
-import type {
-  Account,
-  CreateAccount,
-  UpdateAccount,
-} from "@guilders/api/types";
+import type { Account, CreateAccount, UpdateAccount } from "@guilders/api/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+
 import { getApiClient } from "../api";
 
 export const queryKey = ["accounts"] as const;
@@ -51,9 +48,7 @@ export function useAddAccount() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(
-          data?.error || `Error: ${response.status} ${response.statusText}`,
-        );
+        throw new Error(data?.error || `Error: ${response.status} ${response.statusText}`);
       }
       return data as Account;
     },
@@ -64,10 +59,7 @@ export function useAddAccount() {
     },
     onSuccess: (newAccount) => {
       queryClient.setQueryData([...queryKey, newAccount.id], newAccount);
-      queryClient.setQueryData<Account[]>(queryKey, (old = []) => [
-        ...old,
-        newAccount,
-      ]);
+      queryClient.setQueryData<Account[]>(queryKey, (old = []) => [...old, newAccount]);
       toast.success("Account added successfully");
     },
   });
@@ -87,9 +79,7 @@ export function useUpdateAccount() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(
-          data?.error || `Error: ${response.status} ${response.statusText}`,
-        );
+        throw new Error(data?.error || `Error: ${response.status} ${response.statusText}`);
       }
       return data as Account;
     },
@@ -99,14 +89,9 @@ export function useUpdateAccount() {
       });
     },
     onSuccess: (updatedAccount) => {
-      queryClient.setQueryData(
-        [...queryKey, updatedAccount.id],
-        updatedAccount,
-      );
+      queryClient.setQueryData([...queryKey, updatedAccount.id], updatedAccount);
       queryClient.setQueryData<Account[]>(queryKey, (old = []) =>
-        old.map((account) =>
-          account.id === updatedAccount.id ? updatedAccount : account,
-        ),
+        old.map((account) => (account.id === updatedAccount.id ? updatedAccount : account)),
       );
       toast.success("Account updated");
     },
@@ -126,9 +111,7 @@ export function useRemoveAccount() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(
-          data?.error || `Error: ${response.status} ${response.statusText}`,
-        );
+        throw new Error(data?.error || `Error: ${response.status} ${response.statusText}`);
       }
 
       return accountId;

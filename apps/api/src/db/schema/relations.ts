@@ -1,11 +1,7 @@
 import { defineRelations } from "drizzle-orm";
+
 import { account } from "./accounts";
-import {
-  session,
-  user,
-  user_account,
-  verification,
-} from "./auth";
+import { session, user, user_account, verification } from "./auth";
 import { country } from "./countries";
 import { currency } from "./currencies";
 import { institutionConnection } from "./institution-connections";

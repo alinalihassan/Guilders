@@ -1,5 +1,6 @@
 import { env } from "cloudflare:workers";
 import { and, eq } from "drizzle-orm";
+
 import { account } from "../db/schema/accounts";
 import { AccountSubtypeEnum, AccountTypeEnum } from "../db/schema/enums";
 import { institutionConnection } from "../db/schema/institution-connections";
@@ -51,9 +52,7 @@ export async function handleWebhookQueue(
   }
 }
 
-async function processProviderUserCleanupEvent(
-  event: ProviderUserCleanupEvent,
-): Promise<void> {
+async function processProviderUserCleanupEvent(event: ProviderUserCleanupEvent): Promise<void> {
   if (event.eventType !== "deregister-user") return;
 
   const provider = getProvider(event.payload.providerName);
@@ -61,15 +60,14 @@ async function processProviderUserCleanupEvent(
 
   if (!result.success) {
     throw new Error(
-      `Failed to deregister provider user ${event.payload.userId} on ${event.payload.providerName}: ${result.error ?? "unknown error"
+      `Failed to deregister provider user ${event.payload.userId} on ${event.payload.providerName}: ${
+        result.error ?? "unknown error"
       }`,
     );
   }
 }
 
-async function processUserFilesCleanupEvent(
-  event: UserFilesCleanupEvent,
-): Promise<void> {
+async function processUserFilesCleanupEvent(event: UserFilesCleanupEvent): Promise<void> {
   if (event.eventType !== "delete-user-files") return;
   const prefix = `${event.payload.userId}/`;
   let cursor: string | undefined;
@@ -195,9 +193,7 @@ async function handleSnapTradeConnectionDeleted(
   if (!payload.brokerageAuthorizationId) return;
   await db
     .delete(institutionConnection)
-    .where(
-      eq(institutionConnection.connection_id, payload.brokerageAuthorizationId),
-    );
+    .where(eq(institutionConnection.connection_id, payload.brokerageAuthorizationId));
 }
 
 async function handleSnapTradeConnectionBroken(
@@ -207,9 +203,7 @@ async function handleSnapTradeConnectionBroken(
   await db
     .update(institutionConnection)
     .set({ broken: true })
-    .where(
-      eq(institutionConnection.connection_id, payload.brokerageAuthorizationId),
-    );
+    .where(eq(institutionConnection.connection_id, payload.brokerageAuthorizationId));
 }
 
 async function handleSnapTradeConnectionFixed(
@@ -219,9 +213,7 @@ async function handleSnapTradeConnectionFixed(
   await db
     .update(institutionConnection)
     .set({ broken: false })
-    .where(
-      eq(institutionConnection.connection_id, payload.brokerageAuthorizationId),
-    );
+    .where(eq(institutionConnection.connection_id, payload.brokerageAuthorizationId));
 }
 
 async function handleSnapTradeAccountUpdate(
@@ -281,8 +273,7 @@ async function syncSnapTradeHoldings(
       user_id: payload.userId,
     },
   });
-  if (!providerConn?.secret)
-    throw new Error("SnapTrade provider connection secret not found");
+  if (!providerConn?.secret) throw new Error("SnapTrade provider connection secret not found");
 
   const institutionRecord = await db.query.institution.findFirst({
     where: {
@@ -298,8 +289,7 @@ async function syncSnapTradeHoldings(
       institution_id: institutionRecord.id,
     },
   });
-  if (!institutionConn)
-    throw new Error("SnapTrade institution connection not found");
+  if (!institutionConn) throw new Error("SnapTrade institution connection not found");
 
   const client = getSnapTradeClient();
   const response = await client.accountInformation.getUserHoldings({
@@ -314,10 +304,8 @@ async function syncSnapTradeHoldings(
   }
 
   if (trigger === "NEW_ACCOUNT_AVAILABLE") {
-    const holdingsSynced =
-      snapAccount.sync_status?.holdings?.initial_sync_completed ?? false;
-    const txSynced =
-      snapAccount.sync_status?.transactions?.initial_sync_completed ?? false;
+    const holdingsSynced = snapAccount.sync_status?.holdings?.initial_sync_completed ?? false;
+    const txSynced = snapAccount.sync_status?.transactions?.initial_sync_completed ?? false;
     if (!holdingsSynced || !txSynced) {
       console.log("[SnapTrade holdings] NEW_ACCOUNT_AVAILABLE skipped", {
         reason: "initial sync not completed",
@@ -333,8 +321,7 @@ async function syncSnapTradeHoldings(
   const parentName = snapAccount.institution_name ?? "SnapTrade Account";
   const totalCost =
     response.data?.positions?.reduce(
-      (acc, position) =>
-        acc + (position.average_purchase_price ?? 0) * (position.units ?? 0),
+      (acc, position) => acc + (position.average_purchase_price ?? 0) * (position.units ?? 0),
       0,
     ) ?? totalValue;
 
@@ -388,8 +375,7 @@ async function syncSnapTradeHoldings(
       })
       .returning({ id: account.id });
 
-    if (!createdParent)
-      throw new Error("Failed to create SnapTrade parent account");
+    if (!createdParent) throw new Error("Failed to create SnapTrade parent account");
     parentId = createdParent.id;
   }
 

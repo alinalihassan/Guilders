@@ -1,8 +1,5 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -10,6 +7,10 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 const passwordSchema = z
   .object({
@@ -44,9 +45,7 @@ export default function RecoveryPage() {
   const onSubmit = async (_data: PasswordForm) => {
     try {
       setIsLoading(true);
-      toast.message(
-        "Password reset completion is temporarily unavailable during migration.",
-      );
+      toast.message("Password reset completion is temporarily unavailable during migration.");
       router.push("/login");
     } catch (_error) {
       toast.error("Failed to update password", {
@@ -72,14 +71,9 @@ export default function RecoveryPage() {
           </div>
 
           <h1 className="text-2xl font-bold text-center">Reset Password</h1>
-          <p className="text-muted-foreground text-center">
-            Please enter your new password
-          </p>
+          <p className="text-muted-foreground text-center">Please enter your new password</p>
 
-          <form
-            onSubmit={handleSubmit(onSubmit)}
-            className="flex flex-col gap-4 mt-4"
-          >
+          <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4 mt-4">
             <div className="grid gap-4">
               <div className="grid w-full items-center gap-1.5">
                 <Label htmlFor="password">New Password</Label>
@@ -91,9 +85,7 @@ export default function RecoveryPage() {
                   {...register("password")}
                 />
                 {errors.password && (
-                  <p className="text-sm text-destructive">
-                    {errors.password.message}
-                  </p>
+                  <p className="text-sm text-destructive">{errors.password.message}</p>
                 )}
               </div>
 
@@ -107,9 +99,7 @@ export default function RecoveryPage() {
                   {...register("confirmPassword")}
                 />
                 {errors.confirmPassword && (
-                  <p className="text-sm text-destructive">
-                    {errors.confirmPassword.message}
-                  </p>
+                  <p className="text-sm text-destructive">{errors.confirmPassword.message}</p>
                 )}
               </div>
 

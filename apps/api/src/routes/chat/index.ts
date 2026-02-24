@@ -1,4 +1,3 @@
-import { env } from "cloudflare:workers";
 import { pipeJsonRender } from "@json-render/core";
 import {
   convertToModelMessages,
@@ -9,7 +8,9 @@ import {
 } from "ai";
 import { createAiGateway } from "ai-gateway-provider";
 import { unified } from "ai-gateway-provider/providers/unified";
+import { env } from "cloudflare:workers";
 import { Elysia, status, t } from "elysia";
+
 import { authPlugin } from "../../middleware/auth";
 import { errorSchema } from "../../utils/error";
 import { chatRequestSchema } from "./types";
@@ -108,10 +109,7 @@ export const chatRoutes = new Elysia({
       } catch (error) {
         console.error("Chat error:", error);
         return status(500, {
-          error:
-            error instanceof Error
-              ? error.message
-              : "An unknown error occurred",
+          error: error instanceof Error ? error.message : "An unknown error occurred",
         });
       }
     },

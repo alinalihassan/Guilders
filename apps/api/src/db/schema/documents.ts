@@ -1,12 +1,6 @@
 // import { relations } from "drizzle-orm/relations";
-import {
-  index,
-  integer,
-  pgTable,
-  serial,
-  timestamp,
-  varchar,
-} from "drizzle-orm/pg-core";
+import { index, integer, pgTable, serial, timestamp, varchar } from "drizzle-orm/pg-core";
+
 import { user } from "./auth";
 import { documentEntityTypeEnum } from "./enums";
 
@@ -36,3 +30,4 @@ export const document = pgTable(
   ],
 );
 
+export type Document = typeof document.$inferSelect;

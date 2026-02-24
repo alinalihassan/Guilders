@@ -25,9 +25,7 @@ const authClient = createAuthClient({
 function toAuthResult<T>(response: BetterAuthResponse<T>): AuthResult<T> {
   return {
     data: response.data ?? null,
-    error: response.error
-      ? { message: response.error.message ?? "Authentication error" }
-      : null,
+    error: response.error ? { message: response.error.message ?? "Authentication error" } : null,
   };
 }
 
@@ -43,9 +41,7 @@ async function runClientRequest<T>(
       data: null,
       error: {
         message:
-          error instanceof Error
-            ? error.message
-            : "Unable to complete authentication request.",
+          error instanceof Error ? error.message : "Unable to complete authentication request.",
       },
     };
   }
@@ -67,8 +63,8 @@ export const authApi = {
   },
 
   async getSession() {
-    return runClientRequest<{ user?: { email?: string }; session?: { token?: string } }>(
-      () => authClient.getSession(),
+    return runClientRequest<{ user?: { email?: string }; session?: { token?: string } }>(() =>
+      authClient.getSession(),
     );
   },
 
@@ -147,5 +143,4 @@ export const authApi = {
   async deleteApiKey(input: { keyId: string }) {
     return runClientRequest(() => authClient.apiKey.delete(input));
   },
-
 };

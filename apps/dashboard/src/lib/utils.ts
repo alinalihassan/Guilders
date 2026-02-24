@@ -1,8 +1,9 @@
-import { env } from "@/lib/env";
 import type { User } from "@guilders/api/types";
 import { type ClassValue, clsx } from "clsx";
 import { redirect } from "next/navigation";
 import { twMerge } from "tailwind-merge";
+
+import { env } from "@/lib/env";
 
 /**
  * Redirects to a specified path with an encoded message as a query parameter.
@@ -11,11 +12,7 @@ import { twMerge } from "tailwind-merge";
  * @param {string} message - The message to be encoded and added as a query parameter.
  * @returns {never} This function doesn't return as it triggers a redirect.
  */
-export function encodedRedirect(
-  type: "error" | "success",
-  path: string,
-  message: string,
-) {
+export function encodedRedirect(type: "error" | "success", path: string, message: string) {
   return redirect(`${path}?${type}=${encodeURIComponent(message)}`);
 }
 
@@ -37,9 +34,7 @@ export function formatBytes(
   if (bytes === 0) return "0 Byte";
   const i = Math.floor(Math.log(bytes) / Math.log(1024));
   return `${(bytes / 1024 ** i).toFixed(decimals)} ${
-    sizeType === "accurate"
-      ? (accurateSizes[i] ?? "Bytes")
-      : (sizes[i] ?? "Bytes")
+    sizeType === "accurate" ? (accurateSizes[i] ?? "Bytes") : (sizes[i] ?? "Bytes")
   }`;
 }
 

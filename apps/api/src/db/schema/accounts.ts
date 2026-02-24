@@ -8,10 +8,8 @@ import {
   timestamp,
   varchar,
 } from "drizzle-orm/pg-core";
-import {
-  createInsertSchema,
-  createSelectSchema,
-} from "drizzle-orm/typebox-legacy";
+import { createInsertSchema, createSelectSchema } from "drizzle-orm/typebox-legacy";
+
 import { user } from "./auth";
 import { currency } from "./currencies";
 import {
@@ -42,18 +40,14 @@ export const account = pgTable(
         onUpdate: "cascade",
       },
     ),
-    investable: investableEnum("investable")
-      .notNull()
-      .default(InvestableEnum.investable_cash),
+    investable: investableEnum("investable").notNull().default(InvestableEnum.investable_cash),
     name: varchar("name", { length: 100 }).notNull(),
     notes: text("notes").notNull().default(""),
     parent: integer("parent"),
     provider_account_id: varchar("provider_account_id", { length: 255 }),
     subtype: accountSubtypeEnum("subtype").notNull(),
     tax_rate: numeric("tax_rate", { precision: 5, scale: 4 }),
-    taxability: taxabilityEnum("taxability")
-      .notNull()
-      .default(TaxabilityEnum.tax_free),
+    taxability: taxabilityEnum("taxability").notNull().default(TaxabilityEnum.tax_free),
     ticker: varchar("ticker", { length: 20 }),
     type: accountTypeEnum("type").notNull(),
     units: numeric("units", { precision: 19, scale: 8 }),
@@ -71,9 +65,7 @@ export const account = pgTable(
     index("account_user_idx").on(table.user_id),
     index("account_currency_idx").on(table.currency),
     index("account_parent_idx").on(table.parent),
-    index("account_institution_connection_idx").on(
-      table.institution_connection_id,
-    ),
+    index("account_institution_connection_idx").on(table.institution_connection_id),
   ],
 );
 

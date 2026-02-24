@@ -1,9 +1,7 @@
-import { getApiClient } from "@/lib/api";
-import type {
-  ProviderConnection,
-  ProviderConnections,
-} from "@guilders/api/types";
+import type { ProviderConnection, ProviderConnections } from "@guilders/api/types";
 import { useQuery } from "@tanstack/react-query";
+
+import { getApiClient } from "@/lib/api";
 
 const queryKey = ["provider-connections"] as const;
 

@@ -1,6 +1,8 @@
 "use client";
 
-import { bottomNavigation, mainNavigation } from "@/lib/config/navigation";
+import { usePathname } from "next/navigation";
+import React from "react";
+
 import {
   Breadcrumb as BreadcrumbComponent,
   BreadcrumbItem,
@@ -9,8 +11,8 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { usePathname } from "next/navigation";
-import React from "react";
+import { bottomNavigation, mainNavigation } from "@/lib/config/navigation";
+
 import { useAccount } from "../../lib/queries/useAccounts";
 
 export type Breadcrumb = {
@@ -24,14 +26,11 @@ export function getBreadcrumbs(pathname: string): Breadcrumb[] {
   // Find the most specific matching route
   const currentItem = allNavItems
     .filter((item) => item.href && pathname.startsWith(item.href))
-    .sort((a, b) => (b.href?.length || 0) - (a.href?.length || 0))[0];
+    .toSorted((a, b) => (b.href?.length || 0) - (a.href?.length || 0))[0];
 
   if (!currentItem) {
     // Handle dynamic routes
-    if (
-      pathname.startsWith("/accounts/") ||
-      pathname.startsWith("/transactions/")
-    ) {
+    if (pathname.startsWith("/accounts/") || pathname.startsWith("/transactions/")) {
       return [
         { name: "Dashboard", href: "/" },
         { name: "Accounts", href: "/accounts" },
@@ -91,17 +90,12 @@ export function DynamicBreadcrumbs({ className }: { className?: string }) {
                   {breadcrumb.name}
                 </BreadcrumbPage>
               ) : (
-                <BreadcrumbLink
-                  href={breadcrumb.href}
-                  className="text-[15px] font-medium"
-                >
+                <BreadcrumbLink href={breadcrumb.href} className="text-[15px] font-medium">
                   {breadcrumb.name}
                 </BreadcrumbLink>
               )}
             </BreadcrumbItem>
-            {index < breadcrumbs.length - 1 && (
-              <BreadcrumbSeparator className="hidden md:block" />
-            )}
+            {index < breadcrumbs.length - 1 && <BreadcrumbSeparator className="hidden md:block" />}
           </React.Fragment>
         ))}
       </BreadcrumbList>

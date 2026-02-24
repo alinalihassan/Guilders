@@ -1,4 +1,7 @@
 import { t } from "elysia";
+import type { InstitutionConnection as DbInstitutionConnection } from "../../db/schema/institution-connections";
+import type { Institution } from "../../db/schema/institutions";
+import type { ProviderConnection } from "../../db/schema/provider-connections";
 
 export const institutionConnectionWithRelationsSchema = t.Object({
   id: t.Number(),
@@ -27,3 +30,10 @@ export const institutionConnectionWithRelationsSchema = t.Object({
 export const institutionConnectionIdParamSchema = t.Object({
   id: t.Number(),
 });
+
+export type InstitutionConnection = DbInstitutionConnection & {
+  institution: Institution;
+  provider_connection: ProviderConnection | null;
+};
+
+export type InstitutionConnections = InstitutionConnection[];

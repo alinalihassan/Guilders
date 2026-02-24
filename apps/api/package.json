@@ -5,6 +5,10 @@
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
+    "lint": "oxlint .",
+    "lint:fix": "oxlint --fix .",
+    "format": "oxfmt --write .",
+    "format:check": "oxfmt --check .",
     "cf-typegen": "wrangler types",
     "ngrok": "bun --env-file=.env __ngrok-command",
     "auth:generate": "bunx --bun @better-auth/cli generate --output src/db/schema/auth.ts -y",

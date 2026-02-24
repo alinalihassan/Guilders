@@ -10,9 +10,7 @@ function getSnapTradeConfig(): SnapTradeConfig {
   const consumerKey = process.env.SNAPTRADE_CLIENT_SECRET;
 
   if (!clientId || !consumerKey) {
-    throw new Error(
-      "Missing SNAPTRADE_CLIENT_ID or SNAPTRADE_CLIENT_SECRET env vars",
-    );
+    throw new Error("Missing SNAPTRADE_CLIENT_ID or SNAPTRADE_CLIENT_SECRET env vars");
   }
 
   return { clientId, consumerKey };

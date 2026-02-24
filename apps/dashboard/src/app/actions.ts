@@ -1,9 +1,10 @@
 "use server";
 
-import { encodedRedirect } from "@/lib/utils";
 import { redirect } from "next/navigation";
 
-export const signUpAction = async (formData: FormData) => {
+import { encodedRedirect } from "@/lib/utils";
+
+export const signUpAction = async (_: FormData) => {
   return encodedRedirect(
     "success",
     "/sign-up",
@@ -19,7 +20,7 @@ export async function signInAction(formData: FormData) {
   };
 }
 
-export const forgotPasswordAction = async (formData: FormData) => {
+export const forgotPasswordAction = async (_: FormData) => {
   return encodedRedirect(
     "success",
     "/forgot-password",
@@ -27,7 +28,7 @@ export const forgotPasswordAction = async (formData: FormData) => {
   );
 };
 
-export const resetPasswordAction = async (formData: FormData) => {
+export const resetPasswordAction = async (_: FormData) => {
   return encodedRedirect(
     "success",
     "/recovery",

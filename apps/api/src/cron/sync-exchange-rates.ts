@@ -1,4 +1,5 @@
 import { sql } from "drizzle-orm";
+
 import { rate } from "../db/schema/rates";
 import { db } from "../lib/db";
 import { getFrankfurter } from "../lib/frankfurter";

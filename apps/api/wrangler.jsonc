@@ -5,20 +5,17 @@
   "compatibility_date": "2026-02-12",
   "compatibility_flags": ["nodejs_compat"],
   "dev": {
-    "port": 3000
+    "port": 3000,
   },
   "triggers": {
-    "crons": [
-      "0 * * * *",
-      "0 0 * * *"
-    ]
+    "crons": ["0 * * * *", "0 0 * * *"],
   },
   "queues": {
     "producers": [
       {
         "binding": "WEBHOOK_QUEUE",
-        "queue": "guilders-webhook-events"
-      }
+        "queue": "guilders-webhook-events",
+      },
     ],
     "consumers": [
       {
@@ -26,18 +23,18 @@
         "max_batch_size": 10,
         "max_batch_timeout": 5,
         "max_retries": 5,
-        "dead_letter_queue": "guilders-webhook-events-dlq"
-      }
-    ]
+        "dead_letter_queue": "guilders-webhook-events-dlq",
+      },
+    ],
   },
   "r2_buckets": [
     {
       "binding": "PUBLIC_BUCKET",
-      "bucket_name": "guilders-bucket"
+      "bucket_name": "guilders-bucket",
     },
     {
       "binding": "USER_BUCKET",
-      "bucket_name": "guilders-user-bucket"
-    }
-  ]
+      "bucket_name": "guilders-user-bucket",
+    },
+  ],
 }

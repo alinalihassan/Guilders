@@ -9,10 +9,8 @@ import {
   timestamp,
   varchar,
 } from "drizzle-orm/pg-core";
-import {
-  createInsertSchema,
-  createSelectSchema,
-} from "drizzle-orm/typebox-legacy";
+import { createInsertSchema, createSelectSchema } from "drizzle-orm/typebox-legacy";
+
 import { account } from "./accounts";
 import { currency } from "./currencies";
 
@@ -26,9 +24,7 @@ export const transaction = pgTable(
         onUpdate: "cascade",
       }),
     amount: numeric("amount", { precision: 19, scale: 4 }).notNull(),
-    category: varchar("category", { length: 100 })
-      .notNull()
-      .default("uncategorized"),
+    category: varchar("category", { length: 100 }).notNull().default("uncategorized"),
     created_at: timestamp("created_at").notNull().defaultNow(),
     currency: varchar("currency", { length: 3 })
       .notNull()

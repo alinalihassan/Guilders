@@ -1,10 +1,10 @@
 "use client";
 
-import { useDialog } from "@/lib/hooks/useDialog";
-import { useCreateConnection } from "@/lib/queries/useConnections";
-import { useProviderById } from "@/lib/queries/useProviders";
-import { useUser } from "@/lib/queries/useUser";
-import { isPro } from "@/lib/utils";
+import { Loader2 } from "lucide-react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -13,10 +13,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Loader2 } from "lucide-react";
-import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+import { useDialog } from "@/lib/hooks/useDialog";
+import { useCreateConnection } from "@/lib/queries/useConnections";
+import { useProviderById } from "@/lib/queries/useProviders";
+import { useUser } from "@/lib/queries/useUser";
+import { isPro } from "@/lib/utils";
 
 export function AddLinkedAccountDialog() {
   const router = useRouter();
@@ -63,9 +64,8 @@ export function AddLinkedAccountDialog() {
       <DialogTitle className="hidden">Add Linked Account</DialogTitle>
       <DialogContent className="sm:max-w-[425px]">
         <DialogDescription className="hidden">
-          This connection is provided by {provider.name}. By clicking continue,
-          you authorize {provider.name} to establish the connection and access
-          your financial data.
+          This connection is provided by {provider.name}. By clicking continue, you authorize{" "}
+          {provider.name} to establish the connection and access your financial data.
         </DialogDescription>
         <DialogHeader>
           <div className="flex items-center gap-3">
@@ -95,14 +95,13 @@ export function AddLinkedAccountDialog() {
           <p className="text-muted-foreground text-sm">
             {isSubscribed ? (
               <>
-                This connection is provided by {provider.name}. By clicking
-                continue, you authorize {provider.name} to establish the
-                connection and access your financial data.
+                This connection is provided by {provider.name}. By clicking continue, you authorize{" "}
+                {provider.name} to establish the connection and access your financial data.
               </>
             ) : (
               <>
-                This feature requires a Pro subscription. Click continue to
-                upgrade your account and unlock automatic account tracking.
+                This feature requires a Pro subscription. Click continue to upgrade your account and
+                unlock automatic account tracking.
               </>
             )}
           </p>
@@ -113,9 +112,7 @@ export function AddLinkedAccountDialog() {
             Please wait
           </Button>
         ) : (
-          <Button onClick={onContinue}>
-            {isSubscribed ? "Continue" : "Upgrade to Pro"}
-          </Button>
+          <Button onClick={onContinue}>{isSubscribed ? "Continue" : "Upgrade to Pro"}</Button>
         )}
       </DialogContent>
     </Dialog>

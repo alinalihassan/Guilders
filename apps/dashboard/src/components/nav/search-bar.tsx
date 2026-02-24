@@ -1,8 +1,10 @@
 "use client";
 
+import { Search } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Search } from "lucide-react";
+
 import { useDialog } from "../../lib/hooks/useDialog";
 
 export function SearchBar() {

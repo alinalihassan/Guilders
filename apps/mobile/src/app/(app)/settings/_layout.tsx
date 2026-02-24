@@ -1,4 +1,4 @@
-import { Stack } from 'expo-router';
+import { Stack } from "expo-router";
 
 export default function ExploreLayout() {
   return (
@@ -6,7 +6,7 @@ export default function ExploreLayout() {
       <Stack.Screen
         name="index"
         options={{
-          title: 'Settings',
+          title: "Settings",
           headerLargeTitle: true,
           headerTransparent: true,
         }}

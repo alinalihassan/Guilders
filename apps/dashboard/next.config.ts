@@ -1,7 +1,7 @@
 import createMDX from "@next/mdx";
 import type { NextConfig } from "next";
 
-// Validate environment variables
+// oxlint-disable-next-line import/no-unassigned-import: Used to validate environment variables
 import "@/lib/env";
 
 const nextConfig: NextConfig = {
@@ -28,7 +28,8 @@ const nextConfig: NextConfig = {
       },
       {
         hostname: "logo.twelvedata.com",
-      }, {
+      },
+      {
         hostname: "api.twelvedata.com",
       },
     ],

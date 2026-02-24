@@ -1,6 +1,6 @@
-import type { IProvider, ProviderName } from "./types";
 import { SaltEdgeProvider } from "./saltedge/provider";
 import { SnapTradeProvider } from "./snaptrade/provider";
+import type { IProvider, ProviderName } from "./types";
 
 export function getProvider(name: ProviderName): IProvider {
   switch (name) {

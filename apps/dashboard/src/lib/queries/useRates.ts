@@ -1,5 +1,6 @@
 import type { Rate } from "@guilders/api/types";
 import { useQuery } from "@tanstack/react-query";
+
 import { getApiClient } from "../api";
 
 const queryKey = ["rates"] as const;

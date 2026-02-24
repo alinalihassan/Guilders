@@ -1,5 +1,8 @@
 "use client";
 
+import NumberFlow from "@number-flow/react";
+import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
+
 import { ChangeIndicator } from "@/components/common/change-indicator";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -15,8 +18,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import NumberFlow from "@number-flow/react";
-import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
 
 interface BalanceCardProps {
   title: string;
@@ -55,13 +56,7 @@ const chartConfig = {
 
 type TimeRange = "1D" | "1W" | "1M" | "1Y";
 
-export function BalanceCard({
-  title,
-  value,
-  currency,
-  change,
-  className,
-}: BalanceCardProps) {
+export function BalanceCard({ title, value, currency, change, className }: BalanceCardProps) {
   return (
     <Card className={className}>
       <CardHeader className="flex flex-col p-6">
@@ -93,14 +88,9 @@ export function BalanceCard({
       </CardHeader>
       <CardContent>
         {/* @ts-ignore */}
-        <ChartContainer
-          className="max-h-[216px] w-full relative"
-          config={chartConfig}
-        >
+        <ChartContainer className="max-h-[216px] w-full relative" config={chartConfig}>
           <div className="absolute inset-0 flex items-center justify-center bg-background/80 z-10">
-            <p className="text-muted-foreground text-sm">
-              Historical data not supported yet
-            </p>
+            <p className="text-muted-foreground text-sm">Historical data not supported yet</p>
           </div>
 
           <AreaChart data={chartData}>
@@ -115,16 +105,8 @@ export function BalanceCard({
             <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
             <defs>
               <linearGradient id="fillValue" x1="0" y1="0" x2="0" y2="1">
-                <stop
-                  offset="5%"
-                  stopColor="var(--color-value)"
-                  stopOpacity={0.8}
-                />
-                <stop
-                  offset="95%"
-                  stopColor="var(--color-value)"
-                  stopOpacity={0.1}
-                />
+                <stop offset="5%" stopColor="var(--color-value)" stopOpacity={0.8} />
+                <stop offset="95%" stopColor="var(--color-value)" stopOpacity={0.1} />
               </linearGradient>
             </defs>
             <Area

@@ -1,4 +1,5 @@
 import { Elysia, status, t } from "elysia";
+
 import { selectRateSchema } from "../../db/schema/rates";
 import { db } from "../../lib/db";
 import { authPlugin } from "../../middleware/auth";
@@ -10,7 +11,7 @@ export const rateRoutes = new Elysia({
   detail: {
     tags: ["Rates"],
     security: [{ bearerAuth: [] }],
-  }
+  },
 })
   .use(authPlugin)
   .model({
@@ -49,8 +50,7 @@ export const rateRoutes = new Elysia({
       },
       detail: {
         summary: "Get all exchange rates",
-        description:
-          "Retrieve exchange rates with optional base currency conversion",
+        description: "Retrieve exchange rates with optional base currency conversion",
       },
     },
   )
@@ -99,8 +99,7 @@ export const rateRoutes = new Elysia({
       },
       detail: {
         summary: "Get rate by currency code",
-        description:
-          "Retrieve exchange rate for a specific currency with optional base conversion",
+        description: "Retrieve exchange rate for a specific currency with optional base conversion",
       },
     },
   );

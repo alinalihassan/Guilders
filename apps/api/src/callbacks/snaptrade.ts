@@ -24,17 +24,14 @@ const HANDLED_EVENTS = new Set<SnapTradeEventType>([
   "ACCOUNT_REMOVED",
 ]);
 
-export async function handleSnapTradeCallback(
-  request: Request,
-  env: Env,
-): Promise<Response> {
+export async function handleSnapTradeCallback(request: Request, env: Env): Promise<Response> {
   if (request.method !== "POST") {
     return new Response("Method not allowed", { status: 405 });
   }
 
   let body: SnapTradeWebhookBody;
   try {
-    body = await request.json() as SnapTradeWebhookBody;
+    body = (await request.json()) as SnapTradeWebhookBody;
   } catch {
     return Response.json({ error: "Invalid JSON" }, { status: 400 });
   }

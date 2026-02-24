@@ -1,5 +1,6 @@
 import { and, eq } from "drizzle-orm";
 import { Elysia, status, t } from "elysia";
+
 import { institutionConnection } from "../../db/schema/institution-connections";
 import { providerConnection } from "../../db/schema/provider-connections";
 import { db } from "../../lib/db";
@@ -40,8 +41,7 @@ export const connectionsRoutes = new Elysia({
       const institutionRecord = await db.query.institution.findFirst({
         where: { id: institutionId },
       });
-      if (!institutionRecord)
-        return status(404, { error: "Institution not found" });
+      if (!institutionRecord) return status(404, { error: "Institution not found" });
 
       try {
         const provider = getProvider(providerRecord.name as "SaltEdge" | "SnapTrade");
@@ -65,8 +65,7 @@ export const connectionsRoutes = new Elysia({
         return result.data;
       } catch (error) {
         return status(500, {
-          error:
-            error instanceof Error ? error.message : "Failed to create connection",
+          error: error instanceof Error ? error.message : "Failed to create connection",
         });
       }
     },
@@ -105,8 +104,7 @@ export const connectionsRoutes = new Elysia({
       const institutionRecord = await db.query.institution.findFirst({
         where: { id: institutionId },
       });
-      if (!institutionRecord)
-        return status(404, { error: "Institution not found" });
+      if (!institutionRecord) return status(404, { error: "Institution not found" });
 
       const accountRecord = await db.query.account.findFirst({
         where: {
@@ -144,10 +142,7 @@ export const connectionsRoutes = new Elysia({
         return result.data;
       } catch (error) {
         return status(500, {
-          error:
-            error instanceof Error
-              ? error.message
-              : "Failed to reconnect connection",
+          error: error instanceof Error ? error.message : "Failed to reconnect connection",
         });
       }
     },
@@ -211,8 +206,7 @@ export const connectionsRoutes = new Elysia({
         return { success: true };
       } catch (error) {
         return status(500, {
-          error:
-            error instanceof Error ? error.message : "Failed to refresh connection",
+          error: error instanceof Error ? error.message : "Failed to refresh connection",
         });
       }
     },
@@ -276,8 +270,7 @@ export const connectionsRoutes = new Elysia({
         return { secret: result.data.userSecret };
       } catch (error) {
         return status(500, {
-          error:
-            error instanceof Error ? error.message : "Failed to register provider",
+          error: error instanceof Error ? error.message : "Failed to register provider",
         });
       }
     },
@@ -340,10 +333,7 @@ export const connectionsRoutes = new Elysia({
         return { success: true };
       } catch (error) {
         return status(500, {
-          error:
-            error instanceof Error
-              ? error.message
-              : "Failed to deregister provider user",
+          error: error instanceof Error ? error.message : "Failed to deregister provider user",
         });
       }
     },

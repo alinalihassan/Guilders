@@ -1,4 +1,5 @@
 import type { Account, Rate } from "@guilders/api/types";
+
 import type { AccountSubtype } from "@/lib/account-types";
 
 export function convertToUserCurrency(
@@ -12,12 +13,8 @@ export function convertToUserCurrency(
   if (!rates) return numValue;
   if (fromCurrency === userCurrency) return numValue;
 
-  const fromRate =
-    Number(rates.find((r) => r.currency_code === fromCurrency)?.rate ?? 1) ||
-    1;
-  const toRate =
-    Number(rates.find((r) => r.currency_code === userCurrency)?.rate ?? 1) ||
-    1;
+  const fromRate = Number(rates.find((r) => r.currency_code === fromCurrency)?.rate ?? 1) || 1;
+  const toRate = Number(rates.find((r) => r.currency_code === userCurrency)?.rate ?? 1) || 1;
 
   return (numValue * fromRate) / toRate;
 }
@@ -72,12 +69,7 @@ export function calculateCategories(
 
 export function calculateCategorySums(categories: CategoryGroups) {
   return {
-    positiveSum: categories.positive.reduce(
-      (sum, category) => sum + category.value,
-      0,
-    ),
-    negativeSum: Math.abs(
-      categories.negative.reduce((sum, category) => sum + category.value, 0),
-    ),
+    positiveSum: categories.positive.reduce((sum, category) => sum + category.value, 0),
+    negativeSum: Math.abs(categories.negative.reduce((sum, category) => sum + category.value, 0)),
   };
 }

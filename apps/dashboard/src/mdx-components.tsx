@@ -1,9 +1,9 @@
 import type { MDXComponents } from "mdx/types";
 import type { ComponentProps } from "react";
+
 import { cn } from "./lib/utils";
 
-// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-type MDXProps = ComponentProps<any> & {
+type MDXProps = ComponentProps<React.ElementType> & {
   className?: string;
 };
 
@@ -12,10 +12,7 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
     ...components,
     h1: ({ className, ...props }: MDXProps) => (
       <h1
-        className={cn(
-          "text-4xl font-extrabold lg:text-5xl tracking-tight mt-10",
-          className,
-        )}
+        className={cn("text-4xl font-extrabold lg:text-5xl tracking-tight mt-10", className)}
         {...props}
       />
     ),
@@ -29,44 +26,23 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
       />
     ),
     h3: ({ className, ...props }: MDXProps) => (
-      <h3
-        className={cn(
-          "text-2xl font-semibold tracking-tight mt-6 mb-6",
-          className,
-        )}
-        {...props}
-      />
+      <h3 className={cn("text-2xl font-semibold tracking-tight mt-6 mb-6", className)} {...props} />
     ),
     h4: ({ className, ...props }: MDXProps) => (
-      <h4
-        className={cn(
-          "text-xl font-semibold tracking-tight mt-8 mb-4",
-          className,
-        )}
-        {...props}
-      />
+      <h4 className={cn("text-xl font-semibold tracking-tight mt-8 mb-4", className)} {...props} />
     ),
     p: ({ className, ...props }: MDXProps) => (
-      <p
-        className={cn("leading-7 [&:not(:first-child)]:mt-6", className)}
-        {...props}
-      />
+      <p className={cn("leading-7 [&:not(:first-child)]:mt-6", className)} {...props} />
     ),
     ul: ({ className, ...props }: MDXProps) => (
       <ul
-        className={cn(
-          "mt-6 mb-6 ml-6 list-disc marker:text-zinc-500 [&>li]:mt-2",
-          className,
-        )}
+        className={cn("mt-6 mb-6 ml-6 list-disc marker:text-zinc-500 [&>li]:mt-2", className)}
         {...props}
       />
     ),
     ol: ({ className, ...props }: MDXProps) => (
       <ol
-        className={cn(
-          "mt-6 mb-6 ml-6 list-decimal marker:text-zinc-500 [&>li]:mt-2",
-          className,
-        )}
+        className={cn("mt-6 mb-6 ml-6 list-decimal marker:text-zinc-500 [&>li]:mt-2", className)}
         {...props}
       />
     ),
@@ -92,10 +68,7 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
       />
     ),
     hr: ({ className, ...props }: MDXProps) => (
-      <hr
-        className={cn("my-8 border-zinc-200 dark:border-zinc-800", className)}
-        {...props}
-      />
+      <hr className={cn("my-8 border-zinc-200 dark:border-zinc-800", className)} {...props} />
     ),
     table: ({ className, ...props }: MDXProps) => (
       <div className="my-6 w-full overflow-y-auto">

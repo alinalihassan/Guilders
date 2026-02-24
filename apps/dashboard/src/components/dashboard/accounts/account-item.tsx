@@ -1,9 +1,11 @@
-import { ChangeBadge } from "@/components/common/change-badge";
 import type { Account } from "@guilders/api/types";
 import NumberFlow from "@number-flow/react";
 import { TriangleAlert } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+
+import { ChangeBadge } from "@/components/common/change-badge";
+
 import { AccountIcon } from "./account-icon";
 
 interface AccountItemProps {
@@ -13,6 +15,8 @@ interface AccountItemProps {
 export function AccountItem({ account }: AccountItemProps) {
   const router = useRouter();
   const [imageError, setImageError] = useState(false);
+  const accountValue = Number(account.value);
+  const accountCost = Number(account.cost ?? 0);
 
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -20,9 +24,7 @@ export function AccountItem({ account }: AccountItemProps) {
   };
 
   const changePercentage =
-    account.cost !== null
-      ? ((account.value - account.cost) / account.cost) * 100
-      : 0;
+    account.cost !== null ? ((accountValue - accountCost) / accountCost) * 100 : 0;
 
   return (
     <div
@@ -50,7 +52,7 @@ export function AccountItem({ account }: AccountItemProps) {
       <div className="flex items-center gap-4">
         <p className="font-medium">
           <NumberFlow
-            value={account.value}
+            value={accountValue}
             format={{
               style: "currency",
               currency: account.currency,
@@ -59,7 +61,7 @@ export function AccountItem({ account }: AccountItemProps) {
         </p>
         <ChangeBadge
           change={{
-            value: account.cost !== null ? account.value - account.cost : 0,
+            value: account.cost !== null ? accountValue - accountCost : 0,
             percentage: changePercentage,
             currency: account.currency,
           }}

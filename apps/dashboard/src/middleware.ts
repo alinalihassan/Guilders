@@ -22,10 +22,7 @@ export async function middleware(request: NextRequest) {
   // Not authenticated
   if (!user && !authPage && !callbackPage) {
     const url = new URL("/login", request.url);
-    url.searchParams.set(
-      "redirect",
-      `${request.nextUrl.pathname}${request.nextUrl.search}`,
-    );
+    url.searchParams.set("redirect", `${request.nextUrl.pathname}${request.nextUrl.search}`);
 
     return NextResponse.redirect(url);
   }

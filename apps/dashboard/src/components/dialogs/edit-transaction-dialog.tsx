@@ -1,12 +1,17 @@
 "use client";
 
-import { useDialog } from "@/lib/hooks/useDialog";
-import { useAccounts } from "@/lib/queries/useAccounts";
-import { useFiles } from "@/lib/queries/useFiles";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader2, Trash2 } from "lucide-react";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+
 import {
-  useRemoveTransaction,
-  useUpdateTransaction,
-} from "@/lib/queries/useTransactions";
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -26,20 +31,14 @@ import {
 } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2, Trash2 } from "lucide-react";
-import { useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
+import { useDialog } from "@/lib/hooks/useDialog";
+import { useAccounts } from "@/lib/queries/useAccounts";
+import { useFiles } from "@/lib/queries/useFiles";
+import { useRemoveTransaction, useUpdateTransaction } from "@/lib/queries/useTransactions";
+
 import { DateTimePicker } from "../common/datetime-picker";
 import { FileUploader } from "../common/file-uploader";
 import { AccountIcon } from "../dashboard/accounts/account-icon";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 
 const formSchema = z.object({
   accountId: z.number({
@@ -68,19 +67,15 @@ function formatDateForSubmit(dateString: string) {
 
 export function EditTransactionDialog() {
   const { isOpen, data, close } = useDialog("editTransaction");
-  const { mutate: updateTransaction, isPending: isUpdating } =
-    useUpdateTransaction();
-  const { mutate: deleteTransaction, isPending: isDeleting } =
-    useRemoveTransaction();
+  const { mutate: updateTransaction, isPending: isUpdating } = useUpdateTransaction();
+  const { mutate: deleteTransaction, isPending: isDeleting } = useRemoveTransaction();
   const { data: accounts } = useAccounts();
   const { uploadFile, deleteFile, getSignedUrl, isUploading } = useFiles({
     entityType: "transaction",
     entityId: data?.transaction?.id ?? 0,
   });
 
-  const currentAccount = accounts?.find(
-    (account) => account.id === data?.transaction?.account_id,
-  );
+  const currentAccount = accounts?.find((account) => account.id === data?.transaction?.account_id);
 
   const form = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
@@ -89,9 +84,7 @@ export function EditTransactionDialog() {
       amount: data?.transaction?.amount.toString() ?? "",
       description: data?.transaction?.description ?? "",
       category: data?.transaction?.category ?? "",
-      date: data?.transaction?.date
-        ? formatDateForInput(data.transaction.date)
-        : "",
+      date: data?.transaction?.date ? formatDateForInput(data.transaction.date) : "",
       documents: [],
     },
   });
@@ -185,8 +178,7 @@ export function EditTransactionDialog() {
               <div className="space-y-4 pb-8">
                 {isSyncedTransaction && (
                   <div className="text-sm text-muted-foreground bg-muted p-4 rounded-md">
-                    This transaction is managed by an external connection. It
-                    cannot be edited.
+                    This transaction is managed by an external connection. It cannot be edited.
                   </div>
                 )}
 
@@ -198,31 +190,23 @@ export function EditTransactionDialog() {
                       <FormItem>
                         <FormLabel>Account</FormLabel>
                         <Select
-                          onValueChange={(value) =>
-                            field.onChange(Number.parseInt(value))
-                          }
+                          onValueChange={(value) => field.onChange(Number.parseInt(value))}
                           defaultValue={field.value?.toString()}
                           disabled={isSyncedTransaction}
                         >
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue>
-                                {currentAccount?.name ?? "Select account"}
-                              </SelectValue>
+                              <SelectValue>{currentAccount?.name ?? "Select account"}</SelectValue>
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
                             {accounts?.map((account) => {
-                              const isConnected =
-                                !!account.institution_connection_id;
+                              const isConnected = !!account.institution_connection_id;
                               return (
                                 <SelectItem
                                   key={account.id}
                                   value={account.id.toString()}
-                                  disabled={
-                                    isConnected &&
-                                    account.id !== currentAccount?.id
-                                  }
+                                  disabled={isConnected && account.id !== currentAccount?.id}
                                 >
                                   {account.name}
                                   {isConnected && " (Connected)"}
@@ -346,13 +330,11 @@ export function EditTransactionDialog() {
                                 }}
                                 onUpload={uploadFile}
                                 disabled={isUploading}
-                                documents={data?.transaction?.documents?.map(
-                                  (id) => ({
-                                    id: Number(id),
-                                    name: `Document ${id}`,
-                                    path: "",
-                                  }),
-                                )}
+                                documents={data?.transaction?.documents?.map((id) => ({
+                                  id: Number(id),
+                                  name: `Document ${id}`,
+                                  path: "",
+                                }))}
                                 onRemoveExisting={deleteFile}
                                 onView={getSignedUrl}
                               />
@@ -369,8 +351,8 @@ export function EditTransactionDialog() {
                     <AccordionContent>
                       <div className="space-y-4">
                         <p className="text-sm text-muted-foreground">
-                          Deleting this transaction will permanently remove it.
-                          This action cannot be undone.
+                          Deleting this transaction will permanently remove it. This action cannot
+                          be undone.
                         </p>
                         <Tooltip>
                           <TooltipTrigger asChild>
@@ -398,8 +380,7 @@ export function EditTransactionDialog() {
                           </TooltipTrigger>
                           {isSyncedTransaction && (
                             <TooltipContent>
-                              Synced transactions cannot be deleted. Remove the
-                              connection instead.
+                              Synced transactions cannot be deleted. Remove the connection instead.
                             </TooltipContent>
                           )}
                         </Tooltip>
@@ -410,10 +391,7 @@ export function EditTransactionDialog() {
               </div>
 
               <div className="absolute bottom-0 left-0 right-0 flex justify-end p-4 bg-background border-t">
-                <Button
-                  type="submit"
-                  disabled={isUpdating || isDeleting || isSyncedTransaction}
-                >
+                <Button type="submit" disabled={isUpdating || isDeleting || isSyncedTransaction}>
                   {isUpdating ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />

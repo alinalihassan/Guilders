@@ -7,8 +7,10 @@
     "build": "next build",
     "start": "next start",
     "clean": "git clean -xdf .next .turbo node_modules",
-    "lint": "biome check .",
-    "format": "biome check --write .",
+    "lint": "oxlint .",
+    "lint:fix": "oxlint --fix .",
+    "format": "oxfmt --write .",
+    "format:check": "oxfmt --check .",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

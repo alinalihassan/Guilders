@@ -1,4 +1,5 @@
 import { Elysia, status, t } from "elysia";
+
 import { selectProviderSchema } from "../../db/schema/providers";
 import { db } from "../../lib/db";
 import { authPlugin } from "../../middleware/auth";
@@ -10,7 +11,7 @@ export const providerRoutes = new Elysia({
   detail: {
     tags: ["Providers"],
     security: [{ bearerAuth: [] }],
-  }
+  },
 })
   .use(authPlugin)
   .model({
@@ -47,7 +48,7 @@ export const providerRoutes = new Elysia({
       auth: true,
       params: providerIdParamSchema,
       response: {
-        200: 'Provider',
+        200: "Provider",
         404: errorSchema,
       },
       detail: {

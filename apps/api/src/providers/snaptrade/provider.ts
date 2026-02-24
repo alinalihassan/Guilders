@@ -43,9 +43,7 @@ function getErrorMessage(error: unknown, fallback: string): string {
       typeof (responseData as { message?: unknown }).message === "string"
     ) {
       const message = (responseData as { message: string }).message;
-      return status
-        ? `SnapTrade error ${status}: ${message}`
-        : `SnapTrade error: ${message}`;
+      return status ? `SnapTrade error ${status}: ${message}` : `SnapTrade error: ${message}`;
     }
 
     if (maybeError.message) return maybeError.message;
@@ -140,8 +138,7 @@ export class SnapTradeProvider implements IProvider {
       const providerRecord = await db.query.provider.findFirst({
         where: { name: this.name },
       });
-      if (!providerRecord)
-        return { success: false, error: "Provider not found" };
+      if (!providerRecord) return { success: false, error: "Provider not found" };
 
       const providerConn = await db.query.providerConnection.findFirst({
         where: {
@@ -157,8 +154,7 @@ export class SnapTradeProvider implements IProvider {
         if (!registerResult.success || !registerResult.data?.userSecret) {
           return {
             success: false,
-            error:
-              registerResult.error || "Failed to register user with provider",
+            error: registerResult.error || "Failed to register user with provider",
           };
         }
 
@@ -194,11 +190,7 @@ export class SnapTradeProvider implements IProvider {
         reconnect: params.connectionId,
       });
 
-      if (
-        !response.data ||
-        !("redirectURI" in response.data) ||
-        !response.data.redirectURI
-      ) {
+      if (!response.data || !("redirectURI" in response.data) || !response.data.redirectURI) {
         return { success: false, error: "Failed to generate redirect URL" };
       }
 
@@ -227,9 +219,7 @@ export class SnapTradeProvider implements IProvider {
     return this.connect(params);
   }
 
-  async refreshConnection(
-    connectionId: string,
-  ): Promise<RefreshConnectionResult> {
+  async refreshConnection(connectionId: string): Promise<RefreshConnectionResult> {
     const client = getSnapTradeClient();
 
     try {
@@ -258,10 +248,7 @@ export class SnapTradeProvider implements IProvider {
 
       return { success: true };
     } catch (error) {
-      const message = getErrorMessage(
-        error,
-        "Failed to refresh SnapTrade connection",
-      );
+      const message = getErrorMessage(error, "Failed to refresh SnapTrade connection");
       console.error("[SnapTrade] refreshConnection failed", {
         connectionId,
         message,
@@ -277,9 +264,7 @@ export class SnapTradeProvider implements IProvider {
     throw new Error("Not implemented");
   }
 
-  async getTransactions(
-    _params: TransactionParams,
-  ): Promise<InsertTransaction[]> {
+  async getTransactions(_params: TransactionParams): Promise<InsertTransaction[]> {
     throw new Error("Not implemented");
   }
 }

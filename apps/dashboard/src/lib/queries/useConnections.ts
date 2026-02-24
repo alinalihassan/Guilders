@@ -1,7 +1,8 @@
-import { getApiClient } from "@/lib/api";
 import type { ConnectionResponse } from "@guilders/api/types";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
+
+import { getApiClient } from "@/lib/api";
 
 // Connection endpoints are not implemented in the new backend yet.
 // These mutations will fail gracefully with a toast message.

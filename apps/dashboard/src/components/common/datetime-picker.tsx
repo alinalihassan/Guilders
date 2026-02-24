@@ -1,8 +1,11 @@
 "use client";
 
+import { format } from "date-fns";
+import { Calendar as CalendarIcon } from "lucide-react";
+import { useEffect, useState } from "react";
+
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import { cn } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -12,9 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { format } from "date-fns";
-import { Calendar as CalendarIcon } from "lucide-react";
-import { useEffect, useState } from "react";
+import { cn } from "@/lib/utils";
 
 interface DateTimePickerProps {
   date: Date | undefined;
@@ -22,11 +23,7 @@ interface DateTimePickerProps {
   onTimeChange: (time: string) => void;
 }
 
-export function DateTimePicker({
-  date,
-  onDateChange,
-  onTimeChange,
-}: DateTimePickerProps) {
+export function DateTimePicker({ date, onDateChange, onTimeChange }: DateTimePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const now = new Date();
   const defaultTimeString = `${now.getHours().toString().padStart(2, "0")}:${now
@@ -42,24 +39,18 @@ export function DateTimePicker({
     if (!date) {
       const initialDate = new Date();
       const [hours, minutes] = defaultTimeString.split(":");
-      initialDate.setHours(
-        Number.parseInt(hours || "0"),
-        Number.parseInt(minutes || "0"),
-      );
+      initialDate.setHours(Number.parseInt(hours || "0"), Number.parseInt(minutes || "0"));
       onDateChange(initialDate);
       onTimeChange(defaultTimeString);
     }
-  }, []);
+  }, [date, defaultTimeString, onDateChange, onTimeChange]);
 
   // Update time when date changes
   useEffect(() => {
     if (date && time) {
       const [hours, minutes] = time.split(":");
       const newDate = new Date(date);
-      newDate.setHours(
-        Number.parseInt(hours || "0"),
-        Number.parseInt(minutes || "0"),
-      );
+      newDate.setHours(Number.parseInt(hours || "0"), Number.parseInt(minutes || "0"));
       onDateChange(newDate);
     }
   }, [time, date, onDateChange]);

@@ -1,7 +1,4 @@
-import type {
-  SaltEdgeCallbackStage,
-  SaltEdgeWebhookEvent,
-} from "../queues/types";
+import type { SaltEdgeCallbackStage, SaltEdgeWebhookEvent } from "../queues/types";
 
 type SaltEdgeCallbackBody = {
   data: {
@@ -36,9 +33,7 @@ export async function handleSaltEdgeCallback(
   }
 
   if (callbackType === "notify") {
-    console.log(
-      `SaltEdge notify: connection=${body.data.connection_id} stage=${body.data.stage}`,
-    );
+    console.log(`SaltEdge notify: connection=${body.data.connection_id} stage=${body.data.stage}`);
     return Response.json({ received: true });
   }
 

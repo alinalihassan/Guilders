@@ -47,18 +47,9 @@ function mapNatureToSubtype(
     AccountSubtypeEnum.depository) as (typeof AccountSubtypeEnum)[keyof typeof AccountSubtypeEnum];
 }
 
-function mapNatureToType(
-  nature: string,
-): (typeof AccountTypeEnum)[keyof typeof AccountTypeEnum] {
-  const liabilityNatures = new Set([
-    "credit_card",
-    "credit",
-    "loan",
-    "mortgage",
-  ]);
-  return liabilityNatures.has(nature)
-    ? AccountTypeEnum.liability
-    : AccountTypeEnum.asset;
+function mapNatureToType(nature: string): (typeof AccountTypeEnum)[keyof typeof AccountTypeEnum] {
+  const liabilityNatures = new Set(["credit_card", "credit", "loan", "mortgage"]);
+  return liabilityNatures.has(nature) ? AccountTypeEnum.liability : AccountTypeEnum.asset;
 }
 
 function mapSaltEdgeAccount(
@@ -107,8 +98,7 @@ export class SaltEdgeProvider implements IProvider {
         },
       };
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Unknown error";
+      const message = error instanceof Error ? error.message : "Unknown error";
       if (message.includes("DuplicatedCustomer")) {
         return {
           success: true,
@@ -148,16 +138,14 @@ export class SaltEdgeProvider implements IProvider {
           provider_id: providerRecord.id,
         },
       });
-      if (!providerConn)
-        throw new Error("No SaltEdge provider connection for user");
+      if (!providerConn) throw new Error("No SaltEdge provider connection for user");
 
       const inst = await db.query.institution.findFirst({
         where: { id: params.institutionId },
       });
       if (!inst) throw new Error("Institution not found");
 
-      if (!providerConn.secret)
-        throw new Error("Provider connection missing SaltEdge customer ID");
+      if (!providerConn.secret) throw new Error("Provider connection missing SaltEdge customer ID");
 
       const result = await client.createConnection(config, {
         customer_id: providerConn.secret,
@@ -183,14 +171,11 @@ export class SaltEdgeProvider implements IProvider {
   async reconnect(params: ConnectionParams): Promise<ConnectResult> {
     const config = getSaltEdgeConfig();
     try {
-      if (!params.connectionId)
-        throw new Error("connectionId required for reconnect");
+      if (!params.connectionId) throw new Error("connectionId required for reconnect");
 
-      const result = await client.reconnectConnection(
-        config,
-        params.connectionId,
-        { consent_scopes: ["accounts", "transactions"] },
-      );
+      const result = await client.reconnectConnection(config, params.connectionId, {
+        consent_scopes: ["accounts", "transactions"],
+      });
 
       return {
         success: true,
@@ -207,9 +192,7 @@ export class SaltEdgeProvider implements IProvider {
     }
   }
 
-  async refreshConnection(
-    connectionId: string,
-  ): Promise<RefreshConnectionResult> {
+  async refreshConnection(connectionId: string): Promise<RefreshConnectionResult> {
     const config = getSaltEdgeConfig();
     try {
       await client.refreshConnection(config, connectionId);
@@ -231,19 +214,12 @@ export class SaltEdgeProvider implements IProvider {
     });
     if (!instConn?.connection_id) throw new Error("Connection not found");
 
-    const accounts = await client.listAllAccounts(
-      config,
-      instConn.connection_id,
-    );
+    const accounts = await client.listAllAccounts(config, instConn.connection_id);
 
-    return accounts.map((a) =>
-      mapSaltEdgeAccount(a, params.userId, params.connectionId),
-    );
+    return accounts.map((a) => mapSaltEdgeAccount(a, params.userId, params.connectionId));
   }
 
-  async getTransactions(
-    params: TransactionParams,
-  ): Promise<InsertTransaction[]> {
+  async getTransactions(params: TransactionParams): Promise<InsertTransaction[]> {
     const config = getSaltEdgeConfig();
     const { db } = await import("../../lib/db");
 

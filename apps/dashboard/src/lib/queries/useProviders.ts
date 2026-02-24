@@ -1,10 +1,12 @@
-import { getApiClient } from "@/lib/api";
 import { useQuery } from "@tanstack/react-query";
+import type { Provider } from "@guilders/api/types";
+
+import { getApiClient } from "@/lib/api";
 
 const queryKey = ["providers"] as const;
 
 export function useProviders() {
-  return useQuery({
+  return useQuery<Provider[], Error>({
     queryKey,
     queryFn: async () => {
       const api = await getApiClient();
@@ -18,7 +20,7 @@ export function useProviders() {
         throw new Error(errorData.error || "Failed to fetch providers");
       }
       const data = await response.json();
-      return data ?? [];
+      return (data ?? []) as Provider[];
     },
   });
 }

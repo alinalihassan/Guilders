@@ -1,14 +1,15 @@
 "use client";
 
-import { useUpdateUserSettings } from "@/lib/queries/useUser";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useUpdateUserSettings } from "@/lib/queries/useUser";
 
 const passwordSchema = z
   .object({
@@ -59,14 +60,9 @@ export default function OnboardingPage() {
         </div>
 
         <h1 className="text-2xl font-bold text-center">Welcome to Guilders!</h1>
-        <p className="text-muted-foreground text-center">
-          Please set your password to continue
-        </p>
+        <p className="text-muted-foreground text-center">Please set your password to continue</p>
 
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          className="flex flex-col gap-4 mt-4"
-        >
+        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4 mt-4">
           <div className="grid gap-4">
             <div className="grid w-full items-center gap-1.5">
               <Label htmlFor="password">Password</Label>
@@ -78,9 +74,7 @@ export default function OnboardingPage() {
                 {...register("password")}
               />
               {errors.password && (
-                <p className="text-sm text-destructive">
-                  {errors.password.message}
-                </p>
+                <p className="text-sm text-destructive">{errors.password.message}</p>
               )}
             </div>
 
@@ -94,9 +88,7 @@ export default function OnboardingPage() {
                 {...register("confirmPassword")}
               />
               {errors.confirmPassword && (
-                <p className="text-sm text-destructive">
-                  {errors.confirmPassword.message}
-                </p>
+                <p className="text-sm text-destructive">{errors.confirmPassword.message}</p>
               )}
             </div>
 

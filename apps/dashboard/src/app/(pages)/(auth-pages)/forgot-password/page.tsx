@@ -1,11 +1,12 @@
 "use client";
 
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { SubmitButton } from "@/components/ui/submit-button";
 import Image from "next/image";
 import Link from "next/link";
 import { toast } from "sonner";
+
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { SubmitButton } from "@/components/ui/submit-button";
 
 export default function ForgotPassword() {
   const handleSubmit = async (formData: FormData) => {
@@ -14,9 +15,7 @@ export default function ForgotPassword() {
       toast.error("Email is required");
       return;
     }
-    toast.message(
-      "Password reset email is temporarily unavailable during migration.",
-    );
+    toast.message("Password reset email is temporarily unavailable during migration.");
   };
 
   return (
@@ -41,28 +40,17 @@ export default function ForgotPassword() {
           <div className="grid gap-4">
             <div className="grid w-full items-center gap-1.5">
               <Label htmlFor="email">Email</Label>
-              <Input
-                name="email"
-                type="email"
-                placeholder="john@doe.com"
-                required
-              />
+              <Input name="email" type="email" placeholder="john@doe.com" required />
             </div>
 
-            <SubmitButton
-              className="mt-2 w-full"
-              pendingText="Sending Reset Link..."
-            >
+            <SubmitButton className="mt-2 w-full" pendingText="Sending Reset Link...">
               Send Reset Link
             </SubmitButton>
           </div>
 
           <div className="flex justify-center gap-1 text-sm text-muted-foreground">
             <p>Remember your password?</p>
-            <Link
-              href="/login"
-              className="font-medium text-primary hover:underline"
-            >
+            <Link href="/login" className="font-medium text-primary hover:underline">
               Sign in
             </Link>
           </div>

@@ -1,12 +1,13 @@
 "use client";
 
-import { convertToUserCurrency } from "@/lib/utils/financial";
 import type { Transaction } from "@guilders/api/types";
+import { useMemo } from "react";
+import { Layer, Rectangle, Sankey } from "recharts";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { type ChartConfig, ChartContainer } from "@/components/ui/chart";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useMemo } from "react";
-import { Layer, Rectangle, Sankey } from "recharts";
+import { convertToUserCurrency } from "@/lib/utils/financial";
 
 interface TransactionsSankeyProps {
   transactions: Transaction[] | undefined;
@@ -37,18 +38,9 @@ function toFiniteNumber(value: unknown): number {
   return Number.isFinite(numberValue) ? numberValue : 0;
 }
 
-function convertAmountSafely(
-  amount: unknown,
-  fromCurrency: string,
-  userCurrency: string,
-): number {
+function convertAmountSafely(amount: unknown, fromCurrency: string, userCurrency: string): number {
   const normalizedAmount = toFiniteNumber(amount);
-  const convertedAmount = convertToUserCurrency(
-    normalizedAmount,
-    fromCurrency,
-    [],
-    userCurrency,
-  );
+  const convertedAmount = convertToUserCurrency(normalizedAmount, fromCurrency, [], userCurrency);
   return Number.isFinite(convertedAmount) ? convertedAmount : 0;
 }
 
@@ -141,16 +133,7 @@ const chartConfig: ChartConfig = {
 };
 
 // Custom node component with theme support
-function CustomNode({
-  x,
-  y,
-  width,
-  height,
-  index,
-  payload,
-  userCurrency,
-  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-}: any) {
+function CustomNode({ x, y, width, height, index, payload, userCurrency }: any) {
   if (![x, y, width, height].every(Number.isFinite)) return null;
 
   const nodeName = String(payload?.name ?? "");
@@ -162,9 +145,7 @@ function CustomNode({
     maximumFractionDigits: 0,
   }).format(Math.round(nodeValue));
 
-  const categoryName = nodeName
-    .replace(/ \(Income\)$/, "")
-    .replace(/ \(Expense\)$/, "");
+  const categoryName = nodeName.replace(/ \(Income\)$/, "").replace(/ \(Expense\)$/, "");
 
   return (
     <Layer key={`CustomNode${index}`}>
@@ -208,7 +189,6 @@ function CustomLink({
   targetControlX,
   linkWidth,
   payload,
-  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
 }: any) {
   const flowIndex = payload.flowIndex;
 
@@ -243,11 +223,7 @@ export function TransactionsSankey({
     const normalizedTransactions = transactions.map((transaction) => {
       const amount = toFiniteNumber(transaction.amount);
       const category = transaction.category || "uncategorized";
-      const convertedAmount = convertAmountSafely(
-        amount,
-        transaction.currency,
-        userCurrency,
-      );
+      const convertedAmount = convertAmountSafely(amount, transaction.currency, userCurrency);
 
       return {
         amount,
@@ -297,9 +273,7 @@ export function TransactionsSankey({
     ];
 
     // Create indices maps
-    const incomeIndices = new Map(
-      incomeArray.map((cat, index) => [cat, index]),
-    );
+    const incomeIndices = new Map(incomeArray.map((cat, index) => [cat, index]));
     const incomeNodeIndex = incomeArray.length; // Index of the central "Income" node
     const expenseIndices = new Map(
       expenseArray.map((cat, index) => [cat, index + incomeArray.length + 1]),

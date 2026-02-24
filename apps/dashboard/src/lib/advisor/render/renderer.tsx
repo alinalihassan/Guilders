@@ -1,6 +1,5 @@
 "use client";
 
-import type { ReactNode } from "react";
 import {
   ActionProvider,
   Renderer,
@@ -8,6 +7,8 @@ import {
   StateProvider,
   VisibilityProvider,
 } from "@json-render/react";
+import type { ReactNode } from "react";
+
 import { registry } from "./registry";
 
 interface AdvisorJsonRendererProps {
@@ -15,10 +16,7 @@ interface AdvisorJsonRendererProps {
   loading?: boolean;
 }
 
-export function AdvisorJsonRenderer({
-  spec,
-  loading,
-}: AdvisorJsonRendererProps): ReactNode {
+export function AdvisorJsonRenderer({ spec, loading }: AdvisorJsonRendererProps): ReactNode {
   if (!spec) return null;
 
   return (

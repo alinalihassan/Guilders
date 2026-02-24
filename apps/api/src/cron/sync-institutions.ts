@@ -1,4 +1,5 @@
 import { sql } from "drizzle-orm";
+
 import { institution } from "../db/schema/institutions";
 import { db } from "../lib/db";
 import { SnapTradeProvider } from "../providers/snaptrade/provider";
@@ -19,9 +20,7 @@ export async function syncInstitutions() {
     try {
       const providerRecord = providers.find((p) => p.name === adapter.name);
       if (!providerRecord) {
-        console.error(
-          `Provider "${adapter.name}" not found in database, skipping`,
-        );
+        console.error(`Provider "${adapter.name}" not found in database, skipping`);
         continue;
       }
 
@@ -43,10 +42,7 @@ export async function syncInstitutions() {
           .insert(institution)
           .values(rows)
           .onConflictDoUpdate({
-            target: [
-              institution.provider_id,
-              institution.provider_institution_id,
-            ],
+            target: [institution.provider_id, institution.provider_institution_id],
             set: {
               name: sql`excluded.name`,
               logo_url: sql`excluded.logo_url`,
@@ -56,14 +52,9 @@ export async function syncInstitutions() {
           });
       }
 
-      console.log(
-        `Synced ${institutions.length} institutions for ${adapter.name}`,
-      );
+      console.log(`Synced ${institutions.length} institutions for ${adapter.name}`);
     } catch (error) {
-      console.error(
-        `Failed to sync institutions for ${adapter.name}:`,
-        error,
-      );
+      console.error(`Failed to sync institutions for ${adapter.name}:`, error);
     }
   }
 }

@@ -1,9 +1,7 @@
-import { getApiClient } from "@/lib/api";
-import type {
-  CreateDocumentResponse,
-  DocumentEntityType,
-} from "@guilders/api/types";
+import type { CreateDocumentResponse, DocumentEntityType } from "@guilders/api/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+
+import { getApiClient } from "@/lib/api";
 
 interface UseFilesOptions {
   entityType: DocumentEntityType;

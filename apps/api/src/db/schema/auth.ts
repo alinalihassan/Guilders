@@ -1,11 +1,4 @@
-import {
-  boolean,
-  index,
-  integer,
-  pgTable,
-  text,
-  timestamp,
-} from "drizzle-orm/pg-core";
+import { boolean, index, integer, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
@@ -105,10 +98,7 @@ export const apikey = pgTable(
     permissions: text("permissions"),
     metadata: text("metadata"),
   },
-  (table) => [
-    index("apikey_key_idx").on(table.key),
-    index("apikey_userId_idx").on(table.userId),
-  ],
+  (table) => [index("apikey_key_idx").on(table.key), index("apikey_userId_idx").on(table.userId)],
 );
 
 export const twoFactor = pgTable(

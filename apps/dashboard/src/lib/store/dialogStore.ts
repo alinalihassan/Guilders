@@ -1,4 +1,5 @@
 import type { Account, Institution, Transaction } from "@guilders/api/types";
+
 import type { StateSlice } from ".";
 
 export type DialogState =
@@ -57,10 +58,7 @@ export type DialogActions = {
   updateDialog: (dialog: DialogState) => void;
 };
 
-export const createDialogStore: StateSlice<DialogsState & DialogActions> = (
-  set,
-  get,
-) => ({
+export const createDialogStore: StateSlice<DialogsState & DialogActions> = (set, get) => ({
   dialogs: [],
   openDialog: (dialog) =>
     set((state) => ({
@@ -75,8 +73,6 @@ export const createDialogStore: StateSlice<DialogsState & DialogActions> = (
     })),
   updateDialog: (dialog) =>
     set((state) => ({
-      dialogs: state.dialogs.map((d) =>
-        d.type === dialog.type ? { ...dialog, isOpen: true } : d,
-      ),
+      dialogs: state.dialogs.map((d) => (d.type === dialog.type ? { ...dialog, isOpen: true } : d)),
     })),
 });

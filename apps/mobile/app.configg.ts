@@ -28,18 +28,21 @@ const config: ExpoConfig = {
     output: "static",
     favicon: "./assets/images/favicon.png",
   },
-  plugins: ["expo-router",
+  plugins: [
+    "expo-router",
     [
-      "expo-splash-screen", {
+      "expo-splash-screen",
+      {
         backgroundColor: "#208AEF",
         android: {
           image: "./assets/images/splash-icon.png",
           imageWidth: 76,
         },
-      }
+      },
     ],
     [
-      "expo-build-properties", {
+      "expo-build-properties",
+      {
         buildReactNativeFromSource: true,
         useHermesV1: true,
       },

@@ -10,9 +10,7 @@ export function ChangeBadge({
 }) {
   const isPositive = change.value >= 0;
   const absValue = Math.abs(change.value);
-  const absPercentage = Math.abs(
-    Number.isFinite(change.percentage) ? change.percentage : 0,
-  );
+  const absPercentage = Math.abs(Number.isFinite(change.percentage) ? change.percentage : 0);
 
   return (
     <span

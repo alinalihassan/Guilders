@@ -1,0 +1,16 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "ignorePatterns": [
+    ".agents/**",
+    "**/.next/**",
+    "**/.turbo/**",
+    "**/.expo/**",
+    "**/coverage/**",
+    "**/dist/**",
+    "**/build/**",
+    "apps/api/drizzle/**"
+  ],
+  "sortImports": {},
+  "sortTailwindcss": {},
+  "sortPackageJson": true
+}

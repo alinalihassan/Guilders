@@ -1,10 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
+import type { Country } from "@guilders/api/types";
+
 import { getApiClient } from "../api";
 
 const queryKey = ["countries"] as const;
 
 export function useCountries() {
-  return useQuery({
+  return useQuery<Country[], Error>({
     queryKey,
     queryFn: async () => {
       const api = await getApiClient();
@@ -14,7 +16,7 @@ export function useCountries() {
         throw new Error(errorData.error || "Failed to fetch countries");
       }
       const data = await response.json();
-      return data;
+      return data as Country[];
     },
   });
 }
@@ -31,7 +33,7 @@ export function useCountriesMap() {
 }
 
 export function useCountry(code: string) {
-  return useQuery({
+  return useQuery<Country, Error>({
     queryKey: [...queryKey, code],
     queryFn: async () => {
       const api = await getApiClient();
@@ -41,7 +43,7 @@ export function useCountry(code: string) {
         throw new Error(errorData.error || "Failed to fetch country");
       }
       const data = await response.json();
-      return data;
+      return data as Country;
     },
   });
 }

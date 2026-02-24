@@ -1,6 +1,7 @@
 import type { Transaction, TransactionInsert } from "@guilders/api/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+
 import { getApiClient } from "../api";
 import { queryKey as accountQueryKey } from "./useAccounts";
 
@@ -62,15 +63,12 @@ export function useAddTransaction() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(
-          data?.error || `Error: ${response.status} ${response.statusText}`,
-        );
+        throw new Error(data?.error || `Error: ${response.status} ${response.statusText}`);
       }
       return {
         ...(data as ApiTransaction),
         account_id:
-          (data as ApiTransaction).account_id ??
-          (transaction as ApiTransaction).account_id,
+          (data as ApiTransaction).account_id ?? (transaction as ApiTransaction).account_id,
       };
     },
     onError: (error) => {
@@ -79,10 +77,7 @@ export function useAddTransaction() {
       });
     },
     onSuccess: (newTransaction) => {
-      queryClient.setQueryData<Transaction[]>(queryKey, (old = []) => [
-        ...old,
-        newTransaction,
-      ]);
+      queryClient.setQueryData<Transaction[]>(queryKey, (old = []) => [...old, newTransaction]);
       queryClient.invalidateQueries({
         queryKey: [...accountQueryKey, newTransaction.account_id],
       });
@@ -97,63 +92,53 @@ export function useAddTransaction() {
 
 export function useUpdateTransaction() {
   const queryClient = useQueryClient();
-  return useMutation<
-    Transaction,
-    Error,
-    { transactionId: number; transaction: TransactionInsert }
-  >({
-    mutationFn: async ({
-      transactionId,
-      transaction,
-    }): Promise<Transaction> => {
-      const api = await getApiClient();
-      const response = await api.transactions[":id"].$put({
-        param: {
-          id: transactionId.toString(),
-        },
-        json: {
-          ...transaction,
-          account_id: (transaction as ApiTransaction).account_id,
-        },
-      });
-      const data = await response.json();
+  return useMutation<Transaction, Error, { transactionId: number; transaction: TransactionInsert }>(
+    {
+      mutationFn: async ({ transactionId, transaction }): Promise<Transaction> => {
+        const api = await getApiClient();
+        const response = await api.transactions[":id"].$put({
+          param: {
+            id: transactionId.toString(),
+          },
+          json: {
+            ...transaction,
+            account_id: (transaction as ApiTransaction).account_id,
+          },
+        });
+        const data = await response.json();
 
-      if (!response.ok) {
-        throw new Error(
-          data?.error || `Error: ${response.status} ${response.statusText}`,
+        if (!response.ok) {
+          throw new Error(data?.error || `Error: ${response.status} ${response.statusText}`);
+        }
+        return {
+          ...(data as ApiTransaction),
+          account_id:
+            (data as ApiTransaction).account_id ?? (transaction as ApiTransaction).account_id,
+        };
+      },
+      onError: (error) => {
+        toast.error("Failed to update transaction", {
+          description: error.message || "Please try again later",
+        });
+      },
+      onSuccess: (updatedTransaction) => {
+        queryClient.setQueryData<Transaction[]>(queryKey, (old = []) =>
+          old.map((transaction) =>
+            transaction.id === updatedTransaction.id ? updatedTransaction : transaction,
+          ),
         );
-      }
-      return {
-        ...(data as ApiTransaction),
-        account_id:
-          (data as ApiTransaction).account_id ??
-          (transaction as ApiTransaction).account_id,
-      };
-    },
-    onError: (error) => {
-      toast.error("Failed to update transaction", {
-        description: error.message || "Please try again later",
-      });
-    },
-    onSuccess: (updatedTransaction) => {
-      queryClient.setQueryData<Transaction[]>(queryKey, (old = []) =>
-        old.map((transaction) =>
-          transaction.id === updatedTransaction.id
-            ? updatedTransaction
-            : transaction,
-        ),
-      );
 
-      queryClient.invalidateQueries({
-        queryKey: [...accountQueryKey, updatedTransaction.account_id],
-      });
-      queryClient.invalidateQueries({
-        queryKey: accountQueryKey,
-      });
+        queryClient.invalidateQueries({
+          queryKey: [...accountQueryKey, updatedTransaction.account_id],
+        });
+        queryClient.invalidateQueries({
+          queryKey: accountQueryKey,
+        });
 
-      toast.success("Transaction updated");
+        toast.success("Transaction updated");
+      },
     },
-  });
+  );
 }
 
 export function useRemoveTransaction() {
@@ -169,9 +154,7 @@ export function useRemoveTransaction() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(
-          data?.error || `Error: ${response.status} ${response.statusText}`,
-        );
+        throw new Error(data?.error || `Error: ${response.status} ${response.statusText}`);
       }
 
       return transaction.id;

@@ -1,11 +1,12 @@
 "use client";
 
-import { bottomNavigation, mainNavigation } from "@/lib/config/navigation";
-import { useDialog } from "@/lib/hooks/useDialog";
-import { useCountriesMap } from "@/lib/queries/useCountries";
-import { useInstitutions } from "@/lib/queries/useInstitutions";
-import { useProviders } from "@/lib/queries/useProviders";
 import type { Institution } from "@guilders/api/types";
+import { CommandLoading } from "cmdk";
+import { Banknote, Landmark, Link2, SquarePen } from "lucide-react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
+
 import {
   CommandDialog,
   CommandEmpty,
@@ -14,11 +15,11 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { CommandLoading } from "cmdk";
-import { Banknote, Landmark, Link2, SquarePen } from "lucide-react";
-import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { bottomNavigation, mainNavigation } from "@/lib/config/navigation";
+import { useDialog } from "@/lib/hooks/useDialog";
+import { useCountriesMap } from "@/lib/queries/useCountries";
+import { useInstitutions } from "@/lib/queries/useInstitutions";
+import { useProviders } from "@/lib/queries/useProviders";
 
 export function CommandMenu() {
   const { isOpen, data, open, close, update } = useDialog("command");
@@ -100,14 +101,13 @@ export function CommandMenu() {
       // Check if all search terms are found in either name or country
       return searchTerms.every(
         (term) =>
-          institution.name.toLowerCase().includes(term) ||
-          countryName.toLowerCase().includes(term),
+          institution.name.toLowerCase().includes(term) || countryName.toLowerCase().includes(term),
       );
     });
   }, [search, allInstitutions, countriesMap]);
 
-  const handleOpenChange = (open: boolean) => {
-    if (!open) {
+  const handleOpenChange = (_open: boolean) => {
+    if (!_open) {
       close();
       setSearch("");
       // Reset pages after a short delay to allow for closing animation
@@ -170,10 +170,7 @@ export function CommandMenu() {
               {[...mainNavigation, ...bottomNavigation]
                 .filter((item) => item.href)
                 .map((item) => (
-                  <CommandItem
-                    key={item.name}
-                    onSelect={() => handleNavigate(item.href ?? "")}
-                  >
+                  <CommandItem key={item.name} onSelect={() => handleNavigate(item.href ?? "")}>
                     {item.icon && <item.icon className="mr-2 h-4 w-4" />}
                     Go to {item.name}
                   </CommandItem>
@@ -195,9 +192,7 @@ export function CommandMenu() {
         )}
         {currentPage === "add-synced-account" && (
           <>
-            {isLoading && (
-              <CommandLoading>Loading institutions...</CommandLoading>
-            )}
+            {isLoading && <CommandLoading>Loading institutions...</CommandLoading>}
             {filteredInstitutions?.map((institution) => (
               <CommandItem
                 key={institution.id}
@@ -213,13 +208,13 @@ export function CommandMenu() {
                   />
                   <div className="flex flex-col justify-center">
                     <span className="text-md">{institution.name}</span>
-                    <span className="text-xs text-muted-foreground leading-3">
+                    <span className="text-xs leading-3 text-muted-foreground">
                       {institution.country
                         ? countriesMap?.[institution.country] || "Global"
                         : "Global"}{" "}
                       •{" "}
-                      {providers?.find((p) => p.id === institution.provider_id)
-                        ?.name ?? "Unknown Provider"}
+                      {providers?.find((p) => p.id === institution.provider_id)?.name ??
+                        "Unknown Provider"}
                     </span>
                   </div>
                 </div>
