@@ -3,7 +3,7 @@ import { selectInstitutionSchema } from "../../db/schema/institutions";
 import { db } from "../../lib/db";
 import { authPlugin } from "../../middleware/auth";
 import { errorSchema } from "../../utils/error";
-
+import { institutionIdParamSchema } from "./types";
 
 export const institutionRoutes = new Elysia({
   prefix: "/institution",
@@ -52,9 +52,7 @@ export const institutionRoutes = new Elysia({
     },
     {
       auth: true,
-      params: t.Object({
-        id: t.Number(),
-      }),
+      params: institutionIdParamSchema,
       response: {
         200: 'Institution',
         404: errorSchema,

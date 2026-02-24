@@ -3,6 +3,7 @@ import { selectProviderConnectionSchema } from "../../db/schema/provider-connect
 import { db } from "../../lib/db";
 import { authPlugin } from "../../middleware/auth";
 import { errorSchema } from "../../utils/error";
+import { providerConnectionIdParamSchema } from "./types";
 
 export const providerConnectionRoutes = new Elysia({
   prefix: "/provider-connection",
@@ -52,9 +53,7 @@ export const providerConnectionRoutes = new Elysia({
     },
     {
       auth: true,
-      params: t.Object({
-        id: t.Number(),
-      }),
+      params: providerConnectionIdParamSchema,
       response: {
         200: t.Ref("#/components/schemas/ProviderConnection"),
         404: errorSchema,

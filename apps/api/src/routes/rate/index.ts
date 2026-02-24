@@ -3,6 +3,7 @@ import { selectRateSchema } from "../../db/schema/rates";
 import { db } from "../../lib/db";
 import { authPlugin } from "../../middleware/auth";
 import { errorSchema } from "../../utils/error";
+import { rateCodeParamSchema, rateQuerySchema } from "./types";
 
 export const rateRoutes = new Elysia({
   prefix: "/rate",
@@ -40,9 +41,7 @@ export const rateRoutes = new Elysia({
     },
     {
       auth: true,
-      query: t.Object({
-        base: t.Optional(t.String({ minLength: 3, maxLength: 3 })),
-      }),
+      query: rateQuerySchema,
       response: {
         200: t.Array(t.Ref("#/components/schemas/Rate")),
         401: errorSchema,
@@ -91,12 +90,8 @@ export const rateRoutes = new Elysia({
     },
     {
       auth: true,
-      params: t.Object({
-        code: t.String({ minLength: 3, maxLength: 3 }),
-      }),
-      query: t.Object({
-        base: t.Optional(t.String({ minLength: 3, maxLength: 3 })),
-      }),
+      params: rateCodeParamSchema,
+      query: rateQuerySchema,
       response: {
         200: "Rate",
         401: errorSchema,

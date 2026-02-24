@@ -3,6 +3,7 @@ import { selectCurrencySchema } from "../../db/schema/currencies";
 import { db } from "../../lib/db";
 import { authPlugin } from "../../middleware/auth";
 import { errorSchema } from "../../utils/error";
+import { currencyCodeParamSchema } from "./types";
 
 export const currencyRoutes = new Elysia({
   prefix: "/currency",
@@ -46,9 +47,7 @@ export const currencyRoutes = new Elysia({
     },
     {
       auth: true,
-      params: t.Object({
-        code: t.String({ minLength: 3, maxLength: 3 }),
-      }),
+      params: currencyCodeParamSchema,
       response: {
         200: 'Currency',
         404: errorSchema,

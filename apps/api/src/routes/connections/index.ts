@@ -6,37 +6,14 @@ import { db } from "../../lib/db";
 import { authPlugin } from "../../middleware/auth";
 import { getProvider } from "../../providers";
 import { errorSchema } from "../../utils/error";
-
-const connectionResultSchema = t.Object({
-  redirectURI: t.String(),
-  type: t.Union([t.Literal("redirect"), t.Literal("popup")]),
-});
-
-const providerOnlySchema = t.Object({
-  provider_id: t.String(),
-});
-
-const createConnectionSchema = t.Object({
-  provider_id: t.String(),
-  institution_id: t.String(),
-});
-
-const reconnectSchema = t.Object({
-  provider_id: t.String(),
-  institution_id: t.String(),
-  account_id: t.String(),
-});
-
-const refreshSchema = t.Object({
-  provider_id: t.String(),
-  connection_id: t.String(),
-});
-
-function parseId(value: string): number | null {
-  const parsed = Number(value);
-  if (!Number.isInteger(parsed) || parsed <= 0) return null;
-  return parsed;
-}
+import {
+  connectionResultSchema,
+  createConnectionSchema,
+  providerOnlySchema,
+  reconnectSchema,
+  refreshSchema,
+} from "./types";
+import { parseId } from "./utils";
 
 export const connectionsRoutes = new Elysia({
   prefix: "/connections",

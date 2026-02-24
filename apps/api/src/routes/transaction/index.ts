@@ -9,6 +9,10 @@ import {
 import { db } from "../../lib/db";
 import { authPlugin } from "../../middleware/auth";
 import { errorSchema } from "../../utils/error";
+import {
+  transactionIdParamSchema,
+  transactionQuerySchema,
+} from "./types";
 
 export const transactionRoutes = new Elysia({
   prefix: "/transaction",
@@ -37,9 +41,7 @@ export const transactionRoutes = new Elysia({
     },
     {
       auth: true,
-      query: t.Object({
-        accountId: t.Optional(t.Number()),
-      }),
+      query: transactionQuerySchema,
       response: t.Array(t.Ref("#/components/schemas/Transaction")),
       detail: {
         summary: "Get all transactions",
@@ -135,9 +137,7 @@ export const transactionRoutes = new Elysia({
     },
     {
       auth: true,
-      params: t.Object({
-        id: t.Number(),
-      }),
+      params: transactionIdParamSchema,
       response: {
         200: 'Transaction',
         404: errorSchema,
@@ -223,9 +223,7 @@ export const transactionRoutes = new Elysia({
     },
     {
       auth: true,
-      params: t.Object({
-        id: t.Number(),
-      }),
+      params: transactionIdParamSchema,
       body: insertTransactionSchema,
       response: {
         200: 'Transaction',
@@ -288,9 +286,7 @@ export const transactionRoutes = new Elysia({
     },
     {
       auth: true,
-      params: t.Object({
-        id: t.Number(),
-      }),
+      params: transactionIdParamSchema,
       response: {
         200: t.Object({ success: t.Boolean() }),
         404: errorSchema,

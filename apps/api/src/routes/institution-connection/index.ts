@@ -5,30 +5,10 @@ import { institution } from "../../db/schema/institutions";
 import { providerConnection } from "../../db/schema/provider-connections";
 import { db } from "../../lib/db";
 import { authPlugin } from "../../middleware/auth";
-
-const InstitutionConnectionWithRelations = t.Object({
-  id: t.Number(),
-  institution_id: t.Number(),
-  provider_connection_id: t.Number(),
-  connection_id: t.Union([t.String(), t.Null()]),
-  broken: t.Boolean(),
-  created_at: t.Union([t.String(), t.Date()]),
-  institution: t.Object({
-    id: t.Number(),
-    name: t.String(),
-    logo_url: t.String(),
-    country: t.Union([t.String(), t.Null()]),
-    enabled: t.Boolean(),
-  }),
-  provider_connection: t.Union([
-    t.Object({
-      id: t.Number(),
-      provider_id: t.Number(),
-      user_id: t.String(),
-    }),
-    t.Null(),
-  ]),
-});
+import {
+  institutionConnectionIdParamSchema,
+  institutionConnectionWithRelationsSchema,
+} from "./types";
 
 export const institutionConnectionRoutes = new Elysia({
   prefix: "/institution-connection",
@@ -93,7 +73,7 @@ export const institutionConnectionRoutes = new Elysia({
     },
     {
       auth: true,
-      response: t.Array(InstitutionConnectionWithRelations),
+      response: t.Array(institutionConnectionWithRelationsSchema),
       detail: {
         summary: "Get all institution connections",
         description:
@@ -168,10 +148,8 @@ export const institutionConnectionRoutes = new Elysia({
     },
     {
       auth: true,
-      params: t.Object({
-        id: t.Number(),
-      }),
-      response: InstitutionConnectionWithRelations,
+      params: institutionConnectionIdParamSchema,
+      response: institutionConnectionWithRelationsSchema,
       detail: {
         summary: "Get institution connection by ID",
         description:

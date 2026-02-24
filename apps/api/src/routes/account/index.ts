@@ -5,22 +5,11 @@ import {
   insertAccountSchema,
   selectAccountSchema,
 } from "../../db/schema/accounts";
-import { AccountSubtypeEnum, AccountTypeEnum } from "../../db/schema/enums";
+import { AccountTypeEnum } from "../../db/schema/enums";
 import { db } from "../../lib/db";
 import { authPlugin } from "../../middleware/auth";
 import { errorSchema } from "../../utils/error";
-
-// Subtype to type mapping
-const subtypeToType: Record<string, string> = {
-  [AccountSubtypeEnum.depository]: AccountTypeEnum.asset,
-  [AccountSubtypeEnum.brokerage]: AccountTypeEnum.asset,
-  [AccountSubtypeEnum.crypto]: AccountTypeEnum.asset,
-  [AccountSubtypeEnum.property]: AccountTypeEnum.asset,
-  [AccountSubtypeEnum.vehicle]: AccountTypeEnum.asset,
-  [AccountSubtypeEnum.creditcard]: AccountTypeEnum.liability,
-  [AccountSubtypeEnum.loan]: AccountTypeEnum.liability,
-  [AccountSubtypeEnum.stock]: AccountTypeEnum.asset,
-};
+import { idParamSchema, subtypeToType } from "./types";
 
 export const accountRoutes = new Elysia({
   prefix: "/account",
@@ -148,9 +137,7 @@ export const accountRoutes = new Elysia({
     },
     {
       auth: true,
-      params: t.Object({
-        id: t.Number(),
-      }),
+      params: idParamSchema,
       response: {
         200: t.Object({
           account: t.Ref("#/components/schemas/Account"),
@@ -216,9 +203,7 @@ export const accountRoutes = new Elysia({
     },
     {
       auth: true,
-      params: t.Object({
-        id: t.Number(),
-      }),
+      params: idParamSchema,
       body: insertAccountSchema,
       response: {
         200: t.Ref("#/components/schemas/Account"),
@@ -258,9 +243,7 @@ export const accountRoutes = new Elysia({
     },
     {
       auth: true,
-      params: t.Object({
-        id: t.Number(),
-      }),
+      params: idParamSchema,
       response: {
         200: t.Object({ success: t.Boolean() }),
         404: errorSchema,
