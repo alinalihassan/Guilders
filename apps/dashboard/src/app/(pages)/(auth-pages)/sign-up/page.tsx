@@ -5,10 +5,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
+import { PasswordInput } from "@/components/common/password-input";
+import { SubmitButton } from "@/components/common/submit-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { PasswordInput } from "@/components/ui/password-input";
-import { SubmitButton } from "@/components/ui/submit-button";
 import { authApi } from "@/lib/auth-client";
 
 export default function Signup() {
@@ -44,7 +44,7 @@ export default function Signup() {
   return (
     <div className="w-full max-w-sm">
       <div className="rounded-md bg-background px-6 py-6 shadow">
-        <div className="flex flex-col items-center mb-4">
+        <div className="mb-4 flex flex-col items-center">
           <Image
             src="/assets/logo/logo_filled_rounded.svg"
             alt="logo"
@@ -54,10 +54,10 @@ export default function Signup() {
           />
         </div>
 
-        <h1 className="text-2xl font-bold text-center">Create Account</h1>
-        <p className="text-muted-foreground text-center">Sign up to get started</p>
+        <h1 className="text-center text-2xl font-bold">Create Account</h1>
+        <p className="text-center text-muted-foreground">Sign up to get started</p>
 
-        <form className="flex flex-col gap-4 mt-4" action={handleSubmit}>
+        <form className="mt-4 flex flex-col gap-4" action={handleSubmit}>
           <div className="grid gap-4">
             <div className="grid w-full items-center gap-1.5">
               <Label htmlFor="email">Email</Label>
@@ -80,7 +80,7 @@ export default function Signup() {
             </SubmitButton>
           </div>
 
-          <p className="text-xs text-muted-foreground text-center">
+          <p className="text-center text-xs text-muted-foreground">
             By continuing to sign up, you agree to our
             <br />
             <Link href="/terms-of-service" className="font-medium text-primary hover:underline">

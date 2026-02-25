@@ -4,9 +4,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { toast } from "sonner";
 
+import { SubmitButton } from "@/components/common/submit-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { SubmitButton } from "@/components/ui/submit-button";
 
 export default function ForgotPassword() {
   const handleSubmit = async (formData: FormData) => {
@@ -21,7 +21,7 @@ export default function ForgotPassword() {
   return (
     <div className="w-full max-w-sm">
       <div className="rounded-md bg-background px-6 py-6 shadow">
-        <div className="flex flex-col items-center mb-4">
+        <div className="mb-4 flex flex-col items-center">
           <Image
             src="/assets/logo/logo_filled_rounded.svg"
             alt="logo"
@@ -31,12 +31,12 @@ export default function ForgotPassword() {
           />
         </div>
 
-        <h1 className="text-2xl font-bold text-center">Reset Password</h1>
-        <p className="text-muted-foreground text-center">
+        <h1 className="text-center text-2xl font-bold">Reset Password</h1>
+        <p className="text-center text-muted-foreground">
           Enter your email to receive a reset link
         </p>
 
-        <form className="flex flex-col gap-4 mt-4" action={handleSubmit}>
+        <form className="mt-4 flex flex-col gap-4" action={handleSubmit}>
           <div className="grid gap-4">
             <div className="grid w-full items-center gap-1.5">
               <Label htmlFor="email">Email</Label>
