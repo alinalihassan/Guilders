@@ -1,6 +1,6 @@
 {
-  "name": "api-new",
-  "version": "1.0.50",
+  "name": "@guilders/api",
+  "version": "1.0.0",
   "module": "src/index.ts",
   "scripts": {
     "dev": "wrangler dev",

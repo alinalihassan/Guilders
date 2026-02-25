@@ -1,4 +1,4 @@
-import { db } from "../../lib/db";
+import type { Database } from "../../lib/db";
 import type { FinancialContext, FinancialDataJson, ToFinancialDataJsonParams } from "./types";
 import { FINANCIAL_ADVISOR_PROMPT } from "./types";
 
@@ -38,7 +38,7 @@ export function toFinancialDataJson(params: ToFinancialDataJsonParams): Financia
   };
 }
 
-export async function getFinancialContext(userId: string): Promise<FinancialContext> {
+export async function getFinancialContext(userId: string, db: Database): Promise<FinancialContext> {
   const accounts = await db.query.account.findMany({
     where: { user_id: userId },
     with: {

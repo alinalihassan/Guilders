@@ -1,7 +1,6 @@
 import { Elysia, status, t } from "elysia";
 
 import { selectProviderSchema } from "../../db/schema/providers";
-import { db } from "../../lib/db";
 import { authPlugin } from "../../middleware/auth";
 import { errorSchema } from "../../utils/error";
 import { providerIdParamSchema } from "./types";
@@ -19,7 +18,7 @@ export const providerRoutes = new Elysia({
   })
   .get(
     "",
-    async () => {
+    async ({ db }) => {
       return db.query.provider.findMany();
     },
     {
@@ -33,7 +32,7 @@ export const providerRoutes = new Elysia({
   )
   .get(
     "/:id",
-    async ({ params }) => {
+    async ({ params, db }) => {
       const result = await db.query.provider.findFirst({
         where: {
           id: params.id,

@@ -3,7 +3,6 @@ import { Elysia, status, t } from "elysia";
 
 import { institutionConnection } from "../../db/schema/institution-connections";
 import { providerConnection } from "../../db/schema/provider-connections";
-import { db } from "../../lib/db";
 import { authPlugin } from "../../middleware/auth";
 import { getProvider } from "../../providers";
 import { errorSchema } from "../../utils/error";
@@ -26,7 +25,7 @@ export const connectionsRoutes = new Elysia({
   .use(authPlugin)
   .post(
     "",
-    async ({ body, user }) => {
+    async ({ body, user, db }) => {
       const providerId = parseId(body.provider_id);
       const institutionId = parseId(body.institution_id);
       if (!providerId || !institutionId) {
@@ -86,7 +85,7 @@ export const connectionsRoutes = new Elysia({
   )
   .post(
     "/reconnect",
-    async ({ body, user }) => {
+    async ({ body, user, db }) => {
       const providerId = parseId(body.provider_id);
       const institutionId = parseId(body.institution_id);
       const accountId = parseId(body.account_id);
@@ -163,7 +162,7 @@ export const connectionsRoutes = new Elysia({
   )
   .post(
     "/refresh",
-    async ({ body, user }) => {
+    async ({ body, user, db }) => {
       const providerId = parseId(body.provider_id);
       const institutionConnectionId = parseId(body.connection_id);
       if (!providerId || !institutionConnectionId) {
@@ -227,7 +226,7 @@ export const connectionsRoutes = new Elysia({
   )
   .post(
     "/register",
-    async ({ body, user }) => {
+    async ({ body, user, db }) => {
       const providerId = parseId(body.provider_id);
       if (!providerId) return status(400, { error: "Invalid provider_id" });
 
@@ -291,7 +290,7 @@ export const connectionsRoutes = new Elysia({
   )
   .post(
     "/deregister",
-    async ({ body, user }) => {
+    async ({ body, user, db }) => {
       const providerId = parseId(body.provider_id);
       if (!providerId) return status(400, { error: "Invalid provider_id" });
 

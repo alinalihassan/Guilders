@@ -1,7 +1,6 @@
 import { Elysia, status, t } from "elysia";
 
 import { selectInstitutionSchema } from "../../db/schema/institutions";
-import { db } from "../../lib/db";
 import { authPlugin } from "../../middleware/auth";
 import { errorSchema } from "../../utils/error";
 import { institutionIdParamSchema } from "./types";
@@ -19,7 +18,7 @@ export const institutionRoutes = new Elysia({
   })
   .get(
     "",
-    async () => {
+    async ({ db }) => {
       return db.query.institution.findMany({
         where: {
           enabled: true,
@@ -37,7 +36,7 @@ export const institutionRoutes = new Elysia({
   )
   .get(
     "/:id",
-    async ({ params }) => {
+    async ({ params, db }) => {
       const result = await db.query.institution.findFirst({
         where: {
           id: params.id,

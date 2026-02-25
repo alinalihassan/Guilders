@@ -5,7 +5,7 @@ import { providerConnection } from "../db/schema/provider-connections";
 import { provider } from "../db/schema/providers";
 import type { ProviderName } from "../providers/types";
 import type { ProviderUserCleanupEvent, UserFilesCleanupEvent } from "../queues/types";
-import { db } from "./db";
+import { createDb } from "./db";
 
 function isProviderName(name: string): name is ProviderName {
   return name === "SaltEdge" || name === "SnapTrade";
@@ -19,6 +19,7 @@ export async function enqueueUserDeleteCleanupJobs(userId: string): Promise<void
 
 async function enqueueProviderCleanupJobs(userId: string): Promise<void> {
   try {
+    const db = createDb();
     const providerConnections = await db
       .select({
         providerUserId: providerConnection.secret,

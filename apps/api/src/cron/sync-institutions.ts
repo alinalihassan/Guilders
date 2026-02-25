@@ -1,7 +1,7 @@
 import { sql } from "drizzle-orm";
 
 import { institution } from "../db/schema/institutions";
-import { db } from "../lib/db";
+import { createDb } from "../lib/db";
 import { SnapTradeProvider } from "../providers/snaptrade/provider";
 import type { IProvider } from "../providers/types";
 
@@ -13,6 +13,7 @@ function getProviderAdapters(): IProvider[] {
 }
 
 export async function syncInstitutions() {
+  const db = createDb();
   const providers = await db.query.provider.findMany();
   const adapters = getProviderAdapters();
 

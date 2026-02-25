@@ -3,7 +3,6 @@ import { Elysia, status, t } from "elysia";
 
 import { account, insertAccountSchema, selectAccountSchema } from "../../db/schema/accounts";
 import { AccountTypeEnum } from "../../db/schema/enums";
-import { db } from "../../lib/db";
 import { authPlugin } from "../../middleware/auth";
 import { errorSchema } from "../../utils/error";
 import { idParamSchema, subtypeToType } from "./types";
@@ -22,7 +21,7 @@ export const accountRoutes = new Elysia({
   })
   .get(
     "",
-    async ({ user }) => {
+    async ({ user, db }) => {
       const accounts = await db.query.account.findMany({
         where: {
           user_id: user.id,
@@ -53,7 +52,7 @@ export const accountRoutes = new Elysia({
   )
   .post(
     "",
-    async ({ body, user }) => {
+    async ({ body, user, db }) => {
       // Auto-calculate type from subtype
       const type = subtypeToType[body.subtype] || AccountTypeEnum.asset;
 
@@ -96,7 +95,7 @@ export const accountRoutes = new Elysia({
   )
   .get(
     "/:id",
-    async ({ params, user }) => {
+    async ({ params, user, db }) => {
       const accountResult = await db.query.account.findFirst({
         where: {
           id: params.id,
@@ -149,7 +148,7 @@ export const accountRoutes = new Elysia({
   )
   .put(
     "/:id",
-    async ({ params, body, user }) => {
+    async ({ params, body, user, db }) => {
       // Get existing account
       const existingAccount = await db.query.account.findFirst({
         where: {
@@ -214,7 +213,7 @@ export const accountRoutes = new Elysia({
   )
   .delete(
     "/:id",
-    async ({ params, user }) => {
+    async ({ params, user, db }) => {
       // Verify account exists and belongs to user
       const existingAccount = await db.query.account.findFirst({
         where: {

@@ -1,7 +1,6 @@
 import { Elysia, t } from "elysia";
 
 import { selectCountrySchema } from "../../db/schema/countries";
-import { db } from "../../lib/db";
 import { authPlugin } from "../../middleware/auth";
 
 export const countryRoutes = new Elysia({
@@ -17,7 +16,7 @@ export const countryRoutes = new Elysia({
   })
   .get(
     "",
-    async () => {
+    async ({ db }) => {
       return db.query.country.findMany();
     },
     {

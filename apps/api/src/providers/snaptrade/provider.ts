@@ -1,6 +1,6 @@
 import { providerConnection } from "../../db/schema/provider-connections";
 import type { InsertTransaction } from "../../db/schema/transactions";
-import { db } from "../../lib/db";
+import { createDb } from "../../lib/db";
 import type {
   AccountParams,
   ConnectionParams,
@@ -134,6 +134,7 @@ export class SnapTradeProvider implements IProvider {
 
   async connect(params: ConnectionParams): Promise<ConnectResult> {
     const client = getSnapTradeClient();
+    const db = createDb();
     try {
       const providerRecord = await db.query.provider.findFirst({
         where: { name: this.name },
@@ -221,6 +222,7 @@ export class SnapTradeProvider implements IProvider {
 
   async refreshConnection(connectionId: string): Promise<RefreshConnectionResult> {
     const client = getSnapTradeClient();
+    const db = createDb();
 
     try {
       const connection = await db.query.institutionConnection.findFirst({

@@ -73,7 +73,7 @@ export const chatRoutes = new Elysia({
   .use(authPlugin)
   .post(
     "/",
-    async ({ body, user }) => {
+    async ({ body, user, db }) => {
       try {
         const inputMessages = Array.isArray(body.messages)
           ? body.messages
@@ -88,7 +88,7 @@ export const chatRoutes = new Elysia({
         }
 
         // Get financial context: standalone prompt + user data as JSON
-        const { prompt, data } = await getFinancialContext(user.id);
+        const { prompt, data } = await getFinancialContext(user.id, db);
 
         const systemContent = [
           prompt,

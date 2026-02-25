@@ -7,7 +7,6 @@ import {
   selectTransactionSchema,
   transaction,
 } from "../../db/schema/transactions";
-import { db } from "../../lib/db";
 import { authPlugin } from "../../middleware/auth";
 import { errorSchema } from "../../utils/error";
 import { transactionIdParamSchema, transactionQuerySchema } from "./types";
@@ -26,7 +25,7 @@ export const transactionRoutes = new Elysia({
   })
   .get(
     "",
-    async ({ user, query }) => {
+    async ({ user, query, db }) => {
       return await db.query.transaction.findMany({
         where: {
           account_id: query.accountId,
@@ -50,7 +49,7 @@ export const transactionRoutes = new Elysia({
   )
   .post(
     "",
-    async ({ body, user }) => {
+    async ({ body, user, db }) => {
       // Verify the account belongs to the user
       const accountResult = await db.query.account.findFirst({
         where: {
@@ -115,7 +114,7 @@ export const transactionRoutes = new Elysia({
   )
   .get(
     "/:id",
-    async ({ params, user }) => {
+    async ({ params, user, db }) => {
       const transactionResult = await db.query.transaction.findFirst({
         where: {
           id: params.id,
@@ -146,7 +145,7 @@ export const transactionRoutes = new Elysia({
   )
   .put(
     "/:id",
-    async ({ params, body, user }) => {
+    async ({ params, body, user, db }) => {
       // Verify the account belongs to the user
       const targetAccount = await db.query.account.findFirst({
         where: {
@@ -231,7 +230,7 @@ export const transactionRoutes = new Elysia({
   )
   .delete(
     "/:id",
-    async ({ params, user }) => {
+    async ({ params, user, db }) => {
       const existingTransaction = await db.query.transaction.findFirst({
         where: {
           id: params.id,

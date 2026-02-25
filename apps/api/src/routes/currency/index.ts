@@ -1,7 +1,6 @@
 import { Elysia, status, t } from "elysia";
 
 import { selectCurrencySchema } from "../../db/schema/currencies";
-import { db } from "../../lib/db";
 import { authPlugin } from "../../middleware/auth";
 import { errorSchema } from "../../utils/error";
 import { currencyCodeParamSchema } from "./types";
@@ -19,7 +18,7 @@ export const currencyRoutes = new Elysia({
   })
   .get(
     "",
-    async () => {
+    async ({ db }) => {
       return db.query.currency.findMany();
     },
     {
@@ -33,7 +32,7 @@ export const currencyRoutes = new Elysia({
   )
   .get(
     "/:code",
-    async ({ params }) => {
+    async ({ params, db }) => {
       const result = await db.query.currency.findFirst({
         where: {
           code: params.code,

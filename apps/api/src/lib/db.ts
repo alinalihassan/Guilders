@@ -1,5 +1,9 @@
-import { drizzle } from "drizzle-orm/neon-http";
+import { drizzle } from "drizzle-orm/neon-serverless";
 
 import { relations } from "../db/schema/relations";
 
-export const db = drizzle(process.env.DATABASE_URL, { relations });
+export function createDb() {
+  return drizzle(process.env.DATABASE_URL, { relations });
+}
+
+export type Database = ReturnType<typeof createDb>;

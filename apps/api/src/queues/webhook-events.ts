@@ -4,7 +4,7 @@ import { and, eq } from "drizzle-orm";
 import { account } from "../db/schema/accounts";
 import { AccountSubtypeEnum, AccountTypeEnum } from "../db/schema/enums";
 import { institutionConnection } from "../db/schema/institution-connections";
-import { db } from "../lib/db";
+import { createDb } from "../lib/db";
 import { getProvider } from "../providers";
 import { getSnapTradeClient } from "../providers/snaptrade/client";
 import type {
@@ -137,6 +137,7 @@ async function processSnapTradeEvent(event: SnapTradeWebhookEvent) {
 async function handleSnapTradeConnectionAdded(
   payload: SnapTradeWebhookEvent["payload"],
 ): Promise<void> {
+  const db = createDb();
   const providerRecord = await db.query.provider.findFirst({
     where: { name: "SnapTrade" },
   });
@@ -191,6 +192,7 @@ async function handleSnapTradeConnectionDeleted(
   payload: SnapTradeWebhookEvent["payload"],
 ): Promise<void> {
   if (!payload.brokerageAuthorizationId) return;
+  const db = createDb();
   await db
     .delete(institutionConnection)
     .where(eq(institutionConnection.connection_id, payload.brokerageAuthorizationId));
@@ -200,6 +202,7 @@ async function handleSnapTradeConnectionBroken(
   payload: SnapTradeWebhookEvent["payload"],
 ): Promise<void> {
   if (!payload.brokerageAuthorizationId) return;
+  const db = createDb();
   await db
     .update(institutionConnection)
     .set({ broken: true })
@@ -210,6 +213,7 @@ async function handleSnapTradeConnectionFixed(
   payload: SnapTradeWebhookEvent["payload"],
 ): Promise<void> {
   if (!payload.brokerageAuthorizationId) return;
+  const db = createDb();
   await db
     .update(institutionConnection)
     .set({ broken: false })
@@ -236,6 +240,7 @@ async function handleSnapTradeAccountRemoved(
   payload: SnapTradeWebhookEvent["payload"],
 ): Promise<void> {
   if (!payload.accountId) return;
+  const db = createDb();
   await db.delete(account).where(eq(account.provider_account_id, payload.accountId));
 }
 
@@ -261,6 +266,8 @@ async function syncSnapTradeHoldings(
     });
     return;
   }
+
+  const db = createDb();
 
   const providerRecord = await db.query.provider.findFirst({
     where: { name: "SnapTrade" },
@@ -391,7 +398,6 @@ async function syncSnapTradeHoldings(
   }, 0);
   const cashValue = totalValue - positionsValue;
 
-  // Add cash as a child account so the portfolio reflects liquid balance explicitly.
   await db.insert(account).values({
     type: AccountTypeEnum.asset,
     subtype: AccountSubtypeEnum.depository,

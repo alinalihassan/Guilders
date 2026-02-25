@@ -1,7 +1,6 @@
 import { Elysia, status, t } from "elysia";
 
 import { selectRateSchema } from "../../db/schema/rates";
-import { db } from "../../lib/db";
 import { authPlugin } from "../../middleware/auth";
 import { errorSchema } from "../../utils/error";
 import { rateCodeParamSchema, rateQuerySchema } from "./types";
@@ -19,7 +18,7 @@ export const rateRoutes = new Elysia({
   })
   .get(
     "",
-    async ({ query }) => {
+    async ({ query, db }) => {
       const base = query.base || "EUR";
       const rates = await db.query.rate.findMany();
 
@@ -56,7 +55,7 @@ export const rateRoutes = new Elysia({
   )
   .get(
     "/:code",
-    async ({ params, query }) => {
+    async ({ params, query, db }) => {
       const base = query.base || "EUR";
 
       const result = await db.query.rate.findFirst({

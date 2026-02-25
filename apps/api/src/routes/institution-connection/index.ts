@@ -7,7 +7,6 @@ import {
 } from "../../db/schema/institution-connections";
 import { institution } from "../../db/schema/institutions";
 import { providerConnection } from "../../db/schema/provider-connections";
-import { db } from "../../lib/db";
 import { authPlugin } from "../../middleware/auth";
 import {
   institutionConnectionIdParamSchema,
@@ -23,7 +22,7 @@ export const institutionConnectionRoutes = new Elysia({
   })
   .get(
     "",
-    async ({ user }) => {
+    async ({ user, db }) => {
       // First get user's provider connections
       const userProviderConnections = await db.query.providerConnection.findMany({
         where: {
@@ -77,7 +76,7 @@ export const institutionConnectionRoutes = new Elysia({
   )
   .get(
     "/:id",
-    async ({ params, user }) => {
+    async ({ params, user, db }) => {
       // First get user's provider connections
       const userProviderConnections = await db.query.providerConnection.findMany({
         where: {
