@@ -92,9 +92,9 @@ export function ProviderDialog() {
             ref={iframeRef}
             src={providerData.redirectUri}
             title="Provider Connection Dialog"
-            className="h-full w-full rounded-lg border-none"
+            className="h-full w-full rounded-lg border-none p-16"
             allow="clipboard-read *; clipboard-write *"
-            sandbox="allow-forms allow-scripts allow-popups allow-popups-to-escape-sandbox"
+            sandbox="allow-forms allow-scripts allow-popups allow-popups-to-escape-sandbox allow-same-origin"
           />
         ) : (
           <div className="flex h-full flex-col items-center justify-center space-y-4 p-6 text-center">
