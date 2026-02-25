@@ -1,6 +1,6 @@
 "use client";
 
-import { CreditCard, Key, Satellite, Shield, UserCircle } from "lucide-react";
+import { CreditCard, Key, Satellite, Shield, Tag, UserCircle } from "lucide-react";
 import { motion } from "motion/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -25,6 +25,8 @@ const getIcon = (title: string): React.ReactNode => {
       return <Satellite className="-ms-0.5 me-1.5 opacity-60" size={16} strokeWidth={2} />;
     case "API Key":
       return <Key className="-ms-0.5 me-1.5 opacity-60" size={16} strokeWidth={2} />;
+    case "Categories":
+      return <Tag className="-ms-0.5 me-1.5 opacity-60" size={16} strokeWidth={2} />;
     case "Subscription":
       return <CreditCard className="-ms-0.5 me-1.5 opacity-60" size={16} strokeWidth={2} />;
     default:

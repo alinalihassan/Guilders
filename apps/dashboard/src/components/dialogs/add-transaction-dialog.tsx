@@ -8,6 +8,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { DateTimePicker } from "@/components/common/datetime-picker";
+import { CategorySelector } from "@/components/common/category-selector";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -49,7 +50,9 @@ const formSchema = z.object({
     .regex(/^-?\d+(\.\d{1,2})?$/, "Invalid number format."),
   currency: z.string().min(1, "Currency is required."),
   description: z.string().min(1, "Description is required."),
-  category: z.string().min(1, "Category is required."),
+  categoryId: z.number({
+    required_error: "Category is required.",
+  }),
   date: z.string().min(1, "Date is required."),
 });
 
@@ -61,6 +64,7 @@ export function AddTransactionDialog() {
   const { data: accounts } = useAccounts();
   const { data: currencies } = useCurrencies();
   const { data: user } = useUser();
+  const currencyOptions = (currencies ?? []) as Currency[];
 
   const manualAccounts = accounts?.filter((account) => !account.institution_connection_id);
 
@@ -71,7 +75,7 @@ export function AddTransactionDialog() {
       amount: "",
       currency: user?.settings.currency ?? "",
       description: "",
-      category: "",
+      categoryId: undefined,
       date: new Date().toISOString(),
     },
   });
@@ -117,7 +121,7 @@ export function AddTransactionDialog() {
       amount: data.amount,
       currency: data.currency,
       description: data.description,
-      category: data.category,
+      category_id: data.categoryId,
       date: new Date(data.date).toISOString().split("T")[0]!,
     });
 
@@ -185,7 +189,7 @@ export function AddTransactionDialog() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {currencies?.map((currency: Currency) => (
+                            {currencyOptions.map((currency) => (
                               <SelectItem key={currency.code} value={currency.code}>
                                 {currency.code}
                               </SelectItem>
@@ -216,12 +220,16 @@ export function AddTransactionDialog() {
 
             <FormField
               control={form.control}
-              name="category"
+              name="categoryId"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Category</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter category" {...field} />
+                    <CategorySelector
+                      value={field.value}
+                      onChange={field.onChange}
+                      placeholder="Select or add category"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

@@ -7,6 +7,7 @@ import { Layer, Rectangle, Sankey } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { type ChartConfig, ChartContainer } from "@/components/ui/chart";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useCategories } from "@/lib/queries/useCategories";
 import { convertToUserCurrency } from "@/lib/utils/financial";
 
 interface TransactionsSankeyProps {
@@ -227,12 +228,14 @@ export function TransactionsSankey({
   isLoading,
   userCurrency,
 }: TransactionsSankeyProps) {
+  const { data: categories } = useCategories();
   const sankeyData = useMemo<SankeyData>(() => {
     if (!transactions) return { nodes: [], links: [] };
 
     const normalizedTransactions = transactions.map((transaction) => {
       const amount = toFiniteNumber(transaction.amount);
-      const category = transaction.category || "uncategorized";
+      const category =
+        categories?.find((item) => item.id === transaction.category_id)?.name ?? "uncategorized";
       const convertedAmount = convertAmountSafely(amount, transaction.currency, userCurrency);
 
       return {
@@ -332,7 +335,7 @@ export function TransactionsSankey({
     }
 
     return { nodes, links };
-  }, [transactions, userCurrency]);
+  }, [categories, transactions, userCurrency]);
 
   if (isLoading) {
     return (

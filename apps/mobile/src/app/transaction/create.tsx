@@ -28,24 +28,16 @@ interface TransactionFormData {
   currency: string;
   date: string;
   description: string;
-  category: string;
+  categoryId: number | null;
   type: TransactionType;
 }
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
+type Category = {
+  id: number;
+  name: string;
+};
 
-const CATEGORIES = [
-  { value: "food", label: "Food & Dining", icon: "🍔" },
-  { value: "transport", label: "Transport", icon: "🚗" },
-  { value: "shopping", label: "Shopping", icon: "🛍️" },
-  { value: "entertainment", label: "Entertainment", icon: "🎬" },
-  { value: "health", label: "Health", icon: "🏥" },
-  { value: "travel", label: "Travel", icon: "✈️" },
-  { value: "utilities", label: "Utilities", icon: "💡" },
-  { value: "income", label: "Income", icon: "💰" },
-  { value: "transfer", label: "Transfer", icon: "↔️" },
-  { value: "uncategorized", label: "Uncategorized", icon: "📋" },
-];
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 
 const CURRENCIES = ["USD", "EUR", "GBP", "CHF", "JPY"];
 
@@ -330,12 +322,14 @@ function CurrencySelector({
 }
 
 function CategorySelector({
+  categories,
   selected,
   onSelect,
   colors,
 }: {
-  selected: string;
-  onSelect: (category: string) => void;
+  categories: Category[];
+  selected: number | null;
+  onSelect: (categoryId: number) => void;
   colors: ColorSet;
 }) {
   return (
@@ -353,30 +347,30 @@ function CategorySelector({
         Category
       </Text>
       <View style={{ flexDirection: "row", flexWrap: "wrap", gap: Spacing.two }}>
-        {CATEGORIES.map((category) => (
+        {categories.map((category) => (
           <Pressable
-            key={category.value}
-            onPress={() => onSelect(category.value)}
+            key={category.id}
+            onPress={() => onSelect(category.id)}
             style={({ pressed }) => ({
               flexDirection: "row",
               alignItems: "center",
               gap: Spacing.one,
               paddingVertical: Spacing.two,
               paddingHorizontal: Spacing.three,
-              backgroundColor: selected === category.value ? colors.text : colors.backgroundElement,
+              backgroundColor: selected === category.id ? colors.text : colors.backgroundElement,
               borderRadius: 24,
               opacity: pressed ? 0.8 : 1,
             })}
           >
-            <Text style={{ fontSize: 16 }}>{category.icon}</Text>
+            <Text style={{ fontSize: 16 }}>📋</Text>
             <Text
               style={{
                 fontSize: 14,
-                fontWeight: selected === category.value ? "600" : "400",
-                color: selected === category.value ? colors.background : colors.text,
+                fontWeight: selected === category.id ? "600" : "400",
+                color: selected === category.id ? colors.background : colors.text,
               }}
             >
-              {category.label}
+              {category.name}
             </Text>
           </Pressable>
         ))}
@@ -393,6 +387,7 @@ export default function CreateTransactionScreen() {
   const insets = useSafeAreaInsets();
 
   const [accounts, setAccounts] = useState<Account[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [accountsLoading, setAccountsLoading] = useState(true);
 
   const [formData, setFormData] = useState<TransactionFormData>({
@@ -401,7 +396,7 @@ export default function CreateTransactionScreen() {
     currency: "EUR",
     date: formatDateForInput(new Date()),
     description: "",
-    category: "uncategorized",
+    categoryId: null,
     type: "expense",
   });
 
@@ -412,14 +407,19 @@ export default function CreateTransactionScreen() {
   useEffect(() => {
     const fetchAccounts = async () => {
       try {
-        const accountsResult = await api.get<Account[]>("/api/account");
+        const [accountsResult, categoriesResult] = await Promise.all([
+          api.get<Account[]>("/api/account"),
+          api.get<Category[]>("/api/category"),
+        ]);
         setAccounts(accountsResult);
+        setCategories(categoriesResult);
         // Auto-select first account if available
         if (accountsResult.length > 0) {
           setFormData((prev) => ({
             ...prev,
             accountId: accountsResult[0].id,
             currency: accountsResult[0].currency,
+            categoryId: categoriesResult[0]?.id ?? prev.categoryId,
           }));
         }
       } catch {
@@ -466,6 +466,11 @@ export default function CreateTransactionScreen() {
       return;
     }
 
+    if (!formData.categoryId) {
+      setError("Please select a category");
+      return;
+    }
+
     setIsSubmitting(true);
     setError(null);
 
@@ -480,7 +485,7 @@ export default function CreateTransactionScreen() {
         currency: formData.currency,
         date: formData.date,
         description: formData.description.trim(),
-        category: formData.category,
+        category_id: formData.categoryId,
       });
 
       router.back();
@@ -627,8 +632,9 @@ export default function CreateTransactionScreen() {
           />
 
           <CategorySelector
-            selected={formData.category}
-            onSelect={(category) => updateField("category", category)}
+            categories={categories}
+            selected={formData.categoryId}
+            onSelect={(categoryId) => updateField("categoryId", categoryId)}
             colors={colors}
           />
         </View>

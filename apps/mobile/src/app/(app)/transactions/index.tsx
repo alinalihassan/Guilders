@@ -39,20 +39,8 @@ function formatDateShort(dateStr: string): string {
   return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
-function getCategoryIcon(category: string): string {
-  const map: Record<string, string> = {
-    food: "🍔",
-    transport: "🚗",
-    shopping: "🛍️",
-    entertainment: "🎬",
-    health: "🏥",
-    travel: "✈️",
-    utilities: "💡",
-    income: "💰",
-    transfer: "↔️",
-    uncategorized: "📋",
-  };
-  return map[category.toLowerCase()] ?? "📋";
+function getCategoryIcon(): string {
+  return "📋";
 }
 
 // ─── Components ──────────────────────────────────────────────────────────────
@@ -94,7 +82,7 @@ function TransactionRow({
           alignItems: "center",
         }}
       >
-        <Text style={{ fontSize: 18 }}>{getCategoryIcon(item.category)}</Text>
+        <Text style={{ fontSize: 18 }}>{getCategoryIcon()}</Text>
       </View>
 
       {/* Middle: Description and Date */}

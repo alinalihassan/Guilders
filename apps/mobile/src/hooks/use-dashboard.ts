@@ -20,7 +20,7 @@ export type Transaction = {
   currency: string;
   date: string;
   description: string;
-  category: string;
+  category_id: number;
 };
 
 export function useAccounts() {

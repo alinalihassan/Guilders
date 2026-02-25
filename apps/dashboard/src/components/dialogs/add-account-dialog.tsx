@@ -100,7 +100,7 @@ export function AddAccountDialog() {
           data.accountType === "creditcard" || data.accountType === "loan" ? "liability" : "asset",
         name: data.accountName,
         subtype: data.accountType,
-        value: Number.parseFloat(data.value),
+        value: data.value,
         currency: data.currency,
       });
 

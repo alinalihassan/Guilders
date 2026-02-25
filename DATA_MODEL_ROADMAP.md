@@ -9,7 +9,7 @@ Improvements inspired by Maybe's data model, plus additional backend/DB features
 - [ ] **Historical Balance Snapshots**
       A `balance` table storing daily balance snapshots per account (date, balance, currency). Enables net worth over time charts, trend analysis, and performance tracking. Currently we only store a single `value` on the account.
 
-- [ ] **Categories as a First-Class Entity**
+- [x] **Categories as a First-Class Entity**
       A `category` table with `parent_id` (hierarchy/subcategories), `color`, `icon`, and `classification` (income/expense), scoped per user. Replace the current `varchar("category")` string on transactions with a proper foreign key. Enables spending-by-category reports, custom icons, and nested categories like "Food > Restaurants".
 
 - [ ] **Merchants**
@@ -20,6 +20,9 @@ Improvements inspired by Maybe's data model, plus additional backend/DB features
 
 - [ ] **Historical Exchange Rates**
       Extend the `rate` table (or create `exchange_rate`) to include a `date` dimension: `from_currency`, `to_currency`, `rate`, `date`. Required for accurate multi-currency net worth history. The current single-rate-per-currency model is only correct for "right now".
+
+- [ ] **Transaction Enrichment**
+      Enrich transactions in synced bank accounts by adding transactions in a queue once they hit the database.
 
 ### Medium Priority
 

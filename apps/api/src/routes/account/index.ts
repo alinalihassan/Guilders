@@ -1,11 +1,11 @@
 import { and, eq } from "drizzle-orm";
 import { Elysia, status, t } from "elysia";
 
-import { account, insertAccountSchema, selectAccountSchema } from "../../db/schema/accounts";
+import { account, selectAccountSchema } from "../../db/schema/accounts";
 import { AccountTypeEnum } from "../../db/schema/enums";
 import { authPlugin } from "../../middleware/auth";
 import { errorSchema } from "../../utils/error";
-import { idParamSchema, subtypeToType } from "./types";
+import { createAccountSchema, idParamSchema, subtypeToType, updateAccountSchema } from "./types";
 
 export const accountRoutes = new Elysia({
   prefix: "/account",
@@ -17,7 +17,7 @@ export const accountRoutes = new Elysia({
   .use(authPlugin)
   .model({
     Account: selectAccountSchema,
-    CreateAccount: insertAccountSchema,
+    CreateAccount: createAccountSchema,
   })
   .get(
     "",
@@ -82,7 +82,7 @@ export const accountRoutes = new Elysia({
     },
     {
       auth: true,
-      body: insertAccountSchema,
+      body: createAccountSchema,
       response: {
         200: t.Ref("#/components/schemas/Account"),
         500: errorSchema,
@@ -199,7 +199,7 @@ export const accountRoutes = new Elysia({
     {
       auth: true,
       params: idParamSchema,
-      body: insertAccountSchema,
+      body: updateAccountSchema,
       response: {
         200: t.Ref("#/components/schemas/Account"),
         404: errorSchema,

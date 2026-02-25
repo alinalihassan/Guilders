@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDialog } from "@/hooks/useDialog";
+import { useCategories } from "@/lib/queries/useCategories";
 import { useTransactions } from "@/lib/queries/useTransactions";
 import { useUser } from "@/lib/queries/useUser";
 import { cn } from "@/lib/utils";
@@ -30,6 +31,7 @@ function convertAmountSafely(amount: unknown, fromCurrency: string, userCurrency
 
 export default function TransactionsPage() {
   const { data: transactions, isLoading } = useTransactions();
+  const { data: categories } = useCategories();
   const { data: user, isLoading: isLoadingUser } = useUser();
   const { open: openAddTransaction } = useDialog("addTransaction");
   const [searchQuery, setSearchQuery] = useState("");
@@ -54,9 +56,11 @@ export default function TransactionsPage() {
 
   const filteredTransactions = transactions?.filter((transaction) => {
     const searchLower = searchQuery.toLowerCase();
+    const categoryName =
+      categories?.find((category) => category.id === transaction.category_id)?.name ?? "";
     return (
       transaction.description?.toLowerCase().includes(searchLower) ||
-      transaction.category?.toLowerCase().includes(searchLower) ||
+      categoryName.toLowerCase().includes(searchLower) ||
       toFiniteNumber(transaction.amount).toString().includes(searchLower) ||
       transaction.currency.toLowerCase().includes(searchLower)
     );

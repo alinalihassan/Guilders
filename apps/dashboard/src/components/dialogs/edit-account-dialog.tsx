@@ -1,6 +1,5 @@
 "use client";
 
-import type { Currency } from "@guilders/api/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertTriangle, Loader2, Trash2 } from "lucide-react";
 import { useEffect } from "react";
@@ -166,11 +165,11 @@ export function EditAccountDialog() {
     const updatedAccount = {
       subtype: formData.accountType,
       name: formData.accountName,
-      value: Number.parseFloat(formData.value),
+      value: formData.value,
       currency: formData.currency,
       investable: formData.investable,
       taxability: formData.taxability,
-      tax_rate: formData.taxRate ? Number.parseFloat(formData.taxRate) : null,
+      tax_rate: formData.taxRate ? formData.taxRate : null,
       notes: formData.notes ?? "",
     };
 
@@ -340,7 +339,7 @@ export function EditAccountDialog() {
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                {currencies?.map((currency: Currency) => (
+                                {currencies?.map((currency) => (
                                   <SelectItem key={currency.code} value={currency.code}>
                                     {currency.code}
                                   </SelectItem>

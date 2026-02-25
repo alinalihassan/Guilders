@@ -2,6 +2,7 @@ import { defineRelations } from "drizzle-orm";
 
 import { account } from "./accounts";
 import { session, user, user_account, verification } from "./auth";
+import { category } from "./categories";
 import { country } from "./countries";
 import { currency } from "./currencies";
 import { institutionConnection } from "./institution-connections";
@@ -16,6 +17,7 @@ const schema = {
   user_account,
   session,
   user,
+  category,
   account,
   country,
   currency,
@@ -38,6 +40,10 @@ export const relations = defineRelations(schema, (r) => ({
     accounts: r.many.user_account({
       from: r.user.id,
       to: r.user_account.userId,
+    }),
+    categories: r.many.category({
+      from: r.user.id,
+      to: r.category.user_id,
     }),
   },
   session: {
@@ -67,6 +73,16 @@ export const relations = defineRelations(schema, (r) => ({
       to: r.transaction.account_id,
     }),
   },
+  category: {
+    user: r.one.user({
+      from: r.category.user_id,
+      to: r.user.id,
+    }),
+    transactions: r.many.transaction({
+      from: r.category.id,
+      to: r.transaction.category_id,
+    }),
+  },
   transaction: {
     account: r.one.account({
       from: r.transaction.account_id,
@@ -76,6 +92,10 @@ export const relations = defineRelations(schema, (r) => ({
       from: r.transaction.currency,
       to: r.currency.code,
       alias: "currencyRel",
+    }),
+    category: r.one.category({
+      from: r.transaction.category_id,
+      to: r.category.id,
     }),
   },
   currency: {

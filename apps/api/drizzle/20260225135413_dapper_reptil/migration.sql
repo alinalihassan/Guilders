@@ -120,6 +120,18 @@ CREATE TABLE "verification" (
 	"updated_at" timestamp NOT NULL
 );
 --> statement-breakpoint
+CREATE TABLE "category" (
+	"id" serial PRIMARY KEY,
+	"user_id" varchar(255) NOT NULL,
+	"name" varchar(100) NOT NULL,
+	"parent_id" integer,
+	"color" varchar(7) DEFAULT '#64748b',
+	"icon" varchar(100),
+	"classification" varchar(20) DEFAULT 'expense' NOT NULL,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
 CREATE TABLE "country" (
 	"code" varchar(2) PRIMARY KEY,
 	"name" varchar(100) NOT NULL,
@@ -186,7 +198,7 @@ CREATE TABLE "rate" (
 CREATE TABLE "transaction" (
 	"account_id" integer NOT NULL,
 	"amount" numeric(19,4) NOT NULL,
-	"category" varchar(100) DEFAULT 'uncategorized' NOT NULL,
+	"category_id" integer NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"currency" varchar(3) NOT NULL,
 	"date" date NOT NULL,
@@ -216,6 +228,9 @@ CREATE INDEX "twoFactor_secret_idx" ON "two_factor" ("secret");--> statement-bre
 CREATE INDEX "twoFactor_userId_idx" ON "two_factor" ("user_id");--> statement-breakpoint
 CREATE INDEX "user_account_userId_idx" ON "user_account" ("user_id");--> statement-breakpoint
 CREATE INDEX "verification_identifier_idx" ON "verification" ("identifier");--> statement-breakpoint
+CREATE INDEX "category_id_idx" ON "category" ("id");--> statement-breakpoint
+CREATE INDEX "category_user_idx" ON "category" ("user_id");--> statement-breakpoint
+CREATE INDEX "category_parent_idx" ON "category" ("parent_id");--> statement-breakpoint
 CREATE INDEX "country_code_idx" ON "country" ("code");--> statement-breakpoint
 CREATE INDEX "country_currency_idx" ON "country" ("currency_code");--> statement-breakpoint
 CREATE INDEX "currency_code_idx" ON "currency" ("code");--> statement-breakpoint
@@ -236,6 +251,7 @@ CREATE INDEX "provider_id_idx" ON "provider" ("id");--> statement-breakpoint
 CREATE INDEX "rate_currency_idx" ON "rate" ("currency_code");--> statement-breakpoint
 CREATE INDEX "transaction_id_idx" ON "transaction" ("id");--> statement-breakpoint
 CREATE INDEX "transaction_account_idx" ON "transaction" ("account_id");--> statement-breakpoint
+CREATE INDEX "transaction_category_idx" ON "transaction" ("category_id");--> statement-breakpoint
 CREATE INDEX "transaction_currency_idx" ON "transaction" ("currency");--> statement-breakpoint
 CREATE INDEX "transaction_date_idx" ON "transaction" ("date");--> statement-breakpoint
 CREATE INDEX "user_setting_user_idx" ON "user_setting" ("user_id");--> statement-breakpoint
@@ -248,6 +264,7 @@ ALTER TABLE "passkey" ADD CONSTRAINT "passkey_user_id_user_id_fkey" FOREIGN KEY 
 ALTER TABLE "session" ADD CONSTRAINT "session_user_id_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE;--> statement-breakpoint
 ALTER TABLE "two_factor" ADD CONSTRAINT "two_factor_user_id_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE;--> statement-breakpoint
 ALTER TABLE "user_account" ADD CONSTRAINT "user_account_user_id_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE;--> statement-breakpoint
+ALTER TABLE "category" ADD CONSTRAINT "category_user_id_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;--> statement-breakpoint
 ALTER TABLE "country" ADD CONSTRAINT "country_currency_code_currency_code_fkey" FOREIGN KEY ("currency_code") REFERENCES "currency"("code");--> statement-breakpoint
 ALTER TABLE "document" ADD CONSTRAINT "document_user_id_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;--> statement-breakpoint
 ALTER TABLE "institution_connection" ADD CONSTRAINT "institution_connection_institution_id_institution_id_fkey" FOREIGN KEY ("institution_id") REFERENCES "institution"("id") ON DELETE CASCADE ON UPDATE CASCADE;--> statement-breakpoint
@@ -258,6 +275,7 @@ ALTER TABLE "provider_connection" ADD CONSTRAINT "provider_connection_provider_i
 ALTER TABLE "provider_connection" ADD CONSTRAINT "provider_connection_user_id_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;--> statement-breakpoint
 ALTER TABLE "rate" ADD CONSTRAINT "rate_currency_code_currency_code_fkey" FOREIGN KEY ("currency_code") REFERENCES "currency"("code");--> statement-breakpoint
 ALTER TABLE "transaction" ADD CONSTRAINT "transaction_account_id_account_id_fkey" FOREIGN KEY ("account_id") REFERENCES "account"("id") ON DELETE CASCADE ON UPDATE CASCADE;--> statement-breakpoint
+ALTER TABLE "transaction" ADD CONSTRAINT "transaction_category_id_category_id_fkey" FOREIGN KEY ("category_id") REFERENCES "category"("id") ON DELETE RESTRICT ON UPDATE CASCADE;--> statement-breakpoint
 ALTER TABLE "transaction" ADD CONSTRAINT "transaction_currency_currency_code_fkey" FOREIGN KEY ("currency") REFERENCES "currency"("code");--> statement-breakpoint
 ALTER TABLE "user_setting" ADD CONSTRAINT "user_setting_currency_currency_code_fkey" FOREIGN KEY ("currency") REFERENCES "currency"("code");--> statement-breakpoint
 ALTER TABLE "user_setting" ADD CONSTRAINT "user_setting_user_id_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;

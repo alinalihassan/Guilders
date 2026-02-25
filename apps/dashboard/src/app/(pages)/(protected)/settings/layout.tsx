@@ -21,6 +21,10 @@ const tabItems = [
     href: "/settings/connections",
   },
   {
+    title: "Categories",
+    href: "/settings/categories",
+  },
+  {
     title: "API Key",
     href: "/settings/api-key",
   },

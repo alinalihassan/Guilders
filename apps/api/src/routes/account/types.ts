@@ -1,5 +1,6 @@
 import { t } from "elysia";
 
+import { insertAccountSchema } from "../../db/schema/accounts";
 import type { Account as DbAccount, InsertAccount } from "../../db/schema/accounts";
 import { AccountSubtypeEnum, AccountTypeEnum } from "../../db/schema/enums";
 import type { InstitutionConnection } from "../../db/schema/institution-connections";
@@ -21,6 +22,9 @@ export const subtypeToType: Record<string, string> = {
 export const idParamSchema = t.Object({
   id: t.Number(),
 });
+
+export const createAccountSchema = t.Omit(insertAccountSchema, ["user_id"]);
+export const updateAccountSchema = t.Partial(createAccountSchema);
 
 export type Account = DbAccount & {
   institutionConnection?:

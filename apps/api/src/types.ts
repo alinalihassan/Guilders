@@ -1,6 +1,7 @@
 export type { App } from "./app";
 import type { Document as DbDocument } from "./db/schema/documents";
 export type { Account, CreateAccount, UpdateAccount } from "./routes/account/types";
+export type { Category, Categories, CategoryInsert } from "./routes/category/types";
 export type { ConnectionResponse } from "./routes/connections/types";
 export type { Country, Countries } from "./routes/country/types";
 export type { Currency, Currencies } from "./routes/currency/types";

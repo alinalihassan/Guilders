@@ -64,6 +64,17 @@ export const transactionRoutes = new Elysia({
 
       const amount = parseFloat(body.amount.toString());
 
+      const categoryResult = await db.query.category.findFirst({
+        where: {
+          id: body.category_id,
+          user_id: user.id,
+        },
+      });
+
+      if (!categoryResult) {
+        return status(404, { error: "Category not found" });
+      }
+
       // Update account value
       const currentValue = parseFloat(accountResult.value.toString());
       const newValue = currentValue + amount;
@@ -83,7 +94,7 @@ export const transactionRoutes = new Elysia({
             currency: body.currency,
             date: body.date,
             description: body.description,
-            category: body.category || "uncategorized",
+            category_id: body.category_id,
             provider_transaction_id: body.provider_transaction_id || null,
             documents: body.documents || null,
           })
@@ -172,6 +183,17 @@ export const transactionRoutes = new Elysia({
         return status(404, { error: "Transaction not found" });
       }
 
+      const categoryResult = await db.query.category.findFirst({
+        where: {
+          id: body.category_id,
+          user_id: user.id,
+        },
+      });
+
+      if (!categoryResult) {
+        return status(404, { error: "Category not found" });
+      }
+
       // Calculate value adjustment
       const oldTransactionAmount = parseFloat(existingTransaction.amount.toString());
       const newTransactionAmount = parseFloat(body.amount.toString());
@@ -195,7 +217,7 @@ export const transactionRoutes = new Elysia({
             currency: body.currency,
             date: body.date,
             description: body.description,
-            category: body.category || existingTransaction.category,
+            category_id: body.category_id,
             provider_transaction_id:
               body.provider_transaction_id || existingTransaction.provider_transaction_id,
             documents: body.documents || existingTransaction.documents,

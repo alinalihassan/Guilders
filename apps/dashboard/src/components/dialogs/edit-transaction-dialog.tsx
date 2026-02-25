@@ -38,6 +38,7 @@ import { useRemoveTransaction, useUpdateTransaction } from "@/lib/queries/useTra
 
 import { DateTimePicker } from "../common/datetime-picker";
 import { FileUploader } from "../common/file-uploader";
+import { CategorySelector } from "../common/category-selector";
 import { AccountIcon } from "../dashboard/accounts/account-icon";
 
 const formSchema = z.object({
@@ -49,7 +50,9 @@ const formSchema = z.object({
     .min(1, "Amount is required.")
     .regex(/^-?\d+(\.\d{1,2})?$/, "Invalid number format."),
   description: z.string().min(1, "Description is required."),
-  category: z.string().min(1, "Category is required."),
+  categoryId: z.number({
+    required_error: "Category is required.",
+  }),
   date: z.string().min(1, "Date is required."),
   documents: z.array(z.custom<File>()).optional(),
 });
@@ -83,7 +86,7 @@ export function EditTransactionDialog() {
       accountId: data?.transaction?.account_id ?? undefined,
       amount: data?.transaction?.amount.toString() ?? "",
       description: data?.transaction?.description ?? "",
-      category: data?.transaction?.category ?? "",
+      categoryId: data?.transaction?.category_id ?? undefined,
       date: data?.transaction?.date ? formatDateForInput(data.transaction.date) : "",
       documents: [],
     },
@@ -95,7 +98,7 @@ export function EditTransactionDialog() {
         accountId: data.transaction.account_id,
         amount: data.transaction.amount.toString(),
         description: data.transaction.description,
-        category: data.transaction.category,
+        categoryId: data.transaction.category_id,
         date: formatDateForInput(data.transaction.date),
         documents: [],
       });
@@ -113,7 +116,7 @@ export function EditTransactionDialog() {
       account_id: formData.accountId,
       amount: formData.amount,
       description: formData.description,
-      category: formData.category,
+      category_id: formData.categoryId,
       date: formatDateForSubmit(formData.date),
       currency: transaction.currency,
       documents: transaction.documents,
@@ -260,15 +263,16 @@ export function EditTransactionDialog() {
 
                   <FormField
                     control={form.control}
-                    name="category"
+                    name="categoryId"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Category</FormLabel>
                         <FormControl>
-                          <Input
-                            placeholder="Enter category"
-                            {...field}
+                          <CategorySelector
+                            value={field.value}
+                            onChange={field.onChange}
                             disabled={isSyncedTransaction}
+                            placeholder="Select or add category"
                           />
                         </FormControl>
                         <FormMessage />

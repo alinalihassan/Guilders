@@ -40,20 +40,8 @@ function formatTime(dateStr: string): string {
   });
 }
 
-function getCategoryIcon(category: string): string {
-  const map: Record<string, string> = {
-    food: "🍔",
-    transport: "🚗",
-    shopping: "🛍️",
-    entertainment: "🎬",
-    health: "🏥",
-    travel: "✈️",
-    utilities: "💡",
-    income: "💰",
-    transfer: "↔️",
-    uncategorized: "📋",
-  };
-  return map[category.toLowerCase()] ?? "📋";
+function getCategoryIcon(): string {
+  return "📋";
 }
 
 // ─── Components ──────────────────────────────────────────────────────────────
@@ -294,7 +282,7 @@ export default function TransactionDetailScreen() {
               marginBottom: Spacing.three,
             }}
           >
-            <Text style={{ fontSize: 32 }}>{getCategoryIcon(transaction.category)}</Text>
+            <Text style={{ fontSize: 32 }}>{getCategoryIcon()}</Text>
           </View>
 
           {/* Description */}
@@ -318,7 +306,7 @@ export default function TransactionDetailScreen() {
               textTransform: "capitalize",
             }}
           >
-            {transaction.category}
+            Category #{transaction.category_id}
           </Text>
         </View>
 
