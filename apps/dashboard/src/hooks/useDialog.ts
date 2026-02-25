@@ -1,5 +1,5 @@
-import { useStore } from "../store";
-import type { DialogState } from "../store/dialogStore";
+import { useStore } from "@/lib/store";
+import type { DialogState } from "@/lib/store/dialogStore";
 
 type DialogData<T extends DialogState["type"]> = Omit<Extract<DialogState, { type: T }>, "type">;
 
