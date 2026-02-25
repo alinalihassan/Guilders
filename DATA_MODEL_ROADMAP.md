@@ -35,6 +35,9 @@ Improvements inspired by Maybe's data model, plus additional backend/DB features
 - [ ] **Onboarding Flow & User Preferences Expansion**
       Extend `user_setting` beyond just currency: `locale`, `timezone`, `date_format`, `default_period` (last 30 days, this month, etc.), `theme`, `onboarded_at`. Most of these are trivial columns but important for a polished experience.
 
+- [ ] **User deletion queue**
+      Delete users from providers and delete their files from file storage after deletion
+
 ### Low Priority
 
 - [ ] **Budgets**
