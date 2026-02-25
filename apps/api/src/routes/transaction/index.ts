@@ -7,6 +7,7 @@ import {
   selectTransactionSchema,
   transaction,
 } from "../../db/schema/transactions";
+import { filterLockedUpdate } from "../../lib/locked-attributes";
 import { authPlugin } from "../../middleware/auth";
 import { errorSchema } from "../../utils/error";
 import { transactionIdParamSchema, transactionQuerySchema } from "./types";
@@ -157,19 +158,7 @@ export const transactionRoutes = new Elysia({
   .put(
     "/:id",
     async ({ params, body, user, db }) => {
-      // Verify the account belongs to the user
-      const targetAccount = await db.query.account.findFirst({
-        where: {
-          id: body.account_id,
-          user_id: user.id,
-        },
-      });
-
-      if (!targetAccount) {
-        return status(404, { error: "Account not found" });
-      }
-
-      // Get existing transaction
+      // Get existing transaction first so lock filtering can run against it.
       const existingTransaction = await db.query.transaction.findFirst({
         where: {
           id: params.id,
@@ -183,9 +172,48 @@ export const transactionRoutes = new Elysia({
         return status(404, { error: "Transaction not found" });
       }
 
+      const { allowed, blocked } = filterLockedUpdate(
+        body as Record<string, unknown>,
+        existingTransaction.locked_attributes,
+      );
+
+      if (blocked.length > 0) {
+        console.warn("[Transaction] blocked locked attribute update", {
+          transactionId: params.id,
+          userId: user.id,
+          blockedFields: blocked,
+        });
+        return status(409, {
+          error: `Cannot update locked attributes: ${blocked.map(String).join(", ")}`,
+        });
+      }
+      const unlockedBody = allowed as typeof body;
+
+      const effectiveAccountId = unlockedBody.account_id ?? existingTransaction.account_id;
+      const effectiveCategoryId = unlockedBody.category_id ?? existingTransaction.category_id;
+      const effectiveAmount = unlockedBody.amount ?? existingTransaction.amount;
+      const effectiveCurrency = unlockedBody.currency ?? existingTransaction.currency;
+      const effectiveDate = unlockedBody.date ?? existingTransaction.date;
+      const effectiveDescription = unlockedBody.description ?? existingTransaction.description;
+      const effectiveDocuments = unlockedBody.documents ?? existingTransaction.documents;
+      const effectiveProviderTransactionId =
+        unlockedBody.provider_transaction_id ?? existingTransaction.provider_transaction_id;
+
+      // Verify the target account belongs to the user.
+      const targetAccount = await db.query.account.findFirst({
+        where: {
+          id: effectiveAccountId,
+          user_id: user.id,
+        },
+      });
+
+      if (!targetAccount) {
+        return status(404, { error: "Account not found" });
+      }
+
       const categoryResult = await db.query.category.findFirst({
         where: {
-          id: body.category_id,
+          id: effectiveCategoryId,
           user_id: user.id,
         },
       });
@@ -196,7 +224,7 @@ export const transactionRoutes = new Elysia({
 
       // Calculate value adjustment
       const oldTransactionAmount = parseFloat(existingTransaction.amount.toString());
-      const newTransactionAmount = parseFloat(body.amount.toString());
+      const newTransactionAmount = parseFloat(effectiveAmount.toString());
       const amountDiff = newTransactionAmount - oldTransactionAmount;
       const currentAccountValue = parseFloat(targetAccount.value.toString());
       const newAccountValue = currentAccountValue + amountDiff;
@@ -206,21 +234,20 @@ export const transactionRoutes = new Elysia({
         await tx
           .update(account)
           .set({ value: newAccountValue.toString(), updated_at: new Date() })
-          .where(eq(account.id, body.account_id));
+          .where(eq(account.id, effectiveAccountId));
 
         // Update transaction
         const [updatedTransactionResult] = await tx
           .update(transaction)
           .set({
-            account_id: body.account_id,
-            amount: body.amount,
-            currency: body.currency,
-            date: body.date,
-            description: body.description,
-            category_id: body.category_id,
-            provider_transaction_id:
-              body.provider_transaction_id || existingTransaction.provider_transaction_id,
-            documents: body.documents || existingTransaction.documents,
+            account_id: effectiveAccountId,
+            amount: effectiveAmount,
+            currency: effectiveCurrency,
+            date: effectiveDate,
+            description: effectiveDescription,
+            category_id: effectiveCategoryId,
+            provider_transaction_id: effectiveProviderTransactionId,
+            documents: effectiveDocuments,
             updated_at: new Date(),
           })
           .where(eq(transaction.id, params.id))
@@ -241,6 +268,7 @@ export const transactionRoutes = new Elysia({
       body: insertTransactionSchema,
       response: {
         200: "Transaction",
+        409: errorSchema,
         404: errorSchema,
         500: errorSchema,
       },

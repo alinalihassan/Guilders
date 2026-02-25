@@ -5,6 +5,7 @@ import { account } from "../db/schema/accounts";
 import { AccountSubtypeEnum, AccountTypeEnum } from "../db/schema/enums";
 import { institutionConnection } from "../db/schema/institution-connections";
 import { createDb } from "../lib/db";
+import { SYNCED_ACCOUNT_LOCKED_ATTRIBUTES } from "../lib/locked-attributes";
 import { getProvider } from "../providers";
 import { getSnapTradeClient } from "../providers/snaptrade/client";
 import type {
@@ -359,6 +360,7 @@ async function syncSnapTradeHoldings(
         institution_connection_id: institutionConn.id,
         provider_account_id: snapAccount.id,
         image: institutionRecord.logo_url,
+        locked_attributes: SYNCED_ACCOUNT_LOCKED_ATTRIBUTES,
         parent: null,
         updated_at: new Date(),
       })
@@ -379,6 +381,7 @@ async function syncSnapTradeHoldings(
         institution_connection_id: institutionConn.id,
         provider_account_id: snapAccount.id,
         image: institutionRecord.logo_url,
+        locked_attributes: SYNCED_ACCOUNT_LOCKED_ATTRIBUTES,
       })
       .returning({ id: account.id });
 
@@ -412,6 +415,7 @@ async function syncSnapTradeHoldings(
     institution_connection_id: institutionConn.id,
     image: institutionRecord.logo_url,
     provider_account_id: null,
+    locked_attributes: SYNCED_ACCOUNT_LOCKED_ATTRIBUTES,
   });
 
   for (const position of positions) {
@@ -434,6 +438,7 @@ async function syncSnapTradeHoldings(
       institution_connection_id: institutionConn.id,
       image: symbol?.logo_url ?? null,
       provider_account_id: null,
+      locked_attributes: SYNCED_ACCOUNT_LOCKED_ATTRIBUTES,
     });
   }
 

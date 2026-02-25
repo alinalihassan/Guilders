@@ -1,6 +1,7 @@
 import {
   index,
   integer,
+  jsonb,
   numeric,
   pgTable,
   serial,
@@ -41,6 +42,10 @@ export const account = pgTable(
       },
     ),
     investable: investableEnum("investable").notNull().default(InvestableEnum.investable_cash),
+    locked_attributes: jsonb("locked_attributes")
+      .$type<Record<string, boolean>>()
+      .notNull()
+      .default({}),
     name: varchar("name", { length: 100 }).notNull(),
     notes: text("notes").notNull().default(""),
     parent: integer("parent"),

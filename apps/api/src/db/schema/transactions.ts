@@ -2,6 +2,7 @@ import {
   date,
   index,
   integer,
+  jsonb,
   numeric,
   pgTable,
   serial,
@@ -39,6 +40,10 @@ export const transaction = pgTable(
     description: text("description").notNull(),
     documents: varchar("documents", { length: 255 }).array(),
     id: serial("id").primaryKey(),
+    locked_attributes: jsonb("locked_attributes")
+      .$type<Record<string, boolean>>()
+      .notNull()
+      .default({}),
     provider_transaction_id: varchar("provider_transaction_id", {
       length: 255,
     }),

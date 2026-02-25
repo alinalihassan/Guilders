@@ -23,7 +23,7 @@ export const idParamSchema = t.Object({
   id: t.Number(),
 });
 
-export const createAccountSchema = t.Omit(insertAccountSchema, ["user_id"]);
+export const createAccountSchema = t.Omit(insertAccountSchema, ["user_id", "locked_attributes"]);
 export const updateAccountSchema = t.Partial(createAccountSchema);
 
 export type Account = DbAccount & {

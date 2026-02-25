@@ -3,6 +3,7 @@ import { Elysia, status, t } from "elysia";
 
 import { account, selectAccountSchema } from "../../db/schema/accounts";
 import { AccountTypeEnum } from "../../db/schema/enums";
+import { filterLockedUpdate } from "../../lib/locked-attributes";
 import { authPlugin } from "../../middleware/auth";
 import { errorSchema } from "../../utils/error";
 import { createAccountSchema, idParamSchema, subtypeToType, updateAccountSchema } from "./types";
@@ -161,16 +162,33 @@ export const accountRoutes = new Elysia({
         return status(404, { error: "Account not found" });
       }
 
+      const { allowed, blocked } = filterLockedUpdate(
+        body as Record<string, unknown>,
+        existingAccount.locked_attributes,
+      );
+
+      if (blocked.length > 0) {
+        console.warn("[Account] blocked locked attribute update", {
+          accountId: params.id,
+          userId: user.id,
+          blockedFields: blocked,
+        });
+        return status(409, {
+          error: `Cannot update locked attributes: ${blocked.map(String).join(", ")}`,
+        });
+      }
+      const unlockedBody = allowed as typeof body;
+
       // Recalculate type if subtype changed
       let type: AccountTypeEnum = existingAccount.type;
-      if (body.subtype && body.subtype !== existingAccount.subtype) {
-        type = (subtypeToType[body.subtype] || AccountTypeEnum.asset) as AccountTypeEnum;
+      if (unlockedBody.subtype && unlockedBody.subtype !== existingAccount.subtype) {
+        type = (subtypeToType[unlockedBody.subtype] || AccountTypeEnum.asset) as AccountTypeEnum;
       }
 
       // Handle value sign for liabilities
       let value: number;
-      if (body.value !== undefined) {
-        value = parseFloat(body.value.toString());
+      if (unlockedBody.value !== undefined) {
+        value = parseFloat(unlockedBody.value.toString());
       } else {
         value = parseFloat(existingAccount.value.toString());
       }
@@ -182,7 +200,7 @@ export const accountRoutes = new Elysia({
       const [updatedAccount] = await db
         .update(account)
         .set({
-          ...body,
+          ...unlockedBody,
           type: type as AccountTypeEnum,
           value: value.toString(),
           updated_at: new Date(),
@@ -202,6 +220,7 @@ export const accountRoutes = new Elysia({
       body: updateAccountSchema,
       response: {
         200: t.Ref("#/components/schemas/Account"),
+        409: errorSchema,
         404: errorSchema,
         500: errorSchema,
       },
