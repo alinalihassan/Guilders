@@ -15,7 +15,7 @@ Improvements inspired by Maybe's data model, plus additional backend/DB features
 - [ ] **Merchants**
       A `merchant` table with `name`, `logo_url`, `website_url`, and `color`, scoped per user. Link transactions to merchants via `merchant_id`. Enables automatic grouping ("How much at Amazon?"), logo display, and powers auto-categorization.
 
-- [ ] **Locked Attributes**
+- [x] **Locked Attributes**
       Add `locked_attributes jsonb` to `account` and `transaction` tables. Tracks which fields are provider-managed vs user-edited, preventing sync from overwriting manual edits. Essential for a good synced-account experience.
 
 - [ ] **Historical Exchange Rates**
