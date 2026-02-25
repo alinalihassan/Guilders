@@ -15,8 +15,8 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
+import { useDialog } from "@/hooks/useDialog";
 import { bottomNavigation, mainNavigation } from "@/lib/config/navigation";
-import { useDialog } from "@/lib/hooks/useDialog";
 import { useCountriesMap } from "@/lib/queries/useCountries";
 import { useInstitutions } from "@/lib/queries/useInstitutions";
 import { useProviders } from "@/lib/queries/useProviders";

@@ -33,12 +33,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useDialog } from "@/hooks/useDialog";
 import { accountSubtypeLabels, accountSubtypes } from "@/lib/account-types";
-
-import { useDialog } from "../../lib/hooks/useDialog";
-import { useAddAccount } from "../../lib/queries/useAccounts";
-import { useCurrencies } from "../../lib/queries/useCurrencies";
-import { useUser } from "../../lib/queries/useUser";
+import { useAddAccount } from "@/lib/queries/useAccounts";
+import { useCurrencies } from "@/lib/queries/useCurrencies";
+import { useUser } from "@/lib/queries/useUser";
 
 const formSchema = z.object({
   accountType: z.enum(accountSubtypes),

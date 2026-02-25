@@ -7,7 +7,7 @@ import { AccountsEmptyPlaceholder } from "@/components/dashboard/accounts/accoun
 import { CompactBalanceCard } from "@/components/dashboard/compact-balance-card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useDialog } from "@/lib/hooks/useDialog";
+import { useDialog } from "@/hooks/useDialog";
 import { useAccounts } from "@/lib/queries/useAccounts";
 
 export default function AccountsPage() {

@@ -18,8 +18,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { authApi } from "@/lib/auth-client";
-import { useDialog } from "@/lib/hooks/useDialog";
+import { useDialog } from "@/hooks/useDialog";
+import { authClient } from "@/lib/auth-client";
 import { useUpdateUserSettings } from "@/lib/queries/useUser";
 import { useSecurityStore } from "@/lib/store/securityStore";
 
@@ -57,7 +57,7 @@ export function SecurityForm() {
 
   const loadPasskeys = useCallback(async () => {
     setIsLoadingPasskeys(true);
-    const { data, error } = await authApi.listPasskeys();
+    const { data, error } = await authClient.passkey.listUserPasskeys({});
     if (error) {
       toast.error("Unable to load passkeys", { description: error.message });
       setIsLoadingPasskeys(false);
@@ -125,7 +125,7 @@ export function SecurityForm() {
   const handleAddPasskey = async () => {
     try {
       setIsMutatingPasskey(true);
-      const { error } = await authApi.addPasskey();
+      const { error } = await authClient.passkey.addPasskey({});
       if (error) {
         toast.error("Failed to add passkey", { description: error.message });
         return;
@@ -142,7 +142,7 @@ export function SecurityForm() {
     if (!name || name === currentName) return;
     try {
       setIsMutatingPasskey(true);
-      const { error } = await authApi.updatePasskey({ id, name });
+      const { error } = await authClient.passkey.updatePasskey({ id, name });
       if (error) {
         toast.error("Failed to rename passkey", { description: error.message });
         return;
@@ -157,7 +157,7 @@ export function SecurityForm() {
   const handleDeletePasskey = async (id: string) => {
     try {
       setIsMutatingPasskey(true);
-      const { error } = await authApi.deletePasskey({ id });
+      const { error } = await authClient.passkey.deletePasskey({ id });
       if (error) {
         toast.error("Failed to delete passkey", { description: error.message });
         return;

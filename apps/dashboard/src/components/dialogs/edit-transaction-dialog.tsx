@@ -31,7 +31,7 @@ import {
 } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { useDialog } from "@/lib/hooks/useDialog";
+import { useDialog } from "@/hooks/useDialog";
 import { useAccounts } from "@/lib/queries/useAccounts";
 import { useFiles } from "@/lib/queries/useFiles";
 import { useRemoveTransaction, useUpdateTransaction } from "@/lib/queries/useTransactions";
@@ -62,7 +62,7 @@ function formatDateForInput(dateString: string) {
 }
 
 function formatDateForSubmit(dateString: string) {
-  return new Date(dateString).toISOString();
+  return new Date(dateString).toISOString().split("T")[0]!;
 }
 
 export function EditTransactionDialog() {
@@ -111,7 +111,7 @@ export function EditTransactionDialog() {
     const updatedTransaction = {
       id: transaction.id,
       account_id: formData.accountId,
-      amount: Number.parseFloat(formData.amount),
+      amount: formData.amount,
       description: formData.description,
       category: formData.category,
       date: formatDateForSubmit(formData.date),

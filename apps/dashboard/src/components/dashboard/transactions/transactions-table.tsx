@@ -23,7 +23,7 @@ export function TransactionsTable({ accountId }: { accountId?: number }) {
         <TransactionsEmptyPlaceholder accountId={accountId} />
       ) : (
         transactions
-          .toSorted((a, b) => b.date.localeCompare(a.date))
+          .toSorted((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
           .map((transaction) => <TransactionItem key={transaction.id} transaction={transaction} />)
       )}
     </div>

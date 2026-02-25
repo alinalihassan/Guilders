@@ -3,7 +3,7 @@
 import type { UpdateUser, User } from "@guilders/api/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { authApi } from "../auth-client";
+import { authClient } from "../auth-client";
 
 const queryKey = ["user-settings"] as const;
 const DEFAULT_CURRENCY = "EUR";
@@ -12,12 +12,11 @@ export function useUser() {
   return useQuery<User, Error>({
     queryKey,
     queryFn: async () => {
-      const { data: payload } = await authApi.getSession();
+      const { data: payload } = await authClient.getSession();
 
       return {
         email: payload?.user?.email ?? "",
         settings: {
-          // TODO: Replace default currency with persisted user_settings currency once backend migration is done.
           currency: DEFAULT_CURRENCY,
           api_key: null,
           profile_url: null,
@@ -36,7 +35,7 @@ export function useUserToken() {
   return useQuery({
     queryKey: ["user-token"],
     queryFn: async () => {
-      const { data: payload } = await authApi.getSession();
+      const { data: payload } = await authClient.getSession();
       return payload?.session?.token || null;
     },
   });
@@ -77,7 +76,7 @@ export function useUpdateUserSettings() {
 export function useDeleteAccount() {
   return useMutation({
     mutationFn: async () => {
-      const { error } = await authApi.signOut();
+      const { error } = await authClient.signOut();
       if (error) throw new Error(error.message || "Failed to delete account");
       return true;
     },

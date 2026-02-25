@@ -34,8 +34,8 @@ import {
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { useDialog } from "@/hooks/useDialog";
 import { type AccountSubtype, accountSubtypeLabels, accountSubtypes } from "@/lib/account-types";
-import { useDialog } from "@/lib/hooks/useDialog";
 import { useRemoveAccount, useUpdateAccount } from "@/lib/queries/useAccounts";
 import { useReconnectConnection } from "@/lib/queries/useConnections";
 import { useCurrencies } from "@/lib/queries/useCurrencies";

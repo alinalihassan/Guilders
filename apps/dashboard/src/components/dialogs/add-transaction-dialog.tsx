@@ -7,6 +7,7 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
+import { DateTimePicker } from "@/components/common/datetime-picker";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -32,13 +33,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-import { DateTimePicker } from "../../components/common/datetime-picker";
-import { useDialog } from "../../lib/hooks/useDialog";
-import { useAccounts } from "../../lib/queries/useAccounts";
-import { useCurrencies } from "../../lib/queries/useCurrencies";
-import { useAddTransaction } from "../../lib/queries/useTransactions";
-import { useUser } from "../../lib/queries/useUser";
+import { useDialog } from "@/hooks/useDialog";
+import { useAccounts } from "@/lib/queries/useAccounts";
+import { useCurrencies } from "@/lib/queries/useCurrencies";
+import { useAddTransaction } from "@/lib/queries/useTransactions";
+import { useUser } from "@/lib/queries/useUser";
 
 const formSchema = z.object({
   accountId: z.number({
@@ -115,11 +114,11 @@ export function AddTransactionDialog() {
   const handleSubmit = form.handleSubmit((data) => {
     addTransaction({
       account_id: data.accountId,
-      amount: Number.parseFloat(data.amount),
+      amount: data.amount,
       currency: data.currency,
       description: data.description,
       category: data.category,
-      date: new Date(data.date).toISOString(),
+      date: new Date(data.date).toISOString().split("T")[0]!,
     });
 
     close();

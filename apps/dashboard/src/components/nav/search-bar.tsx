@@ -3,9 +3,8 @@
 import { Search } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { useDialog } from "@/hooks/useDialog";
 import { cn } from "@/lib/utils";
-
-import { useDialog } from "../../lib/hooks/useDialog";
 
 export function SearchBar() {
   const { open } = useDialog("command");

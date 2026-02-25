@@ -1,23 +1,12 @@
 import type { CreateDocumentResponse, DocumentEntityType } from "@guilders/api/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { getApiClient } from "@/lib/api";
+import { api, edenError } from "@/lib/api";
 
 interface UseFilesOptions {
   entityType: DocumentEntityType;
   entityId: number;
   onSuccess?: (file: CreateDocumentResponse) => void;
-}
-
-async function handleFileResponse<T>(response: Response): Promise<T> {
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    if (response.status === 404 || response.status === 501) {
-      throw new Error("Document management is not available yet");
-    }
-    throw new Error(errorData.error || `Error: ${response.status}`);
-  }
-  return response.json();
 }
 
 export function useFiles({ entityType, entityId, onSuccess }: UseFilesOptions) {
@@ -26,19 +15,16 @@ export function useFiles({ entityType, entityId, onSuccess }: UseFilesOptions) {
   const { mutateAsync: uploadFile, isPending: isUploading } = useMutation({
     mutationFn: async (files: File[]) => {
       const uploadedFiles: CreateDocumentResponse[] = [];
-      const api = await getApiClient();
 
       for (const file of files) {
-        const response = await api.documents.$post({
-          form: {
-            entity_id: entityId,
-            entity_type: entityType,
-            file,
-          },
+        const { data, error } = await (api as Record<string, any>).documents.post({
+          entity_id: entityId,
+          entity_type: entityType,
+          file,
         });
-        const data = await handleFileResponse<CreateDocumentResponse>(response);
-        uploadedFiles.push(data);
-        onSuccess?.(data);
+        if (error) throw new Error(edenError(error));
+        uploadedFiles.push(data as CreateDocumentResponse);
+        onSuccess?.(data as CreateDocumentResponse);
       }
 
       return uploadedFiles;
@@ -53,9 +39,8 @@ export function useFiles({ entityType, entityId, onSuccess }: UseFilesOptions) {
 
   const { mutateAsync: deleteFile, isPending: isDeleting } = useMutation({
     mutationFn: async (id: number) => {
-      const api = await getApiClient();
-      const response = await api.documents.$delete({ json: { id } });
-      await handleFileResponse(response);
+      const { error } = await (api as Record<string, any>).documents.delete({ id });
+      if (error) throw new Error(edenError(error));
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [entityType, entityId] });
@@ -64,12 +49,9 @@ export function useFiles({ entityType, entityId, onSuccess }: UseFilesOptions) {
 
   const { mutateAsync: getSignedUrl, isPending: isGettingUrl } = useMutation({
     mutationFn: async (id: number) => {
-      const api = await getApiClient();
-      const response = await api.documents[":id"].$get({
-        param: { id: id.toString() },
-      });
-      const data = await handleFileResponse<{ url: string }>(response);
-      return data.url;
+      const { data, error } = await (api as Record<string, any>).documents({ id }).get();
+      if (error) throw new Error(edenError(error));
+      return (data as { url: string }).url;
     },
   });
 

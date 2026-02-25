@@ -14,7 +14,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { useDialog } from "@/lib/hooks/useDialog";
+import { useDialog } from "@/hooks/useDialog";
 import { useSecurityStore } from "@/lib/store/securityStore";
 
 export function MFADialog() {

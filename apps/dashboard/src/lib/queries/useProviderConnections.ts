@@ -1,7 +1,7 @@
 import type { ProviderConnection, ProviderConnections } from "@guilders/api/types";
 import { useQuery } from "@tanstack/react-query";
 
-import { getApiClient } from "@/lib/api";
+import { api, edenError } from "@/lib/api";
 
 const queryKey = ["provider-connections"] as const;
 
@@ -9,17 +9,13 @@ export function useProviderConnections() {
   return useQuery<ProviderConnections, Error>({
     queryKey,
     queryFn: async () => {
-      const api = await getApiClient();
-      const response = await api["provider-connections"].$get();
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        if (response.status === 404 || response.status === 501) {
-          return [];
-        }
-        throw new Error(errorData.error || "Failed to fetch connections");
+      const { data, error } = await api["provider-connection"].get();
+      if (error) {
+        const status = (error as { status?: number }).status;
+        if (status === 404 || status === 501) return [];
+        throw new Error(edenError(error));
       }
-      const data = await response.json();
-      return data ?? [];
+      return (data ?? []) as ProviderConnections;
     },
   });
 }
@@ -28,18 +24,9 @@ export function useProviderConnection(connectionId: number) {
   return useQuery<ProviderConnection, Error>({
     queryKey: [...queryKey, connectionId],
     queryFn: async () => {
-      const api = await getApiClient();
-      const response = await api["provider-connections"][":id"].$get({
-        param: {
-          id: connectionId.toString(),
-        },
-      });
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || "Failed to fetch connection");
-      }
-      const data = await response.json();
-      return data;
+      const { data, error } = await api["provider-connection"]({ id: connectionId }).get();
+      if (error) throw new Error(edenError(error));
+      return data as ProviderConnection;
     },
     enabled: !!connectionId,
   });

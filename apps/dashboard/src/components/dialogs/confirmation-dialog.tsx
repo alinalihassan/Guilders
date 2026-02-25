@@ -11,8 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-
-import { useDialog } from "../../lib/hooks/useDialog";
+import { useDialog } from "@/hooks/useDialog";
 
 interface ConfirmationDialogProps {
   title?: string;

@@ -13,7 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useDialog } from "@/lib/hooks/useDialog";
+import { useDialog } from "@/hooks/useDialog";
 import { useCreateConnection } from "@/lib/queries/useConnections";
 import { useProviderById } from "@/lib/queries/useProviders";
 import { useUser } from "@/lib/queries/useUser";

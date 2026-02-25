@@ -11,7 +11,7 @@ import { TransactionsSankey } from "@/components/dashboard/transactions/transact
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useDialog } from "@/lib/hooks/useDialog";
+import { useDialog } from "@/hooks/useDialog";
 import { useTransactions } from "@/lib/queries/useTransactions";
 import { useUser } from "@/lib/queries/useUser";
 import { cn } from "@/lib/utils";
@@ -185,7 +185,7 @@ export default function TransactionsPage() {
             )
           ) : (
             filteredTransactions
-              .toSorted((a, b) => b.date.localeCompare(a.date))
+              .toSorted((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
               .map((transaction) => (
                 <TransactionItem key={transaction.id} transaction={transaction} />
               ))

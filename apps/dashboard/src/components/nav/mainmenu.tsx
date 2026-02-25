@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { authApi } from "@/lib/auth-client";
+import { authClient } from "@/lib/auth-client";
 import {
   type NavItem as NavItemType,
   bottomNavigation,
@@ -69,7 +69,7 @@ export function MainMenu() {
       ? {
           ...item,
           onClick: async () => {
-            await authApi.signOut();
+            await authClient.signOut();
             router.push("/login");
           },
         }

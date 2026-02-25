@@ -2,32 +2,19 @@ import type { ConnectionResponse } from "@guilders/api/types";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-import { getApiClient } from "@/lib/api";
-
-// Connection endpoints are not implemented in the new backend yet.
-// These mutations will fail gracefully with a toast message.
-
-async function handleConnectionResponse(response: Response) {
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    if (response.status === 404 || response.status === 501) {
-      throw new Error("Connection management is not available yet");
-    }
-    throw new Error(errorData.error || `Error: ${response.status}`);
-  }
-  return response.json();
-}
+import { api, edenError } from "@/lib/api";
 
 export function useRegisterConnection() {
   return useMutation({
     mutationFn: async (providerId: string) => {
-      const api = await getApiClient();
-      const response = await api.connections.register.$post({
-        json: { provider_id: providerId },
+      const { data, error } = await (api as Record<string, any>).connections.register.post({
+        provider_id: providerId,
       });
-      return handleConnectionResponse(response);
+      if (error) throw new Error(edenError(error));
+      return data;
     },
     onError: (error) => {
+      console.error("Failed to register connection:", error);
       toast.error("Failed to register connection", {
         description: error.message,
       });
@@ -38,13 +25,14 @@ export function useRegisterConnection() {
 export function useDeregisterConnection() {
   return useMutation({
     mutationFn: async (providerId: string) => {
-      const api = await getApiClient();
-      const response = await api.connections.deregister.$post({
-        json: { provider_id: providerId },
+      const { data, error } = await (api as Record<string, any>).connections.deregister.post({
+        provider_id: providerId,
       });
-      return handleConnectionResponse(response);
+      if (error) throw new Error(edenError(error));
+      return data;
     },
     onError: (error) => {
+      console.error("Failed to deregister connection:", error);
       toast.error("Failed to deregister connection", {
         description: error.message,
       });
@@ -61,14 +49,15 @@ export function useCreateConnection() {
       providerId: string;
       institutionId: string;
     }): Promise<ConnectionResponse> => {
-      const api = await getApiClient();
-      const response = await api.connections.$post({
-        json: { provider_id: providerId, institution_id: institutionId },
+      const { data, error } = await (api as Record<string, any>).connections.post({
+        provider_id: providerId,
+        institution_id: institutionId,
       });
-      return handleConnectionResponse(response);
+      if (error) throw new Error(edenError(error));
+      return data as ConnectionResponse;
     },
     onError: (error) => {
-      console.error(error);
+      console.error("Failed to create connection:", error);
       toast.error("Failed to create connection", {
         description: "Failed to register with provider",
       });
@@ -87,17 +76,16 @@ export function useReconnectConnection() {
       institutionId: string;
       accountId: string;
     }): Promise<ConnectionResponse> => {
-      const api = await getApiClient();
-      const response = await api.connections.reconnect.$post({
-        json: {
-          provider_id: providerId,
-          institution_id: institutionId,
-          account_id: accountId,
-        },
+      const { data, error } = await (api as Record<string, any>).connections.reconnect.post({
+        provider_id: providerId,
+        institution_id: institutionId,
+        account_id: accountId,
       });
-      return handleConnectionResponse(response);
+      if (error) throw new Error(edenError(error));
+      return data as ConnectionResponse;
     },
     onError: (error) => {
+      console.error("Failed to reconnect:", error);
       toast.error("Failed to reconnect", {
         description: error.message,
       });
@@ -114,16 +102,14 @@ export function useRefreshConnection() {
       providerId: string;
       connectionId: string;
     }): Promise<void> => {
-      const api = await getApiClient();
-      const response = await api.connections.refresh.$post({
-        json: {
-          provider_id: providerId,
-          connection_id: connectionId,
-        },
+      const { error } = await (api as Record<string, any>).connections.refresh.post({
+        provider_id: providerId,
+        connection_id: connectionId,
       });
-      await handleConnectionResponse(response);
+      if (error) throw new Error(edenError(error));
     },
     onError: (error) => {
+      console.error("Failed to refresh connection:", error);
       toast.error("Failed to refresh connection", {
         description: error.message,
       });

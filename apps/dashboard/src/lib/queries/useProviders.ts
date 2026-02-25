@@ -1,7 +1,7 @@
 import type { Provider } from "@guilders/api/types";
 import { useQuery } from "@tanstack/react-query";
 
-import { getApiClient } from "@/lib/api";
+import { api, edenError } from "@/lib/api";
 
 const queryKey = ["providers"] as const;
 
@@ -9,17 +9,12 @@ export function useProviders() {
   return useQuery<Provider[], Error>({
     queryKey,
     queryFn: async () => {
-      const api = await getApiClient();
-      const response = await api.providers.$get();
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        // Return empty array if providers endpoint is not implemented yet
-        if (response.status === 404 || response.status === 501) {
-          return [];
-        }
-        throw new Error(errorData.error || "Failed to fetch providers");
+      const { data, error } = await api.provider.get();
+      if (error) {
+        const status = (error as { status?: number }).status;
+        if (status === 404 || status === 501) return [];
+        throw new Error(edenError(error));
       }
-      const data = await response.json();
       return (data ?? []) as Provider[];
     },
   });

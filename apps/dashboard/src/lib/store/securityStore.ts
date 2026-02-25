@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-import { authApi } from "@/lib/auth-client";
+import { authClient } from "@/lib/auth-client";
 
 type MfaSetup = {
   totpURI: string;
@@ -25,7 +25,7 @@ export const useSecurityStore = create<SecurityStore>((set) => ({
 
   checkMFAStatus: async () => {
     set({ isLoadingMFA: true });
-    const { data, error } = await authApi.getSession();
+    const { data, error } = await authClient.getSession();
     if (error) {
       set({ hasMFA: false, isLoadingMFA: false });
       throw new Error(error.message);
@@ -38,7 +38,7 @@ export const useSecurityStore = create<SecurityStore>((set) => ({
 
   startMFASetup: async (password: string) => {
     set({ isLoadingMFA: true });
-    const { data, error } = await authApi.enableTwoFactor({
+    const { data, error } = await authClient.twoFactor.enable({
       password,
       issuer: "Guilders",
     });
@@ -64,7 +64,7 @@ export const useSecurityStore = create<SecurityStore>((set) => ({
 
   verifyMFASetup: async (code: string) => {
     set({ isLoadingMFA: true });
-    const { error } = await authApi.verifyTotp({
+    const { error } = await authClient.twoFactor.verifyTotp({
       code,
       trustDevice: true,
     });
@@ -85,7 +85,7 @@ export const useSecurityStore = create<SecurityStore>((set) => ({
 
   unenrollMFA: async (password: string) => {
     set({ isLoadingMFA: true });
-    const { error } = await authApi.disableTwoFactor({ password });
+    const { error } = await authClient.twoFactor.disable({ password });
     if (error) {
       set({ isLoadingMFA: false });
       throw new Error(error.message);

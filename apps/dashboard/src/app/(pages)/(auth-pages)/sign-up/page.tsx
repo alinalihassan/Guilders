@@ -9,7 +9,7 @@ import { PasswordInput } from "@/components/common/password-input";
 import { SubmitButton } from "@/components/common/submit-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { authApi } from "@/lib/auth-client";
+import { authClient } from "@/lib/auth-client";
 
 export default function Signup() {
   const router = useRouter();
@@ -25,7 +25,7 @@ export default function Signup() {
       return;
     }
 
-    const { error } = await authApi.signUpEmail({
+    const { error } = await authClient.signUp.email({
       email,
       password,
       name: email.split("@")[0] ?? "User",

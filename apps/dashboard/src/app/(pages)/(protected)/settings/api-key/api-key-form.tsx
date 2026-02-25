@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { authApi } from "@/lib/auth-client";
+import { authClient } from "@/lib/auth-client";
 
 type ApiKeyRecord = {
   id: string;
@@ -28,7 +28,7 @@ export function ApiKeyForm() {
 
   const loadApiKeys = useCallback(async () => {
     setIsLoading(true);
-    const { data, error } = await authApi.listApiKeys();
+    const { data, error } = await authClient.apiKey.list({});
     if (error) {
       toast.error("Failed to load API keys", {
         description: error.message,
@@ -68,7 +68,7 @@ export function ApiKeyForm() {
   const handleGenerate = async () => {
     try {
       setGenerating(true);
-      const { data, error } = await authApi.createApiKey({
+      const { data, error } = await authClient.apiKey.create({
         name: "Dashboard API Key",
         prefix: "gld",
       });
@@ -93,7 +93,7 @@ export function ApiKeyForm() {
   const handleDelete = async (keyId: string) => {
     try {
       setDeleting(true);
-      const { error } = await authApi.deleteApiKey({ keyId });
+      const { error } = await authClient.apiKey.delete({ keyId });
       if (error) throw new Error(error.message);
       await loadApiKeys();
       toast.success("API key revoked");

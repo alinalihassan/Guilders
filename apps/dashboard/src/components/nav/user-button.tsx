@@ -13,7 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-import { authApi } from "../../lib/auth-client";
+import { authClient } from "../../lib/auth-client";
 
 export function UserButton() {
   const router = useRouter();
@@ -35,7 +35,7 @@ export function UserButton() {
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={async () => {
-            await authApi.signOut();
+            await authClient.signOut();
             router.push("/login");
           }}
         >

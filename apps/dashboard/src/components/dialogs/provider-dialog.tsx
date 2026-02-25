@@ -5,8 +5,8 @@ import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
+import { useDialog } from "@/hooks/useDialog";
 import { env } from "@/lib/env";
-import { useDialog } from "@/lib/hooks/useDialog";
 import { queryKey as accountsQueryKey } from "@/lib/queries/useAccounts";
 import { queryKey as transactionsQueryKey } from "@/lib/queries/useTransactions";
 

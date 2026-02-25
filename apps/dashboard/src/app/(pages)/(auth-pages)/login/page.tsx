@@ -12,7 +12,7 @@ import { SubmitButton } from "@/components/common/submit-button";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { authApi } from "@/lib/auth-client";
+import { authClient } from "@/lib/auth-client";
 
 function LoginForm() {
   const searchParams = useSearchParams();
@@ -38,7 +38,7 @@ function LoginForm() {
         return;
       }
 
-      const { error } = await authApi.signInEmail({
+      const { error } = await authClient.signIn.email({
         email,
         password,
       });
@@ -64,7 +64,7 @@ function LoginForm() {
     async (autoFill = false) => {
       try {
         setIsSigningInWithPasskey(true);
-        const { data, error } = await authApi.signInPasskey({ autoFill });
+        const { data, error } = await authClient.signIn.passkey({ autoFill });
         if (error) {
           if (!autoFill) {
             toast.error("Passkey sign-in failed", {
