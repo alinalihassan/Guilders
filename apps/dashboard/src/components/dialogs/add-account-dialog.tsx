@@ -1,5 +1,6 @@
 "use client";
 
+import type { Currency } from "@guilders/api/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -38,7 +39,6 @@ import { useDialog } from "../../lib/hooks/useDialog";
 import { useAddAccount } from "../../lib/queries/useAccounts";
 import { useCurrencies } from "../../lib/queries/useCurrencies";
 import { useUser } from "../../lib/queries/useUser";
-import type { Currency } from "@guilders/api/types";
 
 const formSchema = z.object({
   accountType: z.enum(accountSubtypes),

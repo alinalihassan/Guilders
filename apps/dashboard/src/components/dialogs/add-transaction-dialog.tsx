@@ -1,5 +1,6 @@
 "use client";
 
+import type { Currency } from "@guilders/api/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { useEffect } from "react";
@@ -38,7 +39,6 @@ import { useAccounts } from "../../lib/queries/useAccounts";
 import { useCurrencies } from "../../lib/queries/useCurrencies";
 import { useAddTransaction } from "../../lib/queries/useTransactions";
 import { useUser } from "../../lib/queries/useUser";
-import type { Currency } from "@guilders/api/types";
 
 const formSchema = z.object({
   accountId: z.number({
@@ -57,7 +57,7 @@ const formSchema = z.object({
 type FormSchema = z.infer<typeof formSchema>;
 
 export function AddTransactionDialog() {
-  const { isOpen, close, data } = useDialog("addTransaction");
+  const { isOpen, close, data: transactionData } = useDialog("addTransaction");
   const { mutate: addTransaction, isPending } = useAddTransaction();
   const { data: accounts } = useAccounts();
   const { data: currencies } = useCurrencies();
@@ -79,12 +79,12 @@ export function AddTransactionDialog() {
 
   useEffect(() => {
     if (isOpen) {
-      if (data?.accountId) {
+      if (transactionData?.accountId) {
         // Set the Account ID
-        form.setValue("accountId", data.accountId);
+        form.setValue("accountId", transactionData.accountId);
 
         // Set the currency based on the selected account
-        const account = accounts?.find((a) => a.id === data.accountId);
+        const account = accounts?.find((a) => a.id === transactionData.accountId);
         if (account) {
           form.setValue("currency", account.currency);
         }
@@ -98,7 +98,7 @@ export function AddTransactionDialog() {
         }
       }
     }
-  }, [isOpen, data?.accountId, accounts, form, user?.settings.currency]);
+  }, [isOpen, transactionData?.accountId, accounts, form, user?.settings.currency]);
 
   useEffect(() => {
     if (user?.settings.currency) {

@@ -15,25 +15,25 @@ interface SettingsTabsProps extends React.HTMLAttributes<HTMLElement> {
   }[];
 }
 
+const getIcon = (title: string): React.ReactNode => {
+  switch (title) {
+    case "Account":
+      return <UserCircle className="-ms-0.5 me-1.5 opacity-60" size={16} strokeWidth={2} />;
+    case "Security":
+      return <Shield className="-ms-0.5 me-1.5 opacity-60" size={16} strokeWidth={2} />;
+    case "Connections":
+      return <Satellite className="-ms-0.5 me-1.5 opacity-60" size={16} strokeWidth={2} />;
+    case "API Key":
+      return <Key className="-ms-0.5 me-1.5 opacity-60" size={16} strokeWidth={2} />;
+    case "Subscription":
+      return <CreditCard className="-ms-0.5 me-1.5 opacity-60" size={16} strokeWidth={2} />;
+    default:
+      return null;
+  }
+};
+
 export function SettingsTabs({ className, items, ...props }: SettingsTabsProps) {
   const pathname = usePathname();
-
-  const getIcon = (title: string) => {
-    switch (title) {
-      case "Account":
-        return <UserCircle className="-ms-0.5 me-1.5 opacity-60" size={16} strokeWidth={2} />;
-      case "Security":
-        return <Shield className="-ms-0.5 me-1.5 opacity-60" size={16} strokeWidth={2} />;
-      case "Connections":
-        return <Satellite className="-ms-0.5 me-1.5 opacity-60" size={16} strokeWidth={2} />;
-      case "API Key":
-        return <Key className="-ms-0.5 me-1.5 opacity-60" size={16} strokeWidth={2} />;
-      case "Subscription":
-        return <CreditCard className="-ms-0.5 me-1.5 opacity-60" size={16} strokeWidth={2} />;
-      default:
-        return null;
-    }
-  };
 
   return (
     <ScrollArea>
@@ -61,7 +61,7 @@ export function SettingsTabs({ className, items, ...props }: SettingsTabsProps) 
             {pathname === item.href && (
               <motion.div
                 layoutId="activeTab"
-                className="absolute inset-x-0 bottom-0 h-0.5 -mb-1 bg-primary"
+                className="absolute inset-x-0 bottom-0 -mb-1 h-0.5 bg-primary"
                 transition={{
                   type: "spring",
                   stiffness: 400,

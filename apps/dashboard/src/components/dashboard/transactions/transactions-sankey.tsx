@@ -133,6 +133,7 @@ const chartConfig: ChartConfig = {
 };
 
 // Custom node component with theme support
+// oxlint-disable-next-line typescript/no-explicit-any
 function CustomNode({ x, y, width, height, index, payload, userCurrency }: any) {
   if (![x, y, width, height].every(Number.isFinite)) return null;
 
@@ -189,7 +190,16 @@ function CustomLink({
   targetControlX,
   linkWidth,
   payload,
-}: any) {
+}: {
+  sourceX: number;
+  sourceY: number;
+  sourceControlX: number;
+  targetX: number;
+  targetY: number;
+  targetControlX: number;
+  linkWidth: number;
+  payload: { flowIndex: number };
+}) {
   const flowIndex = payload.flowIndex;
 
   return (
@@ -347,7 +357,7 @@ export function TransactionsSankey({
         <CardTitle>Cash Flow</CardTitle>
       </CardHeader>
       <CardContent>
-        <ChartContainer className="w-full h-[400px]" config={chartConfig}>
+        <ChartContainer className="h-[400px] w-full" config={chartConfig}>
           <Sankey
             data={sankeyData}
             node={<CustomNode userCurrency={userCurrency} />}

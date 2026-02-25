@@ -58,7 +58,7 @@ export type DialogActions = {
   updateDialog: (dialog: DialogState) => void;
 };
 
-export const createDialogStore: StateSlice<DialogsState & DialogActions> = (set, get) => ({
+export const createDialogStore: StateSlice<DialogsState & DialogActions> = (set, _get) => ({
   dialogs: [],
   openDialog: (dialog) =>
     set((state) => ({

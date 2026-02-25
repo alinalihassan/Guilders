@@ -47,7 +47,7 @@ export default function RecoveryPage() {
       setIsLoading(true);
       toast.message("Password reset completion is temporarily unavailable during migration.");
       router.push("/login");
-    } catch (_error) {
+    } catch {
       toast.error("Failed to update password", {
         description: "Please try again.",
       });
@@ -57,10 +57,10 @@ export default function RecoveryPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center">
+    <div className="flex min-h-screen items-center justify-center">
       <div className="w-full max-w-sm">
         <div className="rounded-md bg-background px-6 py-6 shadow">
-          <div className="flex flex-col items-center mb-4">
+          <div className="mb-4 flex flex-col items-center">
             <Image
               src="/assets/logo/logo_filled_rounded.svg"
               alt="logo"
@@ -70,10 +70,10 @@ export default function RecoveryPage() {
             />
           </div>
 
-          <h1 className="text-2xl font-bold text-center">Reset Password</h1>
-          <p className="text-muted-foreground text-center">Please enter your new password</p>
+          <h1 className="text-center text-2xl font-bold">Reset Password</h1>
+          <p className="text-center text-muted-foreground">Please enter your new password</p>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4 mt-4">
+          <form onSubmit={handleSubmit(onSubmit)} className="mt-4 flex flex-col gap-4">
             <div className="grid gap-4">
               <div className="grid w-full items-center gap-1.5">
                 <Label htmlFor="password">New Password</Label>

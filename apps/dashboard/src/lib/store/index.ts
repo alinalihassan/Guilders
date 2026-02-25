@@ -1,3 +1,4 @@
+// oxlint-disable typescript/no-explicit-any
 import { create, type StateCreator } from "zustand";
 
 import { createDialogStore } from "./dialogStore";

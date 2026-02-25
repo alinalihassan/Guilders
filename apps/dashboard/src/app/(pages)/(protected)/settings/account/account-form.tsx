@@ -1,5 +1,6 @@
 "use client";
 
+import type { Currency } from "@guilders/api/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -40,7 +41,6 @@ import {
 } from "@/components/ui/select";
 import { useCurrencies } from "@/lib/queries/useCurrencies";
 import { useDeleteAccount, useUpdateUserSettings, useUser } from "@/lib/queries/useUser";
-import type { Currency } from "@guilders/api/types";
 
 const accountFormSchema = z.object({
   email: z.string().email(),
@@ -107,7 +107,7 @@ export function AccountForm() {
     try {
       await deleteAccount();
       router.push("/");
-    } catch (_error) {
+    } catch {
       toast.error("Error deleting account", {
         description: "Something went wrong. Please contact us for support.",
       });
@@ -147,7 +147,7 @@ export function AccountForm() {
           description: "Your account has been updated successfully.",
         });
       }
-    } catch (_error) {
+    } catch {
       toast.error("Failed to update account", {
         description: "Please try again.",
       });
@@ -156,8 +156,8 @@ export function AccountForm() {
 
   const deleteAccountButton = (
     <div className="mt-6 border-t pt-6">
-      <h2 className="text-destructive font-semibold">Danger Zone</h2>
-      <p className="text-sm text-muted-foreground mt-2">
+      <h2 className="font-semibold text-destructive">Danger Zone</h2>
+      <p className="mt-2 text-sm text-muted-foreground">
         Once you delete your account, there is no going back. Please be certain.
       </p>
       <AlertDialog>
@@ -172,7 +172,7 @@ export function AccountForm() {
             <AlertDialogDescription>
               This action cannot be undone. This will:
             </AlertDialogDescription>
-            <ul className="list-disc list-inside mt-2 text-sm text-muted-foreground">
+            <ul className="mt-2 list-inside list-disc text-sm text-muted-foreground">
               <li>Permanently delete your account</li>
               <li>Remove all your connections to financial institutions</li>
               <li>Delete all your stored data</li>

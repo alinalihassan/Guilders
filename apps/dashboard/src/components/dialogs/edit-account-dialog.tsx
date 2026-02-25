@@ -1,5 +1,6 @@
 "use client";
 
+import type { Currency } from "@guilders/api/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertTriangle, Loader2, Trash2 } from "lucide-react";
 import { useEffect } from "react";
@@ -42,7 +43,6 @@ import { useFiles } from "@/lib/queries/useFiles";
 import { useInstitutionConnection } from "@/lib/queries/useInstitutionConnection";
 import { useInstitutionByAccountId } from "@/lib/queries/useInstitutions";
 import { useProviderConnections } from "@/lib/queries/useProviderConnections";
-import type { Currency } from "@guilders/api/types";
 
 import { FileUploader } from "../common/file-uploader";
 import { AccountIcon } from "../dashboard/accounts/account-icon";
@@ -162,16 +162,16 @@ export function EditAccountDialog() {
     }
   };
 
-  const handleSubmit = form.handleSubmit(async (data) => {
+  const handleSubmit = form.handleSubmit(async (formData: FormSchema) => {
     const updatedAccount = {
-      subtype: data.accountType,
-      name: data.accountName,
-      value: Number.parseFloat(data.value),
-      currency: data.currency,
-      investable: data.investable,
-      taxability: data.taxability,
-      tax_rate: data.taxRate ? Number.parseFloat(data.taxRate) : null,
-      notes: data.notes ?? "",
+      subtype: formData.accountType,
+      name: formData.accountName,
+      value: Number.parseFloat(formData.value),
+      currency: formData.currency,
+      investable: formData.investable,
+      taxability: formData.taxability,
+      tax_rate: formData.taxRate ? Number.parseFloat(formData.taxRate) : null,
+      notes: formData.notes ?? "",
     };
 
     updateAccount(
@@ -203,12 +203,12 @@ export function EditAccountDialog() {
 
   return (
     <Sheet open={isOpen} onOpenChange={close}>
-      <SheetContent className="overflow-hidden p-0 flex flex-col h-full">
-        <div className="p-6 flex-1 overflow-y-auto">
+      <SheetContent className="flex h-full flex-col overflow-hidden p-0">
+        <div className="flex-1 overflow-y-auto p-6">
           <SheetTitle className="hidden">Edit Account</SheetTitle>
 
           {account && (
-            <div className="flex items-center space-x-4 pb-6 border-b">
+            <div className="flex items-center space-x-4 border-b pb-6">
               <AccountIcon
                 account={account}
                 width={40}
@@ -226,14 +226,14 @@ export function EditAccountDialog() {
           )}
 
           {isSyncedAccount && (
-            <div className="text-sm text-muted-foreground bg-muted p-4 rounded-md mt-4">
+            <div className="mt-4 rounded-md bg-muted p-4 text-sm text-muted-foreground">
               This account is managed by an external connection. Some fields cannot be edited.
             </div>
           )}
 
           {account.institution_connection?.broken && (
-            <div className="flex flex-col gap-2 mt-4">
-              <div className="text-sm text-yellow-500 bg-yellow-500/10 p-4 rounded-md flex items-center gap-2">
+            <div className="mt-4 flex flex-col gap-2">
+              <div className="flex items-center gap-2 rounded-md bg-yellow-500/10 p-4 text-sm text-yellow-500">
                 <div className="flex items-center gap-2">
                   <AlertTriangle className="h-5 w-5" />
                   <span>This account&apos;s connection needs to be fixed.</span>
@@ -241,7 +241,7 @@ export function EditAccountDialog() {
                 <Button
                   type="button"
                   variant="outline"
-                  className="border-yellow-500 text-yellow-500 hover:bg-yellow-500/10 hover:text-foreground ml-auto"
+                  className="ml-auto border-yellow-500 text-yellow-500 hover:bg-yellow-500/10 hover:text-foreground"
                   onClick={handleFixConnection}
                   disabled={isReconnecting}
                 >
@@ -524,7 +524,7 @@ export function EditAccountDialog() {
                   </AccordionItem>
                 </Accordion>
 
-                <div className="absolute bottom-0 left-0 right-0 flex justify-end p-4 bg-background border-t">
+                <div className="absolute bottom-0 left-0 right-0 flex justify-end border-t bg-background p-4">
                   <Button type="submit" disabled={isUpdating}>
                     {isUpdating ? (
                       <>

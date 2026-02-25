@@ -54,13 +54,11 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-type TimeRange = "1D" | "1W" | "1M" | "1Y";
-
 export function BalanceCard({ title, value, currency, change, className }: BalanceCardProps) {
   return (
     <Card className={className}>
       <CardHeader className="flex flex-col p-6">
-        <div className="flex flex-row justify-between items-center">
+        <div className="flex flex-row items-center justify-between">
           <CardTitle className="text-lg font-normal">{title}</CardTitle>
           <Select defaultValue="1M">
             <SelectTrigger className="w-[100px]">
@@ -81,16 +79,16 @@ export function BalanceCard({ title, value, currency, change, className }: Balan
               style: "currency",
               currency: currency,
             }}
-            className="text-4xl font-normal font-mono tracking-tight -mt-2.5 -mb-0.5"
+            className="-mb-0.5 -mt-2.5 font-mono text-4xl font-normal tracking-tight"
           />
           <ChangeIndicator change={change} />
         </div>
       </CardHeader>
       <CardContent>
         {/* @ts-ignore */}
-        <ChartContainer className="max-h-[216px] w-full relative" config={chartConfig}>
-          <div className="absolute inset-0 flex items-center justify-center bg-background/80 z-10">
-            <p className="text-muted-foreground text-sm">Historical data not supported yet</p>
+        <ChartContainer className="relative max-h-[216px] w-full" config={chartConfig}>
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/80">
+            <p className="text-sm text-muted-foreground">Historical data not supported yet</p>
           </div>
 
           <AreaChart data={chartData}>
