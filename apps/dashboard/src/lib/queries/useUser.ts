@@ -1,7 +1,6 @@
 "use client";
 
-import type { UpdateUser } from "@guilders/api/types";
-import type { User } from "@guilders/api/types";
+import type { UpdateUser, User } from "@guilders/api/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { authApi } from "../auth-client";

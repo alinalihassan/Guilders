@@ -98,9 +98,12 @@ export function BalanceCard({ title, value, currency, change, className }: Balan
               tickLine={false}
               axisLine={false}
               tickMargin={8}
-              tickFormatter={(value: string) => value.slice(0, 3)}
+              tickFormatter={(monthLabel: string) => monthLabel.slice(0, 3)}
             />
-            <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
+            <ChartTooltip
+              cursor={false}
+              content={(props) => <ChartTooltipContent {...props} />}
+            />
             <defs>
               <linearGradient id="fillValue" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="var(--color-value)" stopOpacity={0.8} />

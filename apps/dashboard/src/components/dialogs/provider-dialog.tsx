@@ -11,49 +11,42 @@ import { queryKey as accountsQueryKey } from "@/lib/queries/useAccounts";
 import { queryKey as transactionsQueryKey } from "@/lib/queries/useTransactions";
 
 export function ProviderDialog() {
-  const { isOpen, data, close } = useDialog("provider");
+  const { isOpen, data: providerData, close } = useDialog("provider");
   const queryClient = useQueryClient();
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
-  const successToast = {
-    title: "Success",
-    description: data
-      ? `You have successfully ${
-          data.operation === "connect" ? "connected" : "fixed the connection"
-        } to the institution!`
-      : "",
-  };
-
-  const errorToast = {
-    title: "Error",
-    description: data
-      ? `There was an error ${
-          data.operation === "connect" ? "connecting" : "fixing the connection"
-        } to the institution.`
-      : "",
-  };
-
   useEffect(() => {
-    if (!data) return;
+    if (!providerData) return;
 
-    if (data.redirectType === "popup") {
+    const successDescription = `You have successfully ${
+      providerData.operation === "connect" ? "connected" : "fixed the connection"
+    } to the institution!`;
+    const errorDescription = `There was an error ${
+      providerData.operation === "connect" ? "connecting" : "fixing the connection"
+    } to the institution.`;
+
+    if (providerData.redirectType === "popup") {
       const handleMessageEvent = (e: MessageEvent) => {
         if (e.origin === "https://app.snaptrade.com") {
           if (e.data) {
-            const data = e.data;
-            if (data.status === "SUCCESS") {
+            const snaptradeEventData = e.data;
+            if (snaptradeEventData.status === "SUCCESS") {
               close();
-              toast.success(successToast.title, {
-                description: successToast.description,
+              toast.success("Success", {
+                description: successDescription,
               });
             }
-            if (data.status === "ERROR") {
-              toast.error(errorToast.title, {
-                description: errorToast.description,
+            if (snaptradeEventData.status === "ERROR") {
+              toast.error("Error", {
+                description: errorDescription,
               });
               close();
             }
-            if (data === "CLOSED" || data === "CLOSE_MODAL" || data === "ABANDONED") {
+            if (
+              snaptradeEventData === "CLOSED" ||
+              snaptradeEventData === "CLOSE_MODAL" ||
+              snaptradeEventData === "ABANDONED"
+            ) {
               close();
             }
           }
@@ -63,16 +56,16 @@ export function ProviderDialog() {
 
           close();
           if (stage === "success") {
-            toast.success(successToast.title, {
-              description: successToast.description,
+            toast.success("Success", {
+              description: successDescription,
             });
 
             // Refresh both accounts and transactions data
             queryClient.invalidateQueries({ queryKey: accountsQueryKey });
             queryClient.invalidateQueries({ queryKey: transactionsQueryKey });
           } else if (stage === "error") {
-            toast.error(errorToast.title, {
-              description: errorToast.description,
+            toast.error("Error", {
+              description: errorDescription,
             });
           }
         }
@@ -82,31 +75,26 @@ export function ProviderDialog() {
       return () => window.removeEventListener("message", handleMessageEvent, false);
     }
 
-    if (data.redirectType === "redirect") {
-      window.open(data.redirectUri, "_blank");
+    if (providerData.redirectType === "redirect") {
+      window.open(providerData.redirectUri, "_blank");
     }
-  }, [
-	close,
-	queryClient,
-	successToast,
-	errorToast,
-	data
-]);
+  }, [close, providerData, queryClient]);
 
-  if (!isOpen || !data) return null;
+  if (!isOpen || !providerData) return null;
 
   return (
     <Dialog open={isOpen} onOpenChange={close}>
       <DialogTitle className="hidden">Provider Dialog</DialogTitle>
       <DialogContent showCloseIcon={false} className="sm:max-w-[600px] h-[80vh] p-0">
         <DialogDescription className="hidden">Provider Connection Dialog</DialogDescription>
-        {data.redirectType === "popup" ? (
+        {providerData.redirectType === "popup" ? (
           <iframe
             ref={iframeRef}
-            src={data.redirectUri}
+            src={providerData.redirectUri}
             title="Provider Connection Dialog"
             className="w-full h-full border-none rounded-lg"
             allow="clipboard-read *; clipboard-write *"
+            sandbox="allow-forms allow-scripts allow-popups allow-popups-to-escape-sandbox"
           />
         ) : (
           <div className="flex flex-col items-center justify-center h-full p-6 space-y-4 text-center">

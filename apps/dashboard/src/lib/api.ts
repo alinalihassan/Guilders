@@ -145,6 +145,6 @@ function createPathProxy(segments: string[]): unknown {
   );
 }
 
-export async function getApiClient(): Promise<any> {
-  return createPathProxy([]) as any;
+export async function getApiClient(): Promise<unknown> {
+  return createPathProxy([]) as unknown;
 }

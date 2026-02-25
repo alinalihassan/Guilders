@@ -328,10 +328,10 @@ export function EditAccountDialog() {
                         <FormField
                           control={form.control}
                           name="currency"
-                          render={({ field }) => (
+                          render={({ field: currencyField }) => (
                             <Select
-                              onValueChange={field.onChange}
-                              defaultValue={field.value}
+                              onValueChange={currencyField.onChange}
+                              defaultValue={currencyField.value}
                               disabled={isSyncedAccount}
                             >
                               <FormControl>

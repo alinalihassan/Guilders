@@ -51,6 +51,7 @@ const formSchema = z.object({
 });
 
 type FormSchema = z.infer<typeof formSchema>;
+const CURRENCY_PRIORITY = ["EUR", "GBP", "USD"];
 
 export function AddAccountDialog() {
   const { isOpen, close } = useDialog("addManualAccount");
@@ -112,16 +113,15 @@ export function AddAccountDialog() {
     }
   });
 
-  const customOrder = ["EUR", "GBP", "USD"];
   const sortedCurrencies = useMemo(() => {
     if (!currencies) return [];
 
-    const orderedCurrencies = customOrder
+    const orderedCurrencies = CURRENCY_PRIORITY
       .map((code) => currencies.find((c: Currency) => c.code === code))
       .filter((c): c is NonNullable<typeof c> => c !== undefined);
 
     const remainingCurrencies = currencies
-      .filter((c: Currency) => !customOrder.includes(c.code))
+      .filter((c: Currency) => !CURRENCY_PRIORITY.includes(c.code))
       .toSorted((a: Currency, b: Currency) => a.code.localeCompare(b.code));
 
     return [...orderedCurrencies, ...remainingCurrencies];
@@ -188,10 +188,10 @@ export function AddAccountDialog() {
                     <FormField
                       control={form.control}
                       name="currency"
-                      render={({ field }) => (
+                      render={({ field: currencyField }) => (
                         <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
+                          onValueChange={currencyField.onChange}
+                          defaultValue={currencyField.value}
                           disabled={isCurrenciesLoading || !currencies}
                         >
                           <FormControl>

@@ -48,26 +48,29 @@ export function FileUploader({
 
   const [uploadingFiles, setUploadingFiles] = useState<Record<string, boolean>>({});
 
-  const handleUpload = async (newFiles: File[]) => {
-    if (!onUpload) return;
+  const handleUpload = React.useCallback(
+    async (newFiles: File[]) => {
+      if (!onUpload) return;
 
-    const uploading = newFiles.reduce(
-      (acc, file) => ({ ...acc, [file.name]: true }),
-      {} as Record<string, boolean>,
-    );
-    setUploadingFiles(uploading);
+      const uploading = newFiles.reduce(
+        (acc, file) => ({ ...acc, [file.name]: true }),
+        {} as Record<string, boolean>,
+      );
+      setUploadingFiles(uploading);
 
-    try {
-      await onUpload(newFiles);
-      setFiles([]);
-      toast.success("Upload complete");
-    } catch (error) {
-      console.error("Upload error:", error);
-      toast.error("Failed to upload files");
-    } finally {
-      setUploadingFiles({});
-    }
-  };
+      try {
+        await onUpload(newFiles);
+        setFiles([]);
+        toast.success("Upload complete");
+      } catch (error) {
+        console.error("Upload error:", error);
+        toast.error("Failed to upload files");
+      } finally {
+        setUploadingFiles({});
+      }
+    },
+    [onUpload, setFiles],
+  );
 
   const onDrop = React.useCallback(
     (acceptedFiles: File[], _rejectedFiles: FileRejection[], _: DropEvent) => {
@@ -91,7 +94,7 @@ export function FileUploader({
         handleUpload(newFiles);
       }
     },
-    [files, maxFileCount, multiple],
+    [files, maxFileCount, multiple, setFiles, handleUpload],
   );
 
   const onRemove = async (index: number) => {

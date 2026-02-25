@@ -175,8 +175,11 @@ export function AddTransactionDialog() {
                     <FormField
                       control={form.control}
                       name="currency"
-                      render={({ field }) => (
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      render={({ field: currencyField }) => (
+                        <Select
+                          onValueChange={currencyField.onChange}
+                          defaultValue={currencyField.value}
+                        >
                           <FormControl>
                             <SelectTrigger className="w-[100px]">
                               <SelectValue placeholder="Currency" />

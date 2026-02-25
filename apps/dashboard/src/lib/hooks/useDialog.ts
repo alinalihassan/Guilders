@@ -15,10 +15,13 @@ export function useDialog<T extends DialogState["type"]>(type: T) {
   const dialog = dialogs.find((d) => d.type === type) as
     | (Extract<DialogState, { type: T }> & { isOpen: boolean })
     | undefined;
+  const dialogData = dialog
+    ? (({ type: _type, isOpen: _isOpen, ...rest }) => rest)(dialog)
+    : undefined;
 
   return {
     isOpen: dialog?.isOpen ?? false,
-    data: dialog && ((({ type, isOpen, ...rest }) => rest)(dialog) as DialogData<T> | undefined),
+    data: dialogData as DialogData<T> | undefined,
     open: ((data?: DialogData<T>) =>
       openDialog({
         type,

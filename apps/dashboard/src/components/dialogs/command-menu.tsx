@@ -88,8 +88,8 @@ export function CommandMenu() {
 
   const currentPage = pages[pages.length - 1];
 
-  const allInstitutions = institutions || [];
   const filteredInstitutions = useMemo(() => {
+    const allInstitutions = institutions ?? [];
     return allInstitutions.filter((institution) => {
       if (!search) return true;
 
@@ -104,7 +104,7 @@ export function CommandMenu() {
           institution.name.toLowerCase().includes(term) || countryName.toLowerCase().includes(term),
       );
     });
-  }, [search, allInstitutions, countriesMap]);
+  }, [search, institutions, countriesMap]);
 
   const handleOpenChange = (_open: boolean) => {
     if (!_open) {
