@@ -1,4 +1,4 @@
-import Elysia from "elysia";
+import { Elysia } from "elysia";
 
 import { auth } from "../lib/auth";
 import { accountRoutes } from "./account";

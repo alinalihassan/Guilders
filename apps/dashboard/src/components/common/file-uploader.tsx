@@ -10,8 +10,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useControllableState } from "@/lib/hooks/useControllableState";
-import { formatBytes } from "@/lib/utils";
-import { cn } from "@/lib/utils";
+import { cn, formatBytes } from "@/lib/utils";
 
 interface FileUploaderProps extends React.HTMLAttributes<HTMLDivElement> {
   value?: File[];
@@ -71,7 +70,7 @@ export function FileUploader({
   };
 
   const onDrop = React.useCallback(
-    (acceptedFiles: File[], rejectedFiles: FileRejection[], _: DropEvent) => {
+    (acceptedFiles: File[], _rejectedFiles: FileRejection[], _: DropEvent) => {
       if (!multiple && maxFileCount === 1 && acceptedFiles.length > 1) {
         toast.error("Cannot upload more than 1 file at a time");
         return;
@@ -287,7 +286,7 @@ function FileCard({ file, documentId, isUploading, onRemove, onView }: FileCardP
           </Button>
         )}
         {isUploading ? (
-          <div className="size-7 grid place-items-center">
+          <div className="grid size-7 place-items-center">
             <Loader2 className="size-4 animate-spin text-muted-foreground" />
           </div>
         ) : (

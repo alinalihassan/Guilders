@@ -1,4 +1,5 @@
 // @ts-nocheck
+// oxlint-disable typescript/no-explicit-any
 import { auth } from "./auth";
 
 let _schema: ReturnType<typeof auth.api.generateOpenAPISchema>;

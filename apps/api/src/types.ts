@@ -1,3 +1,4 @@
+export type { App } from "./app";
 import type { Document as DbDocument } from "./db/schema/documents";
 export type { Account, CreateAccount, UpdateAccount } from "./routes/account/types";
 export type { ConnectionResponse } from "./routes/connections/types";

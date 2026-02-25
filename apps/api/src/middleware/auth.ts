@@ -1,5 +1,5 @@
 import { eq } from "drizzle-orm";
-import { Elysia, t } from "elysia";
+import { Elysia } from "elysia";
 
 import { session as sessionTable, user as userTable } from "../db/schema/auth";
 import { auth } from "../lib/auth";
