@@ -1,6 +1,6 @@
 "use client";
 
-import { type DialogProps, DialogTitle } from "@radix-ui/react-dialog";
+import { type DialogProps, DialogTitle } from "radix-ui";
 import { Command as CommandPrimitive } from "cmdk";
 import { Search } from "lucide-react";
 import * as React from "react";

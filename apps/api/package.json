@@ -23,7 +23,6 @@
     "@better-auth/passkey": "^1.4.19",
     "@better-auth/stripe": "^1.4.19",
     "@elysiajs/cors": "^1.4.1",
-    "@elysiajs/eden": "^1.4.8",
     "@elysiajs/openapi": "^1.4.14",
     "@json-render/core": "^0.9.1",
     "@neondatabase/serverless": "^1.0.2",
