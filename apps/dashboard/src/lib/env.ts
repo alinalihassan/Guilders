@@ -17,7 +17,6 @@ export const env = createEnv({
     NEXT_PUBLIC_WEBSITE_URL: z.string().url(),
     NEXT_PUBLIC_DASHBOARD_URL: z.string().url(),
     NEXT_PUBLIC_API_URL: z.string().url(),
-    NEXT_PUBLIC_NGROK_URL: z.string().url(),
   },
   runtimeEnv: {
     // Shared
@@ -28,7 +27,6 @@ export const env = createEnv({
     NEXT_PUBLIC_WEBSITE_URL: process.env.NEXT_PUBLIC_WEBSITE_URL,
     NEXT_PUBLIC_DASHBOARD_URL: process.env.NEXT_PUBLIC_DASHBOARD_URL,
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
-    NEXT_PUBLIC_NGROK_URL: process.env.NEXT_PUBLIC_NGROK_URL,
   },
   emptyStringAsUndefined: true,
 });

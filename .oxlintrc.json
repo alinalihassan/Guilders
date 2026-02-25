@@ -12,7 +12,9 @@
     "react/self-closing-comp": "warn",
     "unicorn/no-useless-spread": "warn",
     "react/jsx-uses-react": "off",
-    "react/react-in-jsx-scope": "off"
+    "react/react-in-jsx-scope": "off",
+    // Removed because we need to allow popups to do this (SnapTrade)
+    "react/iframe-missing-sandbox": "off"
   },
   "settings": {
     "react": {
