@@ -3,7 +3,6 @@ import { TextStreamChatTransport } from "ai";
 import { Image } from "expo-image";
 import { fetch as expoFetch } from "expo/fetch";
 import { useCallback, useMemo, useRef, useState } from "react";
-import Markdown from "react-native-markdown-display";
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -15,6 +14,7 @@ import {
   useColorScheme,
   View,
 } from "react-native";
+import Markdown from "react-native-markdown-display";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Colors, Spacing } from "@/constants/theme";

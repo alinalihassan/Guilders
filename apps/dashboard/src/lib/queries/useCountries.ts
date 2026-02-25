@@ -1,5 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
 import type { Country } from "@guilders/api/types";
+import { useQuery } from "@tanstack/react-query";
 
 import { getApiClient } from "../api";
 

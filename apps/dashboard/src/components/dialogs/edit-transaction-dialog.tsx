@@ -149,12 +149,12 @@ export function EditTransactionDialog() {
 
   return (
     <Sheet open={isOpen} onOpenChange={close}>
-      <SheetContent className="overflow-hidden p-0 flex flex-col h-full">
-        <div className="p-6 flex-1 overflow-y-auto">
+      <SheetContent className="flex h-full flex-col overflow-hidden p-0">
+        <div className="flex-1 overflow-y-auto p-6">
           <SheetTitle className="hidden">Edit Transaction</SheetTitle>
 
           {currentAccount && (
-            <div className="flex items-center space-x-4 pb-6 border-b">
+            <div className="flex items-center space-x-4 border-b pb-6">
               <AccountIcon
                 account={currentAccount}
                 width={40}
@@ -177,7 +177,7 @@ export function EditTransactionDialog() {
             <form onSubmit={handleSubmit} className="mt-6">
               <div className="space-y-4 pb-8">
                 {isSyncedTransaction && (
-                  <div className="text-sm text-muted-foreground bg-muted p-4 rounded-md">
+                  <div className="rounded-md bg-muted p-4 text-sm text-muted-foreground">
                     This transaction is managed by an external connection. It cannot be edited.
                   </div>
                 )}
@@ -390,7 +390,7 @@ export function EditTransactionDialog() {
                 </Accordion>
               </div>
 
-              <div className="absolute bottom-0 left-0 right-0 flex justify-end p-4 bg-background border-t">
+              <div className="absolute bottom-0 left-0 right-0 flex justify-end border-t bg-background p-4">
                 <Button type="submit" disabled={isUpdating || isDeleting || isSyncedTransaction}>
                   {isUpdating ? (
                     <>

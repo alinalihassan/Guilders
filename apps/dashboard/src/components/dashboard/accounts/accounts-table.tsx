@@ -37,11 +37,11 @@ export function AccountsTable({
       {isLoading ? (
         <div className="space-y-2">
           {[...Array(4)].map((_, index) => (
-            <Skeleton key={index} className="h-10 w-full mb-2" />
+            <Skeleton key={index} className="mb-2 h-10 w-full" />
           ))}
         </div>
       ) : error && !propAccounts ? (
-        <div className="text-center py-8">
+        <div className="py-8 text-center">
           <p className="mb-4">Error loading accounts. Please try again later.</p>
         </div>
       ) : sortedAccounts && sortedAccounts.length === 0 ? (

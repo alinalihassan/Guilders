@@ -1,5 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
 import type { Provider } from "@guilders/api/types";
+import { useQuery } from "@tanstack/react-query";
 
 import { getApiClient } from "@/lib/api";
 

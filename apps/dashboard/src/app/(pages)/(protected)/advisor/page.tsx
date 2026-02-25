@@ -2,23 +2,16 @@
 
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
-import {
-  ArrowUp,
-  Check,
-  CopyIcon,
-  RefreshCcw,
-  Sparkles,
-  Square,
-} from "lucide-react";
+import { ArrowUp, Check, CopyIcon, RefreshCcw, Sparkles, Square } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { Markdown } from "@/components/common/markdown-component";
+import { StockCard } from "@/components/generative-ui/stock-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { StockCard } from "@/components/generative-ui/stock-card";
 import { useUser, useUserToken } from "@/lib/queries/useUser";
 import { isPro } from "@/lib/utils";
 
@@ -159,9 +152,7 @@ export default function AdvisorPage() {
 
     return (
       <div className="space-y-3">
-        {text.trim().length > 0 ? (
-          <Markdown className="text-sm leading-6">{text}</Markdown>
-        ) : null}
+        {text.trim().length > 0 ? <Markdown className="text-sm leading-6">{text}</Markdown> : null}
         {message.parts
           .filter((part) => part.type === "tool-showStockCard")
           .map((part, index) => {
@@ -195,7 +186,7 @@ export default function AdvisorPage() {
 
   const renderComposer = (className?: string) => (
     <form onSubmit={onSubmit} className={className}>
-      <div className="rounded-2xl border bg-background p-2 shadow-xs transition-shadow focus-within:shadow-sm">
+      <div className="shadow-xs rounded-2xl border bg-background p-2 transition-shadow focus-within:shadow-sm">
         <textarea
           value={inputText}
           onKeyDown={onKeyDown}

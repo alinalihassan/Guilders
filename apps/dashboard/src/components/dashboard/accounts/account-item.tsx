@@ -31,7 +31,7 @@ export function AccountItem({ account }: AccountItemProps) {
       onClick={handleClick}
       key={account.id}
       className={
-        "flex items-center justify-between p-2 rounded-lg hover:bg-secondary dark:hover:bg-secondary cursor-pointer"
+        "flex cursor-pointer items-center justify-between rounded-lg p-2 hover:bg-secondary dark:hover:bg-secondary"
       }
     >
       <div className="flex items-center gap-4">

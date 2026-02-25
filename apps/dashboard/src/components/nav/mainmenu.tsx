@@ -37,7 +37,7 @@ const NavItem = ({ item, pathname }: NavItemProps) => (
               "h-10 w-10",
             )}
           >
-            <item.icon className="h-5 w-5 relative z-10" />
+            <item.icon className="relative z-10 h-5 w-5" />
             <span className="sr-only">{item.name}</span>
           </Link>
         ) : (
@@ -51,7 +51,7 @@ const NavItem = ({ item, pathname }: NavItemProps) => (
               "h-11 w-11",
             )}
           >
-            <item.icon className="h-5 w-5 relative z-10" />
+            <item.icon className="relative z-10 h-5 w-5" />
             <span className="sr-only">{item.name}</span>
           </button>
         )}
@@ -77,7 +77,7 @@ export function MainMenu() {
   );
 
   return (
-    <nav className="flex flex-col flex-1 mt-4 py-4">
+    <nav className="mt-4 flex flex-1 flex-col py-4">
       <div className="flex-1">
         <TooltipProvider delayDuration={0}>
           <ul className="flex flex-col items-center gap-1.5">

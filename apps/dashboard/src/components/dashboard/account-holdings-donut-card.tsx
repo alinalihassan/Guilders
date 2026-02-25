@@ -97,7 +97,7 @@ export function AccountHoldingsDonutCard({ holdings, className }: AccountHolding
         <CardTitle className="text-lg font-normal">Spread</CardTitle>
       </CardHeader>
       <CardContent className="flex flex-1 flex-col">
-        <ChartContainer config={chartConfig} className="w-full flex-1 min-h-[216px]">
+        <ChartContainer config={chartConfig} className="min-h-[216px] w-full flex-1">
           <PieChart>
             <ChartTooltip
               content={

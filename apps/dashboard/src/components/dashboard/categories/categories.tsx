@@ -43,9 +43,9 @@ export function NetWorthCategories() {
         <div className="grid grid-cols-2 gap-3">
           {[...Array(4)].map((_, index) => (
             <div key={index} className="flex items-center">
-              <Skeleton className="w-3 h-3 rounded-full mr-2" />
+              <Skeleton className="mr-2 h-3 w-3 rounded-full" />
               <Skeleton className="h-4 w-24" />
-              <Skeleton className="h-4 w-8 ml-auto" />
+              <Skeleton className="ml-auto h-4 w-8" />
             </div>
           ))}
         </div>
@@ -67,19 +67,14 @@ export function NetWorthCategories() {
           <>
             {categories.positive.length > 0 && (
               <>
-                <h3 className="text-md font-medium mb-2 text-foreground/80">Assets</h3>
-                <div className="flex mb-2">
+                <h3 className="text-md mb-2 font-medium text-foreground/80">Assets</h3>
+                <div className="mb-2 flex">
                   {categories.positive.map((category, index) => {
                     const percentage = ((category.value / positiveSum) * 100).toFixed(0);
                     return (
                       <div
                         key={category.name}
-                        className={`h-4
-                            ${index > 0 ? "ml-0.5" : ""}
-                            ${index < categories.positive.length - 1 ? "mr-0.5" : ""}
-                            ${index === 0 ? "rounded-l-sm" : ""}
-                            ${index === categories.positive.length - 1 ? "rounded-r-sm" : ""}
-                          `}
+                        className={`h-4 ${index > 0 ? "ml-0.5" : ""} ${index < categories.positive.length - 1 ? "mr-0.5" : ""} ${index === 0 ? "rounded-l-sm" : ""} ${index === categories.positive.length - 1 ? "rounded-r-sm" : ""} `}
                         style={{
                           width: `${percentage}%`,
                           backgroundColor: getCategoryColor(category.name),
@@ -88,13 +83,13 @@ export function NetWorthCategories() {
                     );
                   })}
                 </div>
-                <div className="grid grid-cols-2 gap-3 mb-4">
+                <div className="mb-4 grid grid-cols-2 gap-3">
                   {categories.positive.map((category) => {
                     const percentage = ((category.value / positiveSum) * 100).toFixed(0);
                     return (
                       <div key={category.name} className="flex items-center">
                         <div
-                          className="w-3 h-3 rounded-full mr-2"
+                          className="mr-2 h-3 w-3 rounded-full"
                           style={{
                             backgroundColor: getCategoryColor(category.name),
                           }}
@@ -102,7 +97,7 @@ export function NetWorthCategories() {
                         <span className="text-sm font-light">
                           {getCategoryDisplayName(category.name)}
                         </span>
-                        <span className="text-foreground/60 font-light text-sm ml-auto">
+                        <span className="ml-auto text-sm font-light text-foreground/60">
                           {percentage}%
                         </span>
                       </div>
@@ -114,19 +109,14 @@ export function NetWorthCategories() {
 
             {categories.negative.length > 0 && (
               <>
-                <h3 className="text-md font-medium mb-2 text-foreground/80">Liabilities</h3>
-                <div className="flex mb-2">
+                <h3 className="text-md mb-2 font-medium text-foreground/80">Liabilities</h3>
+                <div className="mb-2 flex">
                   {categories.negative.map((category, index) => {
                     const percentage = ((Math.abs(category.value) / negativeSum) * 100).toFixed(0);
                     return (
                       <div
                         key={category.name}
-                        className={`h-4
-                            ${index > 0 ? "ml-0.5" : ""}
-                            ${index < categories.negative.length - 1 ? "mr-0.5" : ""}
-                            ${index === 0 ? "rounded-l-sm" : ""}
-                            ${index === categories.negative.length - 1 ? "rounded-r-sm" : ""}
-                          `}
+                        className={`h-4 ${index > 0 ? "ml-0.5" : ""} ${index < categories.negative.length - 1 ? "mr-0.5" : ""} ${index === 0 ? "rounded-l-sm" : ""} ${index === categories.negative.length - 1 ? "rounded-r-sm" : ""} `}
                         style={{
                           width: `${percentage}%`,
                           backgroundColor: getCategoryColor(category.name),
@@ -142,7 +132,7 @@ export function NetWorthCategories() {
                     return (
                       <div key={category.name} className="flex items-center">
                         <div
-                          className="w-3 h-3 rounded-full mr-2"
+                          className="mr-2 h-3 w-3 rounded-full"
                           style={{
                             backgroundColor: getCategoryColor(category.name),
                           }}
@@ -150,7 +140,7 @@ export function NetWorthCategories() {
                         <span className="text-sm font-light">
                           {getCategoryDisplayName(category.name)}
                         </span>
-                        <span className="text-foreground/60 font-light text-sm ml-auto">
+                        <span className="ml-auto text-sm font-light text-foreground/60">
                           {percentage}%
                         </span>
                       </div>

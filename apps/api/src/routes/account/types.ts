@@ -1,10 +1,10 @@
 import { t } from "elysia";
 
 import type { Account as DbAccount, InsertAccount } from "../../db/schema/accounts";
+import { AccountSubtypeEnum, AccountTypeEnum } from "../../db/schema/enums";
 import type { InstitutionConnection } from "../../db/schema/institution-connections";
 import type { Institution } from "../../db/schema/institutions";
 import type { Provider } from "../../db/schema/providers";
-import { AccountSubtypeEnum, AccountTypeEnum } from "../../db/schema/enums";
 
 // Subtype to type mapping
 export const subtypeToType: Record<string, string> = {
@@ -23,14 +23,18 @@ export const idParamSchema = t.Object({
 });
 
 export type Account = DbAccount & {
-  institutionConnection?: (InstitutionConnection & {
-    institution?: Institution & { provider?: Provider | null };
-    provider?: Provider | null;
-  }) | null;
-  institution_connection?: (InstitutionConnection & {
-    institution?: Institution & { provider?: Provider | null };
-    provider?: Provider | null;
-  }) | null;
+  institutionConnection?:
+    | (InstitutionConnection & {
+        institution?: Institution & { provider?: Provider | null };
+        provider?: Provider | null;
+      })
+    | null;
+  institution_connection?:
+    | (InstitutionConnection & {
+        institution?: Institution & { provider?: Provider | null };
+        provider?: Provider | null;
+      })
+    | null;
   children?: Account[];
 };
 

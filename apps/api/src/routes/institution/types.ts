@@ -1,4 +1,5 @@
 import { t } from "elysia";
+
 import type { Institution as DbInstitution } from "../../db/schema/institutions";
 
 export const institutionIdParamSchema = t.Object({

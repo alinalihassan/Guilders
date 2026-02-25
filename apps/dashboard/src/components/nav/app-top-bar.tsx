@@ -36,13 +36,13 @@ export function AppTopBar() {
           : "bg-muted/40",
       )}
     >
-      <div className="flex items-center gap-4 flex-1">
+      <div className="flex flex-1 items-center gap-4">
         <Button variant="ghost" size="icon" className="h-9 w-9 md:hidden" onClick={toggleMenu}>
           <Menu className="h-5 w-5" />
         </Button>
         <DynamicBreadcrumbs />
       </div>
-      <div className="flex items-center gap-2 flex-shrink-0">
+      <div className="flex flex-shrink-0 items-center gap-2">
         <SearchBar />
         <UserButton />
       </div>

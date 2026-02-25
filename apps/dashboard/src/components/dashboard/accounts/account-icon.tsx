@@ -33,7 +33,7 @@ export function AccountIcon({
 
   return (
     <div
-      className="p-2 flex items-center justify-center text-muted-foreground rounded-full bg-muted"
+      className="flex items-center justify-center rounded-full bg-muted p-2 text-muted-foreground"
       style={{ width, height }}
     >
       <AccountFallbackIcon

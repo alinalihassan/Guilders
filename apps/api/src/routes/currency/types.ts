@@ -1,4 +1,5 @@
 import { t } from "elysia";
+
 import type { Currency as DbCurrency } from "../../db/schema/currencies";
 
 export const currencyCodeParamSchema = t.Object({

@@ -21,7 +21,7 @@ export default function AccountsPage() {
 
   return (
     <div className="py-4">
-      <div className="flex items-center justify-between mb-4">
+      <div className="mb-4 flex items-center justify-between">
         <h1 className="text-2xl font-semibold text-foreground">Accounts</h1>
         <Button onClick={() => openAddAccount()} size="sm">
           <Plus className="h-4 w-4" />
@@ -35,7 +35,7 @@ export default function AccountsPage() {
           <Skeleton className="h-[400px] w-full" />
         </div>
       ) : error ? (
-        <div className="text-center py-8">
+        <div className="py-8 text-center">
           <p className="mb-4">Error loading accounts. Please try again later.</p>
         </div>
       ) : !accounts || accounts.length === 0 ? (

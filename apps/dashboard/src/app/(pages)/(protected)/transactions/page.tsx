@@ -99,8 +99,8 @@ export default function TransactionsPage() {
   );
 
   return (
-    <div className="py-4 space-y-4">
-      <div className="flex items-center justify-between mb-4">
+    <div className="space-y-4 py-4">
+      <div className="mb-4 flex items-center justify-between">
         <h1 className="text-2xl font-semibold text-foreground">Transactions</h1>
         <Button onClick={() => openAddTransaction({})} size="sm">
           <Plus className="h-4 w-4" />
@@ -177,7 +177,7 @@ export default function TransactionsPage() {
             </div>
           ) : !filteredTransactions || filteredTransactions.length === 0 ? (
             searchQuery ? (
-              <div className="text-center py-8 text-muted-foreground">
+              <div className="py-8 text-center text-muted-foreground">
                 No transactions found matching "{searchQuery}"
               </div>
             ) : (

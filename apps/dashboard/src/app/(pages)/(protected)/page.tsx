@@ -8,11 +8,11 @@ import { TransactionsCard } from "@/components/dashboard/transactions/transactio
 export default function DashboardPage() {
   return (
     <div className="grid gap-6 py-4">
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-5">
         <NetWorthCard className="col-span-1 md:col-span-3" />
         <CategoriesCard className="col-span-1 md:col-span-2" />
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-5">
         <div className="col-span-1 md:col-span-3">
           <AccountsCard className="h-[400px]" />
         </div>

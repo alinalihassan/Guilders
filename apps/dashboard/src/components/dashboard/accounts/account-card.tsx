@@ -37,7 +37,7 @@ export function AccountsCard({
         <CardTitle>{title}</CardTitle>
         {menuComponent || accountsMenu}
       </CardHeader>
-      <CardContent className="flex-1 min-h-0">
+      <CardContent className="min-h-0 flex-1">
         <ScrollArea className="h-full w-full">
           <AccountsTable accounts={accounts} />
           <ScrollBar orientation="vertical" />

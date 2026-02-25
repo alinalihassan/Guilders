@@ -178,7 +178,7 @@ export function SecurityForm() {
           authentication code.
         </p>
 
-        <div className="flex items-center gap-4 h-10">
+        <div className="flex h-10 items-center gap-4">
           <Button
             variant={hasMFA ? "outline" : "default"}
             className="w-full sm:w-auto"
@@ -223,10 +223,10 @@ export function SecurityForm() {
                 className="flex items-center justify-between rounded-md border px-3 py-2"
               >
                 <div className="min-w-0">
-                  <p className="text-sm font-medium truncate">
+                  <p className="truncate text-sm font-medium">
                     {passkey.name || "Unnamed passkey"}
                   </p>
-                  <p className="text-xs text-muted-foreground truncate">{passkey.id}</p>
+                  <p className="truncate text-xs text-muted-foreground">{passkey.id}</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <Button

@@ -72,16 +72,16 @@ export function CompactBalanceCard({
 
   return (
     <Card className={className}>
-      <CardContent className="p-6 flex gap-4">
+      <CardContent className="flex gap-4 p-6">
         <div className="flex-1">
-          <h3 className="text-sm font-medium text-muted-foreground mb-1">{title}</h3>
+          <h3 className="mb-1 text-sm font-medium text-muted-foreground">{title}</h3>
           <NumberFlow
             value={totalValue}
             format={{
               style: "currency",
               currency: userCurrency,
             }}
-            className="text-2xl font-normal font-mono tracking-tight"
+            className="font-mono text-2xl font-normal tracking-tight"
           />
           <ChangeIndicator change={change} invertColors={invertColors} />
         </div>

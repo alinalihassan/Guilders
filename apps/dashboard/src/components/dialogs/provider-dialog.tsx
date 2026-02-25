@@ -85,19 +85,19 @@ export function ProviderDialog() {
   return (
     <Dialog open={isOpen} onOpenChange={close}>
       <DialogTitle className="hidden">Provider Dialog</DialogTitle>
-      <DialogContent showCloseIcon={false} className="sm:max-w-[600px] h-[80vh] p-0">
+      <DialogContent showCloseIcon={false} className="h-[80vh] p-0 sm:max-w-[600px]">
         <DialogDescription className="hidden">Provider Connection Dialog</DialogDescription>
         {providerData.redirectType === "popup" ? (
           <iframe
             ref={iframeRef}
             src={providerData.redirectUri}
             title="Provider Connection Dialog"
-            className="w-full h-full border-none rounded-lg"
+            className="h-full w-full rounded-lg border-none"
             allow="clipboard-read *; clipboard-write *"
             sandbox="allow-forms allow-scripts allow-popups allow-popups-to-escape-sandbox"
           />
         ) : (
-          <div className="flex flex-col items-center justify-center h-full p-6 space-y-4 text-center">
+          <div className="flex h-full flex-col items-center justify-center space-y-4 p-6 text-center">
             <h3 className="text-lg font-semibold">Please Complete Authorization</h3>
             <p className="text-muted-foreground">
               We've opened a new tab where you can complete the connection process. Please return to

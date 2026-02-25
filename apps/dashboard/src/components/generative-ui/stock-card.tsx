@@ -28,9 +28,7 @@ const parseNumberFromMixed = (value: string | number | null | undefined) => {
     return null;
   }
 
-  const numeric = Number.parseFloat(
-    value.replaceAll(",", "").replace(/[^\d+-.]/g, ""),
-  );
+  const numeric = Number.parseFloat(value.replaceAll(",", "").replace(/[^\d+-.]/g, ""));
 
   return Number.isFinite(numeric) ? numeric : null;
 };

@@ -99,7 +99,7 @@ export default function AccountPage({ params }: { params: Promise<{ id: string }
   return (
     <>
       {isLoading ? (
-        <div className="p-4 space-y-4">
+        <div className="space-y-4 p-4">
           <Skeleton className="h-[400px] w-full" />
           <Skeleton className="h-[400px] w-full" />
         </div>
@@ -108,7 +108,7 @@ export default function AccountPage({ params }: { params: Promise<{ id: string }
           <p>Account not found</p>
         </div>
       ) : (
-        <div className="p-4 space-y-4">
+        <div className="space-y-4 p-4">
           <div className="flex items-center gap-2">
             <AccountIcon
               account={account}
@@ -117,7 +117,7 @@ export default function AccountPage({ params }: { params: Promise<{ id: string }
               hasImageError={imageError}
               onImageError={() => setImageError(true)}
             />
-            <div className="flex-1 flex items-center justify-between">
+            <div className="flex flex-1 items-center justify-between">
               <div>
                 <h1 className="text-xl font-semibold text-foreground">{account.name}</h1>
                 {account.institution_connection?.institution?.name && (
@@ -164,7 +164,7 @@ export default function AccountPage({ params }: { params: Promise<{ id: string }
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row sm:items-stretch gap-4">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-stretch">
             <div className="min-w-0 sm:flex-[65]">
               <BalanceCard
                 title={account.subtype === "depository" ? "Balance" : "Value"}
@@ -175,7 +175,7 @@ export default function AccountPage({ params }: { params: Promise<{ id: string }
               />
             </div>
             {account.children && account.children.length > 0 ? (
-              <div className="sm:flex-[35] min-w-[240px]">
+              <div className="min-w-[240px] sm:flex-[35]">
                 <AccountHoldingsDonutCard holdings={account.children} className="h-full" />
               </div>
             ) : null}

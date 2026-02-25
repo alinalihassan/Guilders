@@ -150,11 +150,11 @@ export function ApiKeyForm() {
         {keys.map((key) => (
           <div
             key={key.id}
-            className="rounded-md border p-3 flex items-center justify-between gap-3"
+            className="flex items-center justify-between gap-3 rounded-md border p-3"
           >
             <div className="min-w-0">
-              <p className="text-sm font-medium truncate">{key.name || "API key"}</p>
-              <p className="text-xs text-muted-foreground truncate">
+              <p className="truncate text-sm font-medium">{key.name || "API key"}</p>
+              <p className="truncate text-xs text-muted-foreground">
                 {key.prefix || "key"}-{key.start || key.id.slice(0, 8)}...
               </p>
             </div>

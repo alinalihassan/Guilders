@@ -116,9 +116,9 @@ export function AddAccountDialog() {
   const sortedCurrencies = useMemo(() => {
     if (!currencies) return [];
 
-    const orderedCurrencies = CURRENCY_PRIORITY
-      .map((code) => currencies.find((c: Currency) => c.code === code))
-      .filter((c): c is NonNullable<typeof c> => c !== undefined);
+    const orderedCurrencies = CURRENCY_PRIORITY.map((code) =>
+      currencies.find((c: Currency) => c.code === code),
+    ).filter((c): c is NonNullable<typeof c> => c !== undefined);
 
     const remainingCurrencies = currencies
       .filter((c: Currency) => !CURRENCY_PRIORITY.includes(c.code))

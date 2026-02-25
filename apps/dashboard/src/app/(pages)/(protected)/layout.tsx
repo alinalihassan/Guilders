@@ -10,9 +10,9 @@ const ProtectedLayout = ({ children }: { children: ReactNode }) => {
   return (
     <div className="flex min-h-screen">
       <AppSidebar />
-      <div className="flex-1 flex flex-col md:ml-16 min-h-screen">
+      <div className="flex min-h-screen flex-1 flex-col md:ml-16">
         <AppTopBar />
-        <main className="flex-1 flex flex-col px-8 bg-muted/40">{children}</main>
+        <main className="flex flex-1 flex-col bg-muted/40 px-8">{children}</main>
       </div>
       <Dialogs />
     </div>

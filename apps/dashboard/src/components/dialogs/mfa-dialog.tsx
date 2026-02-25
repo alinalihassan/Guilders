@@ -152,7 +152,7 @@ export function MFADialog() {
               </p>
 
               {setup.backupCodes.length > 0 && (
-                <div className="rounded-md border p-3 space-y-3">
+                <div className="space-y-3 rounded-md border p-3">
                   <div className="flex items-center justify-between gap-2">
                     <h4 className="text-sm font-medium">Backup Codes</h4>
                     <div className="flex gap-2">

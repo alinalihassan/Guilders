@@ -45,7 +45,7 @@ export function TransactionsCard({
           )}
         </div>
       </CardHeader>
-      <CardContent className="flex-1 min-h-0">
+      <CardContent className="min-h-0 flex-1">
         <ScrollArea className="h-full w-full">
           {children || <TransactionsTable accountId={accountId} />}
           <ScrollBar orientation="vertical" />

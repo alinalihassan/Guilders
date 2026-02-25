@@ -17,10 +17,10 @@ export const metadata: Metadata = {
 
 export default async function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center relative">
-      <Button asChild variant="ghost" size="sm" className="absolute top-4 left-4">
+    <div className="relative flex min-h-screen flex-col items-center justify-center">
+      <Button asChild variant="ghost" size="sm" className="absolute left-4 top-4">
         <Link href={env.NEXT_PUBLIC_WEBSITE_URL}>
-          <ArrowLeft className="h-4 w-4 mr-2" />
+          <ArrowLeft className="mr-2 h-4 w-4" />
           Back
         </Link>
       </Button>

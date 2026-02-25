@@ -16,9 +16,9 @@ export function ChangeBadge({
     <span
       className={`text-xs ${showAbsoluteChange === false ? "w-[84px]" : ""} ${
         isPositive
-          ? "bg-green-100 dark:bg-[#182f28] text-green-700 dark:text-[#2ff795]"
-          : "bg-red-100 dark:bg-[#2d1e1e] text-red-700 dark:text-[#ff4d4d]"
-      } p-2 rounded-md ml-auto inline-flex items-center font-mono`}
+          ? "bg-green-100 text-green-700 dark:bg-[#182f28] dark:text-[#2ff795]"
+          : "bg-red-100 text-red-700 dark:bg-[#2d1e1e] dark:text-[#ff4d4d]"
+      } ml-auto inline-flex items-center rounded-md p-2 font-mono`}
     >
       {isPositive ? (
         <ChevronUp className="mr-0.5" size={16} />

@@ -13,12 +13,12 @@ export function TransactionItem({ transaction }: TransactionItemProps) {
 
   return (
     <div
-      className="flex justify-between items-center p-2 hover:bg-secondary rounded-lg cursor-pointer"
+      className="flex cursor-pointer items-center justify-between rounded-lg p-2 hover:bg-secondary"
       onClick={() => open({ transaction })}
     >
       <div className="flex items-center">
         <div
-          className={`w-8 h-8 rounded-full flex items-center justify-center mr-3 ${
+          className={`mr-3 flex h-8 w-8 items-center justify-center rounded-full ${
             amount > 0
               ? "bg-green-100 dark:bg-green-900"
               : amount < 0
@@ -40,7 +40,7 @@ export function TransactionItem({ transaction }: TransactionItemProps) {
         </div>
         <div className="max-w-[300px]">
           <p
-            className={`font-medium font-mono ${
+            className={`font-mono font-medium ${
               amount > 0
                 ? "text-green-600 dark:text-green-400"
                 : amount < 0
@@ -56,7 +56,7 @@ export function TransactionItem({ transaction }: TransactionItemProps) {
               }}
             />
           </p>
-          <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+          <p className="truncate text-xs text-gray-500 dark:text-gray-400">
             {transaction.description}
           </p>
         </div>

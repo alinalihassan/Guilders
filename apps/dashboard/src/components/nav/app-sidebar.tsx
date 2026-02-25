@@ -17,7 +17,7 @@ export function AppSidebar() {
       {/* Backdrop - only on mobile when menu is open */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-background/80 backdrop-blur-sm z-40 md:hidden"
+          className="fixed inset-0 z-40 bg-background/80 backdrop-blur-sm md:hidden"
           onClick={closeMenu}
         />
       )}
@@ -34,7 +34,7 @@ export function AppSidebar() {
           !isOpen && "-translate-x-full md:translate-x-0",
         )}
       >
-        <div className="h-8 flex items-center justify-center mt-4">
+        <div className="mt-4 flex h-8 items-center justify-center">
           <Link href="/" className="flex items-center">
             <Image
               src="/assets/logo/logo.svg"

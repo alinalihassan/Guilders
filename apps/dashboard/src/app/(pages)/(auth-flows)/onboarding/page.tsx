@@ -49,7 +49,7 @@ export default function OnboardingPage() {
   return (
     <div className="w-full max-w-sm">
       <div className="rounded-md bg-background px-6 py-6 shadow">
-        <div className="flex flex-col items-center mb-4">
+        <div className="mb-4 flex flex-col items-center">
           <Image
             src="/assets/logo/logo_filled_rounded.svg"
             alt="logo"
@@ -59,10 +59,10 @@ export default function OnboardingPage() {
           />
         </div>
 
-        <h1 className="text-2xl font-bold text-center">Welcome to Guilders!</h1>
-        <p className="text-muted-foreground text-center">Please set your password to continue</p>
+        <h1 className="text-center text-2xl font-bold">Welcome to Guilders!</h1>
+        <p className="text-center text-muted-foreground">Please set your password to continue</p>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4 mt-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="mt-4 flex flex-col gap-4">
           <div className="grid gap-4">
             <div className="grid w-full items-center gap-1.5">
               <Label htmlFor="password">Password</Label>

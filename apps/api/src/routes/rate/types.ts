@@ -1,4 +1,5 @@
 import { t } from "elysia";
+
 import type { Rate as DbRate } from "../../db/schema/rates";
 
 export const rateQuerySchema = t.Object({
