@@ -15,7 +15,12 @@ export async function middleware(request: NextRequest) {
   const authPage =
     request.nextUrl.pathname.startsWith("/login") ||
     request.nextUrl.pathname.startsWith("/sign-up") ||
-    request.nextUrl.pathname.startsWith("/forgot-password");
+    request.nextUrl.pathname.startsWith("/forgot-password") ||
+    request.nextUrl.pathname.startsWith("/oauth/sign-in") ||
+    request.nextUrl.pathname.startsWith("/oauth/consent");
+  const oauthPage =
+    request.nextUrl.pathname.startsWith("/oauth/sign-in") ||
+    request.nextUrl.pathname.startsWith("/oauth/consent");
 
   const callbackPage = request.nextUrl.pathname.startsWith("/callback");
 
@@ -27,7 +32,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  if (user && authPage) {
+  if (user && authPage && !oauthPage) {
     return NextResponse.redirect(new URL("/", request.url));
   }
 
