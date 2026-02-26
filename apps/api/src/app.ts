@@ -4,6 +4,8 @@ import { Elysia } from "elysia";
 import { CloudflareAdapter } from "elysia/adapter/cloudflare-worker";
 
 import { OpenAPI } from "./lib/auth-openapi";
+import { oauthPagesRoutes } from "./routes/oauth-pages";
+import { oauthWellKnownRoutes } from "./routes/oauth-well-known";
 import { api } from "./routes";
 
 export const app = new Elysia({ adapter: CloudflareAdapter })
@@ -35,6 +37,8 @@ export const app = new Elysia({ adapter: CloudflareAdapter })
       },
     }),
   )
+  .use(oauthPagesRoutes)
+  .use(oauthWellKnownRoutes)
   .use(api)
   .onError(({ code, error, set }) => {
     console.error(`API Error [${code}]:`, error);

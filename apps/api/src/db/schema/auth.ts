@@ -1,4 +1,12 @@
-import { boolean, index, integer, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  text,
+  timestamp,
+  boolean,
+  integer,
+  jsonb,
+  index,
+} from "drizzle-orm/pg-core";
 
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
@@ -98,7 +106,10 @@ export const apikey = pgTable(
     permissions: text("permissions"),
     metadata: text("metadata"),
   },
-  (table) => [index("apikey_key_idx").on(table.key), index("apikey_userId_idx").on(table.userId)],
+  (table) => [
+    index("apikey_key_idx").on(table.key),
+    index("apikey_userId_idx").on(table.userId),
+  ],
 );
 
 export const twoFactor = pgTable(
@@ -116,6 +127,14 @@ export const twoFactor = pgTable(
     index("twoFactor_userId_idx").on(table.userId),
   ],
 );
+
+export const jwks = pgTable("jwks", {
+  id: text("id").primaryKey(),
+  publicKey: text("public_key").notNull(),
+  privateKey: text("private_key").notNull(),
+  createdAt: timestamp("created_at").notNull(),
+  expiresAt: timestamp("expires_at"),
+});
 
 export const passkey = pgTable(
   "passkey",
@@ -139,3 +158,84 @@ export const passkey = pgTable(
     index("passkey_credentialID_idx").on(table.credentialID),
   ],
 );
+
+export const oauthClient = pgTable("oauth_client", {
+  id: text("id").primaryKey(),
+  clientId: text("client_id").notNull().unique(),
+  clientSecret: text("client_secret"),
+  disabled: boolean("disabled").default(false),
+  skipConsent: boolean("skip_consent"),
+  enableEndSession: boolean("enable_end_session"),
+  scopes: text("scopes").array(),
+  userId: text("user_id").references(() => user.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at"),
+  updatedAt: timestamp("updated_at"),
+  name: text("name"),
+  uri: text("uri"),
+  icon: text("icon"),
+  contacts: text("contacts").array(),
+  tos: text("tos"),
+  policy: text("policy"),
+  softwareId: text("software_id"),
+  softwareVersion: text("software_version"),
+  softwareStatement: text("software_statement"),
+  redirectUris: text("redirect_uris").array().notNull(),
+  postLogoutRedirectUris: text("post_logout_redirect_uris").array(),
+  tokenEndpointAuthMethod: text("token_endpoint_auth_method"),
+  grantTypes: text("grant_types").array(),
+  responseTypes: text("response_types").array(),
+  public: boolean("public"),
+  type: text("type"),
+  referenceId: text("reference_id"),
+  metadata: jsonb("metadata"),
+});
+
+export const oauthRefreshToken = pgTable("oauth_refresh_token", {
+  id: text("id").primaryKey(),
+  token: text("token").notNull(),
+  clientId: text("client_id")
+    .notNull()
+    .references(() => oauthClient.clientId, { onDelete: "cascade" }),
+  sessionId: text("session_id").references(() => session.id, {
+    onDelete: "set null",
+  }),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  referenceId: text("reference_id"),
+  expiresAt: timestamp("expires_at"),
+  createdAt: timestamp("created_at"),
+  revoked: timestamp("revoked"),
+  scopes: text("scopes").array().notNull(),
+});
+
+export const oauthAccessToken = pgTable("oauth_access_token", {
+  id: text("id").primaryKey(),
+  token: text("token").unique(),
+  clientId: text("client_id")
+    .notNull()
+    .references(() => oauthClient.clientId, { onDelete: "cascade" }),
+  sessionId: text("session_id").references(() => session.id, {
+    onDelete: "set null",
+  }),
+  userId: text("user_id").references(() => user.id, { onDelete: "cascade" }),
+  referenceId: text("reference_id"),
+  refreshId: text("refresh_id").references(() => oauthRefreshToken.id, {
+    onDelete: "cascade",
+  }),
+  expiresAt: timestamp("expires_at"),
+  createdAt: timestamp("created_at"),
+  scopes: text("scopes").array().notNull(),
+});
+
+export const oauthConsent = pgTable("oauth_consent", {
+  id: text("id").primaryKey(),
+  clientId: text("client_id")
+    .notNull()
+    .references(() => oauthClient.clientId, { onDelete: "cascade" }),
+  userId: text("user_id").references(() => user.id, { onDelete: "cascade" }),
+  referenceId: text("reference_id"),
+  scopes: text("scopes").array().notNull(),
+  createdAt: timestamp("created_at"),
+  updatedAt: timestamp("updated_at"),
+});

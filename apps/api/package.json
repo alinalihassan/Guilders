@@ -20,13 +20,16 @@
   "dependencies": {
     "@better-auth/drizzle-adapter": "https://pkg.pr.new/better-auth/better-auth/@better-auth/drizzle-adapter@6913",
     "@better-auth/expo": "^1.4.19",
+    "@better-auth/oauth-provider": "^1.4.19",
     "@better-auth/passkey": "^1.4.19",
     "@better-auth/stripe": "^1.4.19",
     "@elysiajs/cors": "^1.4.1",
     "@elysiajs/openapi": "^1.4.14",
     "@json-render/core": "^0.9.1",
+    "@modelcontextprotocol/sdk": "1.26.0",
     "@neondatabase/serverless": "^1.0.2",
     "@sinclair/typebox": "^0.34.48",
+    "agents": "^0.6.0",
     "ai": "^6.0.99",
     "ai-gateway-provider": "^3.1.1",
     "better-auth": "^1.4.19",
@@ -34,7 +37,8 @@
     "drizzle-typebox": "^0.3.3",
     "elysia": "1.4.25",
     "snaptrade-typescript-sdk": "^9.0.166",
-    "stripe": "^20.3.1"
+    "stripe": "^20.3.1",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@better-auth/cli": "^1.4.19",

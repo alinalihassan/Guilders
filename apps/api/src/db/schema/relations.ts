@@ -1,7 +1,19 @@
 import { defineRelations } from "drizzle-orm";
 
 import { account } from "./accounts";
-import { session, user, user_account, verification } from "./auth";
+import {
+  apikey,
+  oauthAccessToken,
+  oauthClient,
+  oauthConsent,
+  oauthRefreshToken,
+  passkey,
+  session,
+  twoFactor,
+  user,
+  user_account,
+  verification,
+} from "./auth";
 import { category } from "./categories";
 import { country } from "./countries";
 import { currency } from "./currencies";
@@ -17,6 +29,13 @@ const schema = {
   user_account,
   session,
   user,
+  apikey,
+  twoFactor,
+  passkey,
+  oauthClient,
+  oauthRefreshToken,
+  oauthAccessToken,
+  oauthConsent,
   category,
   account,
   country,
@@ -45,16 +64,134 @@ export const relations = defineRelations(schema, (r) => ({
       from: r.user.id,
       to: r.category.user_id,
     }),
+    apikeys: r.many.apikey({
+      from: r.user.id,
+      to: r.apikey.userId,
+    }),
+    twoFactors: r.many.twoFactor({
+      from: r.user.id,
+      to: r.twoFactor.userId,
+    }),
+    passkeys: r.many.passkey({
+      from: r.user.id,
+      to: r.passkey.userId,
+    }),
+    oauthClients: r.many.oauthClient({
+      from: r.user.id,
+      to: r.oauthClient.userId,
+    }),
+    oauthRefreshTokens: r.many.oauthRefreshToken({
+      from: r.user.id,
+      to: r.oauthRefreshToken.userId,
+    }),
+    oauthAccessTokens: r.many.oauthAccessToken({
+      from: r.user.id,
+      to: r.oauthAccessToken.userId,
+    }),
+    oauthConsents: r.many.oauthConsent({
+      from: r.user.id,
+      to: r.oauthConsent.userId,
+    }),
   },
   session: {
     user: r.one.user({
       from: r.session.userId,
       to: r.user.id,
     }),
+    oauthRefreshTokens: r.many.oauthRefreshToken({
+      from: r.session.id,
+      to: r.oauthRefreshToken.sessionId,
+    }),
+    oauthAccessTokens: r.many.oauthAccessToken({
+      from: r.session.id,
+      to: r.oauthAccessToken.sessionId,
+    }),
   },
   user_account: {
     user: r.one.user({
       from: r.user_account.userId,
+      to: r.user.id,
+    }),
+  },
+  apikey: {
+    user: r.one.user({
+      from: r.apikey.userId,
+      to: r.user.id,
+    }),
+  },
+  twoFactor: {
+    user: r.one.user({
+      from: r.twoFactor.userId,
+      to: r.user.id,
+    }),
+  },
+  passkey: {
+    user: r.one.user({
+      from: r.passkey.userId,
+      to: r.user.id,
+    }),
+  },
+  oauthClient: {
+    user: r.one.user({
+      from: r.oauthClient.userId,
+      to: r.user.id,
+    }),
+    oauthRefreshTokens: r.many.oauthRefreshToken({
+      from: r.oauthClient.clientId,
+      to: r.oauthRefreshToken.clientId,
+    }),
+    oauthAccessTokens: r.many.oauthAccessToken({
+      from: r.oauthClient.clientId,
+      to: r.oauthAccessToken.clientId,
+    }),
+    oauthConsents: r.many.oauthConsent({
+      from: r.oauthClient.clientId,
+      to: r.oauthConsent.clientId,
+    }),
+  },
+  oauthRefreshToken: {
+    oauthClient: r.one.oauthClient({
+      from: r.oauthRefreshToken.clientId,
+      to: r.oauthClient.clientId,
+    }),
+    session: r.one.session({
+      from: r.oauthRefreshToken.sessionId,
+      to: r.session.id,
+    }),
+    user: r.one.user({
+      from: r.oauthRefreshToken.userId,
+      to: r.user.id,
+    }),
+    oauthAccessTokens: r.many.oauthAccessToken({
+      from: r.oauthRefreshToken.id,
+      to: r.oauthAccessToken.refreshId,
+    }),
+  },
+  oauthAccessToken: {
+    oauthClient: r.one.oauthClient({
+      from: r.oauthAccessToken.clientId,
+      to: r.oauthClient.clientId,
+    }),
+    session: r.one.session({
+      from: r.oauthAccessToken.sessionId,
+      to: r.session.id,
+    }),
+    user: r.one.user({
+      from: r.oauthAccessToken.userId,
+      to: r.user.id,
+    }),
+    oauthRefreshToken: r.one.oauthRefreshToken({
+      from: r.oauthAccessToken.refreshId,
+      to: r.oauthRefreshToken.id,
+    }),
+  },
+  oauthConsent: {
+    oauthClient: r.one.oauthClient({
+      from: r.oauthConsent.clientId,
+      to: r.oauthClient.clientId,
+    }),
+    user: r.one.user({
+      from: r.oauthConsent.userId,
       to: r.user.id,
     }),
   },
