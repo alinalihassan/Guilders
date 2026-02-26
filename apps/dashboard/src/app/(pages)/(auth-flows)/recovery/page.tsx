@@ -11,6 +11,7 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { authClient } from "@/lib/auth-client";
 
 const passwordSchema = z
   .object({
@@ -42,10 +43,31 @@ export default function RecoveryPage() {
     resolver: zodResolver(passwordSchema),
   });
 
-  const onSubmit = async (_data: PasswordForm) => {
+  const onSubmit = async (data: PasswordForm) => {
     try {
       setIsLoading(true);
-      toast.message("Password reset completion is temporarily unavailable during migration.");
+      const token = new URLSearchParams(window.location.search).get("token");
+      if (!token) {
+        toast.error("Invalid reset link", {
+          description: "Please request a new password reset email.",
+        });
+        return;
+      }
+
+      const { error } = await authClient.resetPassword({
+        token,
+        newPassword: data.password,
+      });
+      if (error) {
+        toast.error("Failed to update password", {
+          description: error.message || "Please try again.",
+        });
+        return;
+      }
+
+      toast.success("Password updated", {
+        description: "You can now sign in with your new password.",
+      });
       router.push("/login");
     } catch {
       toast.error("Failed to update password", {
@@ -81,6 +103,7 @@ export default function RecoveryPage() {
                   id="password"
                   type="password"
                   placeholder="Enter your new password"
+                  autoComplete="new-password"
                   disabled={isLoading}
                   {...register("password")}
                 />
@@ -95,6 +118,7 @@ export default function RecoveryPage() {
                   id="confirmPassword"
                   type="password"
                   placeholder="Confirm your password"
+                  autoComplete="new-password"
                   disabled={isLoading}
                   {...register("confirmPassword")}
                 />

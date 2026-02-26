@@ -7,6 +7,8 @@ import { toast } from "sonner";
 import { SubmitButton } from "@/components/common/submit-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { authClient } from "@/lib/auth-client";
+import { env } from "@/lib/env";
 
 export default function ForgotPassword() {
   const handleSubmit = async (formData: FormData) => {
@@ -15,7 +17,21 @@ export default function ForgotPassword() {
       toast.error("Email is required");
       return;
     }
-    toast.message("Password reset email is temporarily unavailable during migration.");
+
+    const { error } = await authClient.requestPasswordReset({
+      email,
+      redirectTo: `${env.NEXT_PUBLIC_DASHBOARD_URL}/recovery`,
+    });
+    if (error) {
+      toast.error("Failed to send reset link", {
+        description: error.message || "Please try again.",
+      });
+      return;
+    }
+
+    toast.success("Reset link sent", {
+      description: "Check your email for password reset instructions.",
+    });
   };
 
   return (
