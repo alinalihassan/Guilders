@@ -14,12 +14,24 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { authClient } from "@/lib/auth-client";
 
+const DISPLAY_ONLY_QUERY_KEYS = new Set(["client_name", "client_uri"]);
+
+const toOAuthQuery = (searchParams: ReturnType<typeof useSearchParams>) => {
+  const params = new URLSearchParams(searchParams.toString());
+  for (const key of DISPLAY_ONLY_QUERY_KEYS) {
+    params.delete(key);
+  }
+  return params.toString();
+};
+
 function OAuthSignInForm() {
   const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
 
-  const oauthQuery = useMemo(() => searchParams.toString(), [searchParams]);
+  const oauthQuery = useMemo(() => toOAuthQuery(searchParams), [searchParams]);
   const clientId = searchParams.get("client_id");
+  const clientName = searchParams.get("client_name");
+  const clientUri = searchParams.get("client_uri");
   const scope = searchParams.get("scope");
   const scopeList = useMemo(
     () => scope?.split(/\s+/).filter(Boolean).slice(0, 6) ?? [],
@@ -89,7 +101,15 @@ function OAuthSignInForm() {
               </div>
               {clientId && (
                 <div className="text-xs text-muted-foreground">
-                  Client: <span className="font-medium text-foreground">{clientId}</span>
+                  Client:{" "}
+                  <span className="font-medium text-foreground">
+                    {clientName?.trim() || clientId}
+                  </span>
+                </div>
+              )}
+              {clientUri && (
+                <div className="mt-1 text-xs text-muted-foreground">
+                  Origin: <span className="break-all text-foreground">{clientUri}</span>
                 </div>
               )}
               {scopeList.length > 0 && (
@@ -147,7 +167,7 @@ function OAuthSignInForm() {
 function OAuthSignInPage() {
   const searchParams = useSearchParams();
 
-  const query = useMemo(() => searchParams.toString(), [searchParams]);
+  const query = useMemo(() => toOAuthQuery(searchParams), [searchParams]);
   const authApiBase = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000";
   const authorizeUrl = `${authApiBase}/api/auth/oauth2/authorize${query ? `?${query}` : ""}`;
 

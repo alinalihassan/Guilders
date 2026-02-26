@@ -9,13 +9,25 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
+const DISPLAY_ONLY_QUERY_KEYS = new Set(["client_name", "client_uri"]);
+
+const toOAuthQuery = (searchParams: ReturnType<typeof useSearchParams>) => {
+  const params = new URLSearchParams(searchParams.toString());
+  for (const key of DISPLAY_ONLY_QUERY_KEYS) {
+    params.delete(key);
+  }
+  return params.toString();
+};
+
 function OAuthConsentForm() {
   const searchParams = useSearchParams();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const authApiBase = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000";
 
-  const oauthQuery = useMemo(() => searchParams.toString(), [searchParams]);
+  const oauthQuery = useMemo(() => toOAuthQuery(searchParams), [searchParams]);
   const clientId = searchParams.get("client_id") ?? "Unknown client";
+  const clientName = searchParams.get("client_name");
+  const clientUri = searchParams.get("client_uri");
   const scope = searchParams.get("scope") ?? "(none)";
   const scopeList = useMemo(() => scope.split(/\s+/).filter(Boolean), [scope]);
 
@@ -88,7 +100,12 @@ function OAuthConsentForm() {
               <ShieldCheck className="h-4 w-4 text-primary" />
               Requesting application
             </div>
-            <div className="break-all text-sm text-foreground">{clientId}</div>
+            <div className="break-all text-sm text-foreground">
+              {clientName?.trim() || clientId}
+            </div>
+            {clientUri && (
+              <div className="mt-1 break-all text-xs text-muted-foreground">{clientUri}</div>
+            )}
           </div>
 
           <div className="rounded-md border bg-muted/40 p-3">

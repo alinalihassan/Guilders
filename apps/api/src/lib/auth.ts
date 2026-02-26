@@ -17,7 +17,6 @@ export function createAuth(db?: Database) {
   const authDb = db ?? createDb();
   const authBaseUrl = process.env.BETTER_AUTH_URL ?? "http://localhost:3000/api/auth";
   const apiOrigin = authBaseUrl.replace(/\/api\/auth\/?$/, "");
-  const dashboardOrigin = process.env.DASHBOARD_URL ?? process.env.NEXT_PUBLIC_DASHBOARD_URL ?? "http://localhost:3002";
   const mcpAudience = `${apiOrigin}/mcp`;
   const passkeyRpId = process.env.PASSKEY_RP_ID ?? new URL(apiOrigin).hostname;
 
@@ -63,8 +62,8 @@ export function createAuth(db?: Database) {
       }),
       bearer(),
       oauthProvider({
-        loginPage: `${dashboardOrigin.replace(/\/$/, "")}/oauth/sign-in`,
-        consentPage: `${dashboardOrigin.replace(/\/$/, "")}/oauth/consent`,
+        loginPage: `${apiOrigin.replace(/\/$/, "")}/oauth/sign-in`,
+        consentPage: `${apiOrigin.replace(/\/$/, "")}/oauth/consent`,
         validAudiences: [mcpAudience],
         allowDynamicClientRegistration: true,
         allowUnauthenticatedClientRegistration: true,
