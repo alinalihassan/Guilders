@@ -28,8 +28,8 @@ export function NetWorthCategories() {
   }, [accounts]);
 
   const categories = useMemo(() => {
-    return calculateCategories(leafAccounts, rates, user?.settings.currency ?? "EUR");
-  }, [leafAccounts, rates, user?.settings.currency]);
+    return calculateCategories(leafAccounts, rates, user?.currency ?? "EUR");
+  }, [leafAccounts, rates, user?.currency]);
 
   const { positiveSum, negativeSum } = useMemo(() => {
     return calculateCategorySums(categories);

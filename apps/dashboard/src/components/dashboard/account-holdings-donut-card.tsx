@@ -50,7 +50,7 @@ interface AccountHoldingsDonutCardProps {
 export function AccountHoldingsDonutCard({ holdings, className }: AccountHoldingsDonutCardProps) {
   const { data: rates } = useRates();
   const { data: user } = useUser();
-  const userCurrency = user?.settings.currency ?? "EUR";
+  const userCurrency = user?.currency ?? "EUR";
 
   const data = useMemo(() => {
     return holdings

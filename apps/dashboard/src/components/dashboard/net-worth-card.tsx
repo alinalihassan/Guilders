@@ -20,7 +20,7 @@ export function NetWorthCard({ className }: { className?: string }) {
         account.value,
         account.currency,
         rates,
-        user?.settings.currency ?? "EUR",
+        user?.currency ?? "EUR",
       );
       return acc + convertedValue;
     }, 0) ?? 0;
@@ -32,7 +32,7 @@ export function NetWorthCard({ className }: { className?: string }) {
         cost,
         account.currency,
         rates,
-        user?.settings.currency ?? "EUR",
+        user?.currency ?? "EUR",
       );
       return acc + convertedCost;
     }, 0) ?? 0;
@@ -40,14 +40,14 @@ export function NetWorthCard({ className }: { className?: string }) {
   const change = {
     value: totalValue - totalCost,
     percentage: totalCost === 0 ? 0 : (totalValue - totalCost) / totalCost,
-    currency: user?.settings.currency ?? "EUR",
+    currency: user?.currency ?? "EUR",
   };
 
   return (
     <BalanceCard
       title="Net Worth"
       value={totalValue}
-      currency={user?.settings.currency ?? "EUR"}
+      currency={user?.currency ?? "EUR"}
       change={change}
       className={className}
     />

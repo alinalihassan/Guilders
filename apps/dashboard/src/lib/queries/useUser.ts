@@ -5,22 +5,18 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { authClient } from "../auth-client";
 
-const queryKey = ["user-settings"] as const;
-const DEFAULT_CURRENCY = "EUR";
+const queryKey = ["user"] as const;
 
 export function useUser() {
   return useQuery<User, Error>({
     queryKey,
     queryFn: async () => {
       const { data: payload } = await authClient.getSession();
+      const user = payload?.user as Record<string, unknown> | undefined;
 
       return {
-        email: payload?.user?.email ?? "",
-        settings: {
-          currency: DEFAULT_CURRENCY,
-          api_key: null,
-          profile_url: null,
-        },
+        email: user?.email as string ?? "",
+        currency: (user?.currency as string) ?? "EUR",
         subscription: {
           status: null,
           current_period_end: null,
@@ -46,26 +42,22 @@ export function useUpdateUserSettings() {
 
   return useMutation({
     mutationFn: async (input: UpdateUser) => {
-      const currency = input.settings?.currency;
-      const current = queryClient.getQueryData<{
-        email: string;
-        settings: { currency: string; api_key: string | null; profile_url: string | null };
-        subscription: {
-          status: string | null;
-          current_period_end: string | null;
-          trial_end: string | null;
-        };
-      }>(queryKey);
+      if (input.currency) {
+        await authClient.updateUser({ currency: input.currency });
+      }
 
-      if (!current) return null;
+      const { data: payload } = await authClient.getSession();
+      const user = payload?.user as Record<string, unknown> | undefined;
+
       return {
-        ...current,
-        settings: {
-          ...current.settings,
-          ...(currency ? { currency } : {}),
-          ...input.settings,
+        email: user?.email as string ?? "",
+        currency: (user?.currency as string) ?? "EUR",
+        subscription: {
+          status: null,
+          current_period_end: null,
+          trial_end: null,
         },
-      };
+      } as User;
     },
     onSuccess: (data) => {
       queryClient.setQueryData(queryKey, data);

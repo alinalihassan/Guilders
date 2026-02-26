@@ -23,7 +23,7 @@ import { providerConnection } from "./provider-connections";
 import { provider } from "./providers";
 import { rate } from "./rates";
 import { transaction } from "./transactions";
-import { userSetting } from "./user-settings";
+
 
 const schema = {
   user_account,
@@ -46,7 +46,6 @@ const schema = {
   provider,
   rate,
   transaction,
-  userSetting,
   verification,
 };
 
@@ -248,10 +247,6 @@ export const relations = defineRelations(schema, (r) => ({
       from: r.currency.code,
       to: r.transaction.currency,
     }),
-    userSettings: r.many.userSetting({
-      from: r.currency.code,
-      to: r.userSetting.currency,
-    }),
     countries: r.many.country({
       from: r.currency.code,
       to: r.country.currency_code,
@@ -311,13 +306,6 @@ export const relations = defineRelations(schema, (r) => ({
     institutions: r.many.institution({
       from: r.provider.id,
       to: r.institution.provider_id,
-    }),
-  },
-  userSetting: {
-    currencyRel: r.one.currency({
-      from: r.userSetting.currency,
-      to: r.currency.code,
-      alias: "currencyRel",
     }),
   },
   country: {

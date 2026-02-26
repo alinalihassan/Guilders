@@ -36,7 +36,7 @@ export default function TransactionsPage() {
   const { open: openAddTransaction } = useDialog("addTransaction");
   const [searchQuery, setSearchQuery] = useState("");
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const userCurrency = user?.settings.currency ?? "EUR";
+  const userCurrency = user?.currency ?? "EUR";
 
   const totalIncome =
     transactions?.reduce((sum, t) => {

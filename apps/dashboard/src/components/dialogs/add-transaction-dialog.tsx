@@ -73,7 +73,7 @@ export function AddTransactionDialog() {
     defaultValues: {
       accountId: undefined,
       amount: "",
-      currency: user?.settings.currency ?? "",
+      currency: user?.currency ?? "",
       description: "",
       categoryId: undefined,
       date: new Date().toISOString(),
@@ -96,18 +96,18 @@ export function AddTransactionDialog() {
         // @ts-ignore
         form.setValue("accountId", undefined);
         // Reset to user's default currency
-        if (user?.settings.currency) {
-          form.setValue("currency", user.settings.currency);
+        if (user?.currency) {
+          form.setValue("currency", user.currency);
         }
       }
     }
-  }, [isOpen, transactionData?.accountId, accounts, form, user?.settings.currency]);
+  }, [isOpen, transactionData?.accountId, accounts, form, user?.currency]);
 
   useEffect(() => {
-    if (user?.settings.currency) {
-      form.setValue("currency", user.settings.currency);
+    if (user?.currency) {
+      form.setValue("currency", user.currency);
     }
-  }, [user?.settings.currency, form]);
+  }, [user?.currency, form]);
 
   useEffect(() => {
     if (!isOpen) {

@@ -16,7 +16,7 @@ export function convertToUserCurrency(
   const fromRate = Number(rates.find((r) => r.currency_code === fromCurrency)?.rate ?? 1) || 1;
   const toRate = Number(rates.find((r) => r.currency_code === userCurrency)?.rate ?? 1) || 1;
 
-  return (numValue * fromRate) / toRate;
+  return (numValue * toRate) / fromRate;
 }
 
 interface CategoryGroups {

@@ -35,6 +35,13 @@ export function createAuth(db?: Database) {
     appName: "Guilders",
     secret: process.env.BETTER_AUTH_SECRET,
     user: {
+      additionalFields: {
+        currency: {
+          type: "string",
+          required: false,
+          defaultValue: "EUR",
+        },
+      },
       changeEmail: {
         enabled: true,
       },

@@ -6,6 +6,7 @@ import {
   integer,
   jsonb,
   index,
+  varchar,
 } from "drizzle-orm/pg-core";
 
 export const user = pgTable("user", {
@@ -14,6 +15,7 @@ export const user = pgTable("user", {
   email: text("email").notNull().unique(),
   emailVerified: boolean("email_verified").default(false).notNull(),
   image: text("image"),
+  currency: varchar("currency", { length: 3 }).notNull().default("EUR"),
   createdAt: timestamp("created_at").notNull(),
   updatedAt: timestamp("updated_at")
     .$onUpdate(() => new Date())

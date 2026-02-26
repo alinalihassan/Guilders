@@ -56,8 +56,9 @@ export async function getFinancialContext(userId: string, db: Database): Promise
 
   const exchangeRates = await db.query.rate.findMany();
 
-  const userSettings = await db.query.userSetting.findFirst({
-    where: { user_id: userId },
+  const userRecord = await db.query.user.findFirst({
+    where: { id: userId },
+    columns: { currency: true },
   });
 
   const netWorth = accounts.reduce((sum, acc) => {
@@ -65,7 +66,7 @@ export async function getFinancialContext(userId: string, db: Database): Promise
     return acc.type === "liability" ? sum - value : sum + value;
   }, 0);
 
-  const primaryCurrency = userSettings?.currency || "EUR";
+  const primaryCurrency = userRecord?.currency || "EUR";
 
   return {
     prompt: FINANCIAL_ADVISOR_PROMPT,

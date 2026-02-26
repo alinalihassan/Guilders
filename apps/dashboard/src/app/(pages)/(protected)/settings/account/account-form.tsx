@@ -72,7 +72,7 @@ export function AccountForm() {
     resolver: zodResolver(accountFormSchema),
     defaultValues: {
       email: user?.email ?? "",
-      currency: user?.settings.currency ?? "",
+      currency: user?.currency ?? "",
     },
   });
 
@@ -81,7 +81,7 @@ export function AccountForm() {
       form.reset(
         {
           email: user.email,
-          currency: user.settings.currency,
+          currency: user.currency,
         },
         {
           keepDirtyValues: true,
@@ -136,11 +136,10 @@ export function AccountForm() {
       const isEmailChanged = data.email !== user?.email;
       const isCurrencyChanged = data.currency !== user?.settings.currency;
 
-      if (isCurrencyChanged) {
-        await updateUserSettings({
-          settings: { currency: data.currency },
-        });
-      }
+      await updateUserSettings({
+        ...(isEmailChanged ? { email: data.email } : {}),
+        currency: data.currency,
+      });
 
       if (isEmailChanged) {
         const { error } = await authClient.changeEmail({
@@ -263,10 +262,6 @@ export function AccountForm() {
               <FormDescription>
                 This is the currency that will be used for your account.
               </FormDescription>
-              <p className="text-xs text-muted-foreground">
-                TODO: Currency preference is temporarily defaulted to USD until backend settings
-                persistence is fully migrated.
-              </p>
               <FormMessage />
             </FormItem>
           )}
