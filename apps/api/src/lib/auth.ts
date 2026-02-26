@@ -82,8 +82,13 @@ export function createAuth(db?: Database) {
       "guilders-mobile://",
       ...(process.env.NODE_ENV === "development"
         ? [
+            // Guilders local development
             "http://localhost:3002",
             "http://localhost:3000",
+            // @modelcontextprotocol/inspector
+            "http://localhost:6274",
+            "http://localhost:6277",
+            // Expo
             "exp://",
             "exp://**",
             "exp://192.168.*.*:*/**",

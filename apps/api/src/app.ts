@@ -4,15 +4,24 @@ import { Elysia } from "elysia";
 import { CloudflareAdapter } from "elysia/adapter/cloudflare-worker";
 
 import { OpenAPI } from "./lib/auth-openapi";
+import { api } from "./routes";
 import { oauthPagesRoutes } from "./routes/oauth-pages";
 import { oauthWellKnownRoutes } from "./routes/oauth-well-known";
-import { api } from "./routes";
 
 export const app = new Elysia({ adapter: CloudflareAdapter })
   .use(
     cors({
       credentials: true,
-      origin: ["http://localhost:3000", "http://localhost:3001", "http://localhost:3002"],
+      origin: [
+        // Guilders local development
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "http://localhost:3002",
+
+        // @modelcontextprotocol/inspector
+        "http://localhost:6274",
+        "http://localhost:6277",
+      ],
     }),
   )
   .use(
