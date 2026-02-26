@@ -6,6 +6,8 @@ type MarkdownProps = ComponentProps<typeof Streamdown>;
 const NonMemoizedMarkdown = ({ className, children, ...props }: MarkdownProps) => {
   return (
     <Streamdown
+      caret="block"
+      isAnimating={true}
       className={[
         "size-full",
         "[&>*:first-child]:mt-0",
