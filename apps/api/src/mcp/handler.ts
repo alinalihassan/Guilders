@@ -5,29 +5,18 @@ import { createMcpServer } from "./server";
 
 export const handleMcp = async (request: Request, env: Env, executionCtx: ExecutionContext) => {
   if (request.method === "OPTIONS") {
-    const handler = createMcpHandler(createMcpServer({ userId: "preflight" }) as unknown as Parameters<
-      typeof createMcpHandler
-    >[0], {
-      route: "/mcp",
-      enableJsonResponse: true,
-    });
+    const handler = createMcpHandler(
+      createMcpServer({ userId: "preflight" }) as unknown as Parameters<typeof createMcpHandler>[0],
+      {
+        route: "/mcp",
+        enableJsonResponse: true,
+      },
+    );
     return handler(request, env, executionCtx);
   }
 
-  // Enforce OAuth at MCP session start. Follow-up stream/session requests
-  // use mcp-session-id and may not repeat the Authorization header.
-  const sessionId = request.headers.get("mcp-session-id");
-  const mustAuthenticate = request.method === "POST" && !sessionId;
-
-  if (!mustAuthenticate) {
-    const handler = createMcpHandler(createMcpServer({ userId: "session" }) as unknown as Parameters<
-      typeof createMcpHandler
-    >[0], {
-      route: "/mcp",
-      enableJsonResponse: true,
-    });
-    return handler(request, env, executionCtx);
-  }
+  // Authenticate every non-preflight request so the MCP server always receives
+  // the actual user context instead of a placeholder session user.
 
   let authContext: { userId: string };
   try {
@@ -46,10 +35,13 @@ export const handleMcp = async (request: Request, env: Env, executionCtx: Execut
     );
   }
 
-  const handler = createMcpHandler(createMcpServer(authContext) as unknown as Parameters<typeof createMcpHandler>[0], {
-    route: "/mcp",
-    enableJsonResponse: true,
-  });
+  const handler = createMcpHandler(
+    createMcpServer(authContext) as unknown as Parameters<typeof createMcpHandler>[0],
+    {
+      route: "/mcp",
+      enableJsonResponse: true,
+    },
+  );
 
   return handler(request, env, executionCtx);
 };
