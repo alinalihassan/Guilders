@@ -1,7 +1,7 @@
 "use client";
 
-import Image from "next/image";
 import { KeyRound, ShieldCheck } from "lucide-react";
+import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -33,10 +33,7 @@ function OAuthSignInForm() {
   const clientName = searchParams.get("client_name");
   const clientUri = searchParams.get("client_uri");
   const scope = searchParams.get("scope");
-  const scopeList = useMemo(
-    () => scope?.split(/\s+/).filter(Boolean).slice(0, 6) ?? [],
-    [scope],
-  );
+  const scopeList = useMemo(() => scope?.split(/\s+/).filter(Boolean).slice(0, 6) ?? [], [scope]);
   const authApiBase = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000";
   const authorizeUrl = `${authApiBase}/api/auth/oauth2/authorize${oauthQuery ? `?${oauthQuery}` : ""}`;
 
@@ -129,6 +126,7 @@ function OAuthSignInForm() {
               <div className="grid w-full items-center gap-1.5">
                 <Label htmlFor="email">Email</Label>
                 <Input
+                  id="email"
                   name="email"
                   type="email"
                   placeholder="john@doe.com"
@@ -139,13 +137,18 @@ function OAuthSignInForm() {
               <div className="grid w-full items-center gap-1.5">
                 <Label htmlFor="password">Password</Label>
                 <PasswordInput
+                  id="password"
                   name="password"
                   placeholder="********"
                   required
                   autoComplete="current-password"
                 />
               </div>
-              <SubmitButton className="mt-2 w-full" pendingText="Signing In..." disabled={isLoading}>
+              <SubmitButton
+                className="mt-2 w-full"
+                pendingText="Signing In..."
+                disabled={isLoading}
+              >
                 Continue
               </SubmitButton>
             </div>

@@ -6,8 +6,8 @@ import { betterAuth } from "better-auth";
 import { apiKey, bearer, jwt, openAPI, twoFactor } from "better-auth/plugins";
 
 import * as authSchema from "../db/schema/auth";
-import { createDb, type Database } from "./db";
 import { seedDefaultCategoriesForUser } from "./categories";
+import { createDb, type Database } from "./db";
 
 /**
  * Create a per-request Better Auth instance with its own db connection.

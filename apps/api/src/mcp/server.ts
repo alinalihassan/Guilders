@@ -77,12 +77,13 @@ export const createMcpServer = ({ userId }: McpAuthContext) => {
           ],
         };
       } catch (error) {
+        console.error("MCP get_accounts failed:", error);
         return {
           isError: true,
           content: [
             {
               type: "text",
-              text: error instanceof Error ? error.message : "Unauthorized",
+              text: "Failed to fetch accounts.",
             },
           ],
         };
@@ -137,12 +138,13 @@ export const createMcpServer = ({ userId }: McpAuthContext) => {
           ],
         };
       } catch (error) {
+        console.error("MCP get_transactions failed:", error);
         return {
           isError: true,
           content: [
             {
               type: "text",
-              text: error instanceof Error ? error.message : "Unauthorized",
+              text: "Failed to fetch transactions.",
             },
           ],
         };

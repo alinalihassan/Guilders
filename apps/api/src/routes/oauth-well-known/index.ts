@@ -12,8 +12,8 @@ const getAuthOrigin = () => {
   return authBaseUrl.replace(/\/api\/auth\/?$/, "");
 };
 
-const authHandler = oauthProviderAuthServerMetadata(createAuth());
-const openIdHandler = oauthProviderOpenIdConfigMetadata(createAuth());
+const getAuthHandler = () => oauthProviderAuthServerMetadata(createAuth());
+const getOpenIdHandler = () => oauthProviderOpenIdConfigMetadata(createAuth());
 const metadataHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, OPTIONS",
@@ -26,48 +26,35 @@ const withCors = (response: Response) => {
   return response;
 };
 
+const getProtectedResourceResponse = async () => {
+  const apiOrigin = getAuthOrigin();
+  const metadata = await oauthResourceClient.getProtectedResourceMetadata({
+    resource: `${apiOrigin}/mcp`,
+    authorization_servers: [apiOrigin],
+  });
+
+  return new Response(JSON.stringify(metadata), {
+    headers: {
+      "Content-Type": "application/json",
+      "Cache-Control": "public, max-age=15, stale-while-revalidate=15, stale-if-error=86400",
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, OPTIONS",
+    },
+  });
+};
+
 export const oauthWellKnownRoutes = new Elysia({ detail: { hide: true } })
   .get("/.well-known/oauth-authorization-server", async ({ request }) => {
-    return withCors(await authHandler(request));
+    return withCors(await getAuthHandler()(request));
   })
   .get("/.well-known/oauth-authorization-server/api/auth", async ({ request }) => {
-    return withCors(await authHandler(request));
+    return withCors(await getAuthHandler()(request));
   })
   .get("/.well-known/openid-configuration", async ({ request }) => {
-    return withCors(await openIdHandler(request));
+    return withCors(await getOpenIdHandler()(request));
   })
   .get("/api/auth/.well-known/openid-configuration", async ({ request }) => {
-    return withCors(await openIdHandler(request));
+    return withCors(await getOpenIdHandler()(request));
   })
-  .get("/.well-known/oauth-protected-resource", async () => {
-    const apiOrigin = getAuthOrigin();
-    const metadata = await oauthResourceClient.getProtectedResourceMetadata({
-      resource: `${apiOrigin}/mcp`,
-      authorization_servers: [apiOrigin],
-    });
-
-    return new Response(JSON.stringify(metadata), {
-      headers: {
-        "Content-Type": "application/json",
-        "Cache-Control": "public, max-age=15, stale-while-revalidate=15, stale-if-error=86400",
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET, OPTIONS",
-      },
-    });
-  })
-  .get("/.well-known/oauth-protected-resource/mcp", async () => {
-    const apiOrigin = getAuthOrigin();
-    const metadata = await oauthResourceClient.getProtectedResourceMetadata({
-      resource: `${apiOrigin}/mcp`,
-      authorization_servers: [apiOrigin],
-    });
-
-    return new Response(JSON.stringify(metadata), {
-      headers: {
-        "Content-Type": "application/json",
-        "Cache-Control": "public, max-age=15, stale-while-revalidate=15, stale-if-error=86400",
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET, OPTIONS",
-      },
-    });
-  });
+  .get("/.well-known/oauth-protected-resource", getProtectedResourceResponse())
+  .get("/.well-known/oauth-protected-resource/mcp", getProtectedResourceResponse());
