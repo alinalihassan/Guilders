@@ -1,0 +1,36 @@
+---
+title: Using the API
+description: Authentication, request patterns, and common endpoint usage
+---
+
+## Authentication
+
+All endpoints require authenticated access:
+
+- Web: Better Auth session cookie.
+- Mobile and external clients: `Authorization: Bearer <token>`.
+- Some workflows may use `x-api-key` where defined in security schemes.
+
+## Core Endpoints
+
+- `GET /api/account` to list all user accounts.
+- `POST /api/account` to create manual accounts.
+- `GET /api/transaction` to list transactions (recommended descending by date).
+- `POST /api/transaction` to create manual transactions.
+- `GET /api/account/:id/transaction` for account-scoped history.
+
+## Example Requests
+
+```bash
+curl "$API_URL/api/account" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+```bash
+curl "$API_URL/api/transaction?limit=20" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+## OpenAPI Explorer
+
+Use the live reference at `/api-reference` for request/response schema details, parameters, and try-it-out workflows.

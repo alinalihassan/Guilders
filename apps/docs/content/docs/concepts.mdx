@@ -1,0 +1,27 @@
+---
+title: Concepts
+description: Design concepts behind manual and synced financial data
+---
+
+## Manual vs Synced Accounts
+
+- Manual accounts are user-managed and edited directly.
+- Synced accounts come from provider/institution connections.
+- `institution_connection_id` on account indicates sync origin.
+
+## Net Worth Semantics
+
+- Asset values contribute positively.
+- Liability values reduce total net worth.
+- Multi-currency totals should apply conversion before aggregation.
+
+## Transaction Ownership
+
+- Transactions always belong to a single account.
+- Recent activity views should include account context.
+- Categories and descriptions are metadata, while `amount` and `currency` are authoritative values.
+
+## Connection Health
+
+- Institution connections can become broken (`broken: true`) when credentials expire.
+- Clients should surface reconnect flows when connections are broken.

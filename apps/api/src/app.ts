@@ -3,7 +3,6 @@ import { openapi } from "@elysiajs/openapi";
 import { Elysia } from "elysia";
 import { CloudflareAdapter } from "elysia/adapter/cloudflare-worker";
 
-import { OpenAPI } from "./lib/auth-openapi";
 import { api } from "./routes";
 import { oauthPagesRoutes } from "./routes/oauth-pages";
 import { oauthWellKnownRoutes } from "./routes/oauth-well-known";
@@ -17,6 +16,7 @@ export const app = new Elysia({ adapter: CloudflareAdapter })
         "http://localhost:3000",
         "http://localhost:3001",
         "http://localhost:3002",
+        "http://localhost:3003",
 
         // @modelcontextprotocol/inspector
         "http://localhost:6274",
@@ -28,7 +28,7 @@ export const app = new Elysia({ adapter: CloudflareAdapter })
     openapi({
       documentation: {
         components: {
-          ...(await OpenAPI.components),
+          // ...(await OpenAPI.components), // Hide authentication components
           securitySchemes: {
             apiKeyAuth: {
               type: "apiKey",
@@ -42,7 +42,7 @@ export const app = new Elysia({ adapter: CloudflareAdapter })
             },
           },
         },
-        paths: await OpenAPI.getPaths(),
+        // paths: await OpenAPI.getPaths(), // Hide authentication components
       },
     }),
   )

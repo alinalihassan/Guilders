@@ -1,0 +1,34 @@
+---
+title: Self Hosting
+description: Run the docs app against your own Guilders API environment
+---
+
+## Environment Variables
+
+Set the API origin for OpenAPI ingestion:
+
+```bash
+API_URL=http://localhost:3000
+```
+
+The docs app loads your OpenAPI schema from:
+
+`$API_URL/openapi/json`
+
+## Local Run
+
+```bash
+bun install
+bun run dev --filter docs
+```
+
+Then visit:
+
+- `/` for written documentation.
+- `/api-reference` for generated OpenAPI pages.
+
+## Deployment Notes
+
+- Host docs app as a separate Next.js service.
+- Point `API_URL` to your production API base URL.
+- Ensure CORS and auth policies allow your docs domain for interactive API testing.

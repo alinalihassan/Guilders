@@ -1,0 +1,31 @@
+---
+title: API Models
+description: Data entities and relationships in Guilders
+---
+
+Guilders centers around `Account` as the primary finance entity, and links synced providers and transactions around it.
+
+## Primary Models
+
+- `Account`
+  - Belongs to a user (`user_id`)
+  - Carries `type` (`asset` or `liability`) and `subtype` (`depository`, `brokerage`, `crypto`, `property`, `vehicle`, `creditcard`, `loan`, `stock`)
+  - Stores `value` and `currency`
+  - Uses `institution_connection_id` when synced from a provider
+- `Transaction`
+  - Belongs to one account (`account_id`)
+  - Includes `amount`, `currency`, `date`, `description`, `category`
+- `Provider`
+  - Data aggregator source (for example Plaid)
+- `Institution`
+  - Bank/brokerage/exchange connected through a provider
+- `ProviderConnection`
+  - User-authenticated provider link, includes encrypted secrets
+- `InstitutionConnection`
+  - Per-institution connection state (including `broken`)
+
+## Relationship Flow
+
+`Provider -> Institution -> ProviderConnection -> InstitutionConnection -> Account -> Transaction`
+
+This is the canonical sync flow when accounts are imported instead of manually created.

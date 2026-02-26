@@ -5,7 +5,7 @@ import { auth } from "./auth";
 let _schema: ReturnType<typeof auth.api.generateOpenAPISchema>;
 const getSchema = async () => (_schema ??= auth.api.generateOpenAPISchema());
 
-export const OpenAPI = {
+export const AuthOpenAPI = {
   getPaths: (prefix = "/api/auth") =>
     getSchema().then(({ paths }) => {
       const reference: typeof paths = Object.create(null);
@@ -18,7 +18,7 @@ export const OpenAPI = {
         for (const method of Object.keys(paths[path])) {
           const operation = (reference[key] as any)[method];
 
-          operation.tags = ["Better Auth"];
+          operation.tags = ["Authentication"];
         }
       }
 
