@@ -56,5 +56,5 @@ export const oauthWellKnownRoutes = new Elysia({ detail: { hide: true } })
   .get("/api/auth/.well-known/openid-configuration", async ({ request }) => {
     return withCors(await getOpenIdHandler()(request));
   })
-  .get("/.well-known/oauth-protected-resource", getProtectedResourceResponse())
-  .get("/.well-known/oauth-protected-resource/mcp", getProtectedResourceResponse());
+  .get("/.well-known/oauth-protected-resource", getProtectedResourceResponse)
+  .get("/.well-known/oauth-protected-resource/mcp", getProtectedResourceResponse);
