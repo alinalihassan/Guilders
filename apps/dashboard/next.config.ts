@@ -1,16 +1,28 @@
-import createMDX from "@next/mdx";
 import type { NextConfig } from "next";
 
 // oxlint-disable-next-line import/no-unassigned-import: Used to validate environment variables
 import "@/lib/env";
 
 const nextConfig: NextConfig = {
+  reactCompiler: true,
   reactStrictMode: true,
   devIndicators: false,
   typescript: {
     ignoreBuildErrors: true,
   },
-  pageExtensions: ["js", "jsx", "mdx", "ts", "tsx"],
+  experimental: {
+    optimizePackageImports: [
+      "lucide-react",
+      "date-fns",
+      "recharts",
+      "radix-ui",
+      "motion",
+      "streamdown",
+      "cmdk",
+      "@tanstack/react-query",
+      "zod",
+    ],
+  },
   images: {
     remotePatterns: [
       {
@@ -36,6 +48,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-const withMDX = createMDX({});
-
-export default withMDX(nextConfig);
+export default nextConfig;
