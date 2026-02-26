@@ -4,8 +4,8 @@ import {
 } from "@better-auth/oauth-provider";
 import { Elysia } from "elysia";
 
-import { createAuth } from "../lib/auth";
-import { oauthResourceClient } from "../lib/oauth-resource-client";
+import { createAuth } from "../../lib/auth";
+import { oauthResourceClient } from "../../lib/oauth-resource-client";
 
 const getAuthOrigin = () => {
   const authBaseUrl = process.env.BETTER_AUTH_URL ?? "http://localhost:3000/api/auth";

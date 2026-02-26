@@ -1,10 +1,11 @@
-import { Elysia } from "elysia";
 import { eq } from "drizzle-orm";
+import { Elysia } from "elysia";
 
-import { oauthClient } from "../db/schema/auth";
-import { createDb } from "../lib/db";
+import { oauthClient } from "../../db/schema/auth";
+import { createDb } from "../../lib/db";
 
-const getDashboardOrigin = () => process.env.DASHBOARD_URL ?? process.env.NEXT_PUBLIC_DASHBOARD_URL ?? "http://localhost:3002";
+const getDashboardOrigin = () =>
+  process.env.DASHBOARD_URL ?? process.env.NEXT_PUBLIC_DASHBOARD_URL ?? "http://localhost:3002";
 
 const buildDashboardUrl = (path: "/oauth/sign-in" | "/oauth/consent", query: string) => {
   const base = `${getDashboardOrigin().replace(/\/$/, "")}${path}`;
