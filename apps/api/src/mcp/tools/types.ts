@@ -13,6 +13,15 @@ export type McpToolResult = {
   }>;
 };
 
+export const makeTextPayload = (payload: Record<string, unknown> | string): McpToolResult => ({
+  content: [
+    {
+      type: "text",
+      text: JSON.stringify(payload, null, 2),
+    },
+  ],
+});
+
 export type McpToolDefinition<TInput extends Record<string, unknown> = Record<string, unknown>> =
   {
     name: string;

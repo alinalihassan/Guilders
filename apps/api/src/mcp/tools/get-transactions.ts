@@ -1,7 +1,7 @@
 import * as z from "zod/v4";
 
 import { createDb } from "../../lib/db";
-import type { McpToolDefinition } from "./types";
+import { makeTextPayload, type McpToolDefinition } from "./types";
 
 type GetTransactionsInput = {
   accountId?: number;
@@ -36,22 +36,11 @@ export const getTransactionsTool: McpToolDefinition<GetTransactionsInput> = {
         orderBy: (transactions, { desc }) => desc(transactions.date),
       });
 
-      return {
-        content: [
-          {
-            type: "text",
-            text: JSON.stringify(
-              {
-                userId,
-                count: userTransactions.length,
-                transactions: userTransactions,
-              },
-              null,
-              2,
-            ),
-          },
-        ],
-      };
+      return makeTextPayload({
+        userId,
+        count: userTransactions.length,
+        transactions: userTransactions,
+      });
     } catch (error) {
       console.error("MCP get_transactions failed:", error);
       return {
