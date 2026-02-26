@@ -6,7 +6,7 @@ import ChangeEmail from "@guilders/transactional/emails/change-email";
 import PasswordResetEmail from "@guilders/transactional/emails/password-reset";
 import { betterAuth } from "better-auth";
 import { apiKey, bearer, jwt, openAPI, twoFactor } from "better-auth/plugins";
-import { env } from "cloudflare:workers";
+import { env, waitUntil } from "cloudflare:workers";
 
 import * as authSchema from "../db/schema/auth";
 import { seedDefaultCategoriesForUser } from "./categories";
@@ -48,31 +48,35 @@ export function createAuth(db?: Database) {
     emailVerification: {
       // Required to send the verification email
       sendVerificationEmail: async ({ user, url }) => {
-        resend.emails.send({
-          from: "Guilders <noreply@guilders.app>",
-          to: user.email,
-          subject: "Verify your new email",
-          react: (
-            <ChangeEmail dashboardUrl={env.DASHBOARD_URL} newEmail={user.email} verifyUrl={url} />
-          ),
-        });
+        waitUntil(
+          resend.emails.send({
+            from: "Guilders <noreply@guilders.app>",
+            to: user.email,
+            subject: "Verify your new email",
+            react: (
+              <ChangeEmail dashboardUrl={env.DASHBOARD_URL} newEmail={user.email} verifyUrl={url} />
+            ),
+          }),
+        );
       },
     },
     emailAndPassword: {
       enabled: true,
       sendResetPassword: async ({ user, url }) => {
-        resend.emails.send({
-          from: "Guilders <noreply@guilders.app>",
-          to: user.email,
-          subject: "Reset your password",
-          react: (
-            <PasswordResetEmail
-              dashboardUrl={env.DASHBOARD_URL}
-              userEmail={user.email}
-              resetUrl={url}
-            />
-          ),
-        });
+        waitUntil(
+          resend.emails.send({
+            from: "Guilders <noreply@guilders.app>",
+            to: user.email,
+            subject: "Reset your password",
+            react: (
+              <PasswordResetEmail
+                dashboardUrl={env.DASHBOARD_URL}
+                userEmail={user.email}
+                resetUrl={url}
+              />
+            ),
+          }),
+        );
       },
     },
     databaseHooks: {
