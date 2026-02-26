@@ -1,0 +1,25 @@
+{
+  "name": "@guilders/transactional",
+  "version": "1.0.0",
+  "private": true,
+  "exports": {
+    "./emails/*": "./emails/*.tsx"
+  },
+  "scripts": {
+    "build": "email build",
+    "dev": "email dev -p 3004",
+    "export": "email export",
+    "start": "email start"
+  },
+  "dependencies": {
+    "@react-email/components": "1.0.1",
+    "react": "19.2.1",
+    "react-dom": "19.2.1"
+  },
+  "devDependencies": {
+    "@react-email/preview-server": "5.0.7",
+    "@types/react": "19.2.7",
+    "@types/react-dom": "19.2.3",
+    "react-email": "5.0.7"
+  }
+}

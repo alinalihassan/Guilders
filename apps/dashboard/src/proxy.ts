@@ -1,12 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 
-const AUTH_PAGES = ["/login", "/sign-up", "/forgot-password", "/oauth/sign-in", "/oauth/consent"];
-const OAUTH_PAGES = ["/oauth/sign-in", "/oauth/consent"];
-
-export async function proxy(request: NextRequest) {
-  const { pathname } = request.nextUrl;
-
-const AUTH_PAGES = ["/login", "/sign-up", "/forgot-password", "/oauth/sign-in", "/oauth/consent"];
+const AUTH_PAGES = ["/login", "/sign-up", "/forgot-password", "/recovery", "/oauth/sign-in", "/oauth/consent"];
 const OAUTH_PAGES = ["/oauth/sign-in", "/oauth/consent"];
 
 const matchesRoute = (pathname: string, route: string) =>

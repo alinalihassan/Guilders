@@ -2,12 +2,16 @@ import { drizzleAdapter } from "@better-auth/drizzle-adapter";
 import { expo } from "@better-auth/expo";
 import { oauthProvider } from "@better-auth/oauth-provider";
 import { passkey } from "@better-auth/passkey";
+import ChangeEmail from "@guilders/transactional/emails/change-email";
+import PasswordResetEmail from "@guilders/transactional/emails/password-reset";
 import { betterAuth } from "better-auth";
 import { apiKey, bearer, jwt, openAPI, twoFactor } from "better-auth/plugins";
+import { env, waitUntil } from "cloudflare:workers";
 
 import * as authSchema from "../db/schema/auth";
 import { seedDefaultCategoriesForUser } from "./categories";
 import { createDb, type Database } from "./db";
+import { resend } from "./resend";
 
 /**
  * Create a per-request Better Auth instance with its own db connection.
@@ -31,6 +35,9 @@ export function createAuth(db?: Database) {
     appName: "Guilders",
     secret: process.env.BETTER_AUTH_SECRET,
     user: {
+      changeEmail: {
+        enabled: true,
+      },
       deleteUser: {
         enabled: true,
       },
@@ -38,8 +45,39 @@ export function createAuth(db?: Database) {
     account: {
       modelName: "user_account",
     },
+    emailVerification: {
+      // Required to send the verification email
+      sendVerificationEmail: async ({ user, url }) => {
+        waitUntil(
+          resend.emails.send({
+            from: "Guilders <noreply@guilders.app>",
+            to: user.email,
+            subject: "Verify your new email",
+            react: (
+              <ChangeEmail dashboardUrl={env.DASHBOARD_URL} newEmail={user.email} verifyUrl={url} />
+            ),
+          }),
+        );
+      },
+    },
     emailAndPassword: {
       enabled: true,
+      sendResetPassword: async ({ user, url }) => {
+        waitUntil(
+          resend.emails.send({
+            from: "Guilders <noreply@guilders.app>",
+            to: user.email,
+            subject: "Reset your password",
+            react: (
+              <PasswordResetEmail
+                dashboardUrl={env.DASHBOARD_URL}
+                userEmail={user.email}
+                resetUrl={url}
+              />
+            ),
+          }),
+        );
+      },
     },
     databaseHooks: {
       user: {
