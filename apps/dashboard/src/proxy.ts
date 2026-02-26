@@ -3,7 +3,7 @@ import { type NextRequest, NextResponse } from "next/server";
 const AUTH_PAGES = ["/login", "/sign-up", "/forgot-password", "/oauth/sign-in", "/oauth/consent"];
 const OAUTH_PAGES = ["/oauth/sign-in", "/oauth/consent"];
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   const authPage = AUTH_PAGES.some((p) => pathname.startsWith(p));
@@ -20,9 +20,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  if (hasSessionCookie && authPage && !oauthPage) {
-    return NextResponse.redirect(new URL("/", request.url));
-  }
+  if (hasSessionCookie && authPage && !oauthPage) return NextResponse.redirect(new URL("/", request.url));
 
   return NextResponse.next();
 }

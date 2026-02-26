@@ -4,6 +4,7 @@ import type { NextConfig } from "next";
 import "@/lib/env";
 
 const nextConfig: NextConfig = {
+  reactCompiler: true,
   reactStrictMode: true,
   devIndicators: false,
   typescript: {
