@@ -39,6 +39,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { authClient } from "@/lib/auth-client";
+import { env } from "@/lib/env";
 import { useCurrencies } from "@/lib/queries/useCurrencies";
 import { useDeleteAccount, useUpdateUserSettings, useUser } from "@/lib/queries/useUser";
 
@@ -132,13 +134,28 @@ export function AccountForm() {
   async function onSubmit(data: AccountFormValues) {
     try {
       const isEmailChanged = data.email !== user?.email;
+      const isCurrencyChanged = data.currency !== user?.settings.currency;
 
-      await updateUserSettings({
-        ...(isEmailChanged ? { email: data.email } : {}),
-        settings: { currency: data.currency },
-      });
+      if (isCurrencyChanged) {
+        await updateUserSettings({
+          settings: { currency: data.currency },
+        });
+      }
 
       if (isEmailChanged) {
+        const { error } = await authClient.changeEmail({
+          newEmail: data.email,
+          callbackURL: `${env.NEXT_PUBLIC_DASHBOARD_URL}/settings/account`,
+        });
+
+        if (error) throw new Error(error.message || "Failed to request email change");
+      }
+
+      if (isEmailChanged && isCurrencyChanged) {
+        toast.success("Account updated", {
+          description: "Currency updated and email verification sent.",
+        });
+      } else if (isEmailChanged) {
         toast.success("Email verification sent", {
           description: "Please check your email for a verification link.",
         });
