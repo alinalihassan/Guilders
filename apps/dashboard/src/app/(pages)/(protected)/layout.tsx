@@ -1,12 +1,10 @@
-"use client";
-
 import type { ReactNode } from "react";
 
 import { Dialogs } from "@/components/dialogs/dialogs";
 import { AppSidebar } from "@/components/nav/app-sidebar";
 import { AppTopBar } from "@/components/nav/app-top-bar";
 
-const ProtectedLayout = ({ children }: { children: ReactNode }) => {
+export default function ProtectedLayout({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-screen">
       <AppSidebar />
@@ -17,6 +15,4 @@ const ProtectedLayout = ({ children }: { children: ReactNode }) => {
       <Dialogs />
     </div>
   );
-};
-
-export default ProtectedLayout;
+}

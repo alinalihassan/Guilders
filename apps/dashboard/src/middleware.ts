@@ -1,38 +1,26 @@
 import { type NextRequest, NextResponse } from "next/server";
 
+const AUTH_PAGES = ["/login", "/sign-up", "/forgot-password", "/oauth/sign-in", "/oauth/consent"];
+const OAUTH_PAGES = ["/oauth/sign-in", "/oauth/consent"];
+
 export async function middleware(request: NextRequest) {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-  const cookie = request.headers.get("cookie") ?? "";
-  const sessionResponse = await fetch(`${apiUrl}/api/auth/get-session`, {
-    headers: { cookie },
-    cache: "no-store",
-  });
-  const sessionPayload = sessionResponse.ok
-    ? ((await sessionResponse.json()) as { user?: { id: string } | null })
-    : null;
-  const user = sessionPayload?.user ?? null;
+  const { pathname } = request.nextUrl;
 
-  const authPage =
-    request.nextUrl.pathname.startsWith("/login") ||
-    request.nextUrl.pathname.startsWith("/sign-up") ||
-    request.nextUrl.pathname.startsWith("/forgot-password") ||
-    request.nextUrl.pathname.startsWith("/oauth/sign-in") ||
-    request.nextUrl.pathname.startsWith("/oauth/consent");
-  const oauthPage =
-    request.nextUrl.pathname.startsWith("/oauth/sign-in") ||
-    request.nextUrl.pathname.startsWith("/oauth/consent");
+  const authPage = AUTH_PAGES.some((p) => pathname.startsWith(p));
+  const oauthPage = OAUTH_PAGES.some((p) => pathname.startsWith(p));
+  const callbackPage = pathname.startsWith("/callback");
 
-  const callbackPage = request.nextUrl.pathname.startsWith("/callback");
+  const hasSessionCookie =
+    request.cookies.has("better-auth.session_token") ||
+    request.cookies.has("__Secure-better-auth.session_token");
 
-  // Not authenticated
-  if (!user && !authPage && !callbackPage) {
+  if (!hasSessionCookie && !authPage && !callbackPage) {
     const url = new URL("/login", request.url);
-    url.searchParams.set("redirect", `${request.nextUrl.pathname}${request.nextUrl.search}`);
-
+    url.searchParams.set("redirect", `${pathname}${request.nextUrl.search}`);
     return NextResponse.redirect(url);
   }
 
-  if (user && authPage && !oauthPage) {
+  if (hasSessionCookie && authPage && !oauthPage) {
     return NextResponse.redirect(new URL("/", request.url));
   }
 
