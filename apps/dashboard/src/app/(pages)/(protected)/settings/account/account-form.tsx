@@ -134,12 +134,13 @@ export function AccountForm() {
   async function onSubmit(data: AccountFormValues) {
     try {
       const isEmailChanged = data.email !== user?.email;
-      const isCurrencyChanged = data.currency !== user?.settings.currency;
+      const isCurrencyChanged = data.currency !== user?.currency;
 
-      await updateUserSettings({
-        ...(isEmailChanged ? { email: data.email } : {}),
-        currency: data.currency,
-      });
+      if (isCurrencyChanged) {
+        await updateUserSettings({
+          currency: data.currency,
+        });
+      }
 
       if (isEmailChanged) {
         const { error } = await authClient.changeEmail({
