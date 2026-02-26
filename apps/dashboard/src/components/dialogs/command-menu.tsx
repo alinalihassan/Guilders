@@ -5,7 +5,7 @@ import { CommandLoading } from "cmdk";
 import { Banknote, Landmark, Link2, SquarePen } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 import {
   CommandDialog,
@@ -22,7 +22,7 @@ import { useInstitutions } from "@/lib/queries/useInstitutions";
 import { useProviders } from "@/lib/queries/useProviders";
 
 export function CommandMenu() {
-  const { isOpen, data, open, close, update } = useDialog("command");
+  const { isOpen, data, close, update } = useDialog("command");
   const { open: openManualAccount } = useDialog("addManualAccount");
   const { open: openAddTransaction } = useDialog("addTransaction");
   const { open: openLinkedAccount } = useDialog("addLinkedAccount");
@@ -33,22 +33,6 @@ export function CommandMenu() {
   const router = useRouter();
 
   const pages = data?.pages ?? [];
-
-  // Keyboard shortcut to open the command menu
-  useEffect(() => {
-    const down = (e: KeyboardEvent) => {
-      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
-        e.preventDefault();
-        if (isOpen) {
-          close();
-        } else {
-          open({ pages: [] });
-        }
-      }
-    };
-    document.addEventListener("keydown", down);
-    return () => document.removeEventListener("keydown", down);
-  }, [isOpen, open, close]);
 
   const handleAddAccount = () => {
     close();
