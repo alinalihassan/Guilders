@@ -16,6 +16,8 @@ function OAuthSignInForm() {
   const [isLoading, setIsLoading] = useState(false);
 
   const oauthQuery = useMemo(() => searchParams.toString(), [searchParams]);
+  const authApiBase = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000";
+  const authorizeUrl = `${authApiBase}/api/auth/oauth2/authorize${oauthQuery ? `?${oauthQuery}` : ""}`;
 
   const handleSubmit = async (formData: FormData) => {
     try {
@@ -40,8 +42,7 @@ function OAuthSignInForm() {
         return;
       }
 
-      const nextUrl = oauthQuery ? `/oauth/sign-in?${oauthQuery}` : "/oauth/sign-in";
-      window.location.href = nextUrl;
+      window.location.href = authorizeUrl;
     } catch {
       toast.error("Sign-in failed", {
         description: "Please try again.",
@@ -81,7 +82,12 @@ function OAuthSignInForm() {
             </div>
             <div className="grid w-full items-center gap-1.5">
               <Label htmlFor="password">Password</Label>
-              <PasswordInput name="password" placeholder="********" required autoComplete="current-password" />
+              <PasswordInput
+                name="password"
+                placeholder="********"
+                required
+                autoComplete="current-password"
+              />
             </div>
             <SubmitButton className="mt-2 w-full" pendingText="Signing In..." disabled={isLoading}>
               Continue
@@ -124,7 +130,9 @@ function OAuthSignInPage() {
 
 export default function OAuthSignIn() {
   return (
-    <Suspense fallback={<div className="mx-auto mt-24 text-sm text-muted-foreground">Loading...</div>}>
+    <Suspense
+      fallback={<div className="mx-auto mt-24 text-sm text-muted-foreground">Loading...</div>}
+    >
       <OAuthSignInPage />
     </Suspense>
   );
