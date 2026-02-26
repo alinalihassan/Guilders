@@ -1,10 +1,13 @@
 "use client";
 
+import Image from "next/image";
+import { ShieldCheck } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 function OAuthConsentForm() {
   const searchParams = useSearchParams();
@@ -14,6 +17,7 @@ function OAuthConsentForm() {
   const oauthQuery = useMemo(() => searchParams.toString(), [searchParams]);
   const clientId = searchParams.get("client_id") ?? "Unknown client";
   const scope = searchParams.get("scope") ?? "(none)";
+  const scopeList = useMemo(() => scope.split(/\s+/).filter(Boolean), [scope]);
 
   const submitConsent = async (accept: boolean) => {
     try {
@@ -48,38 +52,113 @@ function OAuthConsentForm() {
       }
 
       window.location.href = redirectUrl;
+    } catch {
+      toast.error("Consent failed", {
+        description: "Please try again.",
+      });
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="mx-auto mt-20 w-full max-w-xl rounded-md border bg-card p-6 shadow">
-      <h1 className="text-2xl font-semibold">Authorize MCP Access</h1>
-      <p className="mt-2 text-sm text-muted-foreground">
-        Client <span className="font-medium text-foreground">{clientId}</span> is requesting access.
-      </p>
+    <div className="w-full max-w-xl">
+      <Card className="border bg-background shadow-md">
+        <CardHeader className="space-y-3">
+          <div className="flex flex-col items-center">
+            <Image
+              src="/assets/logo/logo_filled_rounded.svg"
+              alt="logo"
+              width={64}
+              height={64}
+              priority
+            />
+          </div>
+          <div className="space-y-1 text-center">
+            <CardTitle className="text-2xl">Authorize MCP Access</CardTitle>
+            <CardDescription>
+              Review permissions before allowing this app to continue.
+            </CardDescription>
+          </div>
+        </CardHeader>
 
-      <div className="mt-4 rounded-md bg-muted p-3 text-sm">
-        <div className="font-medium">Scopes</div>
-        <div className="mt-1 break-words text-muted-foreground">{scope}</div>
-      </div>
+        <CardContent className="space-y-4">
+          <div className="rounded-md border bg-muted/40 p-3">
+            <div className="mb-2 flex items-center gap-2 text-sm font-medium">
+              <ShieldCheck className="h-4 w-4 text-primary" />
+              Requesting application
+            </div>
+            <div className="break-all text-sm text-foreground">{clientId}</div>
+          </div>
 
-      <div className="mt-6 flex gap-3">
-        <Button onClick={() => submitConsent(true)} disabled={isSubmitting}>
-          Allow
-        </Button>
-        <Button variant="outline" onClick={() => submitConsent(false)} disabled={isSubmitting}>
-          Deny
-        </Button>
-      </div>
+          <div className="rounded-md border bg-muted/40 p-3">
+            <div className="mb-2 text-sm font-medium">Requested scopes</div>
+            {scopeList.length > 0 ? (
+              <ul className="grid gap-2 text-sm text-muted-foreground">
+                {scopeList.map((item) => (
+                  <li key={item} className="flex items-center gap-2">
+                    <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+                    <span className="break-all">{item}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <div className="text-sm text-muted-foreground">(none)</div>
+            )}
+          </div>
+
+          <p className="text-xs text-muted-foreground">
+            If you deny access, you will be redirected back to the app with an authorization error.
+          </p>
+
+          <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+            <Button
+              variant="outline"
+              onClick={() => submitConsent(false)}
+              disabled={isSubmitting}
+              className="w-full sm:w-auto"
+            >
+              Deny
+            </Button>
+            <Button onClick={() => submitConsent(true)} disabled={isSubmitting} className="w-full sm:w-auto">
+              {isSubmitting ? "Processing..." : "Allow Access"}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+function OAuthConsentSkeleton() {
+  return (
+    <div className="w-full max-w-xl">
+      <Card className="animate-pulse border bg-background shadow-md">
+        <CardHeader>
+          <Image
+            src="/assets/logo/logo_filled_rounded.svg"
+            alt="logo"
+            width={64}
+            height={64}
+            priority
+            className="mx-auto opacity-30"
+          />
+          <div className="mx-auto h-6 w-64 rounded bg-muted" />
+          <div className="mx-auto h-4 w-72 rounded bg-muted" />
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="h-16 rounded bg-muted" />
+          <div className="h-24 rounded bg-muted" />
+          <div className="h-10 rounded bg-muted" />
+        </CardContent>
+      </Card>
     </div>
   );
 }
 
 export default function OAuthConsentPage() {
   return (
-    <Suspense fallback={<div className="mx-auto mt-24 text-sm text-muted-foreground">Loading...</div>}>
+    <Suspense fallback={<OAuthConsentSkeleton />}>
       <OAuthConsentForm />
     </Suspense>
   );

@@ -1,12 +1,15 @@
 "use client";
 
 import Image from "next/image";
+import { KeyRound, ShieldCheck } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { PasswordInput } from "@/components/common/password-input";
 import { SubmitButton } from "@/components/common/submit-button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { authClient } from "@/lib/auth-client";
@@ -16,6 +19,12 @@ function OAuthSignInForm() {
   const [isLoading, setIsLoading] = useState(false);
 
   const oauthQuery = useMemo(() => searchParams.toString(), [searchParams]);
+  const clientId = searchParams.get("client_id");
+  const scope = searchParams.get("scope");
+  const scopeList = useMemo(
+    () => scope?.split(/\s+/).filter(Boolean).slice(0, 6) ?? [],
+    [scope],
+  );
   const authApiBase = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000";
   const authorizeUrl = `${authApiBase}/api/auth/oauth2/authorize${oauthQuery ? `?${oauthQuery}` : ""}`;
 
@@ -54,47 +63,83 @@ function OAuthSignInForm() {
 
   return (
     <div className="w-full max-w-sm">
-      <div className="rounded-md bg-background px-6 py-6 shadow">
-        <div className="mb-4 flex flex-col items-center">
-          <Image
-            src="/assets/logo/logo_filled_rounded.svg"
-            alt="logo"
-            width={64}
-            height={64}
-            priority
-          />
-        </div>
-
-        <h1 className="text-center text-2xl font-bold">MCP Sign In</h1>
-        <p className="text-center text-muted-foreground">Sign in to continue OAuth authorization</p>
-
-        <form className="mt-4 flex flex-col gap-4" action={handleSubmit}>
-          <div className="grid gap-4">
-            <div className="grid w-full items-center gap-1.5">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                name="email"
-                type="email"
-                placeholder="john@doe.com"
-                autoComplete="username"
-                required
-              />
-            </div>
-            <div className="grid w-full items-center gap-1.5">
-              <Label htmlFor="password">Password</Label>
-              <PasswordInput
-                name="password"
-                placeholder="********"
-                required
-                autoComplete="current-password"
-              />
-            </div>
-            <SubmitButton className="mt-2 w-full" pendingText="Signing In..." disabled={isLoading}>
-              Continue
-            </SubmitButton>
+      <Card className="border bg-background shadow-md">
+        <CardHeader className="space-y-3 pb-3">
+          <div className="flex flex-col items-center">
+            <Image
+              src="/assets/logo/logo_filled_rounded.svg"
+              alt="logo"
+              width={64}
+              height={64}
+              priority
+            />
           </div>
-        </form>
-      </div>
+          <div className="space-y-1 text-center">
+            <CardTitle className="text-2xl">MCP Sign In</CardTitle>
+            <CardDescription>Sign in to continue OAuth authorization</CardDescription>
+          </div>
+        </CardHeader>
+
+        <CardContent className="space-y-4">
+          {(clientId || scopeList.length > 0) && (
+            <div className="rounded-md border bg-muted/40 p-3">
+              <div className="mb-2 flex items-center gap-2 text-sm font-medium">
+                <ShieldCheck className="h-4 w-4 text-primary" />
+                Authorization details
+              </div>
+              {clientId && (
+                <div className="text-xs text-muted-foreground">
+                  Client: <span className="font-medium text-foreground">{clientId}</span>
+                </div>
+              )}
+              {scopeList.length > 0 && (
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {scopeList.map((item) => (
+                    <Badge key={item} variant="secondary" className="rounded-md">
+                      {item}
+                    </Badge>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          <form className="flex flex-col gap-4" action={handleSubmit}>
+            <div className="grid gap-4">
+              <div className="grid w-full items-center gap-1.5">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  name="email"
+                  type="email"
+                  placeholder="john@doe.com"
+                  autoComplete="username"
+                  required
+                />
+              </div>
+              <div className="grid w-full items-center gap-1.5">
+                <Label htmlFor="password">Password</Label>
+                <PasswordInput
+                  name="password"
+                  placeholder="********"
+                  required
+                  autoComplete="current-password"
+                />
+              </div>
+              <SubmitButton className="mt-2 w-full" pendingText="Signing In..." disabled={isLoading}>
+                Continue
+              </SubmitButton>
+            </div>
+
+            <div className="rounded-md border bg-muted/40 p-3 text-xs text-muted-foreground">
+              <div className="mb-1 flex items-center gap-2 font-medium text-foreground">
+                <KeyRound className="h-3.5 w-3.5" />
+                Secure redirect
+              </div>
+              You will be redirected back to the requesting application after sign in.
+            </div>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 }
@@ -128,11 +173,36 @@ function OAuthSignInPage() {
   return <OAuthSignInForm />;
 }
 
+function OAuthSignInSkeleton() {
+  return (
+    <div className="w-full max-w-sm">
+      <Card className="animate-pulse border bg-background shadow-md">
+        <CardHeader className="pb-3">
+          <Image
+            src="/assets/logo/logo_filled_rounded.svg"
+            alt="logo"
+            width={64}
+            height={64}
+            priority
+            className="mx-auto opacity-30"
+          />
+          <div className="mx-auto h-6 w-36 rounded bg-muted" />
+          <div className="mx-auto h-4 w-56 rounded bg-muted" />
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="h-16 rounded bg-muted" />
+          <div className="h-10 rounded bg-muted" />
+          <div className="h-10 rounded bg-muted" />
+          <div className="h-10 rounded bg-muted" />
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
 export default function OAuthSignIn() {
   return (
-    <Suspense
-      fallback={<div className="mx-auto mt-24 text-sm text-muted-foreground">Loading...</div>}
-    >
+    <Suspense fallback={<OAuthSignInSkeleton />}>
       <OAuthSignInPage />
     </Suspense>
   );
