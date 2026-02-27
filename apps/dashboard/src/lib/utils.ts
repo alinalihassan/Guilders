@@ -3,8 +3,6 @@ import { type ClassValue, clsx } from "clsx";
 import { redirect } from "next/navigation";
 import { twMerge } from "tailwind-merge";
 
-import { env } from "@/lib/env";
-
 /**
  * Redirects to a specified path with an encoded message as a query parameter.
  * @param {('error' | 'success')} type - The type of message, either 'error' or 'success'.
@@ -39,9 +37,5 @@ export function formatBytes(
 }
 
 export function isPro(user: User | undefined | null) {
-  return (
-    user?.subscription?.status === "active" ||
-    user?.subscription?.status === "trialing" ||
-    env.NEXT_PUBLIC_ALLOW_PREMIUM_FEATURES
-  );
+  return user?.subscription?.status === "active" || user?.subscription?.status === "trialing";
 }
