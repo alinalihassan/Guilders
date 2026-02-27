@@ -1,3 +1,4 @@
+import type { LoaderConfig, LoaderOutput } from "fumadocs-core/source";
 import type { ApiPageProps } from "fumadocs-openapi/ui";
 import { DocsBody, DocsDescription, DocsPage, DocsTitle } from "fumadocs-ui/layouts/docs/page";
 import { createRelativeLink } from "fumadocs-ui/mdx";
@@ -61,8 +62,9 @@ export default async function Page(props: PageProps<"/[[...slug]]">) {
       <DocsBody>
         <MDX
           components={getMDXComponents({
+            // TODO: Issue with Bun Catalogs, fix later
             // this allows you to link to other pages with relative file paths
-            a: createRelativeLink(source, page),
+            a: createRelativeLink(source as unknown as LoaderOutput<LoaderConfig>, page),
           })}
         />
       </DocsBody>

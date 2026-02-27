@@ -48,7 +48,8 @@ export const source = loader(
   }),
   {
     baseUrl: "/",
-    plugins: [lucideIconsPlugin(), openapiPlugin()],
+    // TODO: Issues with Bun Catalogs
+    plugins: [lucideIconsPlugin(), openapiPlugin() as ReturnType<typeof lucideIconsPlugin>],
   },
 );
 
