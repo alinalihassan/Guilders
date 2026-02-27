@@ -1,16 +1,48 @@
-import { RootProvider } from 'fumadocs-ui/provider/next';
-import './global.css';
-import { Inter } from 'next/font/google';
+import { RootProvider } from "fumadocs-ui/provider/next";
+
+// oxlint-disable-next-line import/no-unassigned-import: Used for global styles
+import "./global.css";
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
 
 const inter = Inter({
-  subsets: ['latin'],
+  subsets: ["latin"],
 });
 
-export default function Layout({ children }: LayoutProps<'/'>) {
+export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_DOCS_URL ?? "https://docs.guilders.app"),
+  title: {
+    default: "Guilders Docs",
+    template: "%s | Guilders Docs",
+  },
+  description: "Documentation for the Guilders personal finance platform.",
+  openGraph: {
+    title: "Guilders Docs",
+    type: "website",
+    description: "Documentation for the Guilders personal finance platform.",
+    siteName: "Guilders Docs",
+    images: [
+      {
+        url: "/assets/logo/cover.jpg",
+        width: 2460,
+        height: 1110,
+        alt: "Guilders",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Guilders Docs",
+    description: "Documentation for the Guilders personal finance platform.",
+    images: ["/assets/logo/cover.jpg"],
+  },
+};
+
+export default function Layout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={inter.className} suppressHydrationWarning>
-      <body className="flex flex-col min-h-screen">
-        <RootProvider>{children}</RootProvider>
+      <body className="flex min-h-screen flex-col">
+        <RootProvider search={{ options: { type: "static" } }}>{children}</RootProvider>
       </body>
     </html>
   );

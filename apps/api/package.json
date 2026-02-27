@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
+    "deploy:secrets": "wrangler secret bulk .env.production",
     "lint": "oxlint .",
     "lint:fix": "oxlint --fix .",
     "format": "oxfmt --write .",
@@ -19,10 +20,10 @@
   },
   "dependencies": {
     "@better-auth/drizzle-adapter": "https://pkg.pr.new/better-auth/better-auth/@better-auth/drizzle-adapter@6913",
-    "@better-auth/expo": "^1.4.19",
+    "@better-auth/expo": "catalog:",
     "@better-auth/oauth-provider": "^1.4.19",
-    "@better-auth/passkey": "^1.4.19",
-    "@better-auth/stripe": "^1.4.19",
+    "@better-auth/passkey": "catalog:",
+    "@better-auth/stripe": "catalog:",
     "@elysiajs/cors": "^1.4.1",
     "@elysiajs/openapi": "^1.4.14",
     "@guilders/transactional": "workspace:*",
@@ -31,13 +32,14 @@
     "@neondatabase/serverless": "^1.0.2",
     "@sinclair/typebox": "^0.34.48",
     "agents": "^0.6.0",
-    "ai": "^6.0.99",
+    "ai": "catalog:",
     "ai-gateway-provider": "^3.1.1",
-    "better-auth": "^1.4.19",
+    "better-auth": "catalog:",
     "drizzle-orm": "1.0.0-beta.15-859cf75",
     "drizzle-typebox": "^0.3.3",
     "elysia": "1.4.25",
     "fast-json-stable-stringify": "^2.1.0",
+    "react": "catalog:",
     "resend": "^6.9.2",
     "snaptrade-typescript-sdk": "^9.0.166",
     "stripe": "^20.3.1",
@@ -45,8 +47,8 @@
   },
   "devDependencies": {
     "@better-auth/cli": "^1.4.19",
-    "@types/node": "^25.3.0",
+    "@types/node": "catalog:",
     "drizzle-kit": "1.0.0-beta.15-859cf75",
-    "wrangler": "^4.68.1"
+    "wrangler": "catalog:"
   }
 }

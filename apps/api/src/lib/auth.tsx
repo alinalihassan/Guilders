@@ -19,14 +19,14 @@ import { resend } from "./resend";
  */
 export function createAuth(db?: Database) {
   const authDb = db ?? createDb();
-  const authBaseUrl = process.env.BETTER_AUTH_URL ?? "http://localhost:3000/api/auth";
-  const apiOrigin = authBaseUrl.replace(/\/api\/auth\/?$/, "");
-  const mcpAudience = `${apiOrigin}/mcp`;
-  const passkeyRpId = process.env.PASSKEY_RP_ID ?? new URL(apiOrigin).hostname;
+  const baseUrl = env.BACKEND_URL;
+  const mcpAudience = `${baseUrl}/mcp`;
+  const passkeyRpId = process.env.PASSKEY_RP_ID ?? new URL(baseUrl).hostname;
 
   // Type assertion needed: @better-auth/drizzle-adapter PR build (#6913) targets
   // @better-auth/core@1.5.0-beta.13 while better-auth@1.4.19 uses core@1.4.19
   return betterAuth({
+    baseURL: baseUrl,
     database: drizzleAdapter(authDb, {
       provider: "pg",
       schema: authSchema,
@@ -107,8 +107,8 @@ export function createAuth(db?: Database) {
       }),
       bearer(),
       oauthProvider({
-        loginPage: `${apiOrigin.replace(/\/$/, "")}/oauth/sign-in`,
-        consentPage: `${apiOrigin.replace(/\/$/, "")}/oauth/consent`,
+        loginPage: `${baseUrl}/oauth/sign-in`,
+        consentPage: `${baseUrl}/oauth/consent`,
         validAudiences: [mcpAudience],
         allowDynamicClientRegistration: true,
         allowUnauthenticatedClientRegistration: true,
