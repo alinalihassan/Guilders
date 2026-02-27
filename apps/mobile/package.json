@@ -15,14 +15,14 @@
     "format:check": "oxfmt --check ."
   },
   "dependencies": {
-    "@ai-sdk/react": "^3.0.98",
-    "@better-auth/expo": "^1.4.18",
-    "@better-auth/stripe": "^1.4.18",
+    "@ai-sdk/react": "catalog:",
+    "@better-auth/expo": "catalog:",
+    "@better-auth/stripe": "catalog:",
     "@expo/vector-icons": "^15.0.2",
     "@react-navigation/bottom-tabs": "^7.7.3",
     "@react-navigation/elements": "^2.8.1",
     "@react-navigation/native": "^7.1.28",
-    "better-auth": "^1.4.18",
+    "better-auth": "catalog:",
     "expo": "~55.0.0-preview.11",
     "expo-build-properties": "~55.0.7",
     "expo-constants": "~55.0.5",
