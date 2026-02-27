@@ -237,7 +237,7 @@ Great tools worth considering, depending on your needs and region:
 | ---------------------------------------------- | ------------------------------------------- | ------------------------------------------ |
 | [Origin Financial](https://www.useorigin.com/) | Comprehensive financial planning            | US                                         |
 | [Copilot Money](https://copilot.money/)        | Beautiful Apple-native experience           | US, Apple ecosystem                        |
-| [Stockle](https://www.stockle.de/)             | Stock investment management                 | Europe                                     |
+| [Stockle](https://www.stockle.de/)             | Stock investment management                 |                                            |
 | [Kubera](https://www.kubera.com/)              | Net worth tracking, best coverage, great UI | No budgeting/transactions, premium pricing |
 
 ## License
