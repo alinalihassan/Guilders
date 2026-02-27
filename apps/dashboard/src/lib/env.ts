@@ -12,7 +12,7 @@ export const env = createEnv({
   },
   client: {
     // Umami (analytics)
-    NEXT_PUBLIC_UMAMI_WEBSITE_ID: z.string().min(1),
+    NEXT_PUBLIC_UMAMI_WEBSITE_ID: z.string().min(1).optional(),
     // Other
     NEXT_PUBLIC_WEBSITE_URL: z.string().url(),
     NEXT_PUBLIC_DASHBOARD_URL: z.string().url(),
