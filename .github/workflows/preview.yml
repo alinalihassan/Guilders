@@ -1,0 +1,156 @@
+name: Preview
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+
+concurrency:
+  group: preview-${{ github.event.number }}
+  cancel-in-progress: true
+
+jobs:
+  preview-api:
+    name: Preview API
+    if: github.event.action != 'closed'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+
+      - run: bun install --frozen-lockfile
+
+      - name: Create preview config
+        working-directory: apps/api
+        env:
+          PR_NUMBER: ${{ github.event.number }}
+        run: |
+          bun -e "
+            const text = await Bun.file('wrangler.jsonc').text();
+            const stripped = text.replace(/\/\/.*$/gm, '').replace(/,(\s*[}\]])/g, '\$1');
+            const config = JSON.parse(stripped);
+            config.name = 'guilders-api-pr-' + process.env.PR_NUMBER;
+            config.workers_dev = true;
+            delete config.route;
+            delete config.preview_urls;
+            delete config['\$schema'];
+            await Bun.write('wrangler.preview.json', JSON.stringify(config, null, 2));
+          "
+
+      - name: Deploy
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: apps/api
+          command: deploy --config wrangler.preview.json
+
+  preview-docs:
+    name: Preview Docs
+    needs: preview-api
+    if: github.event.action != 'closed'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+
+      - run: bun install --frozen-lockfile
+
+      - name: Build
+        run: bun run build
+        working-directory: apps/docs
+
+      - name: Create preview config
+        working-directory: apps/docs
+        env:
+          PR_NUMBER: ${{ github.event.number }}
+        run: |
+          bun -e "
+            const text = await Bun.file('wrangler.jsonc').text();
+            const stripped = text.replace(/\/\/.*$/gm, '').replace(/,(\s*[}\]])/g, '\$1');
+            const config = JSON.parse(stripped);
+            config.name = 'guilders-docs-pr-' + process.env.PR_NUMBER;
+            config.workers_dev = true;
+            delete config.route;
+            delete config.preview_urls;
+            delete config['\$schema'];
+            await Bun.write('wrangler.preview.json', JSON.stringify(config, null, 2));
+          "
+
+      - name: Deploy
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: apps/docs
+          command: deploy --config wrangler.preview.json
+
+  comment:
+    name: Comment Preview URLs
+    needs: [preview-api, preview-docs]
+    if: github.event.action != 'closed'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - uses: actions/github-script@v7
+        env:
+          CLOUDFLARE_WORKERS_DEV_DOMAIN: ${{ vars.CLOUDFLARE_WORKERS_DEV_DOMAIN }}
+        with:
+          script: |
+            const pr = context.issue.number;
+            const domain = process.env.CLOUDFLARE_WORKERS_DEV_DOMAIN;
+            const body = [
+              '### Preview Deployments',
+              '',
+              '| App | URL |',
+              '|-----|-----|',
+              `| API | https://guilders-api-pr-${pr}.${domain} |`,
+              `| Docs | https://guilders-docs-pr-${pr}.${domain} |`,
+              '',
+              `_Commit: ${context.sha.slice(0, 7)} · ${new Date().toISOString()}_`,
+            ].join('\n');
+
+            const { data: comments } = await github.rest.issues.listComments({
+              ...context.repo,
+              issue_number: pr,
+            });
+            const existing = comments.find(c => c.body?.includes('### Preview Deployments'));
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                ...context.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                ...context.repo,
+                issue_number: pr,
+                body,
+              });
+            }
+
+  teardown:
+    name: Teardown Previews
+    if: github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete API preview worker
+        run: |
+          curl -sS -X DELETE \
+            "https://api.cloudflare.com/client/v4/accounts/${{ secrets.CLOUDFLARE_ACCOUNT_ID }}/workers/scripts/guilders-api-pr-${{ github.event.number }}" \
+            -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}"
+
+      - name: Delete Docs preview worker
+        run: |
+          curl -sS -X DELETE \
+            "https://api.cloudflare.com/client/v4/accounts/${{ secrets.CLOUDFLARE_ACCOUNT_ID }}/workers/scripts/guilders-docs-pr-${{ github.event.number }}" \
+            -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}"
