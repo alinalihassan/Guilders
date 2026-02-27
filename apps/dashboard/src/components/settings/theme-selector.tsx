@@ -1,14 +1,13 @@
 "use client";
 
 import { Check, Minus } from "lucide-react";
-import { useTheme } from "next-themes";
 import Image from "next/image";
 
-// You'll need to add these images to your public folder
 import UiDark from "@/../public/assets/ui-dark.png";
 import UiLight from "@/../public/assets/ui-light.png";
 import UiSystem from "@/../public/assets/ui-system.png";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { useThemeTransition } from "@/hooks/useThemeTransition";
 
 const items = [
   { id: "theme-light", value: "light", label: "Light", image: UiLight },
@@ -17,7 +16,7 @@ const items = [
 ] as const;
 
 export function ThemeSelector() {
-  const { theme, setTheme } = useTheme();
+  const { theme, setTheme } = useThemeTransition();
 
   return (
     <fieldset className="space-y-4">
