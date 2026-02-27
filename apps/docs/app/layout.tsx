@@ -18,13 +18,14 @@ export const metadata: Metadata = {
   description: "Documentation for the Guilders personal finance platform.",
   openGraph: {
     title: "Guilders Docs",
+    type: "website",
     description: "Documentation for the Guilders personal finance platform.",
     siteName: "Guilders Docs",
     images: [
       {
         url: "/assets/logo/cover.jpg",
-        width: 1200,
-        height: 630,
+        width: 2460,
+        height: 1110,
         alt: "Guilders",
       },
     ],
