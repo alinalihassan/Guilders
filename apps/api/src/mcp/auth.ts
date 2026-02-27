@@ -26,7 +26,7 @@ const normalizeHeaders = (
 };
 
 const getApiOrigin = () => {
-  const authBaseUrl = process.env.BETTER_AUTH_URL ?? "http://localhost:3000/api/auth";
+  const authBaseUrl = process.env.DASHBOARD_URL ?? "http://localhost:3000/api/auth";
   return authBaseUrl.replace(/\/api\/auth\/?$/, "");
 };
 

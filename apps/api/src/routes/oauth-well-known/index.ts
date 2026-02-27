@@ -7,11 +7,6 @@ import { Elysia } from "elysia";
 import { createAuth } from "../../lib/auth";
 import { oauthResourceClient } from "../../lib/oauth-resource-client";
 
-const getAuthOrigin = () => {
-  const authBaseUrl = process.env.BETTER_AUTH_URL ?? "http://localhost:3000/api/auth";
-  return authBaseUrl.replace(/\/api\/auth\/?$/, "");
-};
-
 const getAuthHandler = () => oauthProviderAuthServerMetadata(createAuth());
 const getOpenIdHandler = () => oauthProviderOpenIdConfigMetadata(createAuth());
 const metadataHeaders = {
@@ -27,7 +22,7 @@ const withCors = (response: Response) => {
 };
 
 const getProtectedResourceResponse = async () => {
-  const apiOrigin = getAuthOrigin();
+  const apiOrigin = process.env.DASHBOARD_URL ?? "http://localhost:3000";
   const metadata = await oauthResourceClient.getProtectedResourceMetadata({
     resource: `${apiOrigin}/mcp`,
     authorization_servers: [apiOrigin],
