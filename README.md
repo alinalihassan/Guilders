@@ -28,6 +28,17 @@ Guilders gives you a complete picture of your finances across every account you 
 
 Use the hosted version at [guilders.app](https://guilders.app) or self-host the entire stack.
 
+## Why Guilders?
+
+The US has excellent personal finance tools — if you're stateside, you should probably use them. But if you're in Europe or another less-serviced market, your options are limited, fragmented, or locked behind services you can't inspect.
+
+Guilders exists because:
+
+- **Privacy through transparency** — Your financial data is sensitive. Guilders is fully open-source, so you can see exactly how your data is stored, processed, and never sold. Self-host it if you want complete control.
+- **Europe and beyond** — Built with open banking providers that actually work outside the US, with native multi-currency support and automatic exchange rates. The hosted version at [guilders.app](https://guilders.app) absorbs the provider costs so you don't have to.
+- **Net worth + budgeting in one place** — Most tools do one or the other. Guilders tracks your full net worth across every asset class _and_ gives you transaction categorization and spending insights.
+- **Developer-first** — Open API, MCP support, and a pluggable provider system. If your bank isn't supported, build a scraper and push the data yourself.
+
 ## Features
 
 - **Unified net worth** — Assets and liabilities across bank accounts, brokerages, crypto wallets, property, vehicles, credit cards, and loans
@@ -168,7 +179,7 @@ curl -X POST https://api.guilders.app/api/transaction \
   }'
 ```
 
-Browse the full API reference at [docs.guilders.app](https://docs.guilders.app) or view the OpenAPI spec at [`api.guilders.app/api/openapi`](https://api.guilders.app/api/openapi).
+Browse the full documentation and API reference at [docs.guilders.app](https://docs.guilders.app) or view just the OpenAPI spec at [`api.guilders.app/api/openapi`](https://api.guilders.app/api/openapi).
 
 ## MCP (Model Context Protocol)
 
@@ -218,19 +229,16 @@ If your bank or broker isn't supported by the built-in providers, you can build 
 
 Contributions are welcome! Whether it's a bug fix, a new provider integration, a feature idea, or documentation improvements — we'd love your help.
 
-```bash
-# Fork and clone
-git clone https://github.com/<your-username>/Guilders.git
-cd Guilders
+## Alternatives
 
-# Install dependencies
-bun install
+Great tools worth considering, depending on your needs and region:
 
-# Create a branch
-git checkout -b my-feature
-
-# Make your changes, then open a PR
-```
+| App                                            | Strengths                                   | Notes                                      |
+| ---------------------------------------------- | ------------------------------------------- | ------------------------------------------ |
+| [Origin Financial](https://www.useorigin.com/) | Comprehensive financial planning            | US                                         |
+| [Copilot Money](https://copilot.money/)        | Beautiful Apple-native experience           | US, Apple ecosystem                        |
+| [Stockle](https://www.stockle.de/)             | Stock investment management                 | Europe                                     |
+| [Kubera](https://www.kubera.com/)              | Net worth tracking, best coverage, great UI | No budgeting/transactions, premium pricing |
 
 ## License
 
