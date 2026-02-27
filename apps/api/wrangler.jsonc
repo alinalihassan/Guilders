@@ -7,6 +7,18 @@
   "dev": {
     "port": 3000,
   },
+  "route": {
+    "custom_domain": true,
+    "pattern": "api.guilders.app",
+  },
+  "workers_dev": false,
+  "preview_urls": false,
+  "observability": {
+    "enabled": true,
+    "traces": {
+      "enabled": true,
+    },
+  },
   "triggers": {
     "crons": ["0 * * * *", "0 0 * * *"],
   },
