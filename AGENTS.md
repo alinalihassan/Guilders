@@ -1,214 +1,223 @@
-# Guilders Data Model Documentation
+# Guilders — Agent Guide
 
 ## Overview
 
-This document explains the data model for Guilders, a personal finance application that supports both manual and synchronized financial accounts.
+Guilders is an open-source, self-hostable personal finance platform. It aggregates manual and synced financial accounts into a single dashboard, offers an AI financial advisor, and exposes a developer-friendly API with MCP support so external tools and AI agents can read and write financial data on the user's behalf.
 
-## Core Concepts
+**Live instances:**
 
-### Accounts (The Central Entity)
+| Service   | URL                          |
+|-----------|------------------------------|
+| API       | https://api.guilders.app     |
+| Dashboard | https://dashboard.guilders.app |
+| Website   | https://guilders.app         |
+| Docs      | https://docs.guilders.app    |
 
-Accounts represent the user's financial accounts and holdings. Every account belongs to a user and has a type and value.
-
-**Key Fields:**
-
-- `id`: Unique identifier
-- `user_id`: Owner of the account
-- `name`: Account name (e.g., "Chase Checking", "Bitcoin Wallet")
-- `type`: "asset" or "liability"
-- `subtype`: depository, brokerage, crypto, property, vehicle, creditcard, loan, stock
-- `value`: Current value in the specified currency
-- `currency`: ISO currency code (e.g., "USD", "EUR")
-- `institution_connection_id`: Links to institution connection (optional, for synced accounts)
-
-**Account Types:**
-
-- **Manual Accounts**: Created and updated manually by the user (e.g., cash under mattress, physical gold)
-- **Synced Accounts**: Automatically updated through financial providers (e.g., bank accounts via Plaid)
-
-### Data Flow for Synced Accounts
+## Monorepo Structure
 
 ```
-Provider (e.g., Plaid)
-  ↓
-Institution (e.g., Revolut Bank)
-  ↓
-Provider Connection (user ↔ provider link)
-  ↓
-Institution Connection (connection to specific institution)
-  ↓
-Accounts (accounts/investments from the institution)
-  ↓
-Transactions (transactions from those accounts)
+guilders-elysia/
+├── apps/
+│   ├── api/           Elysia API on Cloudflare Workers
+│   ├── dashboard/     Next.js 16 web dashboard
+│   ├── docs/          Fumadocs documentation site
+│   └── mobile/        Expo / React Native mobile app
+├── packages/
+│   ├── transactional/ React Email templates
+│   └── tsconfig/      Shared TypeScript configs
 ```
 
-### Providers
+**Package manager:** Bun 1.3.9
+**Linting:** oxlint
+**Formatting:** oxfmt
 
-Providers are financial data aggregators that can connect to various institutions.
+## Tech Stack
 
-**Examples:**
+| Layer          | Technology                                           |
+|----------------|------------------------------------------------------|
+| API Framework  | Elysia 1.4 (Bun runtime, Cloudflare Workers adapter) |
+| Database       | PostgreSQL (Neon serverless) via Drizzle ORM         |
+| Auth           | Better Auth (session cookies, bearer tokens, passkeys, API keys, OAuth provider) |
+| AI             | Vercel AI SDK → Google Gemini 2.5 Flash via Cloudflare AI Gateway |
+| MCP            | `@modelcontextprotocol/sdk` — OAuth-authenticated    |
+| Dashboard      | Next.js 16, React 19, Tailwind CSS, shadcn/ui, Recharts, Zustand, TanStack Query |
+| Mobile         | Expo 55, React Native 0.83, Expo Router              |
+| Docs           | Fumadocs 16 (Next.js), OpenAPI integration            |
+| Email          | Resend + React Email                                 |
+| Payments       | Stripe (via Better Auth Stripe plugin)               |
+| Storage        | Cloudflare R2 (public + per-user buckets)            |
+| Providers      | SaltEdge (open banking), SnapTrade (brokerages)      |
 
-- Plaid - Connects to thousands of banks worldwide
-- Yodlee - Financial data aggregation
-- Coinbase API - Crypto exchange
-- Alpaca - Stock trading
+## Data Model
 
-**Key Fields:**
+### Core Entities
 
-- `id`: Unique identifier
-- `name`: Provider name
-- `logo_url`: Provider logo
+**Accounts** are the central entity. Each account belongs to a user and has a type, subtype, value, and currency.
 
-### Institutions
+- **Types:** `asset`, `liability`
+- **Subtypes:** `depository`, `brokerage`, `crypto`, `property`, `vehicle`, `creditcard`, `loan`, `stock`
+- **Manual accounts** have no `institution_connection_id`; **synced accounts** are linked to one.
 
-Financial institutions (banks, brokerages, crypto exchanges) that can be accessed through providers.
+**Transactions** belong to accounts. They carry an amount, currency, date, description, and optional category.
 
-**Examples:**
+**Categories** are user-scoped and hierarchical (via `parent_id`). Each has a name, color, icon, and classification (`expense` / `income`).
 
-- Chase Bank
-- Revolut
-- Coinbase
-- Fidelity
+### Provider / Institution Hierarchy
 
-**Key Fields:**
+```
+Provider  (e.g. SaltEdge, SnapTrade)
+  └─ Institution  (e.g. Revolut, Fidelity)
+       └─ Provider Connection  (user ↔ provider auth)
+            └─ Institution Connection  (connection to a specific bank)
+                 └─ Accounts  →  Transactions
+```
 
-- `id`: Unique identifier
-- `name`: Institution name
-- `logo_url`: Institution logo
-- `country`: Country code
-- `provider_id`: Which provider can connect to this institution
-- `provider_institution_id`: External ID used by the provider
+### Database Schema
 
-### Provider Connections
+Schema files live in `apps/api/src/db/schema/`:
 
-Links a user to a provider. Represents an authenticated connection to a financial data provider.
+| File               | Tables                                                         |
+|--------------------|----------------------------------------------------------------|
+| `auth.ts`          | user, session, user_account, apikey, twoFactor, passkey, OAuth tables |
+| `accounts.ts`      | account                                                        |
+| `transactions.ts`  | transaction                                                    |
+| `categories.ts`    | category                                                       |
+| `providers.ts`     | provider, institution, provider_connection, institution_connection |
+| `currencies.ts`    | currency, rate                                                 |
+| `countries.ts`     | country                                                        |
+| `documents.ts`     | documents                                                      |
+| `relations.ts`     | Drizzle relation definitions                                   |
 
-**Key Fields:**
-
-- `id`: Unique identifier
-- `provider_id`: Which provider
-- `user_id`: Which user
-- `secret`: Encrypted authentication token/credentials
-
-**Note:** A user typically has one provider connection per provider they use.
-
-### Institution Connections
-
-Links a provider connection to a specific institution. Represents the user's accounts at a particular institution.
-
-**Key Fields:**
-
-- `id`: Unique identifier
-- `institution_id`: Which institution
-- `provider_connection_id`: Which provider connection (links to user)
-- `connection_id`: External connection identifier from provider
-- `broken`: Whether the connection is broken/expired
-
-**Note:** Multiple institution connections can exist for one provider connection (e.g., Plaid can connect to multiple banks).
-
-### Transactions
-
-Financial transactions associated with accounts.
-
-**Key Fields:**
-
-- `id`: Unique identifier
-- `account_id`: Which account this transaction belongs to
-- `amount`: Transaction amount
-- `currency`: Currency code
-- `date`: Transaction date
-- `description`: Transaction description
-- `category`: Transaction category
-
-**Types:**
-
-- **Manual Transactions**: Created by the user for manual accounts
-- **Synced Transactions**: Automatically imported from synced accounts
+Migrations: `apps/api/drizzle/`
 
 ## API Endpoints
 
-### Accounts
+All routes live under `/api` (see `apps/api/src/routes/`).
 
-- `GET /api/account` - List all user's accounts
-- `POST /api/account` - Create manual account
-- `GET /api/account/:id` - Get specific account
-- `PUT /api/account/:id` - Update account
-- `DELETE /api/account/:id` - Delete account
+### Financial Data
 
-### Transactions
+| Method   | Path                                  | Purpose                         |
+|----------|---------------------------------------|---------------------------------|
+| `GET`    | `/api/account`                        | List all user accounts          |
+| `POST`   | `/api/account`                        | Create manual account           |
+| `GET`    | `/api/account/:id`                    | Get account by ID               |
+| `PUT`    | `/api/account/:id`                    | Update account                  |
+| `DELETE` | `/api/account/:id`                    | Delete account                  |
+| `GET`    | `/api/transaction`                    | List transactions (date desc)   |
+| `POST`   | `/api/transaction`                    | Create transaction              |
+| `GET`    | `/api/account/:id/transaction`        | Transactions for one account    |
+| `GET`    | `/api/category`                       | List categories                 |
+| `POST`   | `/api/category`                       | Create category                 |
 
-- `GET /api/transaction` - List user's transactions (should be ordered by date desc)
-- `POST /api/transaction` - Create transaction
-- `GET /api/account/:id/transaction` - List transactions for specific account
+### Connections & Providers
 
-### Institution Connections
+| Method   | Path                                  | Purpose                         |
+|----------|---------------------------------------|---------------------------------|
+| `GET`    | `/api/provider`                       | List providers                  |
+| `GET`    | `/api/institution`                    | List institutions               |
+| `GET`    | `/api/provider-connection`            | List provider connections       |
+| `GET`    | `/api/institution-connection`         | List institution connections    |
+| `*`      | `/api/connections`                    | Connection management           |
 
-- `GET /api/institution-connection` - List institution connections with details
+### Other
 
-## Mobile App Architecture
+| Path              | Purpose                                    |
+|-------------------|--------------------------------------------|
+| `/api/auth/*`     | Better Auth handlers                       |
+| `/api/chat`       | AI financial advisor (streaming)           |
+| `/api/currency`   | Currency list                              |
+| `/api/rate`       | Exchange rates                             |
+| `/api/country`    | Country list                               |
+| `/mcp`            | MCP server endpoint (OAuth-authenticated)  |
+| `/callback/*`     | Provider OAuth callbacks                   |
+| `/oauth/*`        | OAuth consent / sign-in pages              |
 
-### Home Tab
+### OpenAPI
 
-Should display:
+The API self-documents via `@elysiajs/openapi`. Auth uses either:
 
-1. **Total Net Worth**: Sum of all account values minus liabilities
-2. **Account Breakdown**: List of accounts grouped by type
-3. **Recent Transactions**: Latest transactions across all accounts
+- `x-api-key` header (API key)
+- `Authorization: Bearer <token>` (JWT)
+- Session cookie (web)
 
-**Data Fetching:**
+## Authentication
 
-```typescript
-// Get all accounts (both manual and synced)
-GET /api/account
+Handled by Better Auth (`apps/api/src/lib/auth.tsx`).
 
-// Get recent transactions
-GET /api/transaction?limit=10
+**Supported methods:** email/password, passkeys (WebAuthn), API keys, two-factor authentication, OAuth.
+
+**Plugins:** `@better-auth/passkey`, `@better-auth/stripe`, `@better-auth/expo`, `@better-auth/oauth-provider`.
+
+The auth middleware at `apps/api/src/middleware/auth.ts` is an Elysia plugin that protects routes.
+
+## AI Features
+
+- **Chat endpoint** (`apps/api/src/routes/chat/`): streams responses via Vercel AI SDK using Gemini 2.5 Flash through Cloudflare AI Gateway.
+- **Financial context** (`apps/api/src/routes/chat/utils.ts`): injects accounts, transactions, and categories into the system prompt.
+- **Dashboard advisor** (`apps/dashboard/src/app/(pages)/(protected)/advisor/page.tsx`): React chat UI via `@ai-sdk/react`.
+- **Mobile chat** (`apps/mobile/src/app/(app)/chat/`): streaming chat with markdown rendering.
+
+## MCP Server
+
+Endpoint: `/mcp` (OAuth-authenticated via Better Auth as OAuth provider).
+
+**Tools:**
+
+| Tool               | Description                                      |
+|--------------------|--------------------------------------------------|
+| `get_accounts`     | Returns user accounts (limit 1–100, default 50)  |
+| `get_transactions` | Returns user transactions (optional account filter, limit 1–100) |
+
+Implementation: `apps/api/src/mcp/`
+
+## Provider Integrations
+
+Providers implement the `IProvider` interface (`apps/api/src/providers/types.ts`):
+
+```
+getInstitutions, registerUser, deregisterUser,
+connect, reconnect, refreshConnection,
+getAccounts, getTransactions
 ```
 
-### Settings Tab
+**Current providers:** SaltEdge (`apps/api/src/providers/saltedge/`), SnapTrade (`apps/api/src/providers/snaptrade/`).
 
-Should display:
+The provider interface is designed so developers can add their own integrations — build a custom bank scraper, crypto exchange connector, or anything else that implements `IProvider`, and push data into Guilders via the API.
 
-1. User profile info (from Better Auth session)
-2. App settings (currency, theme)
-3. Account management (sign out)
-4. Provider connections management
+## Background Jobs
 
-## Authentication Flow
+| Schedule  | Job                     | Location                          |
+|-----------|-------------------------|-----------------------------------|
+| Hourly    | Sync exchange rates     | `apps/api/src/cron/`              |
+| Daily     | Sync institution data   | `apps/api/src/cron/`              |
+| Queue     | Process webhook events  | `apps/api/src/queues/webhook-events.ts` |
 
-All API endpoints require authentication via:
+Queue: `guilders-webhook-events` (Cloudflare Queues, max batch 10, 5 retries, DLQ).
 
-1. **Better Auth Session Cookie** (for web)
-2. **Bearer Token** (for mobile)
+## Implementation Notes for Agents
 
-The mobile app uses Better Auth client with expo-secure-store for token persistence.
-
-## Implementation Notes
-
-### For Agents Working on This Codebase
-
-1. **Accounts are the primary entities** - Always fetch accounts for the home view, not institution connections
-2. **Transactions belong to accounts** - When displaying transactions, show which account they belong to
-3. **Synced vs Manual** - Check `institution_connection_id` to determine if an account is synced
-4. **Single API client** - Use the Better Auth client for all requests; it handles authentication automatically
-5. **Currency handling** - Accounts have their own currency; consider conversion for totals
+1. **Accounts are the primary entity** — fetch accounts for the home view, not institution connections.
+2. **Transactions belong to accounts** — always show which account a transaction belongs to.
+3. **Synced vs manual** — check `institution_connection_id` to determine if an account is synced.
+4. **Use the Better Auth client** for all requests; it handles authentication automatically.
+5. **Currency handling** — accounts have their own currency; consider conversion for net-worth totals.
+6. **Eden treaty** — the dashboard uses `@elysiajs/eden` for end-to-end type-safe API calls.
+7. **React 19 compiler** — the dashboard uses `babel-plugin-react-compiler`; avoid manual `useMemo`/`useCallback` where the compiler handles it.
 
 ### Common Patterns
 
-**Fetch Dashboard Data:**
+**Fetch dashboard data:**
 
 ```typescript
-// Home tab should fetch:
 const accounts = await fetch("/api/account").then((r) => r.json());
 const totalValue = accounts.reduce(
   (sum, a) => sum + (a.type === "liability" ? -1 : 1) * Number(a.value),
   0,
 );
-
 const transactions = await fetch("/api/transaction?limit=20").then((r) => r.json());
 ```
 
-**Create Manual Account:**
+**Create manual account:**
 
 ```typescript
 POST /api/account
@@ -221,7 +230,7 @@ POST /api/account
 }
 ```
 
-**Create Manual Transaction:**
+**Create manual transaction:**
 
 ```typescript
 POST /api/transaction
@@ -234,3 +243,17 @@ POST /api/transaction
   "category": "food"
 }
 ```
+
+## Environment Variables
+
+See `apps/api/.env.example` for the full list. Key groups:
+
+- **Database:** `DATABASE_URL`
+- **URLs:** `BACKEND_URL`, `DASHBOARD_URL`
+- **Auth:** `BETTER_AUTH_SECRET`
+- **Payments:** `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`
+- **Email:** `RESEND_API_KEY`
+- **AI:** `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_AI_GATEWAY`, `CLOUDFLARE_AI_GATEWAY_TOKEN`
+- **Storage:** `CLOUDFLARE_R2_ACCESS_KEY`, `CLOUDFLARE_R2_SECRET_KEY`
+- **Providers:** `SNAPTRADE_*`, `SALTEDGE_*`
+- **Dev tunnels:** `NGROK_TOKEN`, `NGROK_URL` (optional, for provider callbacks)
