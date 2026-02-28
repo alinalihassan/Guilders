@@ -44,6 +44,19 @@ export type DialogState =
       variant?: "default" | "destructive";
       isLoading?: boolean;
       onConfirm: () => void;
+    }
+  | {
+      type: "inputPrompt";
+      title?: string;
+      description?: string;
+      placeholder?: string;
+      defaultValue?: string;
+      confirmText?: string;
+      cancelText?: string;
+      inputType?: "text" | "password";
+      validate?: (value: string) => string | null;
+      onConfirm: (value: string) => void;
+      onCancel?: () => void;
     };
 
 export type DialogWithState = DialogState & { isOpen: boolean };

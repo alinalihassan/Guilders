@@ -29,6 +29,9 @@ const ConfirmationDialog = dynamic(() =>
   import("./confirmation-dialog").then((m) => ({ default: m.ConfirmationDialog })),
 );
 const MFADialog = dynamic(() => import("./mfa-dialog").then((m) => ({ default: m.MFADialog })));
+const InputPromptDialog = dynamic(() =>
+  import("./input-prompt-dialog").then((m) => ({ default: m.InputPromptDialog })),
+);
 
 function useCommandMenuShortcut() {
   const { isOpen, open, close } = useDialog("command");
@@ -63,6 +66,7 @@ export const Dialogs = () => {
       {openTypes.has("provider") && <ProviderDialog />}
       {openTypes.has("confirmation") && <ConfirmationDialog />}
       {openTypes.has("mfa") && <MFADialog />}
+      {openTypes.has("inputPrompt") && <InputPromptDialog />}
     </>
   );
 };
