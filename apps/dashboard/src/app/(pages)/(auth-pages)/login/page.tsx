@@ -20,6 +20,7 @@ function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSigningInWithPasskey, setIsSigningInWithPasskey] = useState(false);
   const [requiresTwoFactor, setRequiresTwoFactor] = useState(false);
+  const [twoFactorMethod, setTwoFactorMethod] = useState<"totp" | "backup">("totp");
   const [twoFactorCode, setTwoFactorCode] = useState("");
   const [isVerifyingTwoFactor, setIsVerifyingTwoFactor] = useState(false);
 
@@ -54,6 +55,8 @@ function LoginForm() {
 
       if (data && "twoFactorRedirect" in data && data.twoFactorRedirect) {
         setRequiresTwoFactor(true);
+        setTwoFactorMethod("totp");
+        setTwoFactorCode("");
         return;
       }
 
@@ -69,19 +72,24 @@ function LoginForm() {
   };
 
   const handleVerifyTwoFactor = async () => {
-    if (twoFactorCode.length < 6) {
-      toast.error("Invalid verification code", {
-        description: "Enter the 6-digit code from your authenticator app.",
+    const normalizedCode = twoFactorMethod === "totp" ? twoFactorCode : twoFactorCode.trim();
+    if (!normalizedCode || (twoFactorMethod === "totp" && normalizedCode.length < 6)) {
+      toast.error(twoFactorMethod === "totp" ? "Invalid verification code" : "Invalid backup code", {
+        description:
+          twoFactorMethod === "totp"
+            ? "Enter the 6-digit code from your authenticator app."
+            : "Enter one of your backup codes.",
       });
       return;
     }
     try {
       setIsVerifyingTwoFactor(true);
-      const { error } = await authClient.twoFactor.verifyTotp({
-        code: twoFactorCode,
-      });
+      const { error } =
+        twoFactorMethod === "totp"
+          ? await authClient.twoFactor.verifyTotp({ code: normalizedCode })
+          : await authClient.twoFactor.verifyBackupCode({ code: normalizedCode });
       if (error) {
-        toast.error("Invalid verification code", {
+        toast.error(twoFactorMethod === "totp" ? "Invalid verification code" : "Invalid backup code", {
           description: error.message || "Please try again.",
         });
         return;
@@ -141,19 +149,40 @@ function LoginForm() {
             {requiresTwoFactor ? (
               <div className="contents" key="two-factor-step">
                 <div className="grid w-full items-center gap-1.5">
-                  <Label htmlFor="twoFactorCode">Authenticator code</Label>
+                  <Label htmlFor="twoFactorCode">
+                    {twoFactorMethod === "totp" ? "Authenticator code" : "Backup code"}
+                  </Label>
                   <Input
                     id="twoFactorCode"
                     name="twoFactorCode"
-                    placeholder="123456"
-                    inputMode="numeric"
-                    autoComplete="one-time-code"
+                    placeholder={twoFactorMethod === "totp" ? "123456" : "Enter backup code"}
+                    inputMode={twoFactorMethod === "totp" ? "numeric" : "text"}
+                    autoComplete={twoFactorMethod === "totp" ? "one-time-code" : "off"}
                     value={twoFactorCode}
-                    onChange={(event) =>
-                      setTwoFactorCode(event.target.value.replace(/\D/g, "").slice(0, 6))
-                    }
+                    onChange={(event) => {
+                      const value = event.target.value;
+                      setTwoFactorCode(
+                        twoFactorMethod === "totp" ? value.replace(/\D/g, "").slice(0, 6) : value,
+                      );
+                    }}
                     required
                   />
+                </div>
+                <div className="flex justify-end">
+                  <Button
+                    type="button"
+                    variant="link"
+                    className="h-auto p-0 text-xs"
+                    disabled={isVerifyingTwoFactor}
+                    onClick={() => {
+                      setTwoFactorMethod((current) => (current === "totp" ? "backup" : "totp"));
+                      setTwoFactorCode("");
+                    }}
+                  >
+                    {twoFactorMethod === "totp"
+                      ? "Use a backup code instead"
+                      : "Use authenticator code instead"}
+                  </Button>
                 </div>
                 <Button
                   type="button"
@@ -161,7 +190,11 @@ function LoginForm() {
                   onClick={handleVerifyTwoFactor}
                   disabled={isVerifyingTwoFactor}
                 >
-                  {isVerifyingTwoFactor ? "Verifying..." : "Verify code"}
+                  {isVerifyingTwoFactor
+                    ? "Verifying..."
+                    : twoFactorMethod === "totp"
+                      ? "Verify code"
+                      : "Verify backup code"}
                 </Button>
                 <Button
                   type="button"
@@ -170,6 +203,7 @@ function LoginForm() {
                   disabled={isVerifyingTwoFactor}
                   onClick={() => {
                     setRequiresTwoFactor(false);
+                    setTwoFactorMethod("totp");
                     setTwoFactorCode("");
                   }}
                 >
