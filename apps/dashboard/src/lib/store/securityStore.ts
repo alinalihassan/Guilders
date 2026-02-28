@@ -50,7 +50,6 @@ export const useSecurityStore = create<SecurityStore>((set) => ({
     set({ isLoadingMFA: true });
     const { error } = await authClient.twoFactor.verifyTotp({
       code,
-      trustDevice: true,
     });
     if (error) {
       set({ isLoadingMFA: false });

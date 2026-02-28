@@ -48,6 +48,16 @@ const securityFormSchema = z
   });
 
 type SecurityFormValues = z.infer<typeof securityFormSchema>;
+type PromptConfig = {
+  title: string;
+  description: string;
+  placeholder: string;
+  defaultValue?: string;
+  confirmText?: string;
+  cancelText?: string;
+  inputType?: "text" | "password";
+  validate?: (value: string) => string | null;
+};
 
 export function SecurityForm() {
   const { data: hasMFA, isLoading: isLoadingMFA } = useMFAStatus();
@@ -55,6 +65,7 @@ export function SecurityForm() {
   const { unenrollMFA } = useSecurityStore();
   const queryClient = useQueryClient();
   const { open: openMFADialog } = useDialog("mfa");
+  const { open: openInputPrompt } = useDialog("inputPrompt");
   const { mutateAsync: updateUserSettings } = useUpdateUserSettings();
 
   const addPasskey = useAddPasskey();
@@ -95,8 +106,24 @@ export function SecurityForm() {
     }
   }
 
+  const openPrompt = (config: PromptConfig) =>
+    new Promise<string | null>((resolve) => {
+      openInputPrompt({
+        ...config,
+        onConfirm: (value) => resolve(value),
+        onCancel: () => resolve(null),
+      });
+    });
+
   const handleUnenroll = async () => {
-    const password = window.prompt("Enter your current password to disable 2FA");
+    const password = await openPrompt({
+      title: "Disable Two-Factor Authentication",
+      description: "Enter your current password to disable 2FA.",
+      placeholder: "Current password",
+      inputType: "password",
+      confirmText: "Disable 2FA",
+      validate: (value) => (!value ? "Current password is required." : null),
+    });
     if (!password) return;
     try {
       await unenrollMFA(password);
@@ -124,10 +151,19 @@ export function SecurityForm() {
   };
 
   const handleRenamePasskey = async (id: string, currentName?: string) => {
-    const name = window.prompt("Enter a new passkey name", currentName ?? "");
-    if (!name || name === currentName) return;
+    const name = await openPrompt({
+      title: "Rename Passkey",
+      description: "Enter a new name for this passkey.",
+      placeholder: "Passkey name",
+      defaultValue: currentName ?? "",
+      confirmText: "Rename",
+      validate: (value) => (!value.trim() ? "Passkey name is required." : null),
+    });
+    const normalizedName = name?.trim();
+    const normalizedCurrentName = currentName?.trim();
+    if (!normalizedName || normalizedName === normalizedCurrentName) return;
     try {
-      await renamePasskey.mutateAsync({ id, name });
+      await renamePasskey.mutateAsync({ id, name: normalizedName });
       toast.success("Passkey renamed");
     } catch (error) {
       toast.error("Failed to rename passkey", {

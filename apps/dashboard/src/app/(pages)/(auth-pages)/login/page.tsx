@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useCallback, useEffect, useState } from "react";
+import { Suspense, useState } from "react";
 import { toast } from "sonner";
 
 import { FormMessage, type Message } from "@/components/common/form-message";
@@ -13,12 +13,27 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { authClient } from "@/lib/auth-client";
+import { useAuthStore } from "@/lib/store/authStore";
 
 function LoginForm() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const [, setIsLoading] = useState(false);
-  const [isSigningInWithPasskey, setIsSigningInWithPasskey] = useState(false);
+  const {
+    isLoading,
+    setIsLoading,
+    isSigningInWithPasskey,
+    setIsSigningInWithPasskey,
+    requiresTwoFactor,
+    setRequiresTwoFactor,
+    twoFactorMethod,
+    setTwoFactorMethod,
+    twoFactorCode,
+    setTwoFactorCode,
+    isVerifyingTwoFactor,
+    setIsVerifyingTwoFactor,
+  } = useAuthStore();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   const message: Message = {
     message: searchParams.has("message") ? (searchParams.get("message") ?? "") : "",
@@ -29,23 +44,33 @@ function LoginForm() {
   const handleSubmit = async (formData: FormData) => {
     try {
       setIsLoading(true);
-      const email = formData.get("email")?.toString();
-      const password = formData.get("password")?.toString();
-      if (!email || !password) {
+      const submittedEmail = formData.get("email")?.toString() ?? email;
+      const submittedPassword = formData.get("password")?.toString() ?? password;
+      const normalizedEmail = submittedEmail.trim();
+      if (!normalizedEmail || !submittedPassword) {
         toast.error("Failed to sign in", {
           description: "Email and password are required.",
         });
         return;
       }
+      setEmail(normalizedEmail);
+      setPassword(submittedPassword);
 
-      const { error } = await authClient.signIn.email({
-        email,
-        password,
+      const { data, error } = await authClient.signIn.email({
+        email: normalizedEmail,
+        password: submittedPassword,
       });
       if (error) {
         toast.error("Failed to sign in", {
           description: error.message || "Please try again.",
         });
+        return;
+      }
+
+      if (data && "twoFactorRedirect" in data && data.twoFactorRedirect) {
+        setRequiresTwoFactor(true);
+        setTwoFactorMethod("totp");
+        setTwoFactorCode("");
         return;
       }
 
@@ -60,45 +85,68 @@ function LoginForm() {
     }
   };
 
-  const handlePasskeySignIn = useCallback(
-    async (autoFill = false) => {
-      try {
-        setIsSigningInWithPasskey(true);
-        const { data, error } = await authClient.signIn.passkey({ autoFill });
-        if (error) {
-          if (!autoFill) {
-            toast.error("Passkey sign-in failed", {
-              description: error.message || "Please try again.",
-            });
-          }
-          return;
-        }
-        if (data) {
-          const redirectUrl = searchParams.get("redirect") || "/";
-          router.push(redirectUrl);
-        }
-      } finally {
-        setIsSigningInWithPasskey(false);
+  const handleVerifyTwoFactor = async () => {
+    const normalizedCode = twoFactorMethod === "totp" ? twoFactorCode : twoFactorCode.trim();
+    if (!normalizedCode || (twoFactorMethod === "totp" && normalizedCode.length < 6)) {
+      toast.error(
+        twoFactorMethod === "totp" ? "Invalid verification code" : "Invalid backup code",
+        {
+          description:
+            twoFactorMethod === "totp"
+              ? "Enter the 6-digit code from your authenticator app."
+              : "Enter one of your backup codes.",
+        },
+      );
+      return;
+    }
+    try {
+      setIsVerifyingTwoFactor(true);
+      const { error } =
+        twoFactorMethod === "totp"
+          ? await authClient.twoFactor.verifyTotp({ code: normalizedCode })
+          : await authClient.twoFactor.verifyBackupCode({ code: normalizedCode });
+      if (error) {
+        toast.error(
+          twoFactorMethod === "totp" ? "Invalid verification code" : "Invalid backup code",
+          {
+            description: error.message || "Please try again.",
+          },
+        );
+        return;
       }
-    },
-    [router, searchParams],
-  );
+      const redirectUrl = searchParams.get("redirect") || "/";
+      router.push(redirectUrl);
+    } catch {
+      toast.error("Failed to verify code", {
+        description: "Please try again.",
+      });
+    } finally {
+      setIsVerifyingTwoFactor(false);
+    }
+  };
 
-  useEffect(() => {
-    const credentialApi = window.PublicKeyCredential as
-      | (typeof PublicKeyCredential & {
-          isConditionalMediationAvailable?: () => Promise<boolean>;
-        })
-      | undefined;
-    if (!credentialApi?.isConditionalMediationAvailable) return;
-
-    credentialApi
-      .isConditionalMediationAvailable()
-      .then((isAvailable) => {
-        if (isAvailable) handlePasskeySignIn(true);
-      })
-      .catch(() => undefined);
-  }, [handlePasskeySignIn]);
+  const handlePasskeySignIn = async () => {
+    try {
+      setIsSigningInWithPasskey(true);
+      const { data, error } = await authClient.signIn.passkey({ autoFill: false });
+      if (error) {
+        toast.error("Passkey sign-in failed", {
+          description: error.message || "Please try again.",
+        });
+        return;
+      }
+      if (data) {
+        const redirectUrl = searchParams.get("redirect") || "/";
+        router.push(redirectUrl);
+      }
+    } catch (error) {
+      toast.error("Passkey sign-in failed", {
+        description: error instanceof Error ? error.message : "Please try again.",
+      });
+    } finally {
+      setIsSigningInWithPasskey(false);
+    }
+  };
 
   return (
     <div className="w-full max-w-sm">
@@ -118,47 +166,131 @@ function LoginForm() {
 
         <form className="mt-4 flex flex-col gap-4" action={handleSubmit}>
           <div className="grid gap-4">
-            <div className="grid w-full items-center gap-1.5">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                name="email"
-                type="email"
-                placeholder="john@doe.com"
-                autoComplete="username webauthn"
-                required
-              />
-            </div>
-
-            <div className="grid w-full items-center gap-1.5">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password">Password</Label>
-                <Link
-                  className="text-xs leading-[14px] text-muted-foreground hover:text-foreground"
-                  href="/forgot-password"
+            {requiresTwoFactor ? (
+              <div className="contents" key="two-factor-step">
+                <div className="grid w-full items-center gap-1.5">
+                  <Label htmlFor="twoFactorCode">
+                    {twoFactorMethod === "totp" ? "Authenticator code" : "Backup code"}
+                  </Label>
+                  <Input
+                    id="twoFactorCode"
+                    name="twoFactorCode"
+                    placeholder={twoFactorMethod === "totp" ? "123456" : "Enter backup code"}
+                    inputMode={twoFactorMethod === "totp" ? "numeric" : "text"}
+                    autoComplete={twoFactorMethod === "totp" ? "one-time-code" : "off"}
+                    value={twoFactorCode}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter") {
+                        event.preventDefault();
+                        void handleVerifyTwoFactor();
+                      }
+                    }}
+                    onChange={(event) => {
+                      const value = event.target.value;
+                      setTwoFactorCode(
+                        twoFactorMethod === "totp" ? value.replace(/\D/g, "").slice(0, 6) : value,
+                      );
+                    }}
+                    required
+                  />
+                </div>
+                <div className="flex justify-end">
+                  <Button
+                    type="button"
+                    variant="link"
+                    className="h-auto p-0 text-xs"
+                    disabled={isVerifyingTwoFactor}
+                    onClick={() => {
+                      setTwoFactorMethod(twoFactorMethod === "totp" ? "backup" : "totp");
+                      setTwoFactorCode("");
+                    }}
+                  >
+                    {twoFactorMethod === "totp"
+                      ? "Use a backup code instead"
+                      : "Use authenticator code instead"}
+                  </Button>
+                </div>
+                <Button
+                  type="button"
+                  className="mt-2 w-full"
+                  onClick={handleVerifyTwoFactor}
+                  disabled={isVerifyingTwoFactor}
                 >
-                  Forgot Password?
-                </Link>
+                  {isVerifyingTwoFactor
+                    ? "Verifying..."
+                    : twoFactorMethod === "totp"
+                      ? "Verify code"
+                      : "Verify backup code"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  disabled={isVerifyingTwoFactor}
+                  onClick={() => {
+                    setRequiresTwoFactor(false);
+                    setTwoFactorMethod("totp");
+                    setTwoFactorCode("");
+                  }}
+                >
+                  Back to sign in
+                </Button>
               </div>
-              <PasswordInput
-                name="password"
-                placeholder="********"
-                required
-                autoComplete="current-password webauthn"
-              />
-            </div>
+            ) : (
+              <div className="contents" key="password-step">
+                <div className="grid w-full items-center gap-1.5">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    placeholder="john@doe.com"
+                    autoComplete="username webauthn"
+                    value={email}
+                    onChange={(event) => setEmail(event.target.value)}
+                    required
+                  />
+                </div>
 
-            <SubmitButton className="mt-2 w-full" pendingText="Signing In...">
-              Sign in
-            </SubmitButton>
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full"
-              onClick={() => handlePasskeySignIn()}
-              disabled={isSigningInWithPasskey}
-            >
-              {isSigningInWithPasskey ? "Waiting for passkey..." : "Sign in with passkey"}
-            </Button>
+                <div className="grid w-full items-center gap-1.5">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="password">Password</Label>
+                    <Link
+                      className="text-xs leading-[14px] text-muted-foreground hover:text-foreground"
+                      href="/forgot-password"
+                    >
+                      Forgot Password?
+                    </Link>
+                  </div>
+                  <PasswordInput
+                    id="password"
+                    name="password"
+                    placeholder="********"
+                    required
+                    autoComplete="current-password webauthn"
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
+                  />
+                </div>
+
+                <SubmitButton
+                  className="mt-2 w-full"
+                  pendingText="Signing In..."
+                  disabled={isLoading}
+                >
+                  Sign in
+                </SubmitButton>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={handlePasskeySignIn}
+                  disabled={isSigningInWithPasskey || isLoading}
+                >
+                  {isSigningInWithPasskey ? "Waiting for passkey..." : "Sign in with passkey"}
+                </Button>
+              </div>
+            )}
           </div>
 
           <FormMessage message={message} />
