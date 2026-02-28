@@ -81,9 +81,6 @@ export function InputPromptDialog() {
     const input = inputRef.current;
     if (!input || input.disabled) return;
 
-    const nextValue = input.value ?? "";
-    if (validate?.(nextValue)) return;
-
     handleConfirm();
   };
 
