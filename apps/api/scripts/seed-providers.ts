@@ -4,8 +4,12 @@ import { provider } from "../src/db/schema/providers";
 import { createDb } from "../src/lib/db";
 
 const providers = [
-  { id: 1, name: "SnapTrade", logo_url: "https://bucket.guilders.app/provider_logo/snaptrade_logo.svg" },
-  { id: 2, name: "EnableBanking", logo_url: "https://bucket.guilders.app/provider_logo/enablebanking_logo.svg" },
+  {
+    id: 1,
+    name: "SnapTrade",
+    logo_url: "https://bucket.guilders.app/provider_logo/snaptrade_logo.svg",
+  },
+  // { id: 2, name: "EnableBanking", logo_url: "https://bucket.guilders.app/provider_logo/enablebanking_logo.svg" },
 ] as const;
 
 export async function seedProviders() {
