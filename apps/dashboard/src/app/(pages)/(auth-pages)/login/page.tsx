@@ -13,16 +13,25 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { authClient } from "@/lib/auth-client";
+import { useAuthStore } from "@/lib/store/authStore";
 
 function LoginForm() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
-  const [isSigningInWithPasskey, setIsSigningInWithPasskey] = useState(false);
-  const [requiresTwoFactor, setRequiresTwoFactor] = useState(false);
-  const [twoFactorMethod, setTwoFactorMethod] = useState<"totp" | "backup">("totp");
-  const [twoFactorCode, setTwoFactorCode] = useState("");
-  const [isVerifyingTwoFactor, setIsVerifyingTwoFactor] = useState(false);
+  const {
+    isLoading,
+    setIsLoading,
+    isSigningInWithPasskey,
+    setIsSigningInWithPasskey,
+    requiresTwoFactor,
+    setRequiresTwoFactor,
+    twoFactorMethod,
+    setTwoFactorMethod,
+    twoFactorCode,
+    setTwoFactorCode,
+    isVerifyingTwoFactor,
+    setIsVerifyingTwoFactor,
+  } = useAuthStore();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -192,7 +201,7 @@ function LoginForm() {
                     className="h-auto p-0 text-xs"
                     disabled={isVerifyingTwoFactor}
                     onClick={() => {
-                      setTwoFactorMethod((current) => (current === "totp" ? "backup" : "totp"));
+                      setTwoFactorMethod(twoFactorMethod === "totp" ? "backup" : "totp");
                       setTwoFactorCode("");
                     }}
                   >
