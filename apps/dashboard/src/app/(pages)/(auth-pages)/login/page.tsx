@@ -79,12 +79,15 @@ function LoginForm() {
   const handleVerifyTwoFactor = async () => {
     const normalizedCode = twoFactorMethod === "totp" ? twoFactorCode : twoFactorCode.trim();
     if (!normalizedCode || (twoFactorMethod === "totp" && normalizedCode.length < 6)) {
-      toast.error(twoFactorMethod === "totp" ? "Invalid verification code" : "Invalid backup code", {
-        description:
-          twoFactorMethod === "totp"
-            ? "Enter the 6-digit code from your authenticator app."
-            : "Enter one of your backup codes.",
-      });
+      toast.error(
+        twoFactorMethod === "totp" ? "Invalid verification code" : "Invalid backup code",
+        {
+          description:
+            twoFactorMethod === "totp"
+              ? "Enter the 6-digit code from your authenticator app."
+              : "Enter one of your backup codes.",
+        },
+      );
       return;
     }
     try {
@@ -94,9 +97,12 @@ function LoginForm() {
           ? await authClient.twoFactor.verifyTotp({ code: normalizedCode })
           : await authClient.twoFactor.verifyBackupCode({ code: normalizedCode });
       if (error) {
-        toast.error(twoFactorMethod === "totp" ? "Invalid verification code" : "Invalid backup code", {
-          description: error.message || "Please try again.",
-        });
+        toast.error(
+          twoFactorMethod === "totp" ? "Invalid verification code" : "Invalid backup code",
+          {
+            description: error.message || "Please try again.",
+          },
+        );
         return;
       }
       const redirectUrl = searchParams.get("redirect") || "/";
@@ -164,6 +170,12 @@ function LoginForm() {
                     inputMode={twoFactorMethod === "totp" ? "numeric" : "text"}
                     autoComplete={twoFactorMethod === "totp" ? "one-time-code" : "off"}
                     value={twoFactorCode}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter") {
+                        event.preventDefault();
+                        void handleVerifyTwoFactor();
+                      }
+                    }}
                     onChange={(event) => {
                       const value = event.target.value;
                       setTwoFactorCode(
