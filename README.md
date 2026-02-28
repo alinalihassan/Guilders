@@ -22,6 +22,9 @@
   <img src="assets/dashboard-preview.png" alt="Guilders Dashboard" width="1024" />
 </p>
 
+> [!CAUTION]
+> This project is very early in the development phase. Each update might not be compatible with previous versions, and you might not be able to migrate your data.
+
 ## About
 
 Guilders gives you a complete picture of your finances across every account you own. Connect your banks and brokerages automatically, or add manual accounts for cash, property, and anything else. An AI advisor helps you make sense of your data, and a fully open API means you stay in control — build your own integrations, connect your own AI agents, or push data from custom bank scrapers.
