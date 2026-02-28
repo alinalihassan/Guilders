@@ -16,6 +16,7 @@ export async function syncExchangeRates() {
     .filter(([code]) => supportedCodes.has(code))
     .map(([currency_code, rateValue]) => ({
       currency_code,
+      date: latest.date,
       rate: rateValue.toString(),
     }));
 
@@ -28,9 +29,9 @@ export async function syncExchangeRates() {
     .insert(rate)
     .values(filteredRates)
     .onConflictDoUpdate({
-      target: rate.currency_code,
+      target: [rate.currency_code, rate.date],
       set: { rate: sql`excluded.rate` },
     });
 
-  console.log(`Synced ${filteredRates.length} exchange rates`);
+  console.log(`Synced ${filteredRates.length} exchange rates for ${latest.date}`);
 }

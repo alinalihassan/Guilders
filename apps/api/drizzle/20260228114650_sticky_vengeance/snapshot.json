@@ -1,9 +1,9 @@
 {
   "version": "8",
   "dialect": "postgres",
-  "id": "38eb68c0-cfb5-48c2-a30f-360e36d3e529",
+  "id": "1798359a-f7f7-47a6-95a3-2859bd6665b1",
   "prevIds": [
-    "323d0a3a-0c5b-4003-a91e-fe100e7116d4"
+    "00000000-0000-0000-0000-000000000000"
   ],
   "ddl": [
     {
@@ -150,6 +150,12 @@
     {
       "isRlsEnabled": false,
       "name": "verification",
+      "entityType": "tables",
+      "schema": "public"
+    },
+    {
+      "isRlsEnabled": false,
+      "name": "balance_snapshot",
       "entityType": "tables",
       "schema": "public"
     },
@@ -2226,6 +2232,84 @@
       "name": "id",
       "entityType": "columns",
       "schema": "public",
+      "table": "balance_snapshot"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "account_id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "balance_snapshot"
+    },
+    {
+      "type": "date",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "date",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "balance_snapshot"
+    },
+    {
+      "type": "numeric(19,4)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "balance",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "balance_snapshot"
+    },
+    {
+      "type": "varchar(3)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "currency",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "balance_snapshot"
+    },
+    {
+      "type": "timestamp",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "balance_snapshot"
+    },
+    {
+      "type": "serial",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "id",
+      "entityType": "columns",
+      "schema": "public",
       "table": "category"
     },
     {
@@ -2827,6 +2911,19 @@
       "table": "rate"
     },
     {
+      "type": "date",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "date",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "rate"
+    },
+    {
       "type": "numeric(19,8)",
       "typeSchema": null,
       "notNull": true,
@@ -3293,6 +3390,76 @@
       "nameExplicit": true,
       "columns": [
         {
+          "value": "account_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "balance_snapshot_account_idx",
+      "entityType": "indexes",
+      "schema": "public",
+      "table": "balance_snapshot"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "date",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "balance_snapshot_date_idx",
+      "entityType": "indexes",
+      "schema": "public",
+      "table": "balance_snapshot"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "account_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        },
+        {
+          "value": "date",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": true,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "balance_snapshot_account_date_idx",
+      "entityType": "indexes",
+      "schema": "public",
+      "table": "balance_snapshot"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
           "value": "id",
           "isExpression": false,
           "asc": true,
@@ -3748,6 +3915,27 @@
       "nameExplicit": true,
       "columns": [
         {
+          "value": "date",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "rate_date_idx",
+      "entityType": "indexes",
+      "schema": "public",
+      "table": "rate"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
           "value": "id",
           "isExpression": false,
           "asc": true,
@@ -4158,6 +4346,40 @@
     {
       "nameExplicit": false,
       "columns": [
+        "account_id"
+      ],
+      "schemaTo": "public",
+      "tableTo": "account",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "CASCADE",
+      "onDelete": "CASCADE",
+      "name": "balance_snapshot_account_id_account_id_fkey",
+      "entityType": "fks",
+      "schema": "public",
+      "table": "balance_snapshot"
+    },
+    {
+      "nameExplicit": false,
+      "columns": [
+        "currency"
+      ],
+      "schemaTo": "public",
+      "tableTo": "currency",
+      "columnsTo": [
+        "code"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "NO ACTION",
+      "name": "balance_snapshot_currency_currency_code_fkey",
+      "entityType": "fks",
+      "schema": "public",
+      "table": "balance_snapshot"
+    },
+    {
+      "nameExplicit": false,
+      "columns": [
         "user_id"
       ],
       "schemaTo": "public",
@@ -4378,6 +4600,17 @@
     },
     {
       "columns": [
+        "currency_code",
+        "date"
+      ],
+      "nameExplicit": false,
+      "name": "rate_pkey",
+      "entityType": "pks",
+      "schema": "public",
+      "table": "rate"
+    },
+    {
+      "columns": [
         "id"
       ],
       "nameExplicit": false,
@@ -4511,6 +4744,16 @@
         "id"
       ],
       "nameExplicit": false,
+      "name": "balance_snapshot_pkey",
+      "schema": "public",
+      "table": "balance_snapshot",
+      "entityType": "pks"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
       "name": "category_pkey",
       "schema": "public",
       "table": "category",
@@ -4584,16 +4827,6 @@
       "name": "provider_pkey",
       "schema": "public",
       "table": "provider",
-      "entityType": "pks"
-    },
-    {
-      "columns": [
-        "currency_code"
-      ],
-      "nameExplicit": false,
-      "name": "rate_pkey",
-      "schema": "public",
-      "table": "rate",
       "entityType": "pks"
     },
     {
