@@ -135,7 +135,7 @@ export function BalanceChart({
   data,
   hasData,
   trendColor,
-  currentValue = 0,
+  currentValue,
   variant = "full",
   currency = "EUR",
   firstValue = 0,
@@ -145,12 +145,13 @@ export function BalanceChart({
 
   const effectiveColor = hasData ? trendColor : FLAT_LINE_COLOR;
   const flatLineData = useMemo(
-    () => generateFlatLineData(currentValue, variant === "full" ? 30 : 7),
+    () => generateFlatLineData(currentValue ?? 0, variant === "full" ? 30 : 7),
     [currentValue, variant],
   );
 
   const dataWithCurrent = useMemo(() => {
     if (!hasData) return flatLineData;
+    if (currentValue == null) return data;
     const today = new Date().toISOString().split("T")[0]!;
     const lastDate = data[data.length - 1]?.date;
     if (lastDate === today) return data;
