@@ -143,5 +143,8 @@ export function createAuth(db?: Database) {
   });
 }
 
-/** Module-level instance for OpenAPI schema generation only */
-export const auth = createAuth();
+/** Lazily-created instance for OpenAPI schema generation only */
+let _auth: ReturnType<typeof createAuth>;
+export function getAuth() {
+  return (_auth ??= createAuth());
+}

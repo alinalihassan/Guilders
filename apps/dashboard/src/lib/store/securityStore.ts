@@ -8,10 +8,8 @@ type MfaSetup = {
 };
 
 interface SecurityStore {
-  hasMFA: boolean;
   isLoadingMFA: boolean;
   setup: MfaSetup | null;
-  checkMFAStatus: () => Promise<void>;
   startMFASetup: (password: string) => Promise<void>;
   verifyMFASetup: (code: string) => Promise<void>;
   clearMFASetup: () => void;
@@ -19,22 +17,8 @@ interface SecurityStore {
 }
 
 export const useSecurityStore = create<SecurityStore>((set) => ({
-  hasMFA: false,
   isLoadingMFA: false,
   setup: null,
-
-  checkMFAStatus: async () => {
-    set({ isLoadingMFA: true });
-    const { data, error } = await authClient.getSession();
-    if (error) {
-      set({ hasMFA: false, isLoadingMFA: false });
-      throw new Error(error.message);
-    }
-    set({
-      hasMFA: Boolean((data as { user?: { twoFactorEnabled?: boolean } })?.user?.twoFactorEnabled),
-      isLoadingMFA: false,
-    });
-  },
 
   startMFASetup: async (password: string) => {
     set({ isLoadingMFA: true });
@@ -72,11 +56,7 @@ export const useSecurityStore = create<SecurityStore>((set) => ({
       set({ isLoadingMFA: false });
       throw new Error(error.message);
     }
-
-    set({
-      hasMFA: true,
-      isLoadingMFA: false,
-    });
+    set({ isLoadingMFA: false });
   },
 
   clearMFASetup: () => {
@@ -90,6 +70,6 @@ export const useSecurityStore = create<SecurityStore>((set) => ({
       set({ isLoadingMFA: false });
       throw new Error(error.message);
     }
-    set({ hasMFA: false, setup: null, isLoadingMFA: false });
+    set({ setup: null, isLoadingMFA: false });
   },
 }));

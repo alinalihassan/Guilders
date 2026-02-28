@@ -7,7 +7,7 @@ export const countryRoutes = new Elysia({
   prefix: "/country",
   detail: {
     tags: ["Countries"],
-    security: [{ bearerAuth: [] }],
+    security: [{ apiKeyAuth: [] }, { bearerAuth: [] }],
   },
 })
   .use(authPlugin)

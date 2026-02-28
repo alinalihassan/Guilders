@@ -66,7 +66,7 @@ export const chatRoutes = new Elysia({
   prefix: "/chat",
   detail: {
     tags: ["Chat"],
-    security: [{ bearerAuth: [] }],
+    security: [{ apiKeyAuth: [] }, { bearerAuth: [] }],
     hide: true,
   },
 })

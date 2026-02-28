@@ -9,7 +9,7 @@ export const institutionRoutes = new Elysia({
   prefix: "/institution",
   detail: {
     tags: ["Institutions"],
-    security: [{ bearerAuth: [] }],
+    security: [{ apiKeyAuth: [] }, { bearerAuth: [] }],
   },
 })
   .use(authPlugin)

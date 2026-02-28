@@ -2,7 +2,6 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Pencil, Shield, Trash2, X } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -18,8 +17,17 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { useQueryClient } from "@tanstack/react-query";
+
 import { useDialog } from "@/hooks/useDialog";
-import { authClient } from "@/lib/auth-client";
+import {
+  mfaQueryKey,
+  useAddPasskey,
+  useDeletePasskey,
+  useMFAStatus,
+  usePasskeys,
+  useRenamePasskey,
+} from "@/lib/queries/useSecurity";
 import { useUpdateUserSettings } from "@/lib/queries/useUser";
 import { useSecurityStore } from "@/lib/store/securityStore";
 
@@ -42,38 +50,19 @@ const securityFormSchema = z
 type SecurityFormValues = z.infer<typeof securityFormSchema>;
 
 export function SecurityForm() {
-  const { hasMFA, isLoadingMFA, checkMFAStatus, unenrollMFA } = useSecurityStore();
+  const { data: hasMFA, isLoading: isLoadingMFA } = useMFAStatus();
+  const { data: passkeys = [], isLoading: isLoadingPasskeys } = usePasskeys();
+  const { unenrollMFA } = useSecurityStore();
+  const queryClient = useQueryClient();
   const { open: openMFADialog } = useDialog("mfa");
   const { mutateAsync: updateUserSettings } = useUpdateUserSettings();
-  const [passkeys, setPasskeys] = useState<Array<{ id: string; name?: string }>>([]);
-  const [isLoadingPasskeys, setIsLoadingPasskeys] = useState(false);
-  const [isMutatingPasskey, setIsMutatingPasskey] = useState(false);
 
-  useEffect(() => {
-    checkMFAStatus().catch(() => {
-      toast.error("Unable to load 2FA status");
-    });
-  }, [checkMFAStatus]);
+  const addPasskey = useAddPasskey();
+  const renamePasskey = useRenamePasskey();
+  const deletePasskey = useDeletePasskey();
 
-  const loadPasskeys = useCallback(async () => {
-    setIsLoadingPasskeys(true);
-    const { data, error } = await authClient.passkey.listUserPasskeys({});
-    if (error) {
-      toast.error("Unable to load passkeys", { description: error.message });
-      setIsLoadingPasskeys(false);
-      return;
-    }
-    setPasskeys(
-      ((data as Array<{ id: string; name?: string } | null>) ?? []).filter(
-        (item): item is { id: string; name?: string } => Boolean(item?.id),
-      ),
-    );
-    setIsLoadingPasskeys(false);
-  }, []);
-
-  useEffect(() => {
-    loadPasskeys();
-  }, [loadPasskeys]);
+  const isMutatingPasskey =
+    addPasskey.isPending || renamePasskey.isPending || deletePasskey.isPending;
 
   const form = useForm<SecurityFormValues>({
     resolver: zodResolver(securityFormSchema),
@@ -111,6 +100,7 @@ export function SecurityForm() {
     if (!password) return;
     try {
       await unenrollMFA(password);
+      queryClient.invalidateQueries({ queryKey: mfaQueryKey });
       toast.success("2FA Removed", {
         description: "Two-factor authentication has been removed.",
       });
@@ -124,16 +114,12 @@ export function SecurityForm() {
 
   const handleAddPasskey = async () => {
     try {
-      setIsMutatingPasskey(true);
-      const { error } = await authClient.passkey.addPasskey({});
-      if (error) {
-        toast.error("Failed to add passkey", { description: error.message });
-        return;
-      }
+      await addPasskey.mutateAsync();
       toast.success("Passkey added");
-      await loadPasskeys();
-    } finally {
-      setIsMutatingPasskey(false);
+    } catch (error) {
+      toast.error("Failed to add passkey", {
+        description: error instanceof Error ? error.message : "Please try again.",
+      });
     }
   };
 
@@ -141,31 +127,23 @@ export function SecurityForm() {
     const name = window.prompt("Enter a new passkey name", currentName ?? "");
     if (!name || name === currentName) return;
     try {
-      setIsMutatingPasskey(true);
-      const { error } = await authClient.passkey.updatePasskey({ id, name });
-      if (error) {
-        toast.error("Failed to rename passkey", { description: error.message });
-        return;
-      }
+      await renamePasskey.mutateAsync({ id, name });
       toast.success("Passkey renamed");
-      await loadPasskeys();
-    } finally {
-      setIsMutatingPasskey(false);
+    } catch (error) {
+      toast.error("Failed to rename passkey", {
+        description: error instanceof Error ? error.message : "Please try again.",
+      });
     }
   };
 
   const handleDeletePasskey = async (id: string) => {
     try {
-      setIsMutatingPasskey(true);
-      const { error } = await authClient.passkey.deletePasskey({ id });
-      if (error) {
-        toast.error("Failed to delete passkey", { description: error.message });
-        return;
-      }
+      await deletePasskey.mutateAsync(id);
       toast.success("Passkey deleted");
-      await loadPasskeys();
-    } finally {
-      setIsMutatingPasskey(false);
+    } catch (error) {
+      toast.error("Failed to delete passkey", {
+        description: error instanceof Error ? error.message : "Please try again.",
+      });
     }
   };
 
