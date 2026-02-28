@@ -74,6 +74,19 @@ export function InputPromptDialog() {
     close();
   };
 
+  const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key !== "Enter") return;
+    e.preventDefault();
+
+    const input = inputRef.current;
+    if (!input || input.disabled) return;
+
+    const nextValue = input.value ?? "";
+    if (validate?.(nextValue)) return;
+
+    handleConfirm();
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleCancel()}>
       <DialogContent className="sm:max-w-md">
@@ -88,6 +101,7 @@ export function InputPromptDialog() {
           placeholder={placeholder}
           type={inputType}
           autoComplete={inputType === "password" ? "current-password" : "off"}
+          onKeyDown={handleInputKeyDown}
         />
         <DialogFooter>
           <Button type="button" variant="outline" onClick={handleCancel}>
