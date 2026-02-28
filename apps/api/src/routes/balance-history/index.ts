@@ -1,4 +1,4 @@
-import { and, eq, gte, inArray, lte } from "drizzle-orm";
+import { and, eq, gte, inArray, isNull, lte, max } from "drizzle-orm";
 import { Elysia, t } from "elysia";
 
 import { account } from "../../db/schema/accounts";
@@ -52,7 +52,7 @@ export const balanceHistoryRoutes = new Elysia({
       const userAccounts = await db
         .select({ id: account.id, type: account.type })
         .from(account)
-        .where(eq(account.user_id, user.id));
+        .where(and(eq(account.user_id, user.id), isNull(account.parent)));
 
       if (userAccounts.length === 0) {
         return { snapshots: [] };
@@ -72,7 +72,10 @@ export const balanceHistoryRoutes = new Elysia({
         .where(and(...conditions))
         .orderBy(balanceSnapshot.date);
 
-      const rates = await db.select().from(rate);
+      const [latestDate] = await db.select({ date: max(rate.date) }).from(rate);
+      const rates = latestDate?.date
+        ? await db.select().from(rate).where(eq(rate.date, latestDate.date))
+        : [];
       const rateMap = new Map(rates.map((r) => [r.currency_code, Number(r.rate)]));
 
       const userCurrency = user.currency ?? "EUR";
