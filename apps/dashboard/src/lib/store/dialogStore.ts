@@ -54,6 +54,7 @@ export type DialogState =
       confirmText?: string;
       cancelText?: string;
       inputType?: "text" | "password";
+      trim?: boolean;
       validate?: (value: string) => string | null;
       onConfirm: (value: string) => void;
       onCancel?: () => void;

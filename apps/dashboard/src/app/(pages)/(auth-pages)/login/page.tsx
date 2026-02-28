@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useCallback, useEffect, useState } from "react";
+import { Suspense, useState } from "react";
 import { toast } from "sonner";
 
 import { FormMessage, type Message } from "@/components/common/form-message";
@@ -17,8 +17,11 @@ import { authClient } from "@/lib/auth-client";
 function LoginForm() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const [, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [isSigningInWithPasskey, setIsSigningInWithPasskey] = useState(false);
+  const [requiresTwoFactor, setRequiresTwoFactor] = useState(false);
+  const [twoFactorCode, setTwoFactorCode] = useState("");
+  const [isVerifyingTwoFactor, setIsVerifyingTwoFactor] = useState(false);
 
   const message: Message = {
     message: searchParams.has("message") ? (searchParams.get("message") ?? "") : "",
@@ -38,7 +41,7 @@ function LoginForm() {
         return;
       }
 
-      const { error } = await authClient.signIn.email({
+      const { data, error } = await authClient.signIn.email({
         email,
         password,
       });
@@ -46,6 +49,11 @@ function LoginForm() {
         toast.error("Failed to sign in", {
           description: error.message || "Please try again.",
         });
+        return;
+      }
+
+      if (data && "twoFactorRedirect" in data && data.twoFactorRedirect) {
+        setRequiresTwoFactor(true);
         return;
       }
 
@@ -60,45 +68,57 @@ function LoginForm() {
     }
   };
 
-  const handlePasskeySignIn = useCallback(
-    async (autoFill = false) => {
-      try {
-        setIsSigningInWithPasskey(true);
-        const { data, error } = await authClient.signIn.passkey({ autoFill });
-        if (error) {
-          if (!autoFill) {
-            toast.error("Passkey sign-in failed", {
-              description: error.message || "Please try again.",
-            });
-          }
-          return;
-        }
-        if (data) {
-          const redirectUrl = searchParams.get("redirect") || "/";
-          router.push(redirectUrl);
-        }
-      } finally {
-        setIsSigningInWithPasskey(false);
+  const handleVerifyTwoFactor = async () => {
+    if (twoFactorCode.length < 6) {
+      toast.error("Invalid verification code", {
+        description: "Enter the 6-digit code from your authenticator app.",
+      });
+      return;
+    }
+    try {
+      setIsVerifyingTwoFactor(true);
+      const { error } = await authClient.twoFactor.verifyTotp({
+        code: twoFactorCode,
+      });
+      if (error) {
+        toast.error("Invalid verification code", {
+          description: error.message || "Please try again.",
+        });
+        return;
       }
-    },
-    [router, searchParams],
-  );
+      const redirectUrl = searchParams.get("redirect") || "/";
+      router.push(redirectUrl);
+    } catch {
+      toast.error("Failed to verify code", {
+        description: "Please try again.",
+      });
+    } finally {
+      setIsVerifyingTwoFactor(false);
+    }
+  };
 
-  useEffect(() => {
-    const credentialApi = window.PublicKeyCredential as
-      | (typeof PublicKeyCredential & {
-          isConditionalMediationAvailable?: () => Promise<boolean>;
-        })
-      | undefined;
-    if (!credentialApi?.isConditionalMediationAvailable) return;
-
-    credentialApi
-      .isConditionalMediationAvailable()
-      .then((isAvailable) => {
-        if (isAvailable) handlePasskeySignIn(true);
-      })
-      .catch(() => undefined);
-  }, [handlePasskeySignIn]);
+  const handlePasskeySignIn = async () => {
+    try {
+      setIsSigningInWithPasskey(true);
+      const { data, error } = await authClient.signIn.passkey({ autoFill: false });
+      if (error) {
+        toast.error("Passkey sign-in failed", {
+          description: error.message || "Please try again.",
+        });
+        return;
+      }
+      if (data) {
+        const redirectUrl = searchParams.get("redirect") || "/";
+        router.push(redirectUrl);
+      }
+    } catch (error) {
+      toast.error("Passkey sign-in failed", {
+        description: error instanceof Error ? error.message : "Please try again.",
+      });
+    } finally {
+      setIsSigningInWithPasskey(false);
+    }
+  };
 
   return (
     <div className="w-full max-w-sm">
@@ -118,47 +138,93 @@ function LoginForm() {
 
         <form className="mt-4 flex flex-col gap-4" action={handleSubmit}>
           <div className="grid gap-4">
-            <div className="grid w-full items-center gap-1.5">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                name="email"
-                type="email"
-                placeholder="john@doe.com"
-                autoComplete="username webauthn"
-                required
-              />
-            </div>
-
-            <div className="grid w-full items-center gap-1.5">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password">Password</Label>
-                <Link
-                  className="text-xs leading-[14px] text-muted-foreground hover:text-foreground"
-                  href="/forgot-password"
+            {requiresTwoFactor ? (
+              <div className="contents" key="two-factor-step">
+                <div className="grid w-full items-center gap-1.5">
+                  <Label htmlFor="twoFactorCode">Authenticator code</Label>
+                  <Input
+                    id="twoFactorCode"
+                    name="twoFactorCode"
+                    placeholder="123456"
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    value={twoFactorCode}
+                    onChange={(event) =>
+                      setTwoFactorCode(event.target.value.replace(/\D/g, "").slice(0, 6))
+                    }
+                    required
+                  />
+                </div>
+                <Button
+                  type="button"
+                  className="mt-2 w-full"
+                  onClick={handleVerifyTwoFactor}
+                  disabled={isVerifyingTwoFactor}
                 >
-                  Forgot Password?
-                </Link>
+                  {isVerifyingTwoFactor ? "Verifying..." : "Verify code"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  disabled={isVerifyingTwoFactor}
+                  onClick={() => {
+                    setRequiresTwoFactor(false);
+                    setTwoFactorCode("");
+                  }}
+                >
+                  Back to sign in
+                </Button>
               </div>
-              <PasswordInput
-                name="password"
-                placeholder="********"
-                required
-                autoComplete="current-password webauthn"
-              />
-            </div>
+            ) : (
+              <div className="contents" key="password-step">
+                <div className="grid w-full items-center gap-1.5">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    name="email"
+                    type="email"
+                    placeholder="john@doe.com"
+                    autoComplete="username webauthn"
+                    required
+                  />
+                </div>
 
-            <SubmitButton className="mt-2 w-full" pendingText="Signing In...">
-              Sign in
-            </SubmitButton>
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full"
-              onClick={() => handlePasskeySignIn()}
-              disabled={isSigningInWithPasskey}
-            >
-              {isSigningInWithPasskey ? "Waiting for passkey..." : "Sign in with passkey"}
-            </Button>
+                <div className="grid w-full items-center gap-1.5">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="password">Password</Label>
+                    <Link
+                      className="text-xs leading-[14px] text-muted-foreground hover:text-foreground"
+                      href="/forgot-password"
+                    >
+                      Forgot Password?
+                    </Link>
+                  </div>
+                  <PasswordInput
+                    name="password"
+                    placeholder="********"
+                    required
+                    autoComplete="current-password webauthn"
+                  />
+                </div>
+
+                <SubmitButton
+                  className="mt-2 w-full"
+                  pendingText="Signing In..."
+                  disabled={isLoading}
+                >
+                  Sign in
+                </SubmitButton>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={handlePasskeySignIn}
+                  disabled={isSigningInWithPasskey || isLoading}
+                >
+                  {isSigningInWithPasskey ? "Waiting for passkey..." : "Sign in with passkey"}
+                </Button>
+              </div>
+            )}
           </div>
 
           <FormMessage message={message} />

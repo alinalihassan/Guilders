@@ -56,6 +56,7 @@ type PromptConfig = {
   confirmText?: string;
   cancelText?: string;
   inputType?: "text" | "password";
+  trim?: boolean;
   validate?: (value: string) => string | null;
 };
 
@@ -121,6 +122,7 @@ export function SecurityForm() {
       description: "Enter your current password to disable 2FA.",
       placeholder: "Current password",
       inputType: "password",
+      trim: false,
       confirmText: "Disable 2FA",
       validate: (value) => (!value ? "Current password is required." : null),
     });

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,7 @@ interface InputPromptDialogProps {
   confirmText?: string;
   cancelText?: string;
   inputType?: "text" | "password";
+  trim?: boolean;
   validate?: (value: string) => string | null;
   onConfirm: (value: string) => void;
   onCancel?: () => void;
@@ -31,15 +32,13 @@ interface InputPromptDialogProps {
 export function InputPromptDialog() {
   const { isOpen, data, close } = useDialog("inputPrompt");
   const dialogData = data as InputPromptDialogProps | undefined;
-  const [value, setValue] = useState("");
   const resolvedRef = useRef(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (isOpen) {
-      resolvedRef.current = false;
-      setValue(dialogData?.defaultValue ?? "");
-    }
-  }, [isOpen, dialogData?.defaultValue]);
+    if (!isOpen) return;
+    resolvedRef.current = false;
+  }, [isOpen]);
 
   if (!isOpen || !dialogData) return null;
 
@@ -47,9 +46,11 @@ export function InputPromptDialog() {
     title = "Confirm",
     description,
     placeholder,
+    defaultValue,
     confirmText = "Confirm",
     cancelText = "Cancel",
     inputType = "text",
+    trim = true,
     validate,
     onConfirm,
     onCancel,
@@ -63,7 +64,8 @@ export function InputPromptDialog() {
   };
 
   const handleConfirm = () => {
-    const nextValue = value.trim();
+    const rawValue = inputRef.current?.value ?? "";
+    const nextValue = trim ? rawValue.trim() : rawValue;
     const validationError = validate?.(nextValue);
     if (validationError) {
       toast.error(validationError);
@@ -82,17 +84,20 @@ export function InputPromptDialog() {
           {description ? <DialogDescription>{description}</DialogDescription> : null}
         </DialogHeader>
         <Input
-          value={value}
-          onChange={(event) => setValue(event.target.value)}
+          key={`${title}-${defaultValue ?? ""}`}
+          ref={inputRef}
+          defaultValue={defaultValue ?? ""}
           placeholder={placeholder}
           type={inputType}
           autoComplete={inputType === "password" ? "current-password" : "off"}
         />
         <DialogFooter>
-          <Button variant="outline" onClick={handleCancel}>
+          <Button type="button" variant="outline" onClick={handleCancel}>
             {cancelText}
           </Button>
-          <Button onClick={handleConfirm}>{confirmText}</Button>
+          <Button type="button" onClick={handleConfirm}>
+            {confirmText}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
