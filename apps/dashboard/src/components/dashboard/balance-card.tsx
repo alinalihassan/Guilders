@@ -34,15 +34,6 @@ interface BalanceCardProps {
   className?: string;
 }
 
-const PERIOD_LABELS: Record<Period, string> = {
-  "1W": "1 week",
-  "1M": "1 month",
-  "3M": "3 months",
-  "6M": "6 months",
-  "1Y": "1 year",
-  ALL: "all time",
-};
-
 export function BalanceCard({
   title,
   value,
@@ -106,16 +97,16 @@ export function BalanceCard({
         <div className="flex flex-row items-center justify-between">
           <CardTitle className="text-lg font-normal">{title}</CardTitle>
           <Select value={period} onValueChange={(v) => setPeriod(v as Period)}>
-            <SelectTrigger className="w-[100px]">
+            <SelectTrigger className="w-[80px]">
               <SelectValue placeholder="Select time range" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="1W">1 Week</SelectItem>
-              <SelectItem value="1M">1 Month</SelectItem>
-              <SelectItem value="3M">3 Months</SelectItem>
-              <SelectItem value="6M">6 Months</SelectItem>
-              <SelectItem value="1Y">1 Year</SelectItem>
-              <SelectItem value="ALL">All Time</SelectItem>
+              <SelectItem value="1W">1W</SelectItem>
+              <SelectItem value="1M">1M</SelectItem>
+              <SelectItem value="3M">3M</SelectItem>
+              <SelectItem value="6M">6M</SelectItem>
+              <SelectItem value="1Y">1Y</SelectItem>
+              <SelectItem value="ALL">ALL</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -125,9 +116,7 @@ export function BalanceCard({
             format={{ style: "currency", currency }}
             className="-mb-0.5 -mt-2.5 font-mono text-4xl font-normal tracking-tight"
           />
-          {displayChange && (
-            <ChangeIndicator change={displayChange} periodLabel={PERIOD_LABELS[period]} />
-          )}
+          {displayChange && <ChangeIndicator change={displayChange} periodLabel={period} />}
         </div>
       </CardHeader>
       <CardContent className="pb-2">
