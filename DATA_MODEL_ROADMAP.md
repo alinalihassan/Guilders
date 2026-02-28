@@ -6,7 +6,7 @@ Improvements inspired by Maybe's data model, plus additional backend/DB features
 
 ### High Priority
 
-- [ ] **Historical Balance Snapshots**
+- [x] **Historical Balance Snapshots**
       A `balance` table storing daily balance snapshots per account (date, balance, currency). Enables net worth over time charts, trend analysis, and performance tracking. Currently we only store a single `value` on the account.
 
 - [x] **Categories as a First-Class Entity**
@@ -18,7 +18,7 @@ Improvements inspired by Maybe's data model, plus additional backend/DB features
 - [x] **Locked Attributes**
       Add `locked_attributes jsonb` to `account` and `transaction` tables. Tracks which fields are provider-managed vs user-edited, preventing sync from overwriting manual edits. Essential for a good synced-account experience.
 
-- [ ] **Historical Exchange Rates**
+- [x] **Historical Exchange Rates**
       Extend the `rate` table (or create `exchange_rate`) to include a `date` dimension: `from_currency`, `to_currency`, `rate`, `date`. Required for accurate multi-currency net worth history. The current single-rate-per-currency model is only correct for "right now".
 
 - [ ] **Transaction Enrichment**

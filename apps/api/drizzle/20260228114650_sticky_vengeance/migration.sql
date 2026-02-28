@@ -13,6 +13,7 @@ CREATE TABLE "account" (
 	"image" varchar(255),
 	"institution_connection_id" integer,
 	"investable" "investable" DEFAULT 'investable_cash'::"investable" NOT NULL,
+	"locked_attributes" jsonb DEFAULT '{}' NOT NULL,
 	"name" varchar(100) NOT NULL,
 	"notes" text DEFAULT '' NOT NULL,
 	"parent" integer,
@@ -50,6 +51,81 @@ CREATE TABLE "apikey" (
 	"updated_at" timestamp NOT NULL,
 	"permissions" text,
 	"metadata" text
+);
+--> statement-breakpoint
+CREATE TABLE "jwks" (
+	"id" text PRIMARY KEY,
+	"public_key" text NOT NULL,
+	"private_key" text NOT NULL,
+	"created_at" timestamp NOT NULL,
+	"expires_at" timestamp
+);
+--> statement-breakpoint
+CREATE TABLE "oauth_access_token" (
+	"id" text PRIMARY KEY,
+	"token" text UNIQUE,
+	"client_id" text NOT NULL,
+	"session_id" text,
+	"user_id" text,
+	"reference_id" text,
+	"refresh_id" text,
+	"expires_at" timestamp,
+	"created_at" timestamp,
+	"scopes" text[] NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE "oauth_client" (
+	"id" text PRIMARY KEY,
+	"client_id" text NOT NULL UNIQUE,
+	"client_secret" text,
+	"disabled" boolean DEFAULT false,
+	"skip_consent" boolean,
+	"enable_end_session" boolean,
+	"scopes" text[],
+	"user_id" text,
+	"created_at" timestamp,
+	"updated_at" timestamp,
+	"name" text,
+	"uri" text,
+	"icon" text,
+	"contacts" text[],
+	"tos" text,
+	"policy" text,
+	"software_id" text,
+	"software_version" text,
+	"software_statement" text,
+	"redirect_uris" text[] NOT NULL,
+	"post_logout_redirect_uris" text[],
+	"token_endpoint_auth_method" text,
+	"grant_types" text[],
+	"response_types" text[],
+	"public" boolean,
+	"type" text,
+	"reference_id" text,
+	"metadata" jsonb
+);
+--> statement-breakpoint
+CREATE TABLE "oauth_consent" (
+	"id" text PRIMARY KEY,
+	"client_id" text NOT NULL,
+	"user_id" text,
+	"reference_id" text,
+	"scopes" text[] NOT NULL,
+	"created_at" timestamp,
+	"updated_at" timestamp
+);
+--> statement-breakpoint
+CREATE TABLE "oauth_refresh_token" (
+	"id" text PRIMARY KEY,
+	"token" text NOT NULL,
+	"client_id" text NOT NULL,
+	"session_id" text,
+	"user_id" text NOT NULL,
+	"reference_id" text,
+	"expires_at" timestamp,
+	"created_at" timestamp,
+	"revoked" timestamp,
+	"scopes" text[] NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "passkey" (
@@ -90,6 +166,7 @@ CREATE TABLE "user" (
 	"email" text NOT NULL UNIQUE,
 	"email_verified" boolean DEFAULT false NOT NULL,
 	"image" text,
+	"currency" varchar(3) DEFAULT 'EUR' NOT NULL,
 	"created_at" timestamp NOT NULL,
 	"updated_at" timestamp NOT NULL,
 	"two_factor_enabled" boolean DEFAULT false
@@ -118,6 +195,15 @@ CREATE TABLE "verification" (
 	"expires_at" timestamp NOT NULL,
 	"created_at" timestamp NOT NULL,
 	"updated_at" timestamp NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE "balance_snapshot" (
+	"id" serial PRIMARY KEY,
+	"account_id" integer NOT NULL,
+	"date" date NOT NULL,
+	"balance" numeric(19,4) NOT NULL,
+	"currency" varchar(3) NOT NULL,
+	"created_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "category" (
@@ -191,8 +277,10 @@ CREATE TABLE "provider" (
 );
 --> statement-breakpoint
 CREATE TABLE "rate" (
-	"currency_code" varchar(3) PRIMARY KEY,
-	"rate" numeric(19,8) NOT NULL
+	"currency_code" varchar(3),
+	"date" date,
+	"rate" numeric(19,8) NOT NULL,
+	CONSTRAINT "rate_pkey" PRIMARY KEY("currency_code","date")
 );
 --> statement-breakpoint
 CREATE TABLE "transaction" (
@@ -205,13 +293,9 @@ CREATE TABLE "transaction" (
 	"description" text NOT NULL,
 	"documents" varchar(255)[],
 	"id" serial PRIMARY KEY,
+	"locked_attributes" jsonb DEFAULT '{}' NOT NULL,
 	"provider_transaction_id" varchar(255),
 	"updated_at" timestamp DEFAULT now() NOT NULL
-);
---> statement-breakpoint
-CREATE TABLE "user_setting" (
-	"currency" varchar(3) DEFAULT 'EUR' NOT NULL,
-	"user_id" varchar(255) PRIMARY KEY
 );
 --> statement-breakpoint
 CREATE INDEX "account_id_idx" ON "account" ("id");--> statement-breakpoint
@@ -228,6 +312,9 @@ CREATE INDEX "twoFactor_secret_idx" ON "two_factor" ("secret");--> statement-bre
 CREATE INDEX "twoFactor_userId_idx" ON "two_factor" ("user_id");--> statement-breakpoint
 CREATE INDEX "user_account_userId_idx" ON "user_account" ("user_id");--> statement-breakpoint
 CREATE INDEX "verification_identifier_idx" ON "verification" ("identifier");--> statement-breakpoint
+CREATE INDEX "balance_snapshot_account_idx" ON "balance_snapshot" ("account_id");--> statement-breakpoint
+CREATE INDEX "balance_snapshot_date_idx" ON "balance_snapshot" ("date");--> statement-breakpoint
+CREATE UNIQUE INDEX "balance_snapshot_account_date_idx" ON "balance_snapshot" ("account_id","date");--> statement-breakpoint
 CREATE INDEX "category_id_idx" ON "category" ("id");--> statement-breakpoint
 CREATE INDEX "category_user_idx" ON "category" ("user_id");--> statement-breakpoint
 CREATE INDEX "category_parent_idx" ON "category" ("parent_id");--> statement-breakpoint
@@ -249,21 +336,32 @@ CREATE INDEX "provider_connection_user_idx" ON "provider_connection" ("user_id")
 CREATE INDEX "provider_connection_provider_idx" ON "provider_connection" ("provider_id");--> statement-breakpoint
 CREATE INDEX "provider_id_idx" ON "provider" ("id");--> statement-breakpoint
 CREATE INDEX "rate_currency_idx" ON "rate" ("currency_code");--> statement-breakpoint
+CREATE INDEX "rate_date_idx" ON "rate" ("date");--> statement-breakpoint
 CREATE INDEX "transaction_id_idx" ON "transaction" ("id");--> statement-breakpoint
 CREATE INDEX "transaction_account_idx" ON "transaction" ("account_id");--> statement-breakpoint
 CREATE INDEX "transaction_category_idx" ON "transaction" ("category_id");--> statement-breakpoint
 CREATE INDEX "transaction_currency_idx" ON "transaction" ("currency");--> statement-breakpoint
 CREATE INDEX "transaction_date_idx" ON "transaction" ("date");--> statement-breakpoint
-CREATE INDEX "user_setting_user_idx" ON "user_setting" ("user_id");--> statement-breakpoint
-CREATE INDEX "user_setting_currency_idx" ON "user_setting" ("currency");--> statement-breakpoint
 ALTER TABLE "account" ADD CONSTRAINT "account_currency_currency_code_fkey" FOREIGN KEY ("currency") REFERENCES "currency"("code");--> statement-breakpoint
 ALTER TABLE "account" ADD CONSTRAINT "account_ok0j2ud8i0Kr_fkey" FOREIGN KEY ("institution_connection_id") REFERENCES "institution_connection"("id") ON DELETE CASCADE ON UPDATE CASCADE;--> statement-breakpoint
 ALTER TABLE "account" ADD CONSTRAINT "account_user_id_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;--> statement-breakpoint
 ALTER TABLE "apikey" ADD CONSTRAINT "apikey_user_id_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE;--> statement-breakpoint
+ALTER TABLE "oauth_access_token" ADD CONSTRAINT "oauth_access_token_client_id_oauth_client_client_id_fkey" FOREIGN KEY ("client_id") REFERENCES "oauth_client"("client_id") ON DELETE CASCADE;--> statement-breakpoint
+ALTER TABLE "oauth_access_token" ADD CONSTRAINT "oauth_access_token_session_id_session_id_fkey" FOREIGN KEY ("session_id") REFERENCES "session"("id") ON DELETE SET NULL;--> statement-breakpoint
+ALTER TABLE "oauth_access_token" ADD CONSTRAINT "oauth_access_token_user_id_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE;--> statement-breakpoint
+ALTER TABLE "oauth_access_token" ADD CONSTRAINT "oauth_access_token_refresh_id_oauth_refresh_token_id_fkey" FOREIGN KEY ("refresh_id") REFERENCES "oauth_refresh_token"("id") ON DELETE CASCADE;--> statement-breakpoint
+ALTER TABLE "oauth_client" ADD CONSTRAINT "oauth_client_user_id_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE;--> statement-breakpoint
+ALTER TABLE "oauth_consent" ADD CONSTRAINT "oauth_consent_client_id_oauth_client_client_id_fkey" FOREIGN KEY ("client_id") REFERENCES "oauth_client"("client_id") ON DELETE CASCADE;--> statement-breakpoint
+ALTER TABLE "oauth_consent" ADD CONSTRAINT "oauth_consent_user_id_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE;--> statement-breakpoint
+ALTER TABLE "oauth_refresh_token" ADD CONSTRAINT "oauth_refresh_token_client_id_oauth_client_client_id_fkey" FOREIGN KEY ("client_id") REFERENCES "oauth_client"("client_id") ON DELETE CASCADE;--> statement-breakpoint
+ALTER TABLE "oauth_refresh_token" ADD CONSTRAINT "oauth_refresh_token_session_id_session_id_fkey" FOREIGN KEY ("session_id") REFERENCES "session"("id") ON DELETE SET NULL;--> statement-breakpoint
+ALTER TABLE "oauth_refresh_token" ADD CONSTRAINT "oauth_refresh_token_user_id_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE;--> statement-breakpoint
 ALTER TABLE "passkey" ADD CONSTRAINT "passkey_user_id_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE;--> statement-breakpoint
 ALTER TABLE "session" ADD CONSTRAINT "session_user_id_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE;--> statement-breakpoint
 ALTER TABLE "two_factor" ADD CONSTRAINT "two_factor_user_id_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE;--> statement-breakpoint
 ALTER TABLE "user_account" ADD CONSTRAINT "user_account_user_id_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE;--> statement-breakpoint
+ALTER TABLE "balance_snapshot" ADD CONSTRAINT "balance_snapshot_account_id_account_id_fkey" FOREIGN KEY ("account_id") REFERENCES "account"("id") ON DELETE CASCADE ON UPDATE CASCADE;--> statement-breakpoint
+ALTER TABLE "balance_snapshot" ADD CONSTRAINT "balance_snapshot_currency_currency_code_fkey" FOREIGN KEY ("currency") REFERENCES "currency"("code");--> statement-breakpoint
 ALTER TABLE "category" ADD CONSTRAINT "category_user_id_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;--> statement-breakpoint
 ALTER TABLE "country" ADD CONSTRAINT "country_currency_code_currency_code_fkey" FOREIGN KEY ("currency_code") REFERENCES "currency"("code");--> statement-breakpoint
 ALTER TABLE "document" ADD CONSTRAINT "document_user_id_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;--> statement-breakpoint
@@ -276,6 +374,4 @@ ALTER TABLE "provider_connection" ADD CONSTRAINT "provider_connection_user_id_us
 ALTER TABLE "rate" ADD CONSTRAINT "rate_currency_code_currency_code_fkey" FOREIGN KEY ("currency_code") REFERENCES "currency"("code");--> statement-breakpoint
 ALTER TABLE "transaction" ADD CONSTRAINT "transaction_account_id_account_id_fkey" FOREIGN KEY ("account_id") REFERENCES "account"("id") ON DELETE CASCADE ON UPDATE CASCADE;--> statement-breakpoint
 ALTER TABLE "transaction" ADD CONSTRAINT "transaction_category_id_category_id_fkey" FOREIGN KEY ("category_id") REFERENCES "category"("id") ON DELETE RESTRICT ON UPDATE CASCADE;--> statement-breakpoint
-ALTER TABLE "transaction" ADD CONSTRAINT "transaction_currency_currency_code_fkey" FOREIGN KEY ("currency") REFERENCES "currency"("code");--> statement-breakpoint
-ALTER TABLE "user_setting" ADD CONSTRAINT "user_setting_currency_currency_code_fkey" FOREIGN KEY ("currency") REFERENCES "currency"("code");--> statement-breakpoint
-ALTER TABLE "user_setting" ADD CONSTRAINT "user_setting_user_id_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "transaction" ADD CONSTRAINT "transaction_currency_currency_code_fkey" FOREIGN KEY ("currency") REFERENCES "currency"("code");

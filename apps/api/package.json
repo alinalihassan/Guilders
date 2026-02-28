@@ -16,6 +16,7 @@
     "db:generate": "drizzle-kit generate --config drizzle.config.ts",
     "db:migrate": "drizzle-kit migrate --config drizzle.config.ts",
     "db:studio": "drizzle-kit studio",
+    "db:init": "bun --env-file=.env scripts/init-db.ts",
     "__ngrok-command": "ngrok http 3000 --authtoken=$NGROK_AUTHTOKEN --url=${NGROK_URL}"
   },
   "dependencies": {
