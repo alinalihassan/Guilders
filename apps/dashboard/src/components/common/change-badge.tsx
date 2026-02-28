@@ -1,5 +1,5 @@
 import NumberFlow from "@number-flow/react";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { Minus, TrendingDown, TrendingUp } from "lucide-react";
 
 export function ChangeBadge({
   change,
@@ -8,36 +8,37 @@ export function ChangeBadge({
   change: { value: number; percentage: number; currency: string };
   showAbsoluteChange?: boolean;
 }) {
-  const isPositive = change.value >= 0;
+  const isPositive = change.value > 0;
+  const isZero = change.value === 0;
   const absValue = Math.abs(change.value);
   const absPercentage = Math.abs(Number.isFinite(change.percentage) ? change.percentage : 0);
 
+  const colorClass = isZero
+    ? "bg-muted text-muted-foreground"
+    : isPositive
+      ? "bg-green-500/10 text-green-700 dark:text-green-400"
+      : "bg-red-500/10 text-red-700 dark:text-red-400";
+
+  const Icon = isZero ? Minus : isPositive ? TrendingUp : TrendingDown;
+
   return (
     <span
-      className={`text-xs ${showAbsoluteChange === false ? "w-[84px]" : ""} ${
-        isPositive
-          ? "bg-green-100 text-green-700 dark:bg-[#182f28] dark:text-[#2ff795]"
-          : "bg-red-100 text-red-700 dark:bg-[#2d1e1e] dark:text-[#ff4d4d]"
-      } ml-auto inline-flex items-center rounded-md p-2 font-mono`}
+      className={`ml-auto inline-flex items-center gap-1 rounded-full px-2 py-1 font-mono text-xs ${colorClass}`}
     >
-      {isPositive ? (
-        <ChevronUp className="mr-0.5" size={16} />
-      ) : (
-        <ChevronDown className="mr-0.5" size={16} />
-      )}
+      <Icon size={12} strokeWidth={2.5} />
       {showAbsoluteChange && (
         <>
           <NumberFlow
             value={absValue}
-            format={{
-              style: "currency",
-              currency: change.currency,
-            }}
+            format={{ style: "currency", currency: change.currency }}
           />
-          {" ("}
+          <span className="text-muted-foreground">/</span>
         </>
       )}
-      {absPercentage.toFixed(2)}%{showAbsoluteChange && ")"}
+      <NumberFlow
+        value={absPercentage / 100}
+        format={{ style: "percent", minimumFractionDigits: 1, maximumFractionDigits: 1 }}
+      />
     </span>
   );
 }
