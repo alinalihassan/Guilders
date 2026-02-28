@@ -2,6 +2,7 @@
 
 import type { Account } from "@guilders/api/types";
 import NumberFlow from "@number-flow/react";
+import { useQueries } from "@tanstack/react-query";
 import { Area, AreaChart, ResponsiveContainer } from "recharts";
 
 import { ChangeIndicator } from "@/components/common/change-indicator";
@@ -12,6 +13,8 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
+import { api, edenError } from "@/lib/api";
+import { balanceHistoryKey, periodToDateRange } from "@/lib/queries/useBalanceHistory";
 import { useRates } from "@/lib/queries/useRates";
 import { useUser } from "@/lib/queries/useUser";
 import { convertToUserCurrency } from "@/lib/utils/financial";
@@ -22,16 +25,6 @@ interface CompactBalanceCardProps {
   invertColors?: boolean;
   className?: string;
 }
-
-// Mock data for the chart (can be replaced with real data later)
-const chartData = [
-  { month: "Jan", value: 100 },
-  { month: "Feb", value: 120 },
-  { month: "Mar", value: 150 },
-  { month: "Apr", value: 300 },
-  { month: "May", value: 280 },
-  { month: "Jun", value: 350 },
-];
 
 const chartConfig = {
   value: {
@@ -50,25 +43,73 @@ export function CompactBalanceCard({
   const { data: rates } = useRates();
   const userCurrency = user?.currency || "EUR";
 
-  // Calculate total value and cost in user's currency
   const totalValue = accounts.reduce(
     (sum, account) =>
       sum + convertToUserCurrency(account.value, account.currency, rates, userCurrency),
     0,
   );
 
-  const totalCost = accounts.reduce(
-    (sum, account) =>
-      sum + convertToUserCurrency(account.cost || 0, account.currency, rates, userCurrency),
-    0,
-  );
+  const range = periodToDateRange("1M");
 
-  // Calculate change
-  const change = {
-    value: totalCost ? totalValue - totalCost : 0,
-    percentage: totalCost ? (totalValue - totalCost) / totalCost : 0,
-    currency: userCurrency,
-  };
+  const historyQueries = useQueries({
+    queries: accounts.map((account) => ({
+      queryKey: balanceHistoryKey(account.id, "1M"),
+      queryFn: async () => {
+        const { data, error } = await api
+          .account({ id: account.id })
+          ["balance-history"].get({ query: range });
+        if (error) throw new Error(edenError(error));
+        return {
+          accountId: account.id,
+          currency: account.currency,
+          snapshots: (data as { snapshots: Array<{ date: string; balance: string }> }).snapshots,
+        };
+      },
+    })),
+  });
+
+  const allLoaded = historyQueries.every((q) => q.isSuccess);
+
+  const chartData = (() => {
+    if (!allLoaded) return [];
+
+    const dateMap = new Map<string, number>();
+    for (const query of historyQueries) {
+      if (!query.data) continue;
+      const { currency: accountCurrency, snapshots } = query.data;
+      for (const snap of snapshots) {
+        const converted = convertToUserCurrency(snap.balance, accountCurrency, rates, userCurrency);
+        dateMap.set(snap.date, (dateMap.get(snap.date) ?? 0) + converted);
+      }
+    }
+
+    return Array.from(dateMap.entries())
+      .toSorted(([a], [b]) => a.localeCompare(b))
+      .map(([date, value]) => ({ date, value }));
+  })();
+
+  const change = (() => {
+    if (chartData.length >= 2) {
+      const first = chartData[0]!.value;
+      const last = chartData[chartData.length - 1]!.value;
+      const diff = last - first;
+      return {
+        value: diff,
+        percentage: first === 0 ? 0 : diff / Math.abs(first),
+        currency: userCurrency,
+      };
+    }
+    const totalCost = accounts.reduce(
+      (sum, account) =>
+        sum + convertToUserCurrency(account.cost || 0, account.currency, rates, userCurrency),
+      0,
+    );
+    return {
+      value: totalCost ? totalValue - totalCost : 0,
+      percentage: totalCost ? (totalValue - totalCost) / totalCost : 0,
+      currency: userCurrency,
+    };
+  })();
 
   return (
     <Card className={className}>
@@ -90,7 +131,7 @@ export function CompactBalanceCard({
           {/* @ts-ignore */}
           <ChartContainer className="h-[80px]" config={chartConfig}>
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={chartData}>
+              <AreaChart data={chartData.length > 0 ? chartData : [{ date: "", value: 0 }]}>
                 <defs>
                   <linearGradient id="fillValue" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="var(--color-value)" stopOpacity={0.8} />

@@ -1,3 +1,4 @@
+import { snapshotBalances } from "./snapshot-balances";
 import { syncExchangeRates } from "./sync-exchange-rates";
 import { syncInstitutions } from "./sync-institutions";
 
@@ -8,6 +9,9 @@ export async function handleScheduled(event: ScheduledEvent): Promise<void> {
       break;
     case "0 0 * * *":
       await syncInstitutions();
+      break;
+    case "0 23 * * *":
+      await snapshotBalances();
       break;
   }
 }

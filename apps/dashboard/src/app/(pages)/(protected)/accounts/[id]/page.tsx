@@ -171,6 +171,7 @@ export default function AccountPage({ params }: { params: Promise<{ id: string }
                 value={accountValue}
                 currency={account.currency}
                 change={change}
+                accountId={account.id}
                 className="h-full"
               />
             </div>

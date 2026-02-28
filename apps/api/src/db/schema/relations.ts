@@ -1,6 +1,7 @@
 import { defineRelations } from "drizzle-orm";
 
 import { account } from "./accounts";
+import { balanceSnapshot } from "./balance-snapshots";
 import {
   apikey,
   oauthAccessToken,
@@ -38,6 +39,7 @@ const schema = {
   oauthConsent,
   category,
   account,
+  balanceSnapshot,
   country,
   currency,
   institutionConnection,
@@ -207,6 +209,21 @@ export const relations = defineRelations(schema, (r) => ({
     transactions: r.many.transaction({
       from: r.account.id,
       to: r.transaction.account_id,
+    }),
+    balanceSnapshots: r.many.balanceSnapshot({
+      from: r.account.id,
+      to: r.balanceSnapshot.account_id,
+    }),
+  },
+  balanceSnapshot: {
+    account: r.one.account({
+      from: r.balanceSnapshot.account_id,
+      to: r.account.id,
+    }),
+    currencyRel: r.one.currency({
+      from: r.balanceSnapshot.currency,
+      to: r.currency.code,
+      alias: "currencyRel",
     }),
   },
   category: {
