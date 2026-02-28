@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useId, useMemo } from "react";
+import { useCallback, useId, useMemo, useState } from "react";
 import { Area, AreaChart, Tooltip, XAxis, YAxis } from "recharts";
 
 import { type ChartConfig, ChartContainer } from "@/components/ui/chart";
@@ -169,6 +169,10 @@ export function BalanceChart({
     return undefined;
   }, [effectiveData]);
 
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const isHovering = activeIndex !== null;
+  const hoverOffset = activeIndex !== null ? activeIndex / (effectiveData.length - 1) : 1;
+
   const renderTooltip = useCallback(
     // oxlint-disable-next-line @typescript-eslint/no-explicit-any
     (props: any) => (
@@ -209,15 +213,34 @@ export function BalanceChart({
     );
   }
 
+  const mutedLineColor = "#d1d5db";
+
   return (
     // @ts-ignore
     <ChartContainer className={className ?? "max-h-[216px] w-full"} config={chartConfig}>
-      <AreaChart data={effectiveData} margin={{ top: 8, right: 0, bottom: 0, left: 0 }}>
+      <AreaChart
+        data={effectiveData}
+        margin={{ top: 8, right: 12, bottom: 0, left: 12 }}
+        onMouseMove={(state) => {
+          if (state?.activeTooltipIndex != null) setActiveIndex(state.activeTooltipIndex);
+        }}
+        onMouseLeave={() => setActiveIndex(null)}
+      >
         <defs>
-          <linearGradient id={`grad-${chartId}`} x1="0" y1="0" x2="0" y2="1">
+          {/* Vertical fill gradient */}
+          <linearGradient id={`fill-${chartId}`} x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="var(--color-value)" stopOpacity={0.12} />
-            <stop offset="100%" stopColor="var(--color-value)" stopOpacity={0} />
+            <stop offset="40%" stopColor="var(--color-value)" stopOpacity={0} />
           </linearGradient>
+          {/* Hover stroke — trend color left, muted gray right */}
+          <linearGradient id={`stroke-split-${chartId}`} x1="0" y1="0" x2="1" y2="0">
+            <stop offset={hoverOffset} stopColor="var(--color-value)" />
+            <stop offset={hoverOffset} stopColor={mutedLineColor} />
+          </linearGradient>
+          {/* Clip the fill to only show left of the hover point */}
+          <clipPath id={`clip-left-${chartId}`} clipPathUnits="objectBoundingBox">
+            <rect x="0" y="0" width={hoverOffset} height="1" />
+          </clipPath>
         </defs>
         <YAxis domain={yDomain} hide />
         <XAxis
@@ -241,11 +264,27 @@ export function BalanceChart({
             isAnimationActive={false}
           />
         )}
+        {/* Clipped fill area — shows green gradient only left of hover point */}
+        {hasData && isHovering && (
+          <Area
+            dataKey="value"
+            type="monotone"
+            fill={`url(#fill-${chartId})`}
+            stroke="none"
+            strokeWidth={0}
+            dot={false}
+            activeDot={false}
+            isAnimationActive={false}
+            clipPath={`url(#clip-left-${chartId})`}
+          />
+        )}
         <Area
           dataKey="value"
           type="monotone"
-          fill={hasData ? `url(#grad-${chartId})` : "transparent"}
-          stroke="var(--color-value)"
+          fill={hasData && !isHovering ? `url(#fill-${chartId})` : "transparent"}
+          stroke={
+            isHovering ? `url(#stroke-split-${chartId})` : "var(--color-value)"
+          }
           strokeWidth={2}
           strokeLinejoin="round"
           strokeLinecap="round"
