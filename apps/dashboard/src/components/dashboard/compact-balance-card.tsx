@@ -67,7 +67,8 @@ export function CompactBalanceCard({
       const { currency: accountCurrency, snapshots } = query.data;
       for (const snap of snapshots) {
         const converted = convertToUserCurrency(snap.balance, accountCurrency, rates, userCurrency);
-        dateMap.set(snap.date, (dateMap.get(snap.date) ?? 0) + converted);
+        const dateKey = typeof snap.date === "string" ? snap.date : String(snap.date);
+        dateMap.set(dateKey, (dateMap.get(dateKey) ?? 0) + converted);
       }
     }
 
@@ -95,6 +96,16 @@ export function CompactBalanceCard({
           : "var(--color-red-500, #ef4444)",
       };
     }
+
+    // Only use cost-vs-value fallback when queries have finished and returned no data.
+    // While still loading, show neutral 0 change to avoid a jarring flip.
+    if (!allLoaded) {
+      return {
+        change: { value: 0, percentage: 0, currency: userCurrency },
+        trendColor: "var(--color-green-500, #22c55e)",
+      };
+    }
+
     const totalCost = accounts.reduce(
       (sum, account) =>
         sum + convertToUserCurrency(account.cost || 0, account.currency, rates, userCurrency),
@@ -112,7 +123,7 @@ export function CompactBalanceCard({
         ? "var(--color-green-500, #22c55e)"
         : "var(--color-red-500, #ef4444)",
     };
-  }, [chartData, hasData, accounts, rates, userCurrency, totalValue, invertColors]);
+  }, [chartData, hasData, allLoaded, accounts, rates, userCurrency, totalValue, invertColors]);
 
   return (
     <Card className={className}>

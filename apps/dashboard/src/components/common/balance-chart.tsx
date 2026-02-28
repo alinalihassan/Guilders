@@ -95,7 +95,7 @@ function computeYDomain(data: BalanceChartData[]): [number, number] {
   const max = Math.max(...values);
 
   if (min === max) {
-    const padding = max === 0 ? 100 : Math.abs(max) * 0.5;
+    const padding = max === 0 ? 100 : Math.abs(max) * 0.1;
     return [min - padding, max + padding];
   }
 
@@ -197,6 +197,7 @@ export function BalanceChart({
               <stop offset="100%" stopColor="var(--color-value)" stopOpacity={0} />
             </linearGradient>
           </defs>
+          <YAxis domain={yDomain} hide />
           <Area
             dataKey="value"
             type="monotone"

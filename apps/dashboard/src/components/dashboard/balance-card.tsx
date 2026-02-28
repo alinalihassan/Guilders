@@ -62,16 +62,18 @@ export function BalanceCard({
   const isLoading = historyQuery.isLoading;
 
   const chartData = useMemo(
-    () => snapshots?.map((s) => ({ date: s.date, value: Number(s.balance) })) ?? [],
+    () =>
+      Array.isArray(snapshots)
+        ? snapshots.map((s) => ({ date: s.date, value: Number(s.balance) }))
+        : [],
     [snapshots],
   );
 
   const hasData = chartData.length >= 2;
 
-  const { displayValue, displayChange, trendColor } = useMemo(() => {
+  const { displayChange, trendColor } = useMemo(() => {
     if (!hasData) {
       return {
-        displayValue: value,
         displayChange: externalChange,
         trendColor: "var(--color-gray-400, #9ca3af)",
       };
@@ -91,11 +93,10 @@ export function BalanceCard({
           ? "var(--color-red-500, #ef4444)"
           : "var(--color-gray-400, #9ca3af)";
     return {
-      displayValue: last,
       displayChange: change,
       trendColor: color,
     };
-  }, [chartData, hasData, value, currency, externalChange]);
+  }, [chartData, hasData, currency, externalChange]);
 
   const firstValue = hasData ? chartData[0]!.value : value;
 
@@ -120,7 +121,7 @@ export function BalanceCard({
         </div>
         <div className="flex flex-col">
           <NumberFlow
-            value={displayValue}
+            value={value}
             format={{ style: "currency", currency }}
             className="-mb-0.5 -mt-2.5 font-mono text-4xl font-normal tracking-tight"
           />
