@@ -1,5 +1,6 @@
 "use client";
 
+import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import QRCode from "react-qr-code";
 import { toast } from "sonner";
@@ -15,12 +16,14 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useDialog } from "@/hooks/useDialog";
+import { mfaQueryKey } from "@/lib/queries/useSecurity";
 import { useSecurityStore } from "@/lib/store/securityStore";
 
 export function MFADialog() {
   const { isOpen, close } = useDialog("mfa");
-  const { isLoadingMFA, setup, checkMFAStatus, startMFASetup, verifyMFASetup, clearMFASetup } =
+  const { isLoadingMFA, setup, startMFASetup, verifyMFASetup, clearMFASetup } =
     useSecurityStore();
+  const queryClient = useQueryClient();
   const [password, setPassword] = useState("");
   const [code, setCode] = useState("");
   const [copied, setCopied] = useState(false);
@@ -49,7 +52,7 @@ export function MFADialog() {
     if (!code) return;
     try {
       await verifyMFASetup(code);
-      await checkMFAStatus();
+      queryClient.invalidateQueries({ queryKey: mfaQueryKey });
       setIsVerified(true);
       toast.success("2FA enabled successfully.");
     } catch (error) {
