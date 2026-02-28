@@ -1,9 +1,9 @@
 // @ts-nocheck
 // oxlint-disable typescript/no-explicit-any
-import { auth } from "./auth";
+import { getAuth } from "./auth";
 
-let _schema: ReturnType<typeof auth.api.generateOpenAPISchema>;
-const getSchema = async () => (_schema ??= auth.api.generateOpenAPISchema());
+let _schema: ReturnType<ReturnType<typeof getAuth>["api"]["generateOpenAPISchema"]>;
+const getSchema = async () => (_schema ??= getAuth().api.generateOpenAPISchema());
 
 export const AuthOpenAPI = {
   getPaths: (prefix = "/api/auth") =>

@@ -5,7 +5,7 @@ import {
 import { Elysia } from "elysia";
 
 import { createAuth } from "../../lib/auth";
-import { oauthResourceClient } from "../../lib/oauth-resource-client";
+import { getOauthResourceClient } from "../../lib/oauth-resource-client";
 
 const getAuthHandler = () => oauthProviderAuthServerMetadata(createAuth());
 const getOpenIdHandler = () => oauthProviderOpenIdConfigMetadata(createAuth());
@@ -23,7 +23,7 @@ const withCors = (response: Response) => {
 
 const getProtectedResourceResponse = async () => {
   const apiOrigin = process.env.DASHBOARD_URL ?? "http://localhost:3000";
-  const metadata = await oauthResourceClient.getProtectedResourceMetadata({
+  const metadata = await getOauthResourceClient().getProtectedResourceMetadata({
     resource: `${apiOrigin}/mcp`,
     authorization_servers: [apiOrigin],
   });
