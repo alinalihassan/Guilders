@@ -23,6 +23,8 @@ function LoginForm() {
   const [twoFactorMethod, setTwoFactorMethod] = useState<"totp" | "backup">("totp");
   const [twoFactorCode, setTwoFactorCode] = useState("");
   const [isVerifyingTwoFactor, setIsVerifyingTwoFactor] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   const message: Message = {
     message: searchParams.has("message") ? (searchParams.get("message") ?? "") : "",
@@ -33,18 +35,21 @@ function LoginForm() {
   const handleSubmit = async (formData: FormData) => {
     try {
       setIsLoading(true);
-      const email = formData.get("email")?.toString();
-      const password = formData.get("password")?.toString();
-      if (!email || !password) {
+      const submittedEmail = formData.get("email")?.toString() ?? email;
+      const submittedPassword = formData.get("password")?.toString() ?? password;
+      const normalizedEmail = submittedEmail.trim();
+      if (!normalizedEmail || !submittedPassword) {
         toast.error("Failed to sign in", {
           description: "Email and password are required.",
         });
         return;
       }
+      setEmail(normalizedEmail);
+      setPassword(submittedPassword);
 
       const { data, error } = await authClient.signIn.email({
-        email,
-        password,
+        email: normalizedEmail,
+        password: submittedPassword,
       });
       if (error) {
         toast.error("Failed to sign in", {
@@ -215,10 +220,13 @@ function LoginForm() {
                 <div className="grid w-full items-center gap-1.5">
                   <Label htmlFor="email">Email</Label>
                   <Input
+                    id="email"
                     name="email"
                     type="email"
                     placeholder="john@doe.com"
                     autoComplete="username webauthn"
+                    value={email}
+                    onChange={(event) => setEmail(event.target.value)}
                     required
                   />
                 </div>
@@ -234,10 +242,13 @@ function LoginForm() {
                     </Link>
                   </div>
                   <PasswordInput
+                    id="password"
                     name="password"
                     placeholder="********"
                     required
                     autoComplete="current-password webauthn"
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
                   />
                 </div>
 
