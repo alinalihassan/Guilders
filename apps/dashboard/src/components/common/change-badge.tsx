@@ -8,10 +8,17 @@ export function ChangeBadge({
   change: { value: number; percentage: number; currency: string };
   showAbsoluteChange?: boolean;
 }) {
-  const isPositive = change.value > 0;
-  const isZero = change.value === 0;
-  const absValue = Math.abs(change.value);
-  const absPercentage = Math.abs(Number.isFinite(change.percentage) ? change.percentage : 0);
+  const EPS = 1e-6;
+  const normalizedValue = Math.abs(change.value) < EPS ? 0 : change.value;
+  const normalizedPercentage =
+    Math.abs(Number.isFinite(change.percentage) ? change.percentage : 0) < EPS
+      ? 0
+      : change.percentage;
+
+  const isPositive = normalizedValue > 0;
+  const isZero = normalizedValue === 0;
+  const absValue = Math.abs(normalizedValue);
+  const absPercentage = Math.abs(normalizedPercentage);
 
   const colorClass = isZero
     ? "bg-muted text-muted-foreground"
