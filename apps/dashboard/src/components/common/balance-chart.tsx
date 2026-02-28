@@ -90,6 +90,13 @@ function PointTooltip({
 }
 
 function computeYDomain(data: BalanceChartData[]): [number, number] {
+  if (data.length === 0) return [0, 1];
+  if (data.length === 1) {
+    const v = data[0]!.value;
+    const pad = v === 0 ? 1 : Math.abs(v) * 0.1;
+    return [v - pad, v + pad];
+  }
+
   const values = data.map((d) => d.value);
   const min = Math.min(...values);
   const max = Math.max(...values);
@@ -171,7 +178,10 @@ export function BalanceChart({
 
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const isHovering = activeIndex !== null;
-  const hoverOffset = activeIndex !== null ? activeIndex / (effectiveData.length - 1) : 1;
+  const hoverOffset =
+    activeIndex !== null && effectiveData.length > 1
+      ? activeIndex / (effectiveData.length - 1)
+      : 1;
 
   const renderTooltip = useCallback(
     // oxlint-disable-next-line @typescript-eslint/no-explicit-any
