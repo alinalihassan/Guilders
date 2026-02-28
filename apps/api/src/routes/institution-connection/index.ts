@@ -1,5 +1,5 @@
 import { and, eq, inArray } from "drizzle-orm";
-import { Elysia, t } from "elysia";
+import { Elysia, status, t } from "elysia";
 
 import {
   institutionConnection,
@@ -8,6 +8,7 @@ import {
 import { institution } from "../../db/schema/institutions";
 import { providerConnection } from "../../db/schema/provider-connections";
 import { authPlugin } from "../../middleware/auth";
+import { errorSchema } from "../../utils/error";
 import {
   institutionConnectionIdParamSchema,
   institutionConnectionWithRelationsSchema,
@@ -87,7 +88,7 @@ export const institutionConnectionRoutes = new Elysia({
       const providerConnectionIds = userProviderConnections.map((pc) => pc.id);
 
       if (providerConnectionIds.length === 0) {
-        throw new Error("Institution connection not found");
+        return status(404, { error: "Institution connection not found" });
       }
 
       // Get specific institution connection
@@ -130,7 +131,10 @@ export const institutionConnectionRoutes = new Elysia({
     {
       auth: true,
       params: institutionConnectionIdParamSchema,
-      response: institutionConnectionWithRelationsSchema,
+      response: {
+        200: institutionConnectionWithRelationsSchema,
+        404: errorSchema,
+      },
       detail: {
         summary: "Get institution connection by ID",
         description: "Retrieve a specific institution connection by its ID with details",
