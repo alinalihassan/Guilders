@@ -62,6 +62,7 @@ export function InputPromptDialog() {
   };
 
   const handleConfirm = () => {
+    if (resolvedRef.current) return;
     const rawValue = inputRef.current?.value ?? "";
     const nextValue = rawValue;
     const validationError = validate?.(nextValue);
@@ -70,8 +71,11 @@ export function InputPromptDialog() {
       return;
     }
     resolvedRef.current = true;
-    onConfirm(nextValue);
-    close();
+    try {
+      onConfirm(nextValue);
+    } finally {
+      close();
+    }
   };
 
   const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
