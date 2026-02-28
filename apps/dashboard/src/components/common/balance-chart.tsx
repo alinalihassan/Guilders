@@ -22,11 +22,20 @@ interface BalanceChartProps {
   className?: string;
 }
 
-function formatDateLabel(dateStr: string): string {
-  const date = new Date(dateStr + "T00:00:00");
-  return date.toLocaleDateString(undefined, {
-    month: "short",
+function parseDate(raw: unknown): Date {
+  if (raw instanceof Date) return raw;
+  const str = String(raw);
+  // YYYY-MM-DD → append time to avoid UTC-shift issues
+  if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return new Date(str + "T12:00:00");
+  return new Date(str);
+}
+
+function formatDateLabel(raw: string): string {
+  const date = parseDate(raw);
+  if (Number.isNaN(date.getTime())) return String(raw);
+  return date.toLocaleDateString("en-GB", {
     day: "numeric",
+    month: "short",
     year: "numeric",
   });
 }
@@ -58,13 +67,13 @@ function PointTooltip({
   const arrow = diff > 0 ? "\u2191" : diff < 0 ? "\u2193" : "";
 
   return (
-    <div className="rounded-lg border border-border/50 bg-background px-3 py-2 text-sm shadow-xl">
+    <div className="rounded-lg border border-border bg-background px-3 py-2 text-sm shadow-md">
       <div className="mb-1 text-xs text-muted-foreground">{formatDateLabel(point.date)}</div>
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-1.5">
           <span
-            className="inline-block h-2 w-2 rounded-full"
-            style={{ backgroundColor: trendColor }}
+            className="inline-block h-2.5 w-2.5 rounded-full border-2"
+            style={{ borderColor: trendColor, backgroundColor: "transparent" }}
           />
           <span className="font-mono font-medium">{formatCurrency(point.value, currency)}</span>
         </div>
@@ -132,7 +141,16 @@ export function BalanceChart({
     () => generateFlatLineData(currentValue, variant === "full" ? 30 : 7),
     [currentValue, variant],
   );
-  const effectiveData = hasData ? data : flatLineData;
+
+  const dataWithCurrent = useMemo(() => {
+    if (!hasData) return flatLineData;
+    const today = new Date().toISOString().split("T")[0]!;
+    const lastDate = data[data.length - 1]?.date;
+    if (lastDate === today) return data;
+    return [...data, { date: today, value: currentValue }];
+  }, [hasData, data, flatLineData, currentValue]);
+
+  const effectiveData = dataWithCurrent;
 
   const chartConfig = useMemo(
     () =>
@@ -235,10 +253,10 @@ export function BalanceChart({
           activeDot={
             hasData
               ? {
-                  r: 5,
+                  r: 3.5,
                   fill: effectiveColor,
                   stroke: "var(--background)",
-                  strokeWidth: 2,
+                  strokeWidth: 1.5,
                 }
               : false
           }
