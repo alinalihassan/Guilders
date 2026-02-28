@@ -16,7 +16,7 @@ export const transactionRoutes = new Elysia({
   prefix: "/transaction",
   detail: {
     tags: ["Transactions"],
-    security: [{ bearerAuth: [] }],
+    security: [{ apiKeyAuth: [] }, { bearerAuth: [] }],
   },
 })
   .use(authPlugin)

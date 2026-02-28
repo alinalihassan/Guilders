@@ -11,7 +11,7 @@ export const rateRoutes = new Elysia({
   prefix: "/rate",
   detail: {
     tags: ["Rates"],
-    security: [{ bearerAuth: [] }],
+    security: [{ apiKeyAuth: [] }, { bearerAuth: [] }],
   },
 })
   .use(authPlugin)

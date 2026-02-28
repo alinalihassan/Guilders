@@ -42,7 +42,7 @@ export const balanceHistoryRoutes = new Elysia({
   prefix: "/balance-history",
   detail: {
     tags: ["Balance History"],
-    security: [{ bearerAuth: [] }],
+    security: [{ apiKeyAuth: [] }, { bearerAuth: [] }],
   },
 })
   .use(authPlugin)
@@ -118,7 +118,7 @@ export const accountBalanceHistoryRoutes = new Elysia({
   prefix: "/account",
   detail: {
     tags: ["Balance History"],
-    security: [{ bearerAuth: [] }],
+    security: [{ apiKeyAuth: [] }, { bearerAuth: [] }],
   },
 })
   .use(authPlugin)

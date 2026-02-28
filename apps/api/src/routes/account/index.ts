@@ -12,7 +12,7 @@ export const accountRoutes = new Elysia({
   prefix: "/account",
   detail: {
     tags: ["Accounts"],
-    security: [{ bearerAuth: [] }],
+    security: [{ apiKeyAuth: [] }, { bearerAuth: [] }],
   },
 })
   .use(authPlugin)

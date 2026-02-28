@@ -9,7 +9,7 @@ export const currencyRoutes = new Elysia({
   prefix: "/currency",
   detail: {
     tags: ["Currencies"],
-    security: [{ bearerAuth: [] }],
+    security: [{ apiKeyAuth: [] }, { bearerAuth: [] }],
   },
 })
   .use(authPlugin)

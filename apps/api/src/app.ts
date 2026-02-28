@@ -28,7 +28,6 @@ export const app = new Elysia({ adapter: CloudflareAdapter })
     openapi({
       documentation: {
         components: {
-          // ...(await OpenAPI.components), // Hide authentication components
           securitySchemes: {
             apiKeyAuth: {
               type: "apiKey",
@@ -42,7 +41,6 @@ export const app = new Elysia({ adapter: CloudflareAdapter })
             },
           },
         },
-        // paths: await OpenAPI.getPaths(), // Hide authentication components
       },
     }),
   )

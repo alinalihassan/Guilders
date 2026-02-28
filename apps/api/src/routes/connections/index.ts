@@ -19,7 +19,7 @@ export const connectionsRoutes = new Elysia({
   prefix: "/connections",
   detail: {
     tags: ["Connections"],
-    security: [{ bearerAuth: [] }],
+    security: [{ apiKeyAuth: [] }, { bearerAuth: [] }],
   },
 })
   .use(authPlugin)

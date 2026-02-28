@@ -9,7 +9,7 @@ export const providerConnectionRoutes = new Elysia({
   prefix: "/provider-connection",
   detail: {
     tags: ["Provider Connections"],
-    security: [{ bearerAuth: [] }],
+    security: [{ apiKeyAuth: [] }, { bearerAuth: [] }],
   },
 })
   .use(authPlugin)

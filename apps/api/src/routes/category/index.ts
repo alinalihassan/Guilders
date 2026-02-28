@@ -1,11 +1,7 @@
 import { and, asc, eq } from "drizzle-orm";
 import { Elysia, status, t } from "elysia";
 
-import {
-  category,
-  insertCategorySchema,
-  selectCategorySchema,
-} from "../../db/schema/categories";
+import { category, insertCategorySchema, selectCategorySchema } from "../../db/schema/categories";
 import { authPlugin } from "../../middleware/auth";
 import { errorSchema } from "../../utils/error";
 import { categoryIdParamSchema, createCategorySchema } from "./types";
@@ -14,7 +10,7 @@ export const categoryRoutes = new Elysia({
   prefix: "/category",
   detail: {
     tags: ["Categories"],
-    security: [{ bearerAuth: [] }],
+    security: [{ apiKeyAuth: [] }, { bearerAuth: [] }],
   },
 })
   .use(authPlugin)
@@ -202,7 +198,9 @@ export const categoryRoutes = new Elysia({
           })
           .where(and(eq(category.user_id, user.id), eq(category.parent_id, params.id)));
 
-        await tx.delete(category).where(and(eq(category.id, params.id), eq(category.user_id, user.id)));
+        await tx
+          .delete(category)
+          .where(and(eq(category.id, params.id), eq(category.user_id, user.id)));
       });
 
       return { success: true };

@@ -70,7 +70,7 @@ export const institutionConnectionRoutes = new Elysia({
         description:
           "Retrieve all institution connections for the authenticated user with institution and provider details",
         tags: ["Institution Connections"],
-        security: [{ bearerAuth: [] }],
+        security: [{ apiKeyAuth: [] }, { bearerAuth: [] }],
       },
     },
   )
@@ -135,7 +135,7 @@ export const institutionConnectionRoutes = new Elysia({
         summary: "Get institution connection by ID",
         description: "Retrieve a specific institution connection by its ID with details",
         tags: ["Institution Connections"],
-        security: [{ bearerAuth: [] }],
+        security: [{ apiKeyAuth: [] }, { bearerAuth: [] }],
       },
     },
   );
