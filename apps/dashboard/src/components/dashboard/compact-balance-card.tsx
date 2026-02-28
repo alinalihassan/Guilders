@@ -3,16 +3,11 @@
 import type { Account } from "@guilders/api/types";
 import NumberFlow from "@number-flow/react";
 import { useQueries } from "@tanstack/react-query";
-import { Area, AreaChart, ResponsiveContainer } from "recharts";
+import { useMemo } from "react";
 
+import { BalanceChart } from "@/components/common/balance-chart";
 import { ChangeIndicator } from "@/components/common/change-indicator";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  type ChartConfig,
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart";
 import { api, edenError } from "@/lib/api";
 import { balanceHistoryKey, periodToDateRange } from "@/lib/queries/useBalanceHistory";
 import { useRates } from "@/lib/queries/useRates";
@@ -25,13 +20,6 @@ interface CompactBalanceCardProps {
   invertColors?: boolean;
   className?: string;
 }
-
-const chartConfig = {
-  value: {
-    label: "Value",
-    color: "hsl(var(--chart-1))",
-  },
-} satisfies ChartConfig;
 
 export function CompactBalanceCard({
   title,
@@ -55,9 +43,9 @@ export function CompactBalanceCard({
     queries: accounts.map((account) => ({
       queryKey: balanceHistoryKey(account.id, "1M"),
       queryFn: async () => {
-        const { data, error } = await api
-          .account({ id: account.id })
-          ["balance-history"].get({ query: range });
+        const { data, error } = await api.account({ id: account.id })["balance-history"].get({
+          query: range,
+        });
         if (error) throw new Error(edenError(error));
         return {
           accountId: account.id,
@@ -70,7 +58,7 @@ export function CompactBalanceCard({
 
   const allLoaded = historyQueries.every((q) => q.isSuccess);
 
-  const chartData = (() => {
+  const chartData = useMemo(() => {
     if (!allLoaded) return [];
 
     const dateMap = new Map<string, number>();
@@ -85,18 +73,26 @@ export function CompactBalanceCard({
 
     return Array.from(dateMap.entries())
       .toSorted(([a], [b]) => a.localeCompare(b))
-      .map(([date, value]) => ({ date, value }));
-  })();
+      .map(([date, val]) => ({ date, value: val }));
+  }, [allLoaded, historyQueries, rates, userCurrency]);
 
-  const change = (() => {
-    if (chartData.length >= 2) {
+  const hasData = chartData.length >= 2;
+
+  const { change, trendColor } = useMemo(() => {
+    if (hasData) {
       const first = chartData[0]!.value;
       const last = chartData[chartData.length - 1]!.value;
       const diff = last - first;
+      const effectiveIsPositive = invertColors ? diff <= 0 : diff >= 0;
       return {
-        value: diff,
-        percentage: first === 0 ? 0 : diff / Math.abs(first),
-        currency: userCurrency,
+        change: {
+          value: diff,
+          percentage: first === 0 ? 0 : diff / Math.abs(first),
+          currency: userCurrency,
+        },
+        trendColor: effectiveIsPositive
+          ? "var(--color-green-500, #22c55e)"
+          : "var(--color-red-500, #ef4444)",
       };
     }
     const totalCost = accounts.reduce(
@@ -104,12 +100,19 @@ export function CompactBalanceCard({
         sum + convertToUserCurrency(account.cost || 0, account.currency, rates, userCurrency),
       0,
     );
+    const diff = totalCost ? totalValue - totalCost : 0;
+    const effectiveIsPositive = invertColors ? diff <= 0 : diff >= 0;
     return {
-      value: totalCost ? totalValue - totalCost : 0,
-      percentage: totalCost ? (totalValue - totalCost) / totalCost : 0,
-      currency: userCurrency,
+      change: {
+        value: diff,
+        percentage: totalCost ? diff / totalCost : 0,
+        currency: userCurrency,
+      },
+      trendColor: effectiveIsPositive
+        ? "var(--color-green-500, #22c55e)"
+        : "var(--color-red-500, #ef4444)",
     };
-  })();
+  }, [chartData, hasData, accounts, rates, userCurrency, totalValue, invertColors]);
 
   return (
     <Card className={className}>
@@ -118,38 +121,21 @@ export function CompactBalanceCard({
           <h3 className="mb-1 text-sm font-medium text-muted-foreground">{title}</h3>
           <NumberFlow
             value={totalValue}
-            format={{
-              style: "currency",
-              currency: userCurrency,
-            }}
+            format={{ style: "currency", currency: userCurrency }}
             className="font-mono text-2xl font-normal tracking-tight"
           />
-          <ChangeIndicator change={change} invertColors={invertColors} />
+          <ChangeIndicator change={change} invertColors={invertColors} periodLabel="1 month" />
         </div>
 
         <div className="w-32">
-          {/* @ts-ignore */}
-          <ChartContainer className="h-[80px]" config={chartConfig}>
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={chartData.length > 0 ? chartData : [{ date: "", value: 0 }]}>
-                <defs>
-                  <linearGradient id="fillValue" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="var(--color-value)" stopOpacity={0.8} />
-                    <stop offset="95%" stopColor="var(--color-value)" stopOpacity={0.1} />
-                  </linearGradient>
-                </defs>
-                <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
-                <Area
-                  dataKey="value"
-                  type="monotone"
-                  fill="url(#fillValue)"
-                  fillOpacity={0.4}
-                  stroke="var(--color-value)"
-                  strokeWidth={1.5}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </ChartContainer>
+          <BalanceChart
+            data={chartData}
+            hasData={hasData}
+            trendColor={trendColor}
+            currentValue={totalValue}
+            variant="sparkline"
+            className="h-[80px]"
+          />
         </div>
       </CardContent>
     </Card>

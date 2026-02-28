@@ -1,17 +1,11 @@
 "use client";
 
 import NumberFlow from "@number-flow/react";
-import { useState } from "react";
-import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
+import { useMemo, useState } from "react";
 
+import { BalanceChart } from "@/components/common/balance-chart";
 import { ChangeIndicator } from "@/components/common/change-indicator";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  type ChartConfig,
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart";
 import {
   Select,
   SelectContent,
@@ -40,30 +34,14 @@ interface BalanceCardProps {
   className?: string;
 }
 
-const chartConfig = {
-  value: {
-    label: "Value",
-    color: "hsl(var(--chart-1))",
-  },
-} satisfies ChartConfig;
-
-function formatDateTick(dateStr: string, period: Period): string {
-  const date = new Date(dateStr + "T00:00:00");
-  switch (period) {
-    case "1W":
-      return date.toLocaleDateString(undefined, { weekday: "short" });
-    case "1M":
-      return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
-    case "3M":
-    case "6M":
-      return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
-    case "1Y":
-    case "ALL":
-      return date.toLocaleDateString(undefined, { month: "short", year: "2-digit" });
-    default:
-      return dateStr;
-  }
-}
+const PERIOD_LABELS: Record<Period, string> = {
+  "1W": "1 week",
+  "1M": "1 month",
+  "3M": "3 months",
+  "6M": "6 months",
+  "1Y": "1 year",
+  ALL: "all time",
+};
 
 export function BalanceCard({
   title,
@@ -76,40 +54,50 @@ export function BalanceCard({
 }: BalanceCardProps) {
   const [period, setPeriod] = useState<Period>("1M");
 
-  const accountHistory = useBalanceHistory(
-    !isNetWorth ? accountId : undefined,
-    period,
-  );
-  const netWorthHistory = useNetWorthHistory(
-    isNetWorth ? period : undefined,
-  );
+  const accountHistory = useBalanceHistory(!isNetWorth ? accountId : undefined, period);
+  const netWorthHistory = useNetWorthHistory(isNetWorth ? period : undefined);
 
   const historyQuery = isNetWorth ? netWorthHistory : accountHistory;
   const snapshots = historyQuery.data;
   const isLoading = historyQuery.isLoading;
-  const hasHistory = !!accountId || isNetWorth;
 
-  const chartData = snapshots?.map((s) => ({
-    date: s.date,
-    value: Number(s.balance),
-  })) ?? [];
+  const chartData = useMemo(
+    () => snapshots?.map((s) => ({ date: s.date, value: Number(s.balance) })) ?? [],
+    [snapshots],
+  );
 
-  const historyChange = (() => {
-    if (chartData.length < 2) return externalChange;
+  const hasData = chartData.length >= 2;
+
+  const { displayValue, displayChange, trendColor } = useMemo(() => {
+    if (!hasData) {
+      return {
+        displayValue: value,
+        displayChange: externalChange,
+        trendColor: "var(--color-gray-400, #9ca3af)",
+      };
+    }
     const first = chartData[0]!.value;
     const last = chartData[chartData.length - 1]!.value;
     const diff = last - first;
-    return {
+    const change = {
       value: diff,
       percentage: first === 0 ? 0 : diff / Math.abs(first),
       currency,
     };
-  })();
+    const color =
+      diff > 0
+        ? "var(--color-green-500, #22c55e)"
+        : diff < 0
+          ? "var(--color-red-500, #ef4444)"
+          : "var(--color-gray-400, #9ca3af)";
+    return {
+      displayValue: last,
+      displayChange: change,
+      trendColor: color,
+    };
+  }, [chartData, hasData, value, currency, externalChange]);
 
-  const displayChange = hasHistory && chartData.length >= 2 ? historyChange : externalChange;
-  const displayValue = hasHistory && chartData.length > 0
-    ? chartData[chartData.length - 1]!.value
-    : value;
+  const firstValue = hasData ? chartData[0]!.value : value;
 
   return (
     <Card className={className}>
@@ -133,57 +121,28 @@ export function BalanceCard({
         <div className="flex flex-col">
           <NumberFlow
             value={displayValue}
-            format={{
-              style: "currency",
-              currency: currency,
-            }}
+            format={{ style: "currency", currency }}
             className="-mb-0.5 -mt-2.5 font-mono text-4xl font-normal tracking-tight"
           />
-          {displayChange && <ChangeIndicator change={displayChange} />}
+          {displayChange && (
+            <ChangeIndicator change={displayChange} periodLabel={PERIOD_LABELS[period]} />
+          )}
         </div>
       </CardHeader>
-      <CardContent>
-        {/* @ts-ignore */}
-        <ChartContainer className="relative max-h-[216px] w-full" config={chartConfig}>
-          {isLoading ? (
-            <Skeleton className="h-full w-full" />
-          ) : !hasHistory || chartData.length === 0 ? (
-            <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/80">
-              <p className="text-sm text-muted-foreground">
-                {hasHistory ? "No history data yet" : "Historical data not available"}
-              </p>
-            </div>
-          ) : null}
-
-          <AreaChart data={chartData.length > 0 ? chartData : [{ date: "", value: 0 }]}>
-            <CartesianGrid vertical={false} />
-            <XAxis
-              dataKey="date"
-              tickLine={false}
-              axisLine={false}
-              tickMargin={8}
-              tickFormatter={(d: string) => formatDateTick(d, period)}
-            />
-            <ChartTooltip
-              cursor={false}
-              content={(props) => <ChartTooltipContent {...props} />}
-            />
-            <defs>
-              <linearGradient id="fillValue" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="var(--color-value)" stopOpacity={0.8} />
-                <stop offset="95%" stopColor="var(--color-value)" stopOpacity={0.1} />
-              </linearGradient>
-            </defs>
-            <Area
-              dataKey="value"
-              type="natural"
-              fill="url(#fillValue)"
-              fillOpacity={0.4}
-              stroke="var(--color-value)"
-              stackId="a"
-            />
-          </AreaChart>
-        </ChartContainer>
+      <CardContent className="pb-2">
+        {isLoading ? (
+          <Skeleton className="h-[216px] w-full" />
+        ) : (
+          <BalanceChart
+            data={chartData}
+            hasData={hasData}
+            trendColor={trendColor}
+            currentValue={value}
+            variant="full"
+            currency={currency}
+            firstValue={firstValue}
+          />
+        )}
       </CardContent>
     </Card>
   );

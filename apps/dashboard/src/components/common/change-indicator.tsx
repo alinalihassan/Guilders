@@ -7,15 +7,24 @@ interface ChangeIndicatorProps {
     currency: string;
   };
   invertColors?: boolean;
+  periodLabel?: string;
 }
 
-export function ChangeIndicator({ change, invertColors = false }: ChangeIndicatorProps) {
+export function ChangeIndicator({
+  change,
+  invertColors = false,
+  periodLabel,
+}: ChangeIndicatorProps) {
   const isPositive = change.value >= 0;
   const absValue = Math.abs(change.value);
   const absPercentage = Math.abs(change.percentage);
 
   if (change.value === 0) {
-    return <div className="text-sm text-muted-foreground">No change vs last month</div>;
+    return (
+      <div className="text-sm text-muted-foreground">
+        No change{periodLabel ? ` vs ${periodLabel}` : ""}
+      </div>
+    );
   }
 
   const getColorClass = () => {
@@ -25,26 +34,29 @@ export function ChangeIndicator({ change, invertColors = false }: ChangeIndicato
       : "text-red-600 dark:text-red-400";
   };
 
+  const arrow = isPositive ? "\u2191" : "\u2193";
+
   return (
     <div className={`text-sm ${getColorClass()}`}>
-      {isPositive ? "+" : "-"}{" "}
+      {isPositive ? "+" : "\u2212"}
       <NumberFlow
         value={absValue}
         format={{
           style: "currency",
           currency: change.currency,
         }}
-      />
-      {" ("}
+      />{" "}
+      ({arrow}
       <NumberFlow
         value={absPercentage}
         format={{
           style: "percent",
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
+          minimumFractionDigits: 1,
+          maximumFractionDigits: 1,
         }}
       />
-      {") vs last month"}
+      )
+      {periodLabel && <span className="text-muted-foreground"> vs {periodLabel}</span>}
     </div>
   );
 }

@@ -1,0 +1,250 @@
+"use client";
+
+import { useCallback, useId, useMemo } from "react";
+import { Area, AreaChart, Tooltip, XAxis, YAxis } from "recharts";
+
+import { type ChartConfig, ChartContainer } from "@/components/ui/chart";
+
+export interface BalanceChartData {
+  date: string;
+  value: number;
+}
+
+interface BalanceChartProps {
+  data: BalanceChartData[];
+  hasData: boolean;
+  trendColor: string;
+  /** Current balance, used to draw a flat line when there's no historical data */
+  currentValue?: number;
+  variant?: "full" | "sparkline";
+  currency?: string;
+  firstValue?: number;
+  className?: string;
+}
+
+function formatDateLabel(dateStr: string): string {
+  const date = new Date(dateStr + "T00:00:00");
+  return date.toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+function formatCurrency(amount: number, currency: string): string {
+  return amount.toLocaleString(undefined, { style: "currency", currency });
+}
+
+function PointTooltip({
+  active,
+  payload,
+  currency,
+  trendColor,
+  firstValue,
+}: {
+  active?: boolean;
+  // oxlint-disable-next-line @typescript-eslint/no-explicit-any
+  payload?: any[];
+  currency: string;
+  trendColor: string;
+  firstValue: number;
+}) {
+  if (!active || !payload?.length) return null;
+  const point = payload[0]?.payload as BalanceChartData | undefined;
+  if (!point) return null;
+
+  const diff = point.value - firstValue;
+  const pct = firstValue !== 0 ? Math.abs(diff / firstValue) : 0;
+  const arrow = diff > 0 ? "\u2191" : diff < 0 ? "\u2193" : "";
+
+  return (
+    <div className="rounded-lg border border-border/50 bg-background px-3 py-2 text-sm shadow-xl">
+      <div className="mb-1 text-xs text-muted-foreground">{formatDateLabel(point.date)}</div>
+      <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1.5">
+          <span
+            className="inline-block h-2 w-2 rounded-full"
+            style={{ backgroundColor: trendColor }}
+          />
+          <span className="font-mono font-medium">{formatCurrency(point.value, currency)}</span>
+        </div>
+        {diff !== 0 && (
+          <span className="font-mono text-xs" style={{ color: trendColor }}>
+            {diff > 0 ? "+" : ""}
+            {formatCurrency(diff, currency)} ({arrow}
+            {(pct * 100).toFixed(1)}%)
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function computeYDomain(data: BalanceChartData[]): [number, number] {
+  const values = data.map((d) => d.value);
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+
+  if (min === max) {
+    const padding = max === 0 ? 100 : Math.abs(max) * 0.5;
+    return [min - padding, max + padding];
+  }
+
+  const range = max - min;
+  const avg = (max + min) / 2;
+  const relativeChange = avg !== 0 ? range / Math.abs(avg) : 1;
+
+  if (relativeChange < 0.1 && min > 0) {
+    const basePad = range * 2;
+    return [Math.max(0, min - basePad), max + range * 0.5];
+  }
+
+  const yMin =
+    min < 0 || (min >= 0 && min < avg * 0.1) ? Math.min(0, min * 1.1) : min - range * 0.3;
+  return [yMin, max + range * 0.1];
+}
+
+const FLAT_LINE_COLOR = "var(--color-green-500, #22c55e)";
+
+function generateFlatLineData(value: number, days: number): BalanceChartData[] {
+  const now = new Date();
+  return Array.from({ length: days }, (_, i) => {
+    const d = new Date(now);
+    d.setDate(d.getDate() - (days - 1 - i));
+    return { date: d.toISOString().split("T")[0]!, value };
+  });
+}
+
+export function BalanceChart({
+  data,
+  hasData,
+  trendColor,
+  currentValue = 0,
+  variant = "full",
+  currency = "EUR",
+  firstValue = 0,
+  className,
+}: BalanceChartProps) {
+  const chartId = useId().replace(/:/g, "");
+
+  const effectiveColor = hasData ? trendColor : FLAT_LINE_COLOR;
+  const flatLineData = useMemo(
+    () => generateFlatLineData(currentValue, variant === "full" ? 30 : 7),
+    [currentValue, variant],
+  );
+  const effectiveData = hasData ? data : flatLineData;
+
+  const chartConfig = useMemo(
+    () =>
+      ({
+        value: { label: "Value", color: effectiveColor },
+      }) satisfies ChartConfig,
+    [effectiveColor],
+  );
+
+  const yDomain = useMemo(() => computeYDomain(effectiveData), [effectiveData]);
+
+  const xTicks = useMemo(() => {
+    if (effectiveData.length >= 2) {
+      return [effectiveData[0]!.date, effectiveData[effectiveData.length - 1]!.date];
+    }
+    return undefined;
+  }, [effectiveData]);
+
+  const renderTooltip = useCallback(
+    // oxlint-disable-next-line @typescript-eslint/no-explicit-any
+    (props: any) => (
+      <PointTooltip
+        {...props}
+        currency={currency}
+        trendColor={effectiveColor}
+        firstValue={firstValue}
+      />
+    ),
+    [currency, effectiveColor, firstValue],
+  );
+
+  if (variant === "sparkline") {
+    return (
+      // @ts-ignore
+      <ChartContainer className={className ?? "h-[80px]"} config={chartConfig}>
+        <AreaChart data={effectiveData}>
+          <defs>
+            <linearGradient id={`sparkgrad-${chartId}`} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="var(--color-value)" stopOpacity={0.12} />
+              <stop offset="100%" stopColor="var(--color-value)" stopOpacity={0} />
+            </linearGradient>
+          </defs>
+          <Area
+            dataKey="value"
+            type="monotone"
+            fill={hasData ? `url(#sparkgrad-${chartId})` : "transparent"}
+            stroke="var(--color-value)"
+            strokeWidth={1.5}
+            strokeLinejoin="round"
+            strokeLinecap="round"
+            dot={false}
+            isAnimationActive={false}
+          />
+        </AreaChart>
+      </ChartContainer>
+    );
+  }
+
+  return (
+    // @ts-ignore
+    <ChartContainer className={className ?? "max-h-[216px] w-full"} config={chartConfig}>
+      <AreaChart data={effectiveData} margin={{ top: 8, right: 0, bottom: 0, left: 0 }}>
+        <defs>
+          <linearGradient id={`grad-${chartId}`} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="var(--color-value)" stopOpacity={0.12} />
+            <stop offset="100%" stopColor="var(--color-value)" stopOpacity={0} />
+          </linearGradient>
+        </defs>
+        <YAxis domain={yDomain} hide />
+        <XAxis
+          dataKey="date"
+          tickLine={false}
+          axisLine={false}
+          tickMargin={8}
+          ticks={xTicks}
+          tickFormatter={formatDateLabel}
+          style={{ fontSize: 12, fontWeight: 500 }}
+          stroke="var(--muted-foreground)"
+        />
+        {hasData && (
+          <Tooltip
+            content={renderTooltip}
+            cursor={{
+              stroke: "var(--muted-foreground)",
+              strokeDasharray: "4 4",
+              strokeWidth: 1,
+            }}
+            isAnimationActive={false}
+          />
+        )}
+        <Area
+          dataKey="value"
+          type="monotone"
+          fill={hasData ? `url(#grad-${chartId})` : "transparent"}
+          stroke="var(--color-value)"
+          strokeWidth={2}
+          strokeLinejoin="round"
+          strokeLinecap="round"
+          dot={false}
+          activeDot={
+            hasData
+              ? {
+                  r: 5,
+                  fill: effectiveColor,
+                  stroke: "var(--background)",
+                  strokeWidth: 2,
+                }
+              : false
+          }
+          isAnimationActive={false}
+        />
+      </AreaChart>
+    </ChartContainer>
+  );
+}
