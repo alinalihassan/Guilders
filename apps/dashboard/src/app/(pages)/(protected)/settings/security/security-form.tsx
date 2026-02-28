@@ -157,10 +157,11 @@ export function SecurityForm() {
       placeholder: "Passkey name",
       defaultValue: currentName ?? "",
       confirmText: "Rename",
-      validate: (value) => (!value ? "Passkey name is required." : null),
+      validate: (value) => (!value.trim() ? "Passkey name is required." : null),
     });
     const normalizedName = name?.trim();
-    if (!normalizedName || normalizedName === currentName) return;
+    const normalizedCurrentName = currentName?.trim();
+    if (!normalizedName || normalizedName === normalizedCurrentName) return;
     try {
       await renamePasskey.mutateAsync({ id, name: normalizedName });
       toast.success("Passkey renamed");
