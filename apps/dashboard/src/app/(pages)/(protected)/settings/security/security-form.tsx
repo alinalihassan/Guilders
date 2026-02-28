@@ -56,7 +56,6 @@ type PromptConfig = {
   confirmText?: string;
   cancelText?: string;
   inputType?: "text" | "password";
-  trim?: boolean;
   validate?: (value: string) => string | null;
 };
 
@@ -122,7 +121,6 @@ export function SecurityForm() {
       description: "Enter your current password to disable 2FA.",
       placeholder: "Current password",
       inputType: "password",
-      trim: false,
       confirmText: "Disable 2FA",
       validate: (value) => (!value ? "Current password is required." : null),
     });
@@ -161,9 +159,10 @@ export function SecurityForm() {
       confirmText: "Rename",
       validate: (value) => (!value ? "Passkey name is required." : null),
     });
-    if (!name || name === currentName) return;
+    const normalizedName = name?.trim();
+    if (!normalizedName || normalizedName === currentName) return;
     try {
-      await renamePasskey.mutateAsync({ id, name });
+      await renamePasskey.mutateAsync({ id, name: normalizedName });
       toast.success("Passkey renamed");
     } catch (error) {
       toast.error("Failed to rename passkey", {

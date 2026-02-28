@@ -23,7 +23,6 @@ interface InputPromptDialogProps {
   confirmText?: string;
   cancelText?: string;
   inputType?: "text" | "password";
-  trim?: boolean;
   validate?: (value: string) => string | null;
   onConfirm: (value: string) => void;
   onCancel?: () => void;
@@ -50,7 +49,6 @@ export function InputPromptDialog() {
     confirmText = "Confirm",
     cancelText = "Cancel",
     inputType = "text",
-    trim = true,
     validate,
     onConfirm,
     onCancel,
@@ -65,7 +63,7 @@ export function InputPromptDialog() {
 
   const handleConfirm = () => {
     const rawValue = inputRef.current?.value ?? "";
-    const nextValue = trim ? rawValue.trim() : rawValue;
+    const nextValue = rawValue;
     const validationError = validate?.(nextValue);
     if (validationError) {
       toast.error(validationError);
