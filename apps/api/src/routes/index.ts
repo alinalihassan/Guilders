@@ -2,6 +2,7 @@ import { Elysia } from "elysia";
 
 import { createAuth } from "../lib/auth";
 import { accountRoutes } from "./account";
+import { accountBalanceHistoryRoutes, balanceHistoryRoutes } from "./balance-history";
 import { categoryRoutes } from "./category";
 import { chatRoutes } from "./chat";
 import { connectionsRoutes } from "./connections";
@@ -17,6 +18,8 @@ import { transactionRoutes } from "./transaction";
 export const api = new Elysia({ prefix: "/api" })
   .all("/auth/*", (context) => createAuth().handler(context.request), { detail: { hide: true } })
   .use(accountRoutes)
+  .use(accountBalanceHistoryRoutes)
+  .use(balanceHistoryRoutes)
   .use(categoryRoutes)
   .use(chatRoutes)
   .use(connectionsRoutes)
