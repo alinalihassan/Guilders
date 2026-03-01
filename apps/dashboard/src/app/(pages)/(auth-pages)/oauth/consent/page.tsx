@@ -25,16 +25,18 @@ const SCOPE_GROUPS = {
     label: "Read access",
     icon: Eye,
     capabilities: [
-      "View your accounts and balances",
-      "View your transactions",
+      "View your accounts, transactions, and categories",
+      "View net worth and balance history",
+      "View exchange rates and available institutions",
     ],
   },
   write: {
     label: "Write access",
     icon: Pencil,
     capabilities: [
-      "Create new accounts on your behalf",
-      "Create transactions on your behalf",
+      "Create, update, and delete accounts",
+      "Create, update, and delete transactions",
+      "Create transaction categories",
     ],
   },
 } as const;

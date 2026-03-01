@@ -15,14 +15,19 @@ export const MCP_SCOPE_INFO: Record<McpScope, McpScopeInfo> = {
   [McpScope.read]: {
     label: "Read access",
     description: "View your financial data",
-    capabilities: ["View your accounts and balances", "View your transactions"],
+    capabilities: [
+      "View your accounts, transactions, and categories",
+      "View net worth and balance history",
+      "View exchange rates and available institutions",
+    ],
   },
   [McpScope.write]: {
     label: "Write access",
     description: "Create and modify your financial data",
     capabilities: [
-      "Create new accounts on your behalf",
-      "Create transactions on your behalf",
+      "Create, update, and delete accounts",
+      "Create, update, and delete transactions",
+      "Create transaction categories",
     ],
   },
 };
