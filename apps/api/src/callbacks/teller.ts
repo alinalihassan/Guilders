@@ -176,7 +176,10 @@ async function handleTellerWebhook(request: Request, env: Env): Promise<Response
     }
 
     const payload = JSON.parse(body);
-    console.log("[Teller webhook] Received event:", payload);
+    console.log("[Teller webhook] Received event", {
+      type: payload?.type,
+      enrollmentId: payload?.payload?.enrollment_id,
+    });
 
     const mappedEventType = TELLER_EVENT_TYPE_MAP[payload.type];
     const enrollmentId: string | undefined = payload.payload?.enrollment_id;
