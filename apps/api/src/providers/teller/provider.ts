@@ -98,17 +98,13 @@ export class TellerProvider implements IProvider {
         institutionId: params.institutionId,
       });
 
-      // Teller Connect URL: /connect/{appId}?environment=...&institution=...
-      // Note: origin + loader_id are added by the frontend (it needs window.origin)
       const connectUrl = new URL(`https://teller.io/connect/${config.applicationId}`);
       connectUrl.searchParams.set("environment", config.environment);
       connectUrl.searchParams.set("institution", inst.provider_institution_id);
-
-      // Embed callback info in fragment (not sent to Teller's server)
-      connectUrl.hash = new URLSearchParams({
-        callback: `${backendUrl}/callback/providers/teller`,
-        state,
-      }).toString();
+      connectUrl.searchParams.set(
+        "callback",
+        `${backendUrl}/callback/providers/teller?state=${encodeURIComponent(state)}`,
+      );
 
       return {
         success: true,
@@ -139,11 +135,10 @@ export class TellerProvider implements IProvider {
       const connectUrl = new URL(`https://teller.io/connect/${config.applicationId}`);
       connectUrl.searchParams.set("environment", config.environment);
       connectUrl.searchParams.set("enrollment_id", params.connectionId);
-
-      connectUrl.hash = new URLSearchParams({
-        callback: `${backendUrl}/callback/providers/teller`,
-        state,
-      }).toString();
+      connectUrl.searchParams.set(
+        "callback",
+        `${backendUrl}/callback/providers/teller?state=${encodeURIComponent(state)}`,
+      );
 
       return {
         success: true,

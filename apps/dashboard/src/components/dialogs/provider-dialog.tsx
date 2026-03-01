@@ -27,28 +27,13 @@ function prepareTellerUrl(url: string): string {
   return parsed.toString();
 }
 
-function parseTellerCallbackInfo(redirectUri: string) {
-  try {
-    const url = new URL(redirectUri);
-    const fragment = new URLSearchParams(url.hash.slice(1));
-    return {
-      callbackUrl: fragment.get("callback"),
-      state: fragment.get("state"),
-    };
-  } catch {
-    return { callbackUrl: null, state: null };
-  }
-}
-
 export function ProviderDialog() {
   const { isOpen, data: providerData, close } = useDialog("provider");
   const queryClient = useQueryClient();
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const tellerHandledRef = useRef(false);
 
   useEffect(() => {
     if (!providerData) return;
-    tellerHandledRef.current = false;
 
     const successDescription = `You have successfully ${
       providerData.operation === "connect" ? "connected" : "fixed the connection"
@@ -71,27 +56,16 @@ export function ProviderDialog() {
             return;
           }
 
-          if (data.event === "success" && !tellerHandledRef.current) {
-            tellerHandledRef.current = true;
-
-            close();
-            toast.success("Success", { description: successDescription });
-            queryClient.invalidateQueries({ queryKey: accountsQueryKey });
-            queryClient.invalidateQueries({ queryKey: transactionsQueryKey });
-
-            // Submit enrollment to backend in background
+          if (data.event === "success") {
             const accessToken = data.data?.accessToken;
             const enrollmentId = data.data?.enrollment?.id;
-            const { callbackUrl, state } = parseTellerCallbackInfo(providerData.redirectUri);
+            const callbackUrl = new URL(providerData.redirectUri).searchParams.get("callback");
 
-            if (callbackUrl && state && accessToken && enrollmentId) {
-              const callback = new URL(callbackUrl);
-              callback.searchParams.set("access_token", accessToken);
-              callback.searchParams.set("enrollment_id", enrollmentId);
-              callback.searchParams.set("state", state);
-              fetch(callback.toString(), { mode: "no-cors", credentials: "include" }).catch(
-                console.error,
-              );
+            if (iframeRef.current && callbackUrl && accessToken && enrollmentId) {
+              const url = new URL(callbackUrl);
+              url.searchParams.set("access_token", accessToken);
+              url.searchParams.set("enrollment_id", enrollmentId);
+              iframeRef.current.src = url.toString();
             }
           }
 
@@ -121,7 +95,10 @@ export function ProviderDialog() {
               close();
             }
           }
-        } else if (e.origin === env.NEXT_PUBLIC_API_URL || e.origin === env.NEXT_PUBLIC_NGROK_URL) {
+        } else if (
+          e.origin ===
+          new URL(env.NEXT_PUBLIC_NGROK_URL ?? env.NEXT_PUBLIC_API_URL).origin
+        ) {
           const { stage } = e.data;
           if (!stage) return;
 
