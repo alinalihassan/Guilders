@@ -85,7 +85,10 @@ export function MFADialog() {
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent
+        className="sm:max-w-lg"
+        onInteractOutside={(e) => e.preventDefault()}
+      >
         <DialogHeader>
           <DialogTitle>Setup Authenticator App</DialogTitle>
           <DialogDescription>
@@ -107,13 +110,14 @@ export function MFADialog() {
                 placeholder="Current password"
                 autoComplete="current-password"
               />
-              <Button
-                onClick={handleEnable}
-                disabled={isLoadingMFA || !password}
-                className="w-full"
-              >
-                {isLoadingMFA ? "Initializing..." : "Continue"}
-              </Button>
+              <div className="flex justify-between">
+                <Button variant="ghost" onClick={handleClose} disabled={isLoadingMFA}>
+                  Close
+                </Button>
+                <Button onClick={handleEnable} disabled={isLoadingMFA || !password}>
+                  {isLoadingMFA ? "Initializing..." : "Continue"}
+                </Button>
+              </div>
             </>
           ) : !isVerified ? (
             <>
@@ -135,13 +139,14 @@ export function MFADialog() {
                 inputMode="numeric"
                 autoComplete="one-time-code"
               />
-              <Button
-                onClick={handleVerify}
-                disabled={isLoadingMFA || code.length < 6}
-                className="w-full"
-              >
-                {isLoadingMFA ? "Verifying..." : "Verify & Enable"}
-              </Button>
+              <div className="flex justify-between">
+                <Button variant="ghost" onClick={handleClose} disabled={isLoadingMFA}>
+                  Close
+                </Button>
+                <Button onClick={handleVerify} disabled={isLoadingMFA || code.length < 6}>
+                  {isLoadingMFA ? "Verifying..." : "Verify & Enable"}
+                </Button>
+              </div>
             </>
           ) : (
             <>
@@ -181,22 +186,12 @@ export function MFADialog() {
                   </div>
                 </div>
               )}
-              <Button onClick={handleClose} className="w-full">
-                Done
-              </Button>
+              <div className="flex justify-end">
+                <Button onClick={handleClose}>Done</Button>
+              </div>
             </>
           )}
 
-          {!isVerified && (
-            <Button
-              variant="ghost"
-              onClick={handleClose}
-              disabled={isLoadingMFA}
-              className="w-full"
-            >
-              Close
-            </Button>
-          )}
         </div>
       </DialogContent>
     </Dialog>
