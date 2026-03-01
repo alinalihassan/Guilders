@@ -103,31 +103,62 @@ export async function handleTellerCallback(
   }
 }
 
-async function handleTellerWebhook(request: Request, env: Env): Promise<Response> {
+function parseTellerSignature(header: string) {
+  const parts = header.split(",");
+  let timestamp = "";
+  const signatures: string[] = [];
+
+  for (const part of parts) {
+    const [key, value] = part.split("=", 2);
+    if (key === "t") timestamp = value ?? "";
+    else if (key === "v1" && value) signatures.push(value);
+  }
+
+  return { timestamp, signatures };
+}
+
+async function verifyTellerSignature(
+  body: string,
+  header: string,
+  secret: string,
+): Promise<boolean> {
+  const { timestamp, signatures } = parseTellerSignature(header);
+  if (!timestamp || signatures.length === 0) return false;
+
+  // Reject timestamps older than 3 minutes to prevent replay attacks
+  const age = Date.now() / 1000 - Number(timestamp);
+  if (age > 180) return false;
+
+  const signedMessage = `${timestamp}.${body}`;
+  const key = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+  const digest = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(signedMessage));
+  const computed = Buffer.from(new Uint8Array(digest)).toString("hex");
+
+  return signatures.some((sig) => sig === computed);
+}
+
+async function handleTellerWebhook(request: Request, _env: Env): Promise<Response> {
   const webhookSecret = process.env.TELLER_WEBHOOK_SECRET;
   if (!webhookSecret) {
     return Response.json({ error: "Webhook not configured" }, { status: 500 });
   }
 
-  const signature = request.headers.get("teller-signature");
-  if (!signature) {
+  const signatureHeader = request.headers.get("teller-signature");
+  if (!signatureHeader) {
     return Response.json({ error: "Missing signature" }, { status: 401 });
   }
 
   try {
     const body = await request.text();
 
-    const key = await crypto.subtle.importKey(
-      "raw",
-      new TextEncoder().encode(webhookSecret),
-      { name: "HMAC", hash: "SHA-256" },
-      false,
-      ["sign"],
-    );
-    const digest = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(body));
-    const computed = Buffer.from(new Uint8Array(digest)).toString("hex");
-
-    if (computed !== signature) {
+    const valid = await verifyTellerSignature(body, signatureHeader, webhookSecret);
+    if (!valid) {
       return Response.json({ error: "Invalid signature" }, { status: 401 });
     }
 
