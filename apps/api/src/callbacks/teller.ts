@@ -78,9 +78,15 @@ export async function handleTellerCallback(
         provider_connection_id: providerConn.id,
         connection_id: enrollmentId,
       })
+      .onConflictDoNothing({ target: institutionConnection.connection_id })
       .returning();
 
-    if (!instConn) return errorResponse("Failed to establish bank connection.");
+    if (!instConn) {
+      console.log("[Teller callback] duplicate callback, connection already exists", {
+        connectionId: enrollmentId,
+      });
+      return successResponse("Successfully connected your bank account!");
+    }
 
     const event: TellerWebhookEvent = {
       source: "teller",
