@@ -1,6 +1,7 @@
 import { AccountSubtypeEnum, AccountTypeEnum } from "../../db/schema/enums";
 import type { InsertTransaction } from "../../db/schema/transactions";
 import { createDb } from "../../lib/db";
+import { signState } from "../state";
 import type {
   AccountParams,
   ConnectionParams,
@@ -93,10 +94,13 @@ export class TellerProvider implements IProvider {
       const backendUrl = process.env.NGROK_URL || process.env.BACKEND_URL;
       if (!backendUrl) return { success: false, error: "BACKEND_URL not configured" };
 
-      const state = JSON.stringify({
-        userId: params.userId,
-        institutionId: params.institutionId,
-      });
+      const secret = process.env.BETTER_AUTH_SECRET;
+      if (!secret) return { success: false, error: "Server configuration error" };
+
+      const state = await signState(
+        { userId: params.userId, institutionId: params.institutionId },
+        secret,
+      );
 
       const connectUrl = new URL(`https://teller.io/connect/${config.applicationId}`);
       connectUrl.searchParams.set("environment", config.environment);
@@ -127,10 +131,13 @@ export class TellerProvider implements IProvider {
       const backendUrl = process.env.NGROK_URL || process.env.BACKEND_URL;
       if (!backendUrl) return { success: false, error: "BACKEND_URL not configured" };
 
-      const state = JSON.stringify({
-        userId: params.userId,
-        institutionId: params.institutionId,
-      });
+      const secret = process.env.BETTER_AUTH_SECRET;
+      if (!secret) return { success: false, error: "Server configuration error" };
+
+      const state = await signState(
+        { userId: params.userId, institutionId: params.institutionId },
+        secret,
+      );
 
       const connectUrl = new URL(`https://teller.io/connect/${config.applicationId}`);
       connectUrl.searchParams.set("environment", config.environment);

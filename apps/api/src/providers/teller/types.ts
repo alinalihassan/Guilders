@@ -86,8 +86,3 @@ export type TellerTransaction = {
     account: string;
   };
 };
-
-export type TellerConnectionState = {
-  userId: string;
-  institutionId: number;
-};

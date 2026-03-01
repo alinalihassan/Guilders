@@ -3,7 +3,7 @@ import { eq } from "drizzle-orm";
 import { institutionConnection } from "../db/schema/institution-connections";
 import { providerConnection } from "../db/schema/provider-connections";
 import { createDb } from "../lib/db";
-import type { TellerConnectionState } from "../providers/teller/types";
+import { verifyState } from "../providers/state";
 import type { TellerEventType, TellerWebhookEvent } from "../queues/types";
 import { errorResponse, successResponse } from "./template";
 
@@ -25,14 +25,15 @@ export async function handleTellerCallback(
     return errorResponse("Missing required parameters. Please try again.");
   }
 
-  let state: TellerConnectionState;
-  try {
-    state = JSON.parse(stateParam);
-  } catch {
-    return errorResponse("Invalid connection state. Please try again.");
+  const secret = process.env.BETTER_AUTH_SECRET;
+  if (!secret) {
+    console.error("[Teller callback] Missing BETTER_AUTH_SECRET");
+    return errorResponse("Server configuration error. Please try again later.");
   }
 
-  if (!state.userId || !state.institutionId) {
+  const state = await verifyState(stateParam, secret);
+  if (!state) {
+    console.error("[Teller callback] State HMAC verification failed");
     return errorResponse("Invalid connection state. Please try again.");
   }
 

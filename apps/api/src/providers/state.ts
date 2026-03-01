@@ -1,4 +1,7 @@
-import type { ConnectionState } from "./types";
+export type ConnectionState = {
+  userId: string;
+  institutionId: number;
+};
 
 function toBase64Url(str: string): string {
   return btoa(str).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
@@ -42,9 +45,7 @@ export async function verifyState(
   if (!payload || !sigHex || sigHex.length !== 64) return null;
 
   const key = await getHmacKey(secret);
-  const sigBytes = new Uint8Array(
-    (sigHex.match(/.{2}/g) ?? []).map((h) => Number.parseInt(h, 16)),
-  );
+  const sigBytes = new Uint8Array((sigHex.match(/.{2}/g) ?? []).map((h) => Number.parseInt(h, 16)));
   const valid = await crypto.subtle.verify(
     "HMAC",
     key,

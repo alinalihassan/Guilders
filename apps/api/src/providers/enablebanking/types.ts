@@ -154,8 +154,3 @@ export type GetSessionResponse = {
   authorized?: string;
   closed?: string;
 };
-
-export type ConnectionState = {
-  userId: string;
-  institutionId: number;
-};

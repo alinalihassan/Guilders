@@ -4,7 +4,7 @@ import { institutionConnection } from "../db/schema/institution-connections";
 import { providerConnection } from "../db/schema/provider-connections";
 import { createDb } from "../lib/db";
 import { EnableBankingClient } from "../providers/enablebanking/client";
-import { verifyState } from "../providers/enablebanking/state";
+import { verifyState } from "../providers/state";
 import type { EnableBankingWebhookEvent } from "../queues/types";
 import { errorResponse, successResponse } from "./template";
 
@@ -18,7 +18,11 @@ export async function handleEnableBankingCallback(
   const error = url.searchParams.get("error");
 
   if (error) {
-    console.error("[EnableBanking callback] Authorization error:", error, url.searchParams.get("error_description"));
+    console.error(
+      "[EnableBanking callback] Authorization error:",
+      error,
+      url.searchParams.get("error_description"),
+    );
     return errorResponse("Bank authorization was cancelled or failed. Please try again.");
   }
 

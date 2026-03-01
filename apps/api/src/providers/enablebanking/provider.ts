@@ -1,6 +1,7 @@
 import { AccountSubtypeEnum, AccountTypeEnum } from "../../db/schema/enums";
 import type { InsertTransaction } from "../../db/schema/transactions";
 import { createDb } from "../../lib/db";
+import { signState } from "../state";
 import type {
   AccountParams,
   ConnectionParams,
@@ -15,7 +16,6 @@ import type {
   TransactionParams,
 } from "../types";
 import { EnableBankingClient } from "./client";
-import { signState } from "./state";
 import type { CashAccountType } from "./types";
 
 function getConfig() {
