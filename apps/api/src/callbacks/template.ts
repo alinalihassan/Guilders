@@ -103,7 +103,12 @@ function getTemplate({
 
 export const htmlResponse = (status: "success" | "error", message: string) =>
   new Response(getTemplate({ status, message }), {
-    headers: { "Content-Type": "text/html" },
+    headers: {
+      "Content-Type": "text/html",
+      "X-Content-Type-Options": "nosniff",
+      "Content-Security-Policy":
+        "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'",
+    },
   });
 
 export const errorResponse = (message: string) => htmlResponse("error", message);

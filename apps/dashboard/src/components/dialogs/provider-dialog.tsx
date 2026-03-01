@@ -51,7 +51,13 @@ export function ProviderDialog() {
 
     const handleMessageEvent = (e: MessageEvent) => {
       if (isTeller && e.origin === TELLER_ORIGIN) {
-        const data = typeof e.data === "string" ? JSON.parse(e.data) : e.data;
+        // oxlint-disable-next-line typescript/no-explicit-any: TODO
+        let data: any;
+        try {
+          data = typeof e.data === "string" ? JSON.parse(e.data) : e.data;
+        } catch {
+          return;
+        }
         if (data?.namespace !== "teller-connect") return;
 
         if (data.event === "exit") {
