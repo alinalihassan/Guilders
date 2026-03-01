@@ -1,3 +1,6 @@
+import { eq, max } from "drizzle-orm";
+
+import { rate } from "../../db/schema/rates";
 import type { Database } from "../../lib/db";
 import type { FinancialContext, FinancialDataJson, ToFinancialDataJsonParams } from "./types";
 import { FINANCIAL_ADVISOR_PROMPT } from "./types";
@@ -54,7 +57,10 @@ export async function getFinancialContext(userId: string, db: Database): Promise
     limit: 50,
   });
 
-  const exchangeRates = await db.query.rate.findMany();
+  const [latest] = await db.select({ date: max(rate.date) }).from(rate);
+  const exchangeRates = latest?.date
+    ? await db.select().from(rate).where(eq(rate.date, latest.date))
+    : [];
 
   const userRecord = await db.query.user.findFirst({
     where: { id: userId },
