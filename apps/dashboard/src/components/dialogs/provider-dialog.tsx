@@ -69,6 +69,9 @@ export function ProviderDialog() {
             url.searchParams.set("access_token", accessToken);
             url.searchParams.set("enrollment_id", enrollmentId);
             iframeRef.current.src = url.toString();
+            // Invalidate queries to refresh accounts/transactions after Teller connect
+            queryClient.invalidateQueries({ queryKey: accountsQueryKey });
+            queryClient.invalidateQueries({ queryKey: transactionsQueryKey });
           }
         }
 
