@@ -24,8 +24,14 @@ function pemToArrayBuffer(pem: string): ArrayBuffer {
   const base64 = normalizedPem
     .replace(/-----BEGIN PRIVATE KEY-----/, "")
     .replace(/-----END PRIVATE KEY-----/, "")
-    .replace(/\n/g, "");
-  return Buffer.from(base64, "base64").buffer;
+    .replace(/\s+/g, "");
+  const buffer = Buffer.from(base64, "base64");
+  const arrayBuffer = new ArrayBuffer(buffer.length);
+  const view = new Uint8Array(arrayBuffer);
+  for (let i = 0; i < buffer.length; i++) {
+    view[i] = buffer[i]!;
+  }
+  return arrayBuffer;
 }
 
 type RequestOptions = {
