@@ -492,14 +492,22 @@ async function processEnableBankingEvent(event: EnableBankingWebhookEvent) {
     return;
   }
 
-  await db.insert(account).values(
-    accounts.map((a) => ({
-      ...a,
-      locked_attributes: SYNCED_ACCOUNT_LOCKED_ATTRIBUTES,
-    })),
-  );
+  const mappedAccounts = accounts.map((a) => {
+    // EnableBanking sometimes returns RUR (old Russian Ruble code) instead of RUB
+    // or other non-standard codes. Map them to standard ISO 4217 codes.
+    let currency = a.currency;
+    if (currency === "RUR") currency = "RUB";
 
-  for (const acc of accounts) {
+    return {
+      ...a,
+      currency,
+      locked_attributes: SYNCED_ACCOUNT_LOCKED_ATTRIBUTES,
+    };
+  });
+
+  await db.insert(account).values(mappedAccounts);
+
+  for (const acc of mappedAccounts) {
     if (!acc.provider_account_id) continue;
 
     try {
@@ -509,10 +517,15 @@ async function processEnableBankingEvent(event: EnableBankingWebhookEvent) {
 
       if (providerTxns.length) {
         await db.insert(transaction).values(
-          providerTxns.map((t) => ({
-            ...t,
-            locked_attributes: SYNCED_TRANSACTION_LOCKED_ATTRIBUTES,
-          })),
+          providerTxns.map((t) => {
+            let currency = t.currency;
+            if (currency === "RUR") currency = "RUB";
+            return {
+              ...t,
+              currency,
+              locked_attributes: SYNCED_TRANSACTION_LOCKED_ATTRIBUTES,
+            };
+          }),
         );
       }
     } catch (error) {
