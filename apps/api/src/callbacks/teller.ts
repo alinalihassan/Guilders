@@ -45,29 +45,18 @@ export async function handleTellerCallback(
     });
     if (!providerRecord) return errorResponse("Provider configuration error.");
 
-    let providerConn = await db.query.providerConnection.findFirst({
-      where: {
+    const [providerConn] = await db
+      .insert(providerConnection)
+      .values({
         provider_id: providerRecord.id,
         user_id: state.userId,
-      },
-    });
-
-    if (providerConn) {
-      await db
-        .update(providerConnection)
-        .set({ secret: accessToken, updated_at: new Date() })
-        .where(eq(providerConnection.id, providerConn.id));
-    } else {
-      const [created] = await db
-        .insert(providerConnection)
-        .values({
-          provider_id: providerRecord.id,
-          user_id: state.userId,
-          secret: accessToken,
-        })
-        .returning();
-      providerConn = created;
-    }
+        secret: accessToken,
+      })
+      .onConflictDoUpdate({
+        target: [providerConnection.provider_id, providerConnection.user_id],
+        set: { secret: accessToken, updated_at: new Date() },
+      })
+      .returning();
 
     if (!providerConn) return errorResponse("Failed to establish connection.");
 

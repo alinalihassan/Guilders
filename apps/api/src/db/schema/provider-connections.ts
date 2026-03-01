@@ -1,4 +1,4 @@
-import { index, integer, pgTable, serial, timestamp, varchar } from "drizzle-orm/pg-core";
+import { index, integer, pgTable, serial, timestamp, uniqueIndex, varchar } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-orm/typebox-legacy";
 
 import { user } from "./auth";
@@ -28,6 +28,7 @@ export const providerConnection = pgTable(
     index("provider_connection_id_idx").on(table.id),
     index("provider_connection_user_idx").on(table.user_id),
     index("provider_connection_provider_idx").on(table.provider_id),
+    uniqueIndex("provider_connection_provider_user_idx").on(table.provider_id, table.user_id),
   ],
 );
 
