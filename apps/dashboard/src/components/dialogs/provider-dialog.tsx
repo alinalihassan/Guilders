@@ -31,6 +31,7 @@ export function ProviderDialog() {
   const { isOpen, data: providerData, close } = useDialog("provider");
   const queryClient = useQueryClient();
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const openedRef = useRef(false);
 
   const iframeSrc = useMemo(() => {
     if (!providerData) return "";
@@ -40,7 +41,10 @@ export function ProviderDialog() {
   }, [providerData]);
 
   useEffect(() => {
-    if (!providerData) return;
+    if (!providerData) {
+      openedRef.current = false;
+      return;
+    }
 
     const successDescription = `You have successfully ${
       providerData.operation === "connect" ? "connected" : "fixed the connection"
@@ -49,7 +53,8 @@ export function ProviderDialog() {
       providerData.operation === "connect" ? "connecting" : "fixing the connection"
     } to the institution.`;
 
-    if (providerData.redirectType === "redirect") {
+    if (providerData.redirectType === "redirect" && !openedRef.current) {
+      openedRef.current = true;
       window.open(providerData.redirectUri, "_blank");
     }
 
