@@ -47,7 +47,7 @@ function mapCashAccountType(type: CashAccountType): {
  * so we can reconstruct authorization params from just the institution record.
  */
 function encodeInstitutionId(name: string, country: string, maxConsent: number): string {
-  return `${name}::${country}::${maxConsent}`;
+  return encodeURIComponent(JSON.stringify({ name, country, maxConsent }));
 }
 
 function decodeInstitutionId(id: string): {
@@ -55,20 +55,24 @@ function decodeInstitutionId(id: string): {
   country: string;
   maxConsentValidity: string;
 } | null {
-  const parts = id.split("::");
-  if (parts.length !== 3) return null;
-
-  const name = parts[0]!;
-  const country = parts[1]!;
-  const maxConsentStr = parts[2]!;
-  const maxConsentSeconds = Number.parseInt(maxConsentStr, 10);
+  let parsed: { name: string; country: string; maxConsent: number };
+  try {
+    parsed = JSON.parse(decodeURIComponent(id)) as {
+      name: string;
+      country: string;
+      maxConsent: number;
+    };
+  } catch {
+    return null;
+  }
+  const maxConsentSeconds = Number.parseInt(String(parsed.maxConsent), 10);
   if (Number.isNaN(maxConsentSeconds)) return null;
 
   const validUntil = new Date(Date.now() + maxConsentSeconds * 1000)
     .toISOString()
     .replace("Z", "+00:00");
 
-  return { name, country, maxConsentValidity: validUntil };
+  return { name: parsed.name, country: parsed.country, maxConsentValidity: validUntil };
 }
 
 export class EnableBankingProvider implements IProvider {
@@ -245,7 +249,7 @@ export class EnableBankingProvider implements IProvider {
       currency: t.transaction_amount.currency,
       date: t.booking_date ?? t.value_date ?? t.transaction_date ?? new Date().toISOString(),
       description: t.remittance_information?.join(", ") ?? "",
-      provider_transaction_id: t.entry_reference ?? null,
+      provider_transaction_id: t.transaction_id ?? t.entry_reference ?? null,
     }));
   }
 }

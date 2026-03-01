@@ -13,7 +13,7 @@ export async function handleTellerCallback(
   url: URL,
 ): Promise<Response> {
   if (request.method === "POST") {
-    return handleTellerWebhook(request, env);
+    return handleTellerWebhook(request);
   }
 
   const accessToken = url.searchParams.get("access_token");
@@ -143,7 +143,7 @@ async function verifyTellerSignature(
   return signatures.some((sig) => sig === computed);
 }
 
-async function handleTellerWebhook(request: Request, _env: Env): Promise<Response> {
+async function handleTellerWebhook(request: Request): Promise<Response> {
   const webhookSecret = process.env.TELLER_WEBHOOK_SECRET;
   if (!webhookSecret) {
     return Response.json({ error: "Webhook not configured" }, { status: 500 });

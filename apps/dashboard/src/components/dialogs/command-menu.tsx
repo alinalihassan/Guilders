@@ -75,23 +75,18 @@ export function CommandMenu() {
 
   const parentRef = useRef<HTMLDivElement>(null);
 
-  const filteredInstitutions = useMemo(() => {
-    const allInstitutions = institutions ?? [];
-    return allInstitutions.filter((institution) => {
-      if (!search) return true;
-
-      const searchTerms = search.toLowerCase().trim().split(/\s+/);
-      const countryName = institution.country
-        ? countriesMap?.[institution.country] || "Global"
-        : "Global";
-
-      // Check if all search terms are found in either name or country
-      return searchTerms.every(
-        (term) =>
-          institution.name.toLowerCase().includes(term) || countryName.toLowerCase().includes(term),
-      );
-    });
-  }, [search, institutions, countriesMap]);
+  const allInstitutions = institutions ?? [];
+  const filteredInstitutions = allInstitutions.filter((institution) => {
+    if (!search) return true;
+    const searchTerms = search.toLowerCase().trim().split(/\s+/);
+    const countryName = institution.country
+      ? countriesMap?.[institution.country] || "Global"
+      : "Global";
+    return searchTerms.every(
+      (term) =>
+        institution.name.toLowerCase().includes(term) || countryName.toLowerCase().includes(term),
+    );
+  });
 
   const virtualizer = useVirtualizer({
     count: filteredInstitutions.length,

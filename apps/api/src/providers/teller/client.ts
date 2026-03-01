@@ -1,9 +1,4 @@
-import type {
-  TellerAccount,
-  TellerBalance,
-  TellerInstitution,
-  TellerTransaction,
-} from "./types";
+import type { TellerAccount, TellerBalance, TellerInstitution, TellerTransaction } from "./types";
 
 const BASE_URL = "https://api.teller.io";
 
@@ -98,9 +93,9 @@ export async function listAllTransactions(
       fromId,
     });
     all.push(...page);
-    if (page.length < PAGE_SIZE) break;
-    fromId = page[page.length - 1]?.id;
-    if (!fromId) break;
+    const nextFromId = page[page.length - 1]?.id;
+    if (!nextFromId || nextFromId === fromId) break;
+    fromId = nextFromId;
   }
 
   return all;

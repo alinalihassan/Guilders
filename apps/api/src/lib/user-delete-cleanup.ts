@@ -32,7 +32,6 @@ async function enqueueProviderCleanupJobs(userId: string): Promise<void> {
     for (const connection of providerConnections) {
       if (!connection.providerUserId) continue;
       if (!isProviderName(connection.providerName)) continue;
-      if (connection.providerName !== "SnapTrade") continue;
 
       const event: ProviderUserCleanupEvent = {
         source: "provider-user-cleanup",

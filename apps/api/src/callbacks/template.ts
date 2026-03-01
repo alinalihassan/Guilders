@@ -48,7 +48,7 @@ function getTemplate({
     <div class="message">
         <h2 class="${status}">${title}</h2>
         <p>${message}</p>
-        <p class="note">You can safely close this window and return to Guilders.</p>
+        <p class="note">This window can be safely closed.</p>
     </div>
     <script>
         window.onload = function() {

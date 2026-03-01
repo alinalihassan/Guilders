@@ -192,7 +192,8 @@ export const transactionRoutes = new Elysia({
       const unlockedBody = allowed as typeof body;
 
       const effectiveAccountId = unlockedBody.account_id ?? existingTransaction.account_id;
-      const effectiveCategoryId = unlockedBody.category_id ?? existingTransaction.category_id;
+      const effectiveCategoryId =
+        "category_id" in unlockedBody ? unlockedBody.category_id : existingTransaction.category_id;
       const effectiveAmount = unlockedBody.amount ?? existingTransaction.amount;
       const effectiveCurrency = unlockedBody.currency ?? existingTransaction.currency;
       const effectiveDate = unlockedBody.date ?? existingTransaction.date;
