@@ -102,10 +102,12 @@ export async function listAllTransactions(
 }
 
 export async function deleteEnrollment(accessToken: string): Promise<void> {
-  await fetch(`${BASE_URL}/`, {
+  const res = await fetch(`${BASE_URL}/`, {
     method: "DELETE",
     headers: authHeaders(accessToken),
   });
+
+  if (!res.ok) throw new Error(`Teller API error ${res.status}: ${await res.text()}`);
 }
 
 export { getTellerConfig };
