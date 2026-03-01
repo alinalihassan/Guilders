@@ -1,11 +1,12 @@
 "use client";
 
 import type { Institution } from "@guilders/api/types";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import { CommandLoading } from "cmdk";
 import { Banknote, Landmark, Link2, SquarePen } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 
 import {
   CommandDialog,
@@ -72,6 +73,8 @@ export function CommandMenu() {
 
   const currentPage = pages[pages.length - 1];
 
+  const parentRef = useRef<HTMLDivElement>(null);
+
   const filteredInstitutions = useMemo(() => {
     const allInstitutions = institutions ?? [];
     return allInstitutions.filter((institution) => {
@@ -89,6 +92,13 @@ export function CommandMenu() {
       );
     });
   }, [search, institutions, countriesMap]);
+
+  const virtualizer = useVirtualizer({
+    count: filteredInstitutions.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 48,
+    overscan: 5,
+  });
 
   const handleOpenChange = (_open: boolean) => {
     if (!_open) {
@@ -136,7 +146,7 @@ export function CommandMenu() {
         onValueChange={setSearch}
         placeholder="Type a command or search..."
       />
-      <CommandList>
+      <CommandList ref={parentRef}>
         <CommandEmpty>No results found.</CommandEmpty>
         {!currentPage && (
           <>
@@ -177,33 +187,53 @@ export function CommandMenu() {
         {currentPage === "add-synced-account" && (
           <>
             {isLoading && <CommandLoading>Loading institutions...</CommandLoading>}
-            {filteredInstitutions?.map((institution) => (
-              <CommandItem
-                key={institution.id}
-                onSelect={() => handleAddLinkedAccount(institution)}
-              >
-                <div className="flex items-center gap-2">
-                  <Image
-                    src={institution.logo_url}
-                    alt={`${institution.name} logo`}
-                    width={24}
-                    height={24}
-                    className="rounded-sm"
-                  />
-                  <div className="flex flex-col justify-center">
-                    <span className="text-md">{institution.name}</span>
-                    <span className="text-xs leading-3 text-muted-foreground">
-                      {institution.country
-                        ? countriesMap?.[institution.country] || "Global"
-                        : "Global"}{" "}
-                      •{" "}
-                      {providers?.find((p) => p.id === institution.provider_id)?.name ??
-                        "Unknown Provider"}
-                    </span>
-                  </div>
-                </div>
-              </CommandItem>
-            ))}
+            <div
+              style={{
+                height: `${virtualizer.getTotalSize()}px`,
+                width: "100%",
+                position: "relative",
+              }}
+            >
+              {virtualizer.getVirtualItems().map((virtualItem) => {
+                const institution = filteredInstitutions[virtualItem.index];
+                return (
+                  <CommandItem
+                    key={institution.id}
+                    value={institution.id}
+                    onSelect={() => handleAddLinkedAccount(institution)}
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      width: "100%",
+                      height: `${virtualItem.size}px`,
+                      transform: `translateY(${virtualItem.start}px)`,
+                    }}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Image
+                        src={institution.logo_url}
+                        alt={`${institution.name} logo`}
+                        width={24}
+                        height={24}
+                        className="rounded-sm"
+                      />
+                      <div className="flex flex-col justify-center">
+                        <span className="text-md">{institution.name}</span>
+                        <span className="text-xs leading-3 text-muted-foreground">
+                          {institution.country
+                            ? countriesMap?.[institution.country] || "Global"
+                            : "Global"}{" "}
+                          •{" "}
+                          {providers?.find((p) => p.id === institution.provider_id)?.name ??
+                            "Unknown Provider"}
+                        </span>
+                      </div>
+                    </div>
+                  </CommandItem>
+                );
+              })}
+            </div>
           </>
         )}
       </CommandList>
