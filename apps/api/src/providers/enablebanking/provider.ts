@@ -192,8 +192,52 @@ export class EnableBankingProvider implements IProvider {
     return this.connect(params);
   }
 
-  async refreshConnection(_connectionId: string): Promise<RefreshConnectionResult> {
-    return { success: true };
+  async refreshConnection(connectionId: string): Promise<RefreshConnectionResult> {
+    const client = this.createClient();
+    const db = createDb();
+
+    try {
+      const instConn = await db.query.institutionConnection.findFirst({
+        where: { connection_id: connectionId },
+        with: { providerConnection: true, institution: true },
+      });
+      if (!instConn?.providerConnection || !instConn.institution) {
+        return { success: false, error: "Connection not found" };
+      }
+
+      const decoded = decodeInstitutionId(instConn.institution.provider_institution_id);
+      if (!decoded) return { success: false, error: "Invalid institution ID format" };
+
+      const backendUrl = process.env.NGROK_URL || process.env.BACKEND_URL;
+      if (!backendUrl) return { success: false, error: "BACKEND_URL not configured" };
+
+      const secret = process.env.BETTER_AUTH_SECRET;
+      if (!secret) return { success: false, error: "Missing auth secret" };
+
+      const state = await signState(
+        { userId: instConn.providerConnection.user_id, institutionId: instConn.institution_id },
+        secret,
+      );
+
+      const authorization = await client.createAuthorization({
+        validUntil: decoded.maxConsentValidity,
+        aspspName: decoded.name,
+        aspspCountry: decoded.country,
+        redirectUrl: `${backendUrl}/callback/providers/enablebanking`,
+        state,
+        userId: instConn.providerConnection.user_id,
+      });
+
+      return {
+        success: true,
+        data: { redirectURI: authorization.url, type: "redirect" },
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Failed to refresh EnableBanking session",
+      };
+    }
   }
 
   async getAccounts(params: AccountParams): Promise<ProviderAccount[]> {

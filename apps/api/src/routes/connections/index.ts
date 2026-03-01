@@ -3,6 +3,7 @@ import { Elysia, status, t } from "elysia";
 
 import { institutionConnection } from "../../db/schema/institution-connections";
 import { providerConnection } from "../../db/schema/provider-connections";
+import { syncAccountData } from "../../lib/sync-connection-data";
 import { authPlugin } from "../../middleware/auth";
 import { getProvider } from "../../providers";
 import type { ProviderName } from "../../providers/types";
@@ -12,7 +13,9 @@ import {
   createConnectionSchema,
   providerOnlySchema,
   reconnectSchema,
+  refreshResultSchema,
   refreshSchema,
+  syncSchema,
 } from "./types";
 import { parseId } from "./utils";
 
@@ -203,7 +206,11 @@ export const connectionsRoutes = new Elysia({
             error: result.error || "Failed to refresh connection",
           });
         }
-        return { success: true };
+        return {
+          success: true,
+          redirectURI: result.data?.redirectURI,
+          type: result.data?.type,
+        };
       } catch (error) {
         return status(500, {
           error: error instanceof Error ? error.message : "Failed to refresh connection",
@@ -214,14 +221,15 @@ export const connectionsRoutes = new Elysia({
       auth: true,
       body: refreshSchema,
       response: {
-        200: t.Object({ success: t.Boolean() }),
+        200: refreshResultSchema,
         400: errorSchema,
         404: errorSchema,
         500: errorSchema,
       },
       detail: {
         summary: "Refresh provider connection",
-        description: "Trigger provider-side refresh for a linked institution",
+        description:
+          "Trigger provider-side auth refresh. May return a redirectURI for re-authentication.",
       },
     },
   )
@@ -349,6 +357,45 @@ export const connectionsRoutes = new Elysia({
       detail: {
         summary: "Deregister provider user",
         description: "Remove provider user and local connection records",
+      },
+    },
+  )
+  .post(
+    "/sync",
+    async ({ body, user, db }) => {
+      const accountId = parseId(body.account_id);
+      if (!accountId) {
+        return status(400, { error: "Invalid account_id" });
+      }
+
+      const accountRecord = await db.query.account.findFirst({
+        where: { id: accountId, user_id: user.id },
+      });
+      if (!accountRecord?.institution_connection_id) {
+        return status(404, { error: "Synced account not found" });
+      }
+
+      try {
+        await syncAccountData(accountId);
+        return { success: true };
+      } catch (error) {
+        return status(500, {
+          error: error instanceof Error ? error.message : "Failed to sync account data",
+        });
+      }
+    },
+    {
+      auth: true,
+      body: syncSchema,
+      response: {
+        200: t.Object({ success: t.Boolean() }),
+        400: errorSchema,
+        404: errorSchema,
+        500: errorSchema,
+      },
+      detail: {
+        summary: "Sync account data",
+        description: "Pull latest balance and transactions for a single account",
       },
     },
   );

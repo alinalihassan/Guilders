@@ -159,8 +159,48 @@ export class TellerProvider implements IProvider {
     }
   }
 
-  async refreshConnection(_connectionId: string): Promise<RefreshConnectionResult> {
-    return { success: true };
+  async refreshConnection(connectionId: string): Promise<RefreshConnectionResult> {
+    const db = createDb();
+    const config = client.getTellerConfig();
+
+    try {
+      const instConn = await db.query.institutionConnection.findFirst({
+        where: { connection_id: connectionId },
+        with: { providerConnection: true, institution: true },
+      });
+      if (!instConn?.providerConnection) {
+        return { success: false, error: "Connection not found" };
+      }
+
+      const backendUrl = process.env.NGROK_URL || process.env.BACKEND_URL;
+      if (!backendUrl) return { success: false, error: "BACKEND_URL not configured" };
+
+      const secret = process.env.BETTER_AUTH_SECRET;
+      if (!secret) return { success: false, error: "Server configuration error" };
+
+      const state = await signState(
+        { userId: instConn.providerConnection.user_id, institutionId: instConn.institution_id },
+        secret,
+      );
+
+      const connectUrl = new URL(`https://teller.io/connect/${config.applicationId}`);
+      connectUrl.searchParams.set("environment", config.environment);
+      connectUrl.searchParams.set("enrollment_id", connectionId);
+      connectUrl.searchParams.set(
+        "callback",
+        `${backendUrl}/callback/providers/teller?state=${encodeURIComponent(state)}`,
+      );
+
+      return {
+        success: true,
+        data: { redirectURI: connectUrl.toString(), type: "popup" },
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Failed to refresh Teller connection",
+      };
+    }
   }
 
   async getAccounts(params: AccountParams): Promise<ProviderAccount[]> {

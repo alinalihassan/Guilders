@@ -71,36 +71,48 @@ export async function handleTellerCallback(
 
     if (!providerConn) return errorResponse("Failed to establish connection.");
 
-    const [instConn] = await db
-      .insert(institutionConnection)
-      .values({
+    let existingInstConn = await db.query.institutionConnection.findFirst({
+      where: {
         institution_id: state.institutionId,
         provider_connection_id: providerConn.id,
-        connection_id: enrollmentId,
-      })
-      .onConflictDoNothing({ target: institutionConnection.connection_id })
-      .returning();
+      },
+    });
 
-    if (!instConn) {
-      console.log("[Teller callback] duplicate callback, connection already exists", {
-        connectionId: enrollmentId,
-      });
-      return successResponse("Successfully connected your bank account!");
+    let isReconnect = false;
+    if (existingInstConn) {
+      isReconnect = true;
+      await db
+        .update(institutionConnection)
+        .set({ connection_id: enrollmentId, broken: false })
+        .where(eq(institutionConnection.id, existingInstConn.id));
+    } else {
+      const [created] = await db
+        .insert(institutionConnection)
+        .values({
+          institution_id: state.institutionId,
+          provider_connection_id: providerConn.id,
+          connection_id: enrollmentId,
+        })
+        .returning();
+      existingInstConn = created;
     }
+
+    if (!existingInstConn) return errorResponse("Failed to create connection.");
 
     const event: TellerWebhookEvent = {
       source: "teller",
-      eventType: "ENROLLMENT_CREATED",
+      eventType: isReconnect ? "TRANSACTIONS_UPDATED" : "ENROLLMENT_CREATED",
       payload: {
         userId: state.userId,
-        institutionConnectionId: instConn.id,
+        institutionConnectionId: existingInstConn.id,
       },
     };
 
     await env.WEBHOOK_QUEUE.send(event);
-    console.log("[Teller callback] enqueued ENROLLMENT_CREATED", {
+    console.log(`[Teller callback] enqueued ${event.eventType}`, {
       userId: state.userId,
-      institutionConnectionId: instConn.id,
+      institutionConnectionId: existingInstConn.id,
+      isReconnect,
     });
 
     return successResponse("Successfully connected your bank account!");

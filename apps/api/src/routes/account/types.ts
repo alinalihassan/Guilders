@@ -33,12 +33,6 @@ export type Account = DbAccount & {
         provider?: Provider | null;
       })
     | null;
-  institution_connection?:
-    | (InstitutionConnection & {
-        institution?: Institution & { provider?: Provider | null };
-        provider?: Provider | null;
-      })
-    | null;
   children?: Account[];
 };
 

@@ -230,7 +230,7 @@ export function EditAccountDialog() {
             </div>
           )}
 
-          {account.institution_connection?.broken && (
+          {account.institutionConnection?.broken && (
             <div className="mt-4 flex flex-col gap-2">
               <div className="flex items-center gap-2 rounded-md bg-yellow-500/10 p-4 text-sm text-yellow-500">
                 <div className="flex items-center gap-2">

@@ -44,7 +44,7 @@ export function AccountItem({ account }: AccountItemProps) {
         />
         <div className="flex items-center gap-2">
           <p className="font-medium">{account.name}</p>
-          {account.institution_connection?.broken && (
+          {account.institutionConnection?.broken && (
             <TriangleAlert className="h-4 w-4 text-yellow-500" />
           )}
         </div>

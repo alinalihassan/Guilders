@@ -4,12 +4,11 @@ import { and, eq } from "drizzle-orm";
 import { account } from "../db/schema/accounts";
 import { AccountSubtypeEnum, AccountTypeEnum } from "../db/schema/enums";
 import { institutionConnection } from "../db/schema/institution-connections";
-import { transaction } from "../db/schema/transactions";
 import { createDb } from "../lib/db";
 import {
   SYNCED_ACCOUNT_LOCKED_ATTRIBUTES,
-  SYNCED_TRANSACTION_LOCKED_ATTRIBUTES,
 } from "../lib/locked-attributes";
+import { syncConnectionData } from "../lib/sync-connection-data";
 import { getProvider } from "../providers";
 import { getSnapTradeClient } from "../providers/snaptrade/client";
 import type {
@@ -479,85 +478,10 @@ async function processEnableBankingEvent(event: EnableBankingWebhookEvent) {
   if (event.eventType !== "CONNECTION_CREATED") return;
 
   const { userId, institutionConnectionId } = event.payload;
-  const db = createDb();
-
-  const provider = getProvider("EnableBanking");
-  const accounts = await provider.getAccounts({
-    userId,
-    connectionId: institutionConnectionId,
-  });
-
-  if (!accounts.length) {
-    console.log("[EnableBanking queue] no accounts found", { userId, institutionConnectionId });
-    return;
-  }
-
-  const mappedAccounts = accounts.map((a) => {
-    // EnableBanking sometimes returns RUR (old Russian Ruble code) instead of RUB
-    // or other non-standard codes. Map them to standard ISO 4217 codes.
-    let currency = a.currency;
-    if (currency === "RUR") currency = "RUB";
-
-    return {
-      ...a,
-      currency,
-      locked_attributes: SYNCED_ACCOUNT_LOCKED_ATTRIBUTES,
-    };
-  });
-
-  await db
-    .insert(account)
-    .values(mappedAccounts)
-    .onConflictDoNothing({
-      target: [account.provider_account_id, account.institution_connection_id],
-    });
-
-  for (const acc of mappedAccounts) {
-    if (!acc.provider_account_id) continue;
-
-    try {
-      const providerTxns = await provider.getTransactions({
-        accountId: acc.provider_account_id,
-      });
-
-      const firstTxn = providerTxns[0];
-      if (firstTxn) {
-        const existingTxnRows = await db
-          .select({ provider_transaction_id: transaction.provider_transaction_id })
-          .from(transaction)
-          .where(eq(transaction.account_id, firstTxn.account_id));
-
-        const knownIds = new Set(
-          existingTxnRows.map((t) => t.provider_transaction_id).filter(Boolean),
-        );
-
-        const newTxns = providerTxns.filter(
-          (t) => t.provider_transaction_id && !knownIds.has(t.provider_transaction_id),
-        );
-
-        if (newTxns.length) {
-          await db.insert(transaction).values(
-            newTxns.map((t) => {
-              let currency = t.currency;
-              if (currency === "RUR") currency = "RUB";
-              return {
-                ...t,
-                currency,
-                locked_attributes: SYNCED_TRANSACTION_LOCKED_ATTRIBUTES,
-              };
-            }),
-          );
-        }
-      }
-    } catch (error) {
-      console.error("[EnableBanking queue] Failed to sync transactions for account:", acc.provider_account_id, error);
-    }
-  }
-
-  console.log("[EnableBanking queue] sync complete", {
+  await syncConnectionData({
+    providerName: "EnableBanking",
     userId,
     institutionConnectionId,
-    accounts: accounts.length,
   });
 }
 
@@ -580,145 +504,20 @@ async function processTellerEvent(event: TellerWebhookEvent) {
 async function handleTellerEnrollmentCreated(
   payload: TellerWebhookEvent["payload"],
 ): Promise<void> {
-  const { userId, institutionConnectionId } = payload;
-  const db = createDb();
-
-  const provider = getProvider("Teller");
-  const accounts = await provider.getAccounts({
-    userId,
-    connectionId: institutionConnectionId,
-  });
-
-  if (!accounts.length) {
-    console.log("[Teller queue] no accounts found", { userId, institutionConnectionId });
-    return;
-  }
-
-  await db
-    .insert(account)
-    .values(
-      accounts.map((a) => ({
-        ...a,
-        locked_attributes: SYNCED_ACCOUNT_LOCKED_ATTRIBUTES,
-      })),
-    )
-    .onConflictDoNothing({
-      target: [account.provider_account_id, account.institution_connection_id],
-    });
-
-  for (const acc of accounts) {
-    if (!acc.provider_account_id) continue;
-
-    try {
-      const providerTxns = await provider.getTransactions({
-        accountId: acc.provider_account_id,
-      });
-
-      const firstTxn = providerTxns[0];
-      if (firstTxn) {
-        const existingTxnRows = await db
-          .select({ provider_transaction_id: transaction.provider_transaction_id })
-          .from(transaction)
-          .where(eq(transaction.account_id, firstTxn.account_id));
-
-        const knownIds = new Set(
-          existingTxnRows.map((t) => t.provider_transaction_id).filter(Boolean),
-        );
-
-        const newTxns = providerTxns.filter(
-          (t) => t.provider_transaction_id && !knownIds.has(t.provider_transaction_id),
-        );
-
-        if (newTxns.length) {
-          await db.insert(transaction).values(
-            newTxns.map((t) => ({
-              ...t,
-              locked_attributes: SYNCED_TRANSACTION_LOCKED_ATTRIBUTES,
-            })),
-          );
-        }
-      }
-    } catch (error) {
-      console.error("[Teller queue] Failed to sync transactions for account:", acc.provider_account_id, error);
-    }
-  }
-
-  console.log("[Teller queue] sync complete", {
-    userId,
-    institutionConnectionId,
-    accounts: accounts.length,
+  await syncConnectionData({
+    providerName: "Teller",
+    userId: payload.userId,
+    institutionConnectionId: payload.institutionConnectionId,
   });
 }
 
 async function handleTellerTransactionsUpdated(
   payload: TellerWebhookEvent["payload"],
 ): Promise<void> {
-  const { userId, institutionConnectionId } = payload;
-  const db = createDb();
-
-  const existingAccounts = await db
-    .select({ id: account.id, provider_account_id: account.provider_account_id })
-    .from(account)
-    .where(
-      and(
-        eq(account.institution_connection_id, institutionConnectionId),
-        eq(account.user_id, userId),
-      ),
-    );
-
-  if (!existingAccounts.length) {
-    console.log("[Teller queue] no existing accounts for transaction sync", {
-      userId,
-      institutionConnectionId,
-    });
-    return;
-  }
-
-  const provider = getProvider("Teller");
-  for (const acc of existingAccounts) {
-    if (!acc.provider_account_id) continue;
-
-    try {
-      const providerTxns = await provider.getTransactions({
-        accountId: acc.provider_account_id,
-      });
-
-      if (!providerTxns.length) continue;
-
-      const existingTxnRows = await db
-        .select({ provider_transaction_id: transaction.provider_transaction_id })
-        .from(transaction)
-        .where(eq(transaction.account_id, acc.id));
-
-      const knownIds = new Set(
-        existingTxnRows.map((t) => t.provider_transaction_id).filter(Boolean),
-      );
-
-      const newTxns = providerTxns.filter(
-        (t) => t.provider_transaction_id && !knownIds.has(t.provider_transaction_id),
-      );
-
-      if (newTxns.length) {
-        await db.insert(transaction).values(
-          newTxns.map((t) => ({
-            ...t,
-            locked_attributes: SYNCED_TRANSACTION_LOCKED_ATTRIBUTES,
-          })),
-        );
-      }
-    } catch (error) {
-      console.error(
-        "[Teller queue] Failed to sync transactions for account:",
-        acc.provider_account_id,
-        error,
-      );
-    }
-  }
-
-  console.log("[Teller queue] transaction sync complete", {
-    userId,
-    institutionConnectionId,
-    accounts: existingAccounts.length,
+  await syncConnectionData({
+    providerName: "Teller",
+    userId: payload.userId,
+    institutionConnectionId: payload.institutionConnectionId,
   });
 }
 

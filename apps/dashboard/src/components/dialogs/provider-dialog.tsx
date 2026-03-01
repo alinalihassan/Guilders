@@ -151,7 +151,7 @@ export function ProviderDialog() {
             ref={iframeRef}
             src={iframeSrc}
             title="Provider Connection Dialog"
-            className={`h-full w-full rounded-lg border-none ${isTeller ? "p-0" : "p-16"}`}
+            className={`h-full w-full rounded-lg border-none`}
             allow="clipboard-read *; clipboard-write *"
             sandbox="allow-forms allow-scripts allow-popups allow-popups-to-escape-sandbox allow-same-origin"
           />

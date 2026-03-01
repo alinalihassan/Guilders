@@ -27,6 +27,7 @@ export type AccountParams = {
 
 export type TransactionParams = {
   accountId: string;
+  connectionId: number;
 };
 
 export type ProviderAccount = InsertAccount & {
@@ -59,6 +60,10 @@ export type DeregisterUserResult = {
 export type RefreshConnectionResult = {
   success: boolean;
   error?: string;
+  data?: {
+    redirectURI: string;
+    type: "redirect" | "popup";
+  };
 };
 
 export interface IProvider {

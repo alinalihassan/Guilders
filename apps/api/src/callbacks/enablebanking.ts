@@ -83,36 +83,48 @@ export async function handleEnableBankingCallback(
     const enableBankingClient = new EnableBankingClient(clientId, privateKey);
     const session = await enableBankingClient.authorizeSession(code);
 
-    const [instConn] = await db
-      .insert(institutionConnection)
-      .values({
+    let existingInstConn = await db.query.institutionConnection.findFirst({
+      where: {
         institution_id: state.institutionId,
         provider_connection_id: providerConn.id,
-        connection_id: session.session_id,
-      })
-      .onConflictDoNothing({ target: institutionConnection.connection_id })
-      .returning();
+      },
+    });
 
-    if (!instConn) {
-      console.log("[EnableBanking callback] duplicate callback, connection already exists", {
-        connectionId: session.session_id,
-      });
-      return successResponse("Successfully connected your bank account!");
+    let isReconnect = false;
+    if (existingInstConn) {
+      isReconnect = true;
+      await db
+        .update(institutionConnection)
+        .set({ connection_id: session.session_id, broken: false })
+        .where(eq(institutionConnection.id, existingInstConn.id));
+    } else {
+      const [created] = await db
+        .insert(institutionConnection)
+        .values({
+          institution_id: state.institutionId,
+          provider_connection_id: providerConn.id,
+          connection_id: session.session_id,
+        })
+        .returning();
+      existingInstConn = created;
     }
+
+    if (!existingInstConn) return errorResponse("Failed to create connection.");
 
     const event: EnableBankingWebhookEvent = {
       source: "enablebanking",
       eventType: "CONNECTION_CREATED",
       payload: {
         userId: state.userId,
-        institutionConnectionId: instConn.id,
+        institutionConnectionId: existingInstConn.id,
       },
     };
 
     await env.WEBHOOK_QUEUE.send(event);
-    console.log("[EnableBanking callback] enqueued CONNECTION_CREATED", {
+    console.log(`[EnableBanking callback] enqueued CONNECTION_CREATED`, {
       userId: state.userId,
-      institutionConnectionId: instConn.id,
+      institutionConnectionId: existingInstConn.id,
+      isReconnect,
     });
 
     return successResponse("Successfully connected your bank account!");

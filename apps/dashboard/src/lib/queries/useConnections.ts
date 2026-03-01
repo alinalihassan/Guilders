@@ -1,8 +1,9 @@
 import type { ConnectionResponse } from "@guilders/api/types";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { api, edenError } from "@/lib/api";
+import { queryKey as accountQueryKey } from "./useAccounts";
 
 export function useRegisterConnection() {
   return useMutation({
@@ -101,12 +102,13 @@ export function useRefreshConnection() {
     }: {
       providerId: string;
       connectionId: string;
-    }): Promise<void> => {
-      const { error } = await (api as Record<string, any>).connections.refresh.post({
+    }): Promise<{ success: boolean; redirectURI?: string; type?: "redirect" | "popup" }> => {
+      const { data, error } = await (api as Record<string, any>).connections.refresh.post({
         provider_id: providerId,
         connection_id: connectionId,
       });
       if (error) throw new Error(edenError(error));
+      return data as { success: boolean; redirectURI?: string; type?: "redirect" | "popup" };
     },
     onError: (error) => {
       console.error("Failed to refresh connection:", error);
@@ -114,9 +116,27 @@ export function useRefreshConnection() {
         description: error.message,
       });
     },
+  });
+}
+
+export function useSyncAccount() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ accountId }: { accountId: string }): Promise<void> => {
+      const { error } = await (api as Record<string, any>).connections.sync.post({
+        account_id: accountId,
+      });
+      if (error) throw new Error(edenError(error));
+    },
     onSuccess: () => {
-      toast.success("Connection refreshed", {
-        description: "Your connection has been refreshed successfully.",
+      queryClient.invalidateQueries({ queryKey: accountQueryKey });
+      toast.success("Account data synced");
+    },
+    onError: (error) => {
+      console.error("Failed to sync account data:", error);
+      toast.error("Failed to sync data", {
+        description: error.message,
       });
     },
   });
