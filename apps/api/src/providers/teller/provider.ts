@@ -98,12 +98,17 @@ export class TellerProvider implements IProvider {
         institutionId: params.institutionId,
       });
 
-      const connectUrl = new URL("https://teller.io/connect");
-      connectUrl.searchParams.set("application_id", config.applicationId);
-      connectUrl.searchParams.set("institution_id", inst.provider_institution_id);
+      // Teller Connect URL: /connect/{appId}?environment=...&institution=...
+      // Note: origin + loader_id are added by the frontend (it needs window.origin)
+      const connectUrl = new URL(`https://teller.io/connect/${config.applicationId}`);
       connectUrl.searchParams.set("environment", config.environment);
-      connectUrl.searchParams.set("callback_uri", `${backendUrl}/callback/providers/teller`);
-      connectUrl.searchParams.set("state", state);
+      connectUrl.searchParams.set("institution", inst.provider_institution_id);
+
+      // Embed callback info in fragment (not sent to Teller's server)
+      connectUrl.hash = new URLSearchParams({
+        callback: `${backendUrl}/callback/providers/teller`,
+        state,
+      }).toString();
 
       return {
         success: true,
@@ -118,16 +123,10 @@ export class TellerProvider implements IProvider {
   }
 
   async reconnect(params: ConnectionParams): Promise<ConnectResult> {
-    const db = createDb();
     const config = client.getTellerConfig();
 
     try {
       if (!params.connectionId) return { success: false, error: "connectionId required" };
-
-      const instConn = await db.query.institutionConnection.findFirst({
-        where: { connection_id: params.connectionId },
-      });
-      if (!instConn) return { success: false, error: "Connection not found" };
 
       const backendUrl = process.env.NGROK_URL || process.env.BACKEND_URL;
       if (!backendUrl) return { success: false, error: "BACKEND_URL not configured" };
@@ -137,12 +136,14 @@ export class TellerProvider implements IProvider {
         institutionId: params.institutionId,
       });
 
-      const connectUrl = new URL("https://teller.io/connect");
-      connectUrl.searchParams.set("application_id", config.applicationId);
-      connectUrl.searchParams.set("enrollment_id", params.connectionId);
+      const connectUrl = new URL(`https://teller.io/connect/${config.applicationId}`);
       connectUrl.searchParams.set("environment", config.environment);
-      connectUrl.searchParams.set("callback_uri", `${backendUrl}/callback/providers/teller`);
-      connectUrl.searchParams.set("state", state);
+      connectUrl.searchParams.set("enrollment_id", params.connectionId);
+
+      connectUrl.hash = new URLSearchParams({
+        callback: `${backendUrl}/callback/providers/teller`,
+        state,
+      }).toString();
 
       return {
         success: true,
@@ -167,7 +168,8 @@ export class TellerProvider implements IProvider {
       where: { id: params.connectionId },
       with: { providerConnection: true },
     });
-    if (!instConn?.providerConnection?.secret) throw new Error("Connection or access token not found");
+    if (!instConn?.providerConnection?.secret)
+      throw new Error("Connection or access token not found");
 
     const accessToken = instConn.providerConnection.secret;
     const tellerAccounts = await client.listAccounts(accessToken);
