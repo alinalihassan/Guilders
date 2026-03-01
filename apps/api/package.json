@@ -12,7 +12,7 @@
     "format:check": "oxfmt --check .",
     "cf-typegen": "wrangler types",
     "ngrok": "bun --env-file=.env __ngrok-command",
-    "auth:generate": "bunx --bun @better-auth/cli generate --output src/db/schema/auth.ts -y",
+    "auth:generate": "bunx --bun auth generate --output src/db/schema/auth.ts -y",
     "db:generate": "drizzle-kit generate --config drizzle.config.ts",
     "db:migrate": "drizzle-kit migrate --config drizzle.config.ts",
     "db:studio": "drizzle-kit studio",
@@ -20,9 +20,10 @@
     "__ngrok-command": "ngrok http 3000 --authtoken=$NGROK_AUTHTOKEN --url=${NGROK_URL}"
   },
   "dependencies": {
-    "@better-auth/drizzle-adapter": "https://pkg.pr.new/better-auth/better-auth/@better-auth/drizzle-adapter@6913",
+    "@better-auth/api-key": "catalog:",
+    "@better-auth/drizzle-adapter": "catalog:",
     "@better-auth/expo": "catalog:",
-    "@better-auth/oauth-provider": "^1.4.19",
+    "@better-auth/oauth-provider": "catalog:",
     "@better-auth/passkey": "catalog:",
     "@better-auth/stripe": "catalog:",
     "@elysiajs/cors": "^1.4.1",
@@ -46,7 +47,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@better-auth/cli": "^1.4.19",
+    "auth": "catalog:",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "drizzle-kit": "1.0.0-beta.15-859cf75",

@@ -1,0 +1,2 @@
+ALTER TABLE "transaction" ALTER COLUMN "category_id" DROP NOT NULL;--> statement-breakpoint
+ALTER TABLE "transaction" DROP CONSTRAINT "transaction_category_id_category_id_fkey", ADD CONSTRAINT "transaction_category_id_category_id_fkey" FOREIGN KEY ("category_id") REFERENCES "category"("id") ON DELETE SET NULL ON UPDATE CASCADE;

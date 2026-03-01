@@ -7,6 +7,7 @@ import {
   serial,
   text,
   timestamp,
+  uniqueIndex,
   varchar,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-orm/typebox-legacy";
@@ -71,6 +72,10 @@ export const account = pgTable(
     index("account_currency_idx").on(table.currency),
     index("account_parent_idx").on(table.parent),
     index("account_institution_connection_idx").on(table.institution_connection_id),
+    uniqueIndex("account_provider_account_connection_idx").on(
+      table.provider_account_id,
+      table.institution_connection_id,
+    ),
   ],
 );
 

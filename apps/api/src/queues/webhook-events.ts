@@ -5,12 +5,17 @@ import { account } from "../db/schema/accounts";
 import { AccountSubtypeEnum, AccountTypeEnum } from "../db/schema/enums";
 import { institutionConnection } from "../db/schema/institution-connections";
 import { createDb } from "../lib/db";
-import { SYNCED_ACCOUNT_LOCKED_ATTRIBUTES } from "../lib/locked-attributes";
+import {
+  SYNCED_ACCOUNT_LOCKED_ATTRIBUTES,
+} from "../lib/locked-attributes";
+import { syncConnectionData } from "../lib/sync-connection-data";
 import { getProvider } from "../providers";
 import { getSnapTradeClient } from "../providers/snaptrade/client";
 import type {
+  EnableBankingWebhookEvent,
   ProviderUserCleanupEvent,
   SnapTradeWebhookEvent,
+  TellerWebhookEvent,
   UserFilesCleanupEvent,
   WebhookEvent,
 } from "./types";
@@ -30,6 +35,12 @@ export async function handleWebhookQueue(
       switch (event.source) {
         case "snaptrade":
           await processSnapTradeEvent(event);
+          break;
+        case "enablebanking":
+          await processEnableBankingEvent(event);
+          break;
+        case "teller":
+          await processTellerEvent(event);
           break;
         case "provider-user-cleanup":
           await processProviderUserCleanupEvent(event);
@@ -458,5 +469,70 @@ async function syncSnapTradeHoldings(
     institutionConnectionId: institutionConn.id,
     parentId,
     positions: positions.length,
+  });
+}
+
+// --- EnableBanking processing ---
+
+async function processEnableBankingEvent(event: EnableBankingWebhookEvent) {
+  if (event.eventType !== "CONNECTION_CREATED") return;
+
+  const { userId, institutionConnectionId } = event.payload;
+  await syncConnectionData({
+    providerName: "EnableBanking",
+    userId,
+    institutionConnectionId,
+  });
+}
+
+// --- Teller processing ---
+
+async function processTellerEvent(event: TellerWebhookEvent) {
+  switch (event.eventType) {
+    case "ENROLLMENT_CREATED":
+      await handleTellerEnrollmentCreated(event.payload);
+      break;
+    case "TRANSACTIONS_UPDATED":
+      await handleTellerTransactionsUpdated(event.payload);
+      break;
+    case "ENROLLMENT_DISCONNECTED":
+      await handleTellerEnrollmentDisconnected(event.payload);
+      break;
+  }
+}
+
+async function handleTellerEnrollmentCreated(
+  payload: TellerWebhookEvent["payload"],
+): Promise<void> {
+  await syncConnectionData({
+    providerName: "Teller",
+    userId: payload.userId,
+    institutionConnectionId: payload.institutionConnectionId,
+  });
+}
+
+async function handleTellerTransactionsUpdated(
+  payload: TellerWebhookEvent["payload"],
+): Promise<void> {
+  await syncConnectionData({
+    providerName: "Teller",
+    userId: payload.userId,
+    institutionConnectionId: payload.institutionConnectionId,
+  });
+}
+
+async function handleTellerEnrollmentDisconnected(
+  payload: TellerWebhookEvent["payload"],
+): Promise<void> {
+  const { institutionConnectionId } = payload;
+  const db = createDb();
+
+  await db
+    .update(institutionConnection)
+    .set({ broken: true })
+    .where(eq(institutionConnection.id, institutionConnectionId));
+
+  console.log("[Teller queue] enrollment marked as disconnected", {
+    institutionConnectionId,
   });
 }

@@ -1,7 +1,10 @@
 import type { InsertAccount } from "../db/schema/accounts";
 import type { InsertTransaction } from "../db/schema/transactions";
 
-export type ProviderName = "SaltEdge" | "SnapTrade";
+export const PROVIDER_NAMES = ["EnableBanking", "SnapTrade", "Teller"] as const;
+export type ProviderName = (typeof PROVIDER_NAMES)[number];
+
+export const PROVIDERS_REQUIRING_SECRET: readonly ProviderName[] = ["SnapTrade", "Teller"];
 
 export type ProviderInstitution = {
   name: string;
@@ -24,6 +27,7 @@ export type AccountParams = {
 
 export type TransactionParams = {
   accountId: string;
+  connectionId: number;
 };
 
 export type ProviderAccount = InsertAccount & {
@@ -56,6 +60,10 @@ export type DeregisterUserResult = {
 export type RefreshConnectionResult = {
   success: boolean;
   error?: string;
+  data?: {
+    redirectURI: string;
+    type: "redirect" | "popup";
+  };
 };
 
 export interface IProvider {

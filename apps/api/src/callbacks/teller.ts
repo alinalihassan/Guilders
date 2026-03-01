@@ -1,0 +1,220 @@
+import { eq } from "drizzle-orm";
+
+import { institutionConnection } from "../db/schema/institution-connections";
+import { providerConnection } from "../db/schema/provider-connections";
+import { createDb } from "../lib/db";
+import { verifyState } from "../providers/state";
+import type { TellerEventType, TellerWebhookEvent } from "../queues/types";
+import { errorResponse, successResponse } from "./template";
+
+export async function handleTellerCallback(
+  request: Request,
+  env: Env,
+  url: URL,
+): Promise<Response> {
+  if (request.method === "POST") {
+    return handleTellerWebhook(request, env);
+  }
+
+  const accessToken = url.searchParams.get("access_token");
+  const enrollmentId = url.searchParams.get("enrollment_id");
+  const stateParam = url.searchParams.get("state");
+
+  if (!accessToken || !enrollmentId || !stateParam) {
+    console.error("[Teller callback] Missing required parameters");
+    return errorResponse("Missing required parameters. Please try again.");
+  }
+
+  const secret = process.env.BETTER_AUTH_SECRET;
+  if (!secret) {
+    console.error("[Teller callback] Missing BETTER_AUTH_SECRET");
+    return errorResponse("Server configuration error. Please try again later.");
+  }
+
+  const state = await verifyState(stateParam, secret);
+  if (!state) {
+    console.error("[Teller callback] State HMAC verification failed");
+    return errorResponse("Invalid connection state. Please try again.");
+  }
+
+  const db = createDb();
+
+  try {
+    const providerRecord = await db.query.provider.findFirst({
+      where: { name: "Teller" },
+    });
+    if (!providerRecord) return errorResponse("Provider configuration error.");
+
+    const [providerConn] = await db
+      .insert(providerConnection)
+      .values({
+        provider_id: providerRecord.id,
+        user_id: state.userId,
+        secret: accessToken,
+      })
+      .onConflictDoUpdate({
+        target: [providerConnection.provider_id, providerConnection.user_id],
+        set: { secret: accessToken, updated_at: new Date() },
+      })
+      .returning();
+
+    if (!providerConn) return errorResponse("Failed to establish connection.");
+
+    let existingInstConn = await db.query.institutionConnection.findFirst({
+      where: {
+        institution_id: state.institutionId,
+        provider_connection_id: providerConn.id,
+      },
+    });
+
+    let isReconnect = false;
+    if (existingInstConn) {
+      isReconnect = true;
+      await db
+        .update(institutionConnection)
+        .set({ connection_id: enrollmentId, broken: false })
+        .where(eq(institutionConnection.id, existingInstConn.id));
+    } else {
+      const [created] = await db
+        .insert(institutionConnection)
+        .values({
+          institution_id: state.institutionId,
+          provider_connection_id: providerConn.id,
+          connection_id: enrollmentId,
+        })
+        .returning();
+      existingInstConn = created;
+    }
+
+    if (!existingInstConn) return errorResponse("Failed to create connection.");
+
+    const event: TellerWebhookEvent = {
+      source: "teller",
+      eventType: isReconnect ? "TRANSACTIONS_UPDATED" : "ENROLLMENT_CREATED",
+      payload: {
+        userId: state.userId,
+        institutionConnectionId: existingInstConn.id,
+      },
+    };
+
+    await env.WEBHOOK_QUEUE.send(event);
+    console.log(`[Teller callback] enqueued ${event.eventType}`, {
+      userId: state.userId,
+      institutionConnectionId: existingInstConn.id,
+      isReconnect,
+    });
+
+    return successResponse("Successfully connected your bank account!");
+  } catch (error) {
+    console.error("[Teller callback] Unexpected error:", error);
+    return errorResponse("An unexpected error occurred. Please try again later.");
+  }
+}
+
+function parseTellerSignature(header: string) {
+  const parts = header.split(",");
+  let timestamp = "";
+  const signatures: string[] = [];
+
+  for (const part of parts) {
+    const [key, value] = part.split("=", 2);
+    if (key === "t") timestamp = value ?? "";
+    else if (key === "v1" && value) signatures.push(value);
+  }
+
+  return { timestamp, signatures };
+}
+
+async function verifyTellerSignature(
+  body: string,
+  header: string,
+  secret: string,
+): Promise<boolean> {
+  const { timestamp, signatures } = parseTellerSignature(header);
+  if (!timestamp || signatures.length === 0) return false;
+
+  // Reject timestamps older than 3 minutes to prevent replay attacks
+  const age = Date.now() / 1000 - Number(timestamp);
+  if (age > 180) return false;
+
+  const signedMessage = `${timestamp}.${body}`;
+  const key = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+  const digest = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(signedMessage));
+  const computed = Buffer.from(new Uint8Array(digest)).toString("hex");
+
+  return signatures.some((sig) => sig === computed);
+}
+
+const TELLER_EVENT_TYPE_MAP: Record<string, TellerEventType | undefined> = {
+  "transactions.processed": "TRANSACTIONS_UPDATED",
+  "enrollment.disconnected": "ENROLLMENT_DISCONNECTED",
+};
+
+async function handleTellerWebhook(request: Request, env: Env): Promise<Response> {
+  const webhookSecret = process.env.TELLER_WEBHOOK_SECRET;
+  if (!webhookSecret) {
+    return Response.json({ error: "Webhook not configured" }, { status: 500 });
+  }
+
+  const signatureHeader = request.headers.get("teller-signature");
+  if (!signatureHeader) {
+    return Response.json({ error: "Missing signature" }, { status: 401 });
+  }
+
+  try {
+    const body = await request.text();
+
+    const valid = await verifyTellerSignature(body, signatureHeader, webhookSecret);
+    if (!valid) {
+      return Response.json({ error: "Invalid signature" }, { status: 401 });
+    }
+
+    const payload = JSON.parse(body);
+    console.log("[Teller webhook] Received event", {
+      type: payload?.type,
+      enrollmentId: payload?.payload?.enrollment_id,
+    });
+
+    const mappedEventType = TELLER_EVENT_TYPE_MAP[payload.type];
+    const enrollmentId: string | undefined = payload.payload?.enrollment_id;
+
+    if (mappedEventType && enrollmentId) {
+      const db = createDb();
+      const instConn = await db.query.institutionConnection.findFirst({
+        where: { connection_id: enrollmentId },
+        with: { providerConnection: true },
+      });
+
+      if (instConn?.providerConnection) {
+        const event: TellerWebhookEvent = {
+          source: "teller",
+          eventType: mappedEventType,
+          payload: {
+            userId: instConn.providerConnection.user_id,
+            institutionConnectionId: instConn.id,
+          },
+        };
+
+        await env.WEBHOOK_QUEUE.send(event);
+        console.log("[Teller webhook] enqueued event", {
+          eventType: mappedEventType,
+          userId: instConn.providerConnection.user_id,
+          institutionConnectionId: instConn.id,
+        });
+      } else {
+        console.warn("[Teller webhook] no institution connection found for enrollment", { enrollmentId });
+      }
+    }
+
+    return Response.json({ received: true });
+  } catch (error) {
+    console.error("[Teller webhook] Error:", error);
+    return Response.json({ error: "Processing failed" }, { status: 500 });
+  }
+}

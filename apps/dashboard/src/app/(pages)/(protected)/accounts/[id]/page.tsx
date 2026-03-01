@@ -1,9 +1,8 @@
 "use client";
 
-import { MoreHorizontal, Pencil, RefreshCw, Trash2 } from "lucide-react";
+import { Link2, MoreHorizontal, Pencil, RefreshCw, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { use, useState } from "react";
-import { toast } from "sonner";
 
 import { AccountHoldingsDonutCard } from "@/components/dashboard/account-holdings-donut-card";
 import { AccountsCard } from "@/components/dashboard/accounts/account-card";
@@ -20,8 +19,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDialog } from "@/hooks/useDialog";
 import { useAccount, useRemoveAccount } from "@/lib/queries/useAccounts";
-import { useRefreshConnection } from "@/lib/queries/useConnections";
-import { useInstitutionConnection } from "@/lib/queries/useInstitutionConnection";
+import { useRefreshConnection, useSyncAccount } from "@/lib/queries/useConnections";
 
 export default function AccountPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -30,10 +28,9 @@ export default function AccountPage({ params }: { params: Promise<{ id: string }
   const { open: openEdit } = useDialog("editAccount");
   const { open: openConfirmation } = useDialog("confirmation");
   const { mutate: removeAccount, isPending: isDeleting } = useRemoveAccount();
-  const { mutate: refreshConnection, isPending: isRefreshing } = useRefreshConnection();
-  const { data: institutionConnection } = useInstitutionConnection(
-    account?.institution_connection_id ?? 0,
-  );
+  const { mutate: syncAccount, isPending: isSyncing } = useSyncAccount();
+  const { mutateAsync: refreshConnection, isPending: isReconnecting } = useRefreshConnection();
+  const { open: openProviderDialog } = useDialog("provider");
   const router = useRouter();
   const accountValue = Number(account?.value ?? 0);
   const accountCost = Number(account?.cost ?? 0);
@@ -70,30 +67,29 @@ export default function AccountPage({ params }: { params: Promise<{ id: string }
 
   const handleRefresh = async () => {
     if (!account?.institution_connection_id) return;
-    const providerId =
-      institutionConnection?.provider_connection?.provider_id?.toString() ??
-      account.institutionConnection?.provider?.id?.toString();
-    if (!providerId) {
-      toast.error("Failed to refresh connection", {
-        description: "Missing provider for this connected account.",
-      });
-      return;
-    }
 
-    refreshConnection(
-      {
-        providerId,
-        connectionId: account.institution_connection_id.toString(),
-      },
-      {
-        onSuccess: () => {
-          toast.success("Account refresh queued");
-        },
-        onError: (error) => {
-          toast.error(error instanceof Error ? error.message : "Failed to refresh connection");
-        },
-      },
-    );
+    syncAccount({
+      accountId: account.id.toString(),
+    });
+  };
+
+  const handleReconnect = async () => {
+    const providerId = account?.institutionConnection?.institution?.provider_id;
+    const connectionId = account?.institution_connection_id;
+    if (!providerId || !connectionId) return;
+
+    const result = await refreshConnection({
+      providerId: providerId.toString(),
+      connectionId: connectionId.toString(),
+    });
+
+    if (result.redirectURI && result.type) {
+      openProviderDialog({
+        redirectUri: result.redirectURI,
+        operation: "reconnect",
+        redirectType: result.type,
+      });
+    }
   };
 
   return (
@@ -120,9 +116,9 @@ export default function AccountPage({ params }: { params: Promise<{ id: string }
             <div className="flex flex-1 items-center justify-between">
               <div>
                 <h1 className="text-xl font-semibold text-foreground">{account.name}</h1>
-                {account.institution_connection?.institution?.name && (
+                {account.institutionConnection?.institution?.name && (
                   <p className="text-sm text-muted-foreground">
-                    {account.institution_connection.institution.name}
+                    {account.institutionConnection.institution.name}
                   </p>
                 )}
               </div>
@@ -132,10 +128,10 @@ export default function AccountPage({ params }: { params: Promise<{ id: string }
                     variant="ghost"
                     size="icon"
                     onClick={handleRefresh}
-                    disabled={isRefreshing}
+                    disabled={isSyncing}
                   >
-                    <RefreshCw className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
-                    <span className="sr-only">Refresh connection</span>
+                    <RefreshCw className={`h-4 w-4 ${isSyncing ? "animate-spin" : ""}`} />
+                    <span className="sr-only">Sync data</span>
                   </Button>
                 )}
                 <DropdownMenu>
@@ -150,6 +146,12 @@ export default function AccountPage({ params }: { params: Promise<{ id: string }
                       <Pencil className="mr-2 h-4 w-4" />
                       Edit
                     </DropdownMenuItem>
+                    {account.institution_connection_id && (
+                      <DropdownMenuItem onClick={handleReconnect} disabled={isReconnecting}>
+                        <Link2 className="mr-2 h-4 w-4" />
+                        Reconnect
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuItem
                       onClick={handleDelete}
                       className="text-destructive focus:text-destructive"

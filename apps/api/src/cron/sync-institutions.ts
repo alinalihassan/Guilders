@@ -2,13 +2,16 @@ import { sql } from "drizzle-orm";
 
 import { institution } from "../db/schema/institutions";
 import { createDb } from "../lib/db";
+import { EnableBankingProvider } from "../providers/enablebanking/provider";
 import { SnapTradeProvider } from "../providers/snaptrade/provider";
+import { TellerProvider } from "../providers/teller/provider";
 import type { IProvider } from "../providers/types";
 
 function getProviderAdapters(): IProvider[] {
   return [
-    // new SaltEdgeProvider(),
+    new EnableBankingProvider(),
     new SnapTradeProvider(),
+    new TellerProvider(),
   ];
 }
 

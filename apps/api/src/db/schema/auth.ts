@@ -6,7 +6,6 @@ import {
   integer,
   jsonb,
   index,
-  varchar,
 } from "drizzle-orm/pg-core";
 
 export const user = pgTable("user", {
@@ -15,12 +14,12 @@ export const user = pgTable("user", {
   email: text("email").notNull().unique(),
   emailVerified: boolean("email_verified").default(false).notNull(),
   image: text("image"),
-  currency: varchar("currency", { length: 3 }).notNull().default("EUR"),
   createdAt: timestamp("created_at").notNull(),
   updatedAt: timestamp("updated_at")
     .$onUpdate(() => new Date())
     .notNull(),
   twoFactorEnabled: boolean("two_factor_enabled").default(false),
+  currency: text("currency").default("EUR"),
 });
 
 export const session = pgTable(
@@ -85,13 +84,12 @@ export const apikey = pgTable(
   "apikey",
   {
     id: text("id").primaryKey(),
+    configId: text("config_id").default("default").notNull(),
     name: text("name"),
     start: text("start"),
+    referenceId: text("reference_id").notNull(),
     prefix: text("prefix"),
     key: text("key").notNull(),
-    userId: text("user_id")
-      .notNull()
-      .references(() => user.id, { onDelete: "cascade" }),
     refillInterval: integer("refill_interval"),
     refillAmount: integer("refill_amount"),
     lastRefillAt: timestamp("last_refill_at"),
@@ -109,8 +107,9 @@ export const apikey = pgTable(
     metadata: text("metadata"),
   },
   (table) => [
+    index("apikey_configId_idx").on(table.configId),
+    index("apikey_referenceId_idx").on(table.referenceId),
     index("apikey_key_idx").on(table.key),
-    index("apikey_userId_idx").on(table.userId),
   ],
 );
 
@@ -188,6 +187,7 @@ export const oauthClient = pgTable("oauth_client", {
   responseTypes: text("response_types").array(),
   public: boolean("public"),
   type: text("type"),
+  requirePKCE: boolean("require_pkce"),
   referenceId: text("reference_id"),
   metadata: jsonb("metadata"),
 });
@@ -208,6 +208,7 @@ export const oauthRefreshToken = pgTable("oauth_refresh_token", {
   expiresAt: timestamp("expires_at"),
   createdAt: timestamp("created_at"),
   revoked: timestamp("revoked"),
+  authTime: timestamp("auth_time"),
   scopes: text("scopes").array().notNull(),
 });
 

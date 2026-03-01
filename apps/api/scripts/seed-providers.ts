@@ -9,6 +9,16 @@ const providers = [
     name: "SnapTrade",
     logo_url: "https://bucket.guilders.app/provider_logo/snaptrade_logo.svg",
   },
+  {
+    id: 2,
+    name: "EnableBanking",
+    logo_url: "https://bucket.guilders.app/provider_logo/enablebanking_logo.svg",
+  },
+  {
+    id: 3,
+    name: "Teller",
+    logo_url: "https://bucket.guilders.app/provider_logo/teller_logo.svg",
+  },
 ] as const;
 
 export async function seedProviders() {

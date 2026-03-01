@@ -1,4 +1,4 @@
-import { boolean, index, integer, pgTable, serial, timestamp, varchar } from "drizzle-orm/pg-core";
+import { boolean, index, integer, pgTable, serial, timestamp, uniqueIndex, varchar } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-orm/typebox-legacy";
 
 import { institution } from "./institutions";
@@ -28,6 +28,7 @@ export const institutionConnection = pgTable(
     index("institution_connection_id_idx").on(table.id),
     index("institution_connection_institution_idx").on(table.institution_id),
     index("institution_connection_provider_idx").on(table.provider_connection_id),
+    uniqueIndex("institution_connection_connection_id_idx").on(table.connection_id),
   ],
 );
 

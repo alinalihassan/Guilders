@@ -26,28 +26,34 @@ export type SnapTradeWebhookEvent = {
   payload: SnapTradeWebhookPayload;
 };
 
-// --- SaltEdge ---
+// --- EnableBanking ---
 
-export type SaltEdgeCallbackStage =
-  | "connect"
-  | "fetch_holder_info"
-  | "fetch_accounts"
-  | "fetch_transactions"
-  | "finish";
+export type EnableBankingEventType = "CONNECTION_CREATED";
 
-export type SaltEdgeWebhookPayload = {
-  connectionId: string;
-  customerId: string;
-  stage?: SaltEdgeCallbackStage;
-  errorClass?: string;
-  errorMessage?: string;
-  customFields?: Record<string, string>;
+export type EnableBankingWebhookPayload = {
+  userId: string;
+  institutionConnectionId: number;
 };
 
-export type SaltEdgeWebhookEvent = {
-  source: "saltedge";
-  eventType: "success" | "failure" | "destroy";
-  payload: SaltEdgeWebhookPayload;
+export type EnableBankingWebhookEvent = {
+  source: "enablebanking";
+  eventType: EnableBankingEventType;
+  payload: EnableBankingWebhookPayload;
+};
+
+// --- Teller ---
+
+export type TellerEventType = "ENROLLMENT_CREATED" | "TRANSACTIONS_UPDATED" | "ENROLLMENT_DISCONNECTED";
+
+export type TellerWebhookPayload = {
+  userId: string;
+  institutionConnectionId: number;
+};
+
+export type TellerWebhookEvent = {
+  source: "teller";
+  eventType: TellerEventType;
+  payload: TellerWebhookPayload;
 };
 
 // --- Provider cleanup ---
@@ -73,6 +79,7 @@ export type UserFilesCleanupEvent = {
 
 export type WebhookEvent =
   | SnapTradeWebhookEvent
-  | SaltEdgeWebhookEvent
+  | EnableBankingWebhookEvent
+  | TellerWebhookEvent
   | ProviderUserCleanupEvent
   | UserFilesCleanupEvent;

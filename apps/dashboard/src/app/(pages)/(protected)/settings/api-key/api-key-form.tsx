@@ -37,19 +37,18 @@ export function ApiKeyForm() {
       return;
     }
 
-    const records: ApiKeyRecord[] = Array.isArray(data)
-      ? data
-          .map(
-            (item) =>
-              ({
-                id: String((item as { id?: unknown }).id ?? ""),
-                name: (item as { name?: string | null }).name ?? null,
-                start: (item as { start?: string | null }).start ?? null,
-                prefix: (item as { prefix?: string | null }).prefix ?? null,
-              }) satisfies ApiKeyRecord,
-          )
-          .filter((item) => item.id.length > 0)
-      : [];
+    const items = (data as { apiKeys?: unknown[] })?.apiKeys ?? [];
+    const records: ApiKeyRecord[] = items
+      .map(
+        (item) =>
+          ({
+            id: String((item as { id?: unknown }).id ?? ""),
+            name: (item as { name?: string | null }).name ?? null,
+            start: (item as { start?: string | null }).start ?? null,
+            prefix: (item as { prefix?: string | null }).prefix ?? null,
+          }) satisfies ApiKeyRecord,
+      )
+      .filter((item) => item.id.length > 0);
     setKeys(records);
     setIsLoading(false);
   }, []);

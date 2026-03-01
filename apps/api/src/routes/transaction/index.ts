@@ -65,15 +65,17 @@ export const transactionRoutes = new Elysia({
 
       const amount = parseFloat(body.amount.toString());
 
-      const categoryResult = await db.query.category.findFirst({
-        where: {
-          id: body.category_id,
-          user_id: user.id,
-        },
-      });
+      if (body.category_id) {
+        const categoryResult = await db.query.category.findFirst({
+          where: {
+            id: body.category_id,
+            user_id: user.id,
+          },
+        });
 
-      if (!categoryResult) {
-        return status(404, { error: "Category not found" });
+        if (!categoryResult) {
+          return status(404, { error: "Category not found" });
+        }
       }
 
       // Update account value
@@ -190,7 +192,8 @@ export const transactionRoutes = new Elysia({
       const unlockedBody = allowed as typeof body;
 
       const effectiveAccountId = unlockedBody.account_id ?? existingTransaction.account_id;
-      const effectiveCategoryId = unlockedBody.category_id ?? existingTransaction.category_id;
+      const effectiveCategoryId =
+        "category_id" in unlockedBody ? unlockedBody.category_id : existingTransaction.category_id;
       const effectiveAmount = unlockedBody.amount ?? existingTransaction.amount;
       const effectiveCurrency = unlockedBody.currency ?? existingTransaction.currency;
       const effectiveDate = unlockedBody.date ?? existingTransaction.date;
@@ -211,15 +214,17 @@ export const transactionRoutes = new Elysia({
         return status(404, { error: "Account not found" });
       }
 
-      const categoryResult = await db.query.category.findFirst({
-        where: {
-          id: effectiveCategoryId,
-          user_id: user.id,
-        },
-      });
+      if (effectiveCategoryId) {
+        const categoryResult = await db.query.category.findFirst({
+          where: {
+            id: effectiveCategoryId,
+            user_id: user.id,
+          },
+        });
 
-      if (!categoryResult) {
-        return status(404, { error: "Category not found" });
+        if (!categoryResult) {
+          return status(404, { error: "Category not found" });
+        }
       }
 
       // Calculate value adjustment

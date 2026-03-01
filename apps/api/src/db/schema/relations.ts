@@ -67,7 +67,7 @@ export const relations = defineRelations(schema, (r) => ({
     }),
     apikeys: r.many.apikey({
       from: r.user.id,
-      to: r.apikey.userId,
+      to: r.apikey.referenceId,
     }),
     twoFactors: r.many.twoFactor({
       from: r.user.id,
@@ -116,7 +116,7 @@ export const relations = defineRelations(schema, (r) => ({
   },
   apikey: {
     user: r.one.user({
-      from: r.apikey.userId,
+      from: r.apikey.referenceId,
       to: r.user.id,
     }),
   },

@@ -225,30 +225,44 @@ export class SnapTradeProvider implements IProvider {
     const db = createDb();
 
     try {
-      const connection = await db.query.institutionConnection.findFirst({
+      const instConn = await db.query.institutionConnection.findFirst({
         where: { connection_id: connectionId },
         with: {
           providerConnection: true,
+          institution: true,
         },
       });
-      if (!connection?.providerConnection?.secret) {
-        return { success: false, error: "Provider connection not found" };
+      if (!instConn?.providerConnection?.secret || !instConn.institution) {
+        return { success: false, error: "Connection not found" };
       }
 
-      const response = await client.connections.refreshBrokerageAuthorization({
-        authorizationId: connectionId,
-        userId: connection.providerConnection.user_id,
-        userSecret: connection.providerConnection.secret,
+      const brokerages = await client.referenceData.listAllBrokerages();
+      const brokerage = brokerages.data.find(
+        (item) => item.id === instConn.institution!.provider_institution_id,
+      );
+
+      if (!brokerage?.slug) {
+        return { success: false, error: "Brokerage not found" };
+      }
+
+      const response = await client.authentication.loginSnapTradeUser({
+        userId: instConn.providerConnection.user_id,
+        userSecret: instConn.providerConnection.secret,
+        broker: brokerage.slug,
+        reconnect: connectionId,
       });
 
-      if (response.status !== 200) {
-        return {
-          success: false,
-          error: "Failed to refresh SnapTrade connection",
-        };
+      if (!response.data || !("redirectURI" in response.data) || !response.data.redirectURI) {
+        return { success: false, error: "Failed to generate redirect URL" };
       }
 
-      return { success: true };
+      return {
+        success: true,
+        data: {
+          redirectURI: response.data.redirectURI,
+          type: "popup",
+        },
+      };
     } catch (error) {
       const message = getErrorMessage(error, "Failed to refresh SnapTrade connection");
       console.error("[SnapTrade] refreshConnection failed", {
@@ -263,10 +277,14 @@ export class SnapTradeProvider implements IProvider {
   }
 
   async getAccounts(_params: AccountParams): Promise<ProviderAccount[]> {
-    throw new Error("Not implemented");
+    throw new Error(
+      "SnapTrade is a brokerage connector — accounts and holdings are synced via webhooks, not pulled through getAccounts",
+    );
   }
 
   async getTransactions(_params: TransactionParams): Promise<InsertTransaction[]> {
-    throw new Error("Not implemented");
+    throw new Error(
+      "SnapTrade is a brokerage connector — it does not expose traditional transactions. Holdings are synced via webhooks.",
+    );
   }
 }

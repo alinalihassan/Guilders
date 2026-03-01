@@ -1,3 +1,4 @@
+import { apiKey } from "@better-auth/api-key";
 import { drizzleAdapter } from "@better-auth/drizzle-adapter";
 import { expo } from "@better-auth/expo";
 import { oauthProvider } from "@better-auth/oauth-provider";
@@ -5,7 +6,7 @@ import { passkey } from "@better-auth/passkey";
 import ChangeEmail from "@guilders/transactional/emails/change-email";
 import PasswordResetEmail from "@guilders/transactional/emails/password-reset";
 import { betterAuth } from "better-auth";
-import { apiKey, bearer, jwt, openAPI, twoFactor } from "better-auth/plugins";
+import { bearer, jwt, openAPI, twoFactor } from "better-auth/plugins";
 import { env, waitUntil } from "cloudflare:workers";
 
 import * as authSchema from "../db/schema/auth";
@@ -23,15 +24,12 @@ export function createAuth(db?: Database) {
   const mcpAudience = `${baseUrl}/mcp`;
   const passkeyRpId = process.env.PASSKEY_RP_ID ?? new URL(baseUrl).hostname;
 
-  // Type assertion needed: @better-auth/drizzle-adapter PR build (#6913) targets
-  // @better-auth/core@1.5.0-beta.13 while better-auth@1.4.19 uses core@1.4.19
   return betterAuth({
     baseURL: baseUrl,
     database: drizzleAdapter(authDb, {
       provider: "pg",
       schema: authSchema,
-      // oxlint-disable-next-line typescript/no-explicit-any
-    }) as any,
+    }),
     appName: "Guilders",
     secret: process.env.BETTER_AUTH_SECRET,
     user: {
