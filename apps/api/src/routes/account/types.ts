@@ -36,27 +36,9 @@ export type Account = DbAccount & {
   children?: Account[];
 };
 
-type BaseCreateAccount = Omit<
+export type CreateAccount = Omit<
   InsertAccount,
-  | "id"
-  | "user_id"
-  | "created_at"
-  | "updated_at"
-  | "type"
-  | "subtype"
-  | "value"
-  | "investable"
-  | "taxability"
-  | "tax_rate"
+  "id" | "user_id" | "created_at" | "updated_at" | "locked_attributes"
 >;
-
-export type CreateAccount = BaseCreateAccount & {
-  type?: `${DbAccount["type"]}`;
-  subtype: `${DbAccount["subtype"]}`;
-  value: number | string;
-  investable?: `${DbAccount["investable"]}`;
-  taxability?: `${DbAccount["taxability"]}`;
-  tax_rate?: number | string | null;
-};
 
 export type UpdateAccount = Partial<CreateAccount>;

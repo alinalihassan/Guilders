@@ -35,7 +35,7 @@ export function useAddTransaction() {
   const queryClient = useQueryClient();
   return useMutation<Transaction, Error, TransactionInsert>({
     mutationFn: async (transaction) => {
-      const { data, error } = await api.transaction.post(transaction as any);
+      const { data, error } = await api.transaction.post(transaction);
       if (error) throw new Error(edenError(error));
       return data as Transaction;
     },
@@ -65,7 +65,7 @@ export function useUpdateTransaction() {
       mutationFn: async ({ transactionId, transaction }) => {
         const { data, error } = await api
           .transaction({ id: transactionId })
-          .put(transaction as any);
+          .put(transaction);
         if (error) throw new Error(edenError(error));
         return data as Transaction;
       },
