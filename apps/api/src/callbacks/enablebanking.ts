@@ -122,7 +122,6 @@ export async function handleEnableBankingCallback(
 
     await env.WEBHOOK_QUEUE.send(event);
     console.log(`[EnableBanking callback] enqueued CONNECTION_CREATED`, {
-      userId: state.userId,
       institutionConnectionId: existingInstConn.id,
       isReconnect,
     });
