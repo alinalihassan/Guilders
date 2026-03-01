@@ -3,12 +3,12 @@ import { eq } from "drizzle-orm";
 
 import { providerConnection } from "../db/schema/provider-connections";
 import { provider } from "../db/schema/providers";
-import type { ProviderName } from "../providers/types";
+import { PROVIDER_NAMES, PROVIDERS_REQUIRING_SECRET, type ProviderName } from "../providers/types";
 import type { ProviderUserCleanupEvent, UserFilesCleanupEvent } from "../queues/types";
 import { createDb } from "./db";
 
 function isProviderName(name: string): name is ProviderName {
-  return name === "EnableBanking" || name === "SnapTrade" || name === "Teller";
+  return (PROVIDER_NAMES as readonly string[]).includes(name);
 }
 
 export async function enqueueUserDeleteCleanupJobs(userId: string): Promise<void> {
@@ -30,8 +30,9 @@ async function enqueueProviderCleanupJobs(userId: string): Promise<void> {
       .where(eq(providerConnection.user_id, userId));
 
     for (const connection of providerConnections) {
-      if (!connection.providerUserId) continue;
       if (!isProviderName(connection.providerName)) continue;
+      const needsSecret = PROVIDERS_REQUIRING_SECRET.includes(connection.providerName);
+      if (needsSecret && !connection.providerUserId) continue;
 
       const event: ProviderUserCleanupEvent = {
         source: "provider-user-cleanup",

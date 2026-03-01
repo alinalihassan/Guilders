@@ -1,7 +1,10 @@
 import type { InsertAccount } from "../db/schema/accounts";
 import type { InsertTransaction } from "../db/schema/transactions";
 
-export type ProviderName = "EnableBanking" | "SnapTrade" | "Teller";
+export const PROVIDER_NAMES = ["EnableBanking", "SnapTrade", "Teller"] as const;
+export type ProviderName = (typeof PROVIDER_NAMES)[number];
+
+export const PROVIDERS_REQUIRING_SECRET: readonly ProviderName[] = ["SnapTrade", "Teller"];
 
 export type ProviderInstitution = {
   name: string;
