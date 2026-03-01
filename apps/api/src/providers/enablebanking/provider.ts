@@ -45,9 +45,11 @@ function mapCashAccountType(type: CashAccountType): {
 /**
  * The provider_institution_id encodes ASPSP name, country, and max consent validity
  * so we can reconstruct authorization params from just the institution record.
+ *
+ * Stored as plain JSON — no URL-encoding — to stay well within the varchar(255) column limit.
  */
 function encodeInstitutionId(name: string, country: string, maxConsent: number): string {
-  return encodeURIComponent(JSON.stringify({ name, country, maxConsent }));
+  return JSON.stringify({ name, country, maxConsent });
 }
 
 function decodeInstitutionId(id: string): {
@@ -57,13 +59,17 @@ function decodeInstitutionId(id: string): {
 } | null {
   let parsed: { name: string; country: string; maxConsent: number };
   try {
-    parsed = JSON.parse(decodeURIComponent(id)) as {
-      name: string;
-      country: string;
-      maxConsent: number;
-    };
+    parsed = JSON.parse(id) as { name: string; country: string; maxConsent: number };
   } catch {
-    return null;
+    try {
+      parsed = JSON.parse(decodeURIComponent(id)) as {
+        name: string;
+        country: string;
+        maxConsent: number;
+      };
+    } catch {
+      return null;
+    }
   }
   const maxConsentSeconds = Number.parseInt(String(parsed.maxConsent), 10);
   if (Number.isNaN(maxConsentSeconds)) return null;
