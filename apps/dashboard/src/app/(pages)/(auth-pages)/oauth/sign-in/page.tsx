@@ -16,6 +16,12 @@ import { authClient } from "@/lib/auth-client";
 
 const DISPLAY_ONLY_QUERY_KEYS = new Set(["client_name", "client_uri"]);
 
+const SCOPE_LABELS: Record<string, string> = {
+  openid: "Verify your identity",
+  read: "Read your financial data",
+  write: "Create accounts and transactions",
+};
+
 const toOAuthQuery = (searchParams: ReturnType<typeof useSearchParams>) => {
   const params = new URLSearchParams(searchParams.toString());
   for (const key of DISPLAY_ONLY_QUERY_KEYS) {
@@ -113,7 +119,7 @@ function OAuthSignInForm() {
                 <div className="mt-2 flex flex-wrap gap-2">
                   {scopeList.map((item) => (
                     <Badge key={item} variant="secondary" className="rounded-md">
-                      {item}
+                      {SCOPE_LABELS[item] ?? item}
                     </Badge>
                   ))}
                 </div>

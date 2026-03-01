@@ -11,7 +11,7 @@ const getResourceMetadataUrl = () => {
 export const handleMcp = async (request: Request, env: Env, executionCtx: ExecutionContext) => {
   if (request.method === "OPTIONS") {
     const handler = createMcpHandler(
-      createMcpServer({ userId: "preflight" }) as unknown as Parameters<typeof createMcpHandler>[0],
+      createMcpServer({ userId: "preflight", scopes: [] }) as unknown as Parameters<typeof createMcpHandler>[0],
       {
         route: "/mcp",
         enableJsonResponse: true,
@@ -20,7 +20,7 @@ export const handleMcp = async (request: Request, env: Env, executionCtx: Execut
     return handler(request, env, executionCtx);
   }
 
-  let authContext: { userId: string };
+  let authContext: { userId: string; scopes: string[] };
   try {
     authContext = await verifyMcpRequest(request.headers);
   } catch (error) {

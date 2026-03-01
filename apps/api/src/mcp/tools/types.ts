@@ -1,6 +1,8 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type * as z from "zod/v4";
 
+import type { McpScope } from "../scopes";
+
 export type McpToolContext = {
   userId: string;
 };
@@ -26,6 +28,7 @@ export type McpToolDefinition<TInput extends Record<string, unknown> = Record<st
   {
     name: string;
     description: string;
+    requiredScope: McpScope;
     inputSchema: Record<string, z.ZodTypeAny>;
     handler: (input: TInput, context: McpToolContext) => Promise<McpToolResult>;
   };

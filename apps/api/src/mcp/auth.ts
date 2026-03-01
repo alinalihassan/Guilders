@@ -1,3 +1,5 @@
+import { decodeJwt } from "jose";
+
 const normalizeHeaders = (
   headers: Headers | Record<string, string | string[] | undefined> | undefined,
 ): Record<string, string> => {
@@ -30,9 +32,21 @@ const getApiOrigin = () => {
   return backendUrl.replace(/\/api\/auth\/?$/, "");
 };
 
+const extractScopesFromToken = (token: string): string[] => {
+  try {
+    const payload = decodeJwt(token);
+    if (typeof payload.scope === "string") {
+      return payload.scope.split(" ").filter(Boolean);
+    }
+  } catch {
+    // Opaque token — scopes will be resolved via fallback
+  }
+  return [];
+};
+
 export const verifyMcpRequest = async (
   headers: Headers | Record<string, string | string[] | undefined> | undefined,
-): Promise<{ userId: string }> => {
+): Promise<{ userId: string; scopes: string[] }> => {
   const requestHeaders = normalizeHeaders(headers);
   const authHeader =
     requestHeaders.authorization ??
@@ -60,7 +74,10 @@ export const verifyMcpRequest = async (
     throw new Error("Unauthorized: access token missing subject.");
   }
 
+  const scopes = extractScopesFromToken(accessToken);
+
   return {
     userId: userInfo.sub,
+    scopes,
   };
 };
