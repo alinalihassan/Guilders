@@ -4,10 +4,8 @@ import { Elysia } from "elysia";
 import { oauthClient } from "../../db/schema/auth";
 import { createDb } from "../../lib/db";
 
-const getDashboardOrigin = () => process.env.DASHBOARD_URL ?? "http://localhost:3002";
-
 const buildDashboardUrl = (path: "/oauth/sign-in" | "/oauth/consent", query: string) => {
-  const base = `${getDashboardOrigin().replace(/\/$/, "")}${path}`;
+  const base = `${process.env.DASHBOARD_URL.replace(/\/$/, "")}${path}`;
   return query ? `${base}?${query}` : base;
 };
 

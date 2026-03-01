@@ -24,10 +24,10 @@ const withCors = (response: Response) => {
 };
 
 const getProtectedResourceResponse = async () => {
-  const apiOrigin = process.env.DASHBOARD_URL ?? "http://localhost:3000";
+  const apiOrigin = process.env.BACKEND_URL ?? "http://localhost:3000";
   const metadata = await getOauthResourceClient().getProtectedResourceMetadata({
     resource: `${apiOrigin}/mcp`,
-    authorization_servers: [apiOrigin],
+    authorization_servers: [`${apiOrigin}/api/auth`],
   });
 
   return new Response(JSON.stringify(metadata), {

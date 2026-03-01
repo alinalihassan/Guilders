@@ -3,6 +3,11 @@ import { createMcpHandler } from "agents/mcp";
 import { verifyMcpRequest } from "./auth";
 import { createMcpServer } from "./server";
 
+const getResourceMetadataUrl = () => {
+  const origin = process.env.BACKEND_URL ?? "http://localhost:3000";
+  return `${origin.replace(/\/$/, "")}/.well-known/oauth-protected-resource`;
+};
+
 export const handleMcp = async (request: Request, env: Env, executionCtx: ExecutionContext) => {
   if (request.method === "OPTIONS") {
     const handler = createMcpHandler(
@@ -14,9 +19,6 @@ export const handleMcp = async (request: Request, env: Env, executionCtx: Execut
     );
     return handler(request, env, executionCtx);
   }
-
-  // Authenticate every non-preflight request so the MCP server always receives
-  // the actual user context instead of a placeholder session user.
 
   let authContext: { userId: string };
   try {
@@ -31,7 +33,12 @@ export const handleMcp = async (request: Request, env: Env, executionCtx: Execut
         },
         id: null,
       },
-      { status: 401 },
+      {
+        status: 401,
+        headers: {
+          "WWW-Authenticate": `Bearer resource_metadata="${getResourceMetadataUrl()}"`,
+        },
+      },
     );
   }
 

@@ -26,8 +26,8 @@ const normalizeHeaders = (
 };
 
 const getApiOrigin = () => {
-  const authBaseUrl = process.env.DASHBOARD_URL ?? "http://localhost:3000/api/auth";
-  return authBaseUrl.replace(/\/api\/auth\/?$/, "");
+  const backendUrl = process.env.BACKEND_URL ?? "http://localhost:3000";
+  return backendUrl.replace(/\/api\/auth\/?$/, "");
 };
 
 export const verifyMcpRequest = async (
