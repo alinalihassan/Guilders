@@ -14,6 +14,21 @@ function escapeHtml(str: string): string {
     .replaceAll("/", "&#x2F;");
 }
 
+function validateOrigin(raw: string): string {
+  if (!raw) throw new Error("parentOrigin is required for callback template");
+
+  let origin: string;
+  try {
+    origin = new URL(raw).origin;
+  } catch {
+    throw new Error(`Invalid parentOrigin: ${raw}`);
+  }
+
+  if (origin === "null") throw new Error(`parentOrigin resolved to null: ${raw}`);
+
+  return origin;
+}
+
 function getTemplate({
   status,
   title = status === "success" ? "Connection Successful!" : "Connection Failed",
@@ -21,10 +36,13 @@ function getTemplate({
     ? "You can safely close this window and return to Guilders."
     : "There was an error connecting to your bank. Please close this window and try again in Guilders.",
 }: TemplateOptions) {
+  const safeOrigin = validateOrigin(process.env.DASHBOARD_URL ?? "");
+
   const safeTitle = escapeHtml(title);
   const safeMessage = escapeHtml(message);
   const safeStatus = escapeHtml(status);
   const jsonStatus = JSON.stringify(status);
+  const jsonOrigin = JSON.stringify(safeOrigin);
 
   return `
 <!DOCTYPE html>
@@ -68,11 +86,12 @@ function getTemplate({
     <script>
         window.onload = function() {
             var msg = { stage: ${jsonStatus} };
+            var origin = ${jsonOrigin};
             if (window.parent !== window) {
-                window.parent.postMessage(msg, "*");
+                window.parent.postMessage(msg, origin);
             }
             if (window.opener) {
-                window.opener.postMessage(msg, "*");
+                window.opener.postMessage(msg, origin);
                 setTimeout(function() { window.close(); }, 1000);
             }
         }
