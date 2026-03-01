@@ -85,7 +85,7 @@ export async function syncAccountData(accountId: number): Promise<void> {
       try {
         const balance = await tellerClient.getAccountBalances(secret, providerAccountId);
         const value = balance.available ?? balance.ledger ?? null;
-        if (value) {
+        if (value !== null && value !== undefined) {
           await db
             .update(account)
             .set({ value, updated_at: new Date() })
