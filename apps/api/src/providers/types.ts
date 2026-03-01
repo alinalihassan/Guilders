@@ -1,7 +1,7 @@
 import type { InsertAccount } from "../db/schema/accounts";
 import type { InsertTransaction } from "../db/schema/transactions";
 
-export type ProviderName = "SaltEdge" | "SnapTrade";
+export type ProviderName = "EnableBanking" | "SnapTrade" | "Teller";
 
 export type ProviderInstitution = {
   name: string;

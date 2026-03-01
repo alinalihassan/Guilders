@@ -4,13 +4,19 @@ import { and, eq } from "drizzle-orm";
 import { account } from "../db/schema/accounts";
 import { AccountSubtypeEnum, AccountTypeEnum } from "../db/schema/enums";
 import { institutionConnection } from "../db/schema/institution-connections";
+import { transaction } from "../db/schema/transactions";
 import { createDb } from "../lib/db";
-import { SYNCED_ACCOUNT_LOCKED_ATTRIBUTES } from "../lib/locked-attributes";
+import {
+  SYNCED_ACCOUNT_LOCKED_ATTRIBUTES,
+  SYNCED_TRANSACTION_LOCKED_ATTRIBUTES,
+} from "../lib/locked-attributes";
 import { getProvider } from "../providers";
 import { getSnapTradeClient } from "../providers/snaptrade/client";
 import type {
+  EnableBankingWebhookEvent,
   ProviderUserCleanupEvent,
   SnapTradeWebhookEvent,
+  TellerWebhookEvent,
   UserFilesCleanupEvent,
   WebhookEvent,
 } from "./types";
@@ -30,6 +36,12 @@ export async function handleWebhookQueue(
       switch (event.source) {
         case "snaptrade":
           await processSnapTradeEvent(event);
+          break;
+        case "enablebanking":
+          await processEnableBankingEvent(event);
+          break;
+        case "teller":
+          await processTellerEvent(event);
           break;
         case "provider-user-cleanup":
           await processProviderUserCleanupEvent(event);
@@ -458,5 +470,113 @@ async function syncSnapTradeHoldings(
     institutionConnectionId: institutionConn.id,
     parentId,
     positions: positions.length,
+  });
+}
+
+// --- EnableBanking processing ---
+
+async function processEnableBankingEvent(event: EnableBankingWebhookEvent) {
+  if (event.eventType !== "CONNECTION_CREATED") return;
+
+  const { userId, institutionConnectionId } = event.payload;
+  const db = createDb();
+
+  const provider = getProvider("EnableBanking");
+  const accounts = await provider.getAccounts({
+    userId,
+    connectionId: institutionConnectionId,
+  });
+
+  if (!accounts.length) {
+    console.log("[EnableBanking queue] no accounts found", { userId, institutionConnectionId });
+    return;
+  }
+
+  await db.insert(account).values(
+    accounts.map((a) => ({
+      ...a,
+      locked_attributes: SYNCED_ACCOUNT_LOCKED_ATTRIBUTES,
+    })),
+  );
+
+  for (const acc of accounts) {
+    if (!acc.provider_account_id) continue;
+
+    try {
+      const providerTxns = await provider.getTransactions({
+        accountId: acc.provider_account_id,
+      });
+
+      if (providerTxns.length) {
+        await db.insert(transaction).values(
+          providerTxns.map((t) => ({
+            ...t,
+            locked_attributes: SYNCED_TRANSACTION_LOCKED_ATTRIBUTES,
+          })),
+        );
+      }
+    } catch (error) {
+      console.error("[EnableBanking queue] Failed to sync transactions for account:", acc.provider_account_id, error);
+    }
+  }
+
+  console.log("[EnableBanking queue] sync complete", {
+    userId,
+    institutionConnectionId,
+    accounts: accounts.length,
+  });
+}
+
+// --- Teller processing ---
+
+async function processTellerEvent(event: TellerWebhookEvent) {
+  if (event.eventType !== "ENROLLMENT_CREATED") return;
+
+  const { userId, institutionConnectionId } = event.payload;
+  const db = createDb();
+
+  const provider = getProvider("Teller");
+  const accounts = await provider.getAccounts({
+    userId,
+    connectionId: institutionConnectionId,
+  });
+
+  if (!accounts.length) {
+    console.log("[Teller queue] no accounts found", { userId, institutionConnectionId });
+    return;
+  }
+
+  await db.insert(account).values(
+    accounts.map((a) => ({
+      ...a,
+      locked_attributes: SYNCED_ACCOUNT_LOCKED_ATTRIBUTES,
+    })),
+  );
+
+  for (const acc of accounts) {
+    if (!acc.provider_account_id) continue;
+
+    try {
+      const providerTxns = await provider.getTransactions({
+        accountId: acc.provider_account_id,
+      });
+
+      if (providerTxns.length) {
+        await db.insert(transaction).values(
+          providerTxns.map((t) => ({
+            ...t,
+            locked_attributes: SYNCED_TRANSACTION_LOCKED_ATTRIBUTES,
+          })),
+        );
+      }
+    } catch (error) {
+      console.error("[Teller queue] Failed to sync transactions for account:", acc.provider_account_id, error);
+    }
+  }
+
+  console.log("[Teller queue] sync complete", {
+    userId,
+    institutionConnectionId,
+    accounts: accounts.length,
   });
 }

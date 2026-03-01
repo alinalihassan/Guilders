@@ -5,6 +5,7 @@ import { institutionConnection } from "../../db/schema/institution-connections";
 import { providerConnection } from "../../db/schema/provider-connections";
 import { authPlugin } from "../../middleware/auth";
 import { getProvider } from "../../providers";
+import type { ProviderName } from "../../providers/types";
 import { errorSchema } from "../../utils/error";
 import {
   connectionResultSchema,
@@ -43,7 +44,7 @@ export const connectionsRoutes = new Elysia({
       if (!institutionRecord) return status(404, { error: "Institution not found" });
 
       try {
-        const provider = getProvider(providerRecord.name as "SaltEdge" | "SnapTrade");
+        const provider = getProvider(providerRecord.name as ProviderName);
         const result = await provider.connect({
           userId: user.id,
           institutionId: institutionRecord.id,
@@ -125,7 +126,7 @@ export const connectionsRoutes = new Elysia({
       }
 
       try {
-        const provider = getProvider(providerRecord.name as "SaltEdge" | "SnapTrade");
+        const provider = getProvider(providerRecord.name as ProviderName);
         const result = await provider.reconnect({
           userId: user.id,
           institutionId: institutionRecord.id,
@@ -195,7 +196,7 @@ export const connectionsRoutes = new Elysia({
       }
 
       try {
-        const provider = getProvider(providerRecord.name as "SaltEdge" | "SnapTrade");
+        const provider = getProvider(providerRecord.name as ProviderName);
         const result = await provider.refreshConnection(connectionRecord.connection_id);
         if (!result.success) {
           return status(500, {
@@ -236,7 +237,7 @@ export const connectionsRoutes = new Elysia({
       if (!providerRecord) return status(404, { error: "Provider not found" });
 
       try {
-        const provider = getProvider(providerRecord.name as "SaltEdge" | "SnapTrade");
+        const provider = getProvider(providerRecord.name as ProviderName);
         const result = await provider.registerUser(user.id);
         if (!result.success || !result.data?.userSecret) {
           console.error("[Connections] register failed", {
@@ -308,7 +309,7 @@ export const connectionsRoutes = new Elysia({
       if (!existing) return { success: true };
 
       try {
-        const provider = getProvider(providerRecord.name as "SaltEdge" | "SnapTrade");
+        const provider = getProvider(providerRecord.name as ProviderName);
         const result = await provider.deregisterUser(user.id);
         if (!result.success) {
           return status(500, {

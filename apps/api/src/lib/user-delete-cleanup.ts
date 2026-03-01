@@ -8,7 +8,7 @@ import type { ProviderUserCleanupEvent, UserFilesCleanupEvent } from "../queues/
 import { createDb } from "./db";
 
 function isProviderName(name: string): name is ProviderName {
-  return name === "SaltEdge" || name === "SnapTrade";
+  return name === "EnableBanking" || name === "SnapTrade" || name === "Teller";
 }
 
 export async function enqueueUserDeleteCleanupJobs(userId: string): Promise<void> {

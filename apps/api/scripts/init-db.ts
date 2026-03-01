@@ -1,5 +1,4 @@
 import { syncInstitutions } from "../src/cron/sync-institutions";
-
 import { backfillRates } from "./backfill-rates";
 import { seedCountries } from "./seed-countries";
 import { seedCurrencies } from "./seed-currencies";

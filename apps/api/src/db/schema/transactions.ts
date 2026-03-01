@@ -26,12 +26,10 @@ export const transaction = pgTable(
         onUpdate: "cascade",
       }),
     amount: numeric("amount", { precision: 19, scale: 4 }).notNull(),
-    category_id: integer("category_id")
-      .notNull()
-      .references(() => category.id, {
-        onDelete: "restrict",
-        onUpdate: "cascade",
-      }),
+    category_id: integer("category_id").references(() => category.id, {
+      onDelete: "set null",
+      onUpdate: "cascade",
+    }),
     created_at: timestamp("created_at").notNull().defaultNow(),
     currency: varchar("currency", { length: 3 })
       .notNull()

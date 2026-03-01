@@ -29,20 +29,29 @@ const nextConfig: NextConfig = {
         hostname: "db.guilders.app",
       },
       {
-        hostname: "passiv-brokerage-logos.s3.ca-central-1.amazonaws.com",
+        hostname: "bucket.guilders.app",
       },
       {
         hostname: "storage.googleapis.com",
         pathname: "/iexcloud-hl37opg/api/logos/**",
       },
+      // Enable Banking
       {
         hostname: "enablebanking.com",
       },
+      // SnapTrade
       {
         hostname: "logo.twelvedata.com",
       },
       {
         hostname: "api.twelvedata.com",
+      },
+      {
+        hostname: "passiv-brokerage-logos.s3.ca-central-1.amazonaws.com",
+      },
+      // Teller
+      {
+        hostname: "teller.io",
       },
     ],
   },
