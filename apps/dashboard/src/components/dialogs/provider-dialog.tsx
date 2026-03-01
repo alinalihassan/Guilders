@@ -1,7 +1,7 @@
 "use client";
 
 import { useQueryClient } from "@tanstack/react-query";
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { toast } from "sonner";
 
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
@@ -31,6 +31,13 @@ export function ProviderDialog() {
   const { isOpen, data: providerData, close } = useDialog("provider");
   const queryClient = useQueryClient();
   const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  const iframeSrc = useMemo(() => {
+    if (!providerData) return "";
+    const isTeller =
+      providerData.redirectType === "popup" && isTellerConnectUrl(providerData.redirectUri);
+    return isTeller ? prepareTellerUrl(providerData.redirectUri) : providerData.redirectUri;
+  }, [providerData]);
 
   useEffect(() => {
     if (!providerData) return;
@@ -134,12 +141,6 @@ export function ProviderDialog() {
   }, [close, providerData, queryClient]);
 
   if (!isOpen || !providerData) return null;
-
-  const isTeller =
-    providerData.redirectType === "popup" && isTellerConnectUrl(providerData.redirectUri);
-  const iframeSrc = isTeller
-    ? prepareTellerUrl(providerData.redirectUri)
-    : providerData.redirectUri;
 
   return (
     <Dialog open={isOpen} onOpenChange={close}>
