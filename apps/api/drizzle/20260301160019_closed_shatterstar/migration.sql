@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "institution_connection_connection_id_idx" ON "institution_connection" ("connection_id");

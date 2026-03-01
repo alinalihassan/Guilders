@@ -4,7 +4,7 @@ import { institutionConnection } from "../db/schema/institution-connections";
 import { providerConnection } from "../db/schema/provider-connections";
 import { createDb } from "../lib/db";
 import { EnableBankingClient } from "../providers/enablebanking/client";
-import type { ConnectionState } from "../providers/enablebanking/types";
+import { verifyState } from "../providers/enablebanking/state";
 import type { EnableBankingWebhookEvent } from "../queues/types";
 import { errorResponse, successResponse } from "./template";
 
@@ -27,14 +27,15 @@ export async function handleEnableBankingCallback(
     return errorResponse("Missing required parameters. Please try again.");
   }
 
-  let state: ConnectionState;
-  try {
-    state = JSON.parse(stateParam);
-  } catch {
-    return errorResponse("Invalid connection state. Please try again.");
+  const secret = process.env.BETTER_AUTH_SECRET;
+  if (!secret) {
+    console.error("[EnableBanking callback] Missing BETTER_AUTH_SECRET");
+    return errorResponse("Server configuration error. Please try again later.");
   }
 
-  if (!state.userId || !state.institutionId) {
+  const state = await verifyState(stateParam, secret);
+  if (!state) {
+    console.error("[EnableBanking callback] State HMAC verification failed");
     return errorResponse("Invalid connection state. Please try again.");
   }
 
@@ -85,9 +86,15 @@ export async function handleEnableBankingCallback(
         provider_connection_id: providerConn.id,
         connection_id: session.session_id,
       })
+      .onConflictDoNothing({ target: institutionConnection.connection_id })
       .returning();
 
-    if (!instConn) return errorResponse("Failed to establish bank connection.");
+    if (!instConn) {
+      console.log("[EnableBanking callback] duplicate callback, connection already exists", {
+        connectionId: session.session_id,
+      });
+      return successResponse("Successfully connected your bank account!");
+    }
 
     const event: EnableBankingWebhookEvent = {
       source: "enablebanking",

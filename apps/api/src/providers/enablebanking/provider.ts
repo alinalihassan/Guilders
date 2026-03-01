@@ -15,6 +15,7 @@ import type {
   TransactionParams,
 } from "../types";
 import { EnableBankingClient } from "./client";
+import { signState } from "./state";
 import type { CashAccountType } from "./types";
 
 function getConfig() {
@@ -158,10 +159,13 @@ export class EnableBankingProvider implements IProvider {
       const backendUrl = process.env.NGROK_URL || process.env.BACKEND_URL;
       if (!backendUrl) return { success: false, error: "BACKEND_URL not configured" };
 
-      const state = JSON.stringify({
-        userId: params.userId,
-        institutionId: params.institutionId,
-      });
+      const secret = process.env.BETTER_AUTH_SECRET;
+      if (!secret) return { success: false, error: "Missing auth secret" };
+
+      const state = await signState(
+        { userId: params.userId, institutionId: params.institutionId },
+        secret,
+      );
 
       const authorization = await client.createAuthorization({
         validUntil: decoded.maxConsentValidity,
