@@ -145,7 +145,7 @@ export class EnableBankingProvider implements IProvider {
       const decoded = decodeInstitutionId(inst.provider_institution_id);
       if (!decoded) return { success: false, error: "Invalid institution ID format" };
 
-      const backendUrl = process.env.BACKEND_URL;
+      const backendUrl = process.env.NGROK_URL || process.env.BACKEND_URL;
       if (!backendUrl) return { success: false, error: "BACKEND_URL not configured" };
 
       const state = JSON.stringify({
