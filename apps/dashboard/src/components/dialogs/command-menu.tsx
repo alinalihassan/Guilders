@@ -6,7 +6,7 @@ import { CommandLoading } from "cmdk";
 import { Banknote, Landmark, Link2, SquarePen } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import {
   CommandDialog,
@@ -31,6 +31,7 @@ export function CommandMenu() {
   const { data: providers } = useProviders();
   const countriesMap = useCountriesMap();
   const [search, setSearch] = useState("");
+  const [value, setValue] = useState("");
   const router = useRouter();
 
   const pages = data?.pages ?? [];
@@ -95,6 +96,14 @@ export function CommandMenu() {
     overscan: 5,
   });
 
+  useEffect(() => {
+    if (currentPage !== "add-synced-account") return;
+    const idx = filteredInstitutions.findIndex((i) => i.id.toString() === value);
+    if (idx >= 0) {
+      virtualizer.scrollToIndex(idx, { align: "auto" });
+    }
+  }, [value, filteredInstitutions, currentPage, virtualizer]);
+
   const handleOpenChange = (_open: boolean) => {
     if (!_open) {
       close();
@@ -134,6 +143,7 @@ export function CommandMenu() {
       commandProps={{
         onKeyDown: handleKeyDown,
         shouldFilter: currentPage !== "add-synced-account",
+        ...(currentPage === "add-synced-account" && { value, onValueChange: setValue }),
       }}
     >
       <CommandInput
