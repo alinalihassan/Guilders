@@ -543,9 +543,23 @@ async function processEnableBankingEvent(event: EnableBankingWebhookEvent) {
 // --- Teller processing ---
 
 async function processTellerEvent(event: TellerWebhookEvent) {
-  if (event.eventType !== "ENROLLMENT_CREATED") return;
+  switch (event.eventType) {
+    case "ENROLLMENT_CREATED":
+      await handleTellerEnrollmentCreated(event.payload);
+      break;
+    case "TRANSACTIONS_UPDATED":
+      await handleTellerTransactionsUpdated(event.payload);
+      break;
+    case "ENROLLMENT_DISCONNECTED":
+      await handleTellerEnrollmentDisconnected(event.payload);
+      break;
+  }
+}
 
-  const { userId, institutionConnectionId } = event.payload;
+async function handleTellerEnrollmentCreated(
+  payload: TellerWebhookEvent["payload"],
+): Promise<void> {
+  const { userId, institutionConnectionId } = payload;
   const db = createDb();
 
   const provider = getProvider("Teller");
@@ -591,5 +605,93 @@ async function processTellerEvent(event: TellerWebhookEvent) {
     userId,
     institutionConnectionId,
     accounts: accounts.length,
+  });
+}
+
+async function handleTellerTransactionsUpdated(
+  payload: TellerWebhookEvent["payload"],
+): Promise<void> {
+  const { userId, institutionConnectionId } = payload;
+  const db = createDb();
+
+  const existingAccounts = await db
+    .select({ id: account.id, provider_account_id: account.provider_account_id })
+    .from(account)
+    .where(
+      and(
+        eq(account.institution_connection_id, institutionConnectionId),
+        eq(account.user_id, userId),
+      ),
+    );
+
+  if (!existingAccounts.length) {
+    console.log("[Teller queue] no existing accounts for transaction sync", {
+      userId,
+      institutionConnectionId,
+    });
+    return;
+  }
+
+  const provider = getProvider("Teller");
+  for (const acc of existingAccounts) {
+    if (!acc.provider_account_id) continue;
+
+    try {
+      const providerTxns = await provider.getTransactions({
+        accountId: acc.provider_account_id,
+      });
+
+      if (!providerTxns.length) continue;
+
+      const existingTxnRows = await db
+        .select({ provider_transaction_id: transaction.provider_transaction_id })
+        .from(transaction)
+        .where(eq(transaction.account_id, acc.id));
+
+      const knownIds = new Set(
+        existingTxnRows.map((t) => t.provider_transaction_id).filter(Boolean),
+      );
+
+      const newTxns = providerTxns.filter(
+        (t) => t.provider_transaction_id && !knownIds.has(t.provider_transaction_id),
+      );
+
+      if (newTxns.length) {
+        await db.insert(transaction).values(
+          newTxns.map((t) => ({
+            ...t,
+            locked_attributes: SYNCED_TRANSACTION_LOCKED_ATTRIBUTES,
+          })),
+        );
+      }
+    } catch (error) {
+      console.error(
+        "[Teller queue] Failed to sync transactions for account:",
+        acc.provider_account_id,
+        error,
+      );
+    }
+  }
+
+  console.log("[Teller queue] transaction sync complete", {
+    userId,
+    institutionConnectionId,
+    accounts: existingAccounts.length,
+  });
+}
+
+async function handleTellerEnrollmentDisconnected(
+  payload: TellerWebhookEvent["payload"],
+): Promise<void> {
+  const { institutionConnectionId } = payload;
+  const db = createDb();
+
+  await db
+    .update(institutionConnection)
+    .set({ broken: true })
+    .where(eq(institutionConnection.id, institutionConnectionId));
+
+  console.log("[Teller queue] enrollment marked as disconnected", {
+    institutionConnectionId,
   });
 }

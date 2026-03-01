@@ -4,7 +4,7 @@ import { institutionConnection } from "../db/schema/institution-connections";
 import { providerConnection } from "../db/schema/provider-connections";
 import { createDb } from "../lib/db";
 import type { TellerConnectionState } from "../providers/teller/types";
-import type { TellerWebhookEvent } from "../queues/types";
+import type { TellerEventType, TellerWebhookEvent } from "../queues/types";
 import { errorResponse, successResponse } from "./template";
 
 export async function handleTellerCallback(
@@ -13,7 +13,7 @@ export async function handleTellerCallback(
   url: URL,
 ): Promise<Response> {
   if (request.method === "POST") {
-    return handleTellerWebhook(request);
+    return handleTellerWebhook(request, env);
   }
 
   const accessToken = url.searchParams.get("access_token");
@@ -143,7 +143,12 @@ async function verifyTellerSignature(
   return signatures.some((sig) => sig === computed);
 }
 
-async function handleTellerWebhook(request: Request): Promise<Response> {
+const TELLER_EVENT_TYPE_MAP: Record<string, TellerEventType | undefined> = {
+  "transactions.processed": "TRANSACTIONS_UPDATED",
+  "enrollment.disconnected": "ENROLLMENT_DISCONNECTED",
+};
+
+async function handleTellerWebhook(request: Request, env: Env): Promise<Response> {
   const webhookSecret = process.env.TELLER_WEBHOOK_SECRET;
   if (!webhookSecret) {
     return Response.json({ error: "Webhook not configured" }, { status: 500 });
@@ -164,6 +169,37 @@ async function handleTellerWebhook(request: Request): Promise<Response> {
 
     const payload = JSON.parse(body);
     console.log("[Teller webhook] Received event:", payload);
+
+    const mappedEventType = TELLER_EVENT_TYPE_MAP[payload.type];
+    const enrollmentId: string | undefined = payload.payload?.enrollment_id;
+
+    if (mappedEventType && enrollmentId) {
+      const db = createDb();
+      const instConn = await db.query.institutionConnection.findFirst({
+        where: { connection_id: enrollmentId },
+        with: { providerConnection: true },
+      });
+
+      if (instConn?.providerConnection) {
+        const event: TellerWebhookEvent = {
+          source: "teller",
+          eventType: mappedEventType,
+          payload: {
+            userId: instConn.providerConnection.user_id,
+            institutionConnectionId: instConn.id,
+          },
+        };
+
+        await env.WEBHOOK_QUEUE.send(event);
+        console.log("[Teller webhook] enqueued event", {
+          eventType: mappedEventType,
+          userId: instConn.providerConnection.user_id,
+          institutionConnectionId: instConn.id,
+        });
+      } else {
+        console.warn("[Teller webhook] no institution connection found for enrollment", { enrollmentId });
+      }
+    }
 
     return Response.json({ received: true });
   } catch (error) {

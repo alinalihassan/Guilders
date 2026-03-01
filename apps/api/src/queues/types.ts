@@ -43,7 +43,7 @@ export type EnableBankingWebhookEvent = {
 
 // --- Teller ---
 
-export type TellerEventType = "ENROLLMENT_CREATED";
+export type TellerEventType = "ENROLLMENT_CREATED" | "TRANSACTIONS_UPDATED" | "ENROLLMENT_DISCONNECTED";
 
 export type TellerWebhookPayload = {
   userId: string;
