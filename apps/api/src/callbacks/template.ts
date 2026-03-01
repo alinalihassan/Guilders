@@ -4,6 +4,16 @@ type TemplateOptions = {
   message?: string;
 };
 
+function escapeHtml(str: string): string {
+  return str
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#x27;")
+    .replaceAll("/", "&#x2F;");
+}
+
 function getTemplate({
   status,
   title = status === "success" ? "Connection Successful!" : "Connection Failed",
@@ -11,11 +21,16 @@ function getTemplate({
     ? "You can safely close this window and return to Guilders."
     : "There was an error connecting to your bank. Please close this window and try again in Guilders.",
 }: TemplateOptions) {
+  const safeTitle = escapeHtml(title);
+  const safeMessage = escapeHtml(message);
+  const safeStatus = escapeHtml(status);
+  const jsonStatus = JSON.stringify(status);
+
   return `
 <!DOCTYPE html>
 <html>
 <head>
-    <title>${title}</title>
+    <title>${safeTitle}</title>
     <style>
         body {
             font-family: system-ui, -apple-system, sans-serif;
@@ -46,13 +61,13 @@ function getTemplate({
 </head>
 <body>
     <div class="message">
-        <h2 class="${status}">${title}</h2>
-        <p>${message}</p>
+        <h2 class="${safeStatus}">${safeTitle}</h2>
+        <p>${safeMessage}</p>
         <p class="note">This window can be safely closed.</p>
     </div>
     <script>
         window.onload = function() {
-            var msg = { stage: "${status}" };
+            var msg = { stage: ${jsonStatus} };
             if (window.parent !== window) {
                 window.parent.postMessage(msg, "*");
             }
