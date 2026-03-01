@@ -42,89 +42,86 @@ export function ProviderDialog() {
       providerData.operation === "connect" ? "connecting" : "fixing the connection"
     } to the institution.`;
 
-    if (providerData.redirectType === "popup") {
-      const isTeller = isTellerConnectUrl(providerData.redirectUri);
-
-      const handleMessageEvent = (e: MessageEvent) => {
-        // Teller Connect communicates via postMessage with namespace
-        if (isTeller && e.origin === TELLER_ORIGIN) {
-          const data = typeof e.data === "string" ? JSON.parse(e.data) : e.data;
-          if (data?.namespace !== "teller-connect") return;
-
-          if (data.event === "exit") {
-            close();
-            return;
-          }
-
-          if (data.event === "success") {
-            const accessToken = data.data?.accessToken;
-            const enrollmentId = data.data?.enrollment?.id;
-            const callbackUrl = new URL(providerData.redirectUri).searchParams.get("callback");
-
-            if (iframeRef.current && callbackUrl && accessToken && enrollmentId) {
-              const url = new URL(callbackUrl);
-              url.searchParams.set("access_token", accessToken);
-              url.searchParams.set("enrollment_id", enrollmentId);
-              iframeRef.current.src = url.toString();
-            }
-          }
-
-          return;
-        }
-
-        if (e.origin === "https://app.snaptrade.com") {
-          if (e.data) {
-            const snaptradeEventData = e.data;
-            if (snaptradeEventData.status === "SUCCESS") {
-              close();
-              toast.success("Success", {
-                description: successDescription,
-              });
-            }
-            if (snaptradeEventData.status === "ERROR") {
-              toast.error("Error", {
-                description: errorDescription,
-              });
-              close();
-            }
-            if (
-              snaptradeEventData === "CLOSED" ||
-              snaptradeEventData === "CLOSE_MODAL" ||
-              snaptradeEventData === "ABANDONED"
-            ) {
-              close();
-            }
-          }
-        } else if (
-          e.origin ===
-          new URL(env.NEXT_PUBLIC_NGROK_URL ?? env.NEXT_PUBLIC_API_URL).origin
-        ) {
-          const { stage } = e.data;
-          if (!stage) return;
-
-          close();
-          if (stage === "success") {
-            toast.success("Success", {
-              description: successDescription,
-            });
-
-            queryClient.invalidateQueries({ queryKey: accountsQueryKey });
-            queryClient.invalidateQueries({ queryKey: transactionsQueryKey });
-          } else if (stage === "error") {
-            toast.error("Error", {
-              description: errorDescription,
-            });
-          }
-        }
-      };
-
-      window.addEventListener("message", handleMessageEvent, false);
-      return () => window.removeEventListener("message", handleMessageEvent, false);
-    }
-
     if (providerData.redirectType === "redirect") {
       window.open(providerData.redirectUri, "_blank");
     }
+
+    const isTeller =
+      providerData.redirectType === "popup" && isTellerConnectUrl(providerData.redirectUri);
+
+    const handleMessageEvent = (e: MessageEvent) => {
+      if (isTeller && e.origin === TELLER_ORIGIN) {
+        const data = typeof e.data === "string" ? JSON.parse(e.data) : e.data;
+        if (data?.namespace !== "teller-connect") return;
+
+        if (data.event === "exit") {
+          close();
+          return;
+        }
+
+        if (data.event === "success") {
+          const accessToken = data.data?.accessToken;
+          const enrollmentId = data.data?.enrollment?.id;
+          const callbackUrl = new URL(providerData.redirectUri).searchParams.get("callback");
+
+          if (iframeRef.current && callbackUrl && accessToken && enrollmentId) {
+            const url = new URL(callbackUrl);
+            url.searchParams.set("access_token", accessToken);
+            url.searchParams.set("enrollment_id", enrollmentId);
+            iframeRef.current.src = url.toString();
+          }
+        }
+
+        return;
+      }
+
+      if (e.origin === "https://app.snaptrade.com") {
+        if (e.data) {
+          const snaptradeEventData = e.data;
+          if (snaptradeEventData.status === "SUCCESS") {
+            close();
+            toast.success("Success", {
+              description: successDescription,
+            });
+          }
+          if (snaptradeEventData.status === "ERROR") {
+            toast.error("Error", {
+              description: errorDescription,
+            });
+            close();
+          }
+          if (
+            snaptradeEventData === "CLOSED" ||
+            snaptradeEventData === "CLOSE_MODAL" ||
+            snaptradeEventData === "ABANDONED"
+          ) {
+            close();
+          }
+        }
+      } else if (
+        e.origin === new URL(env.NEXT_PUBLIC_NGROK_URL ?? env.NEXT_PUBLIC_API_URL).origin
+      ) {
+        const { stage } = e.data;
+        if (!stage) return;
+
+        close();
+        if (stage === "success") {
+          toast.success("Success", {
+            description: successDescription,
+          });
+
+          queryClient.invalidateQueries({ queryKey: accountsQueryKey });
+          queryClient.invalidateQueries({ queryKey: transactionsQueryKey });
+        } else if (stage === "error") {
+          toast.error("Error", {
+            description: errorDescription,
+          });
+        }
+      }
+    };
+
+    window.addEventListener("message", handleMessageEvent, false);
+    return () => window.removeEventListener("message", handleMessageEvent, false);
   }, [close, providerData, queryClient]);
 
   if (!isOpen || !providerData) return null;

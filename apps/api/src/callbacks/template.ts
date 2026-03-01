@@ -52,7 +52,14 @@ function getTemplate({
     </div>
     <script>
         window.onload = function() {
-            window.parent.postMessage({ stage: "${status}" }, "*");
+            var msg = { stage: "${status}" };
+            if (window.parent !== window) {
+                window.parent.postMessage(msg, "*");
+            }
+            if (window.opener) {
+                window.opener.postMessage(msg, "*");
+                setTimeout(function() { window.close(); }, 1000);
+            }
         }
     </script>
 </body>
