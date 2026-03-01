@@ -7,7 +7,9 @@ import { Elysia } from "elysia";
 import { createAuth } from "../../lib/auth";
 import { getOauthResourceClient } from "../../lib/oauth-resource-client";
 
+// @ts-ignore TODO: Better Auth 1.5.0 issue, plugin API types not inferred on Auth return type
 const getAuthHandler = () => oauthProviderAuthServerMetadata(createAuth());
+// @ts-ignore TODO: Better Auth 1.5.0 issue, plugin API types not inferred on Auth return type
 const getOpenIdHandler = () => oauthProviderOpenIdConfigMetadata(createAuth());
 const metadataHeaders = {
   "Access-Control-Allow-Origin": "*",
