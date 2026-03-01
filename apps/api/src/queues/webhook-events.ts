@@ -505,7 +505,12 @@ async function processEnableBankingEvent(event: EnableBankingWebhookEvent) {
     };
   });
 
-  await db.insert(account).values(mappedAccounts);
+  await db
+    .insert(account)
+    .values(mappedAccounts)
+    .onConflictDoNothing({
+      target: [account.provider_account_id, account.institution_connection_id],
+    });
 
   for (const acc of mappedAccounts) {
     if (!acc.provider_account_id) continue;
@@ -515,18 +520,34 @@ async function processEnableBankingEvent(event: EnableBankingWebhookEvent) {
         accountId: acc.provider_account_id,
       });
 
-      if (providerTxns.length) {
-        await db.insert(transaction).values(
-          providerTxns.map((t) => {
-            let currency = t.currency;
-            if (currency === "RUR") currency = "RUB";
-            return {
-              ...t,
-              currency,
-              locked_attributes: SYNCED_TRANSACTION_LOCKED_ATTRIBUTES,
-            };
-          }),
+      const firstTxn = providerTxns[0];
+      if (firstTxn) {
+        const existingTxnRows = await db
+          .select({ provider_transaction_id: transaction.provider_transaction_id })
+          .from(transaction)
+          .where(eq(transaction.account_id, firstTxn.account_id));
+
+        const knownIds = new Set(
+          existingTxnRows.map((t) => t.provider_transaction_id).filter(Boolean),
         );
+
+        const newTxns = providerTxns.filter(
+          (t) => t.provider_transaction_id && !knownIds.has(t.provider_transaction_id),
+        );
+
+        if (newTxns.length) {
+          await db.insert(transaction).values(
+            newTxns.map((t) => {
+              let currency = t.currency;
+              if (currency === "RUR") currency = "RUB";
+              return {
+                ...t,
+                currency,
+                locked_attributes: SYNCED_TRANSACTION_LOCKED_ATTRIBUTES,
+              };
+            }),
+          );
+        }
       }
     } catch (error) {
       console.error("[EnableBanking queue] Failed to sync transactions for account:", acc.provider_account_id, error);
@@ -573,12 +594,17 @@ async function handleTellerEnrollmentCreated(
     return;
   }
 
-  await db.insert(account).values(
-    accounts.map((a) => ({
-      ...a,
-      locked_attributes: SYNCED_ACCOUNT_LOCKED_ATTRIBUTES,
-    })),
-  );
+  await db
+    .insert(account)
+    .values(
+      accounts.map((a) => ({
+        ...a,
+        locked_attributes: SYNCED_ACCOUNT_LOCKED_ATTRIBUTES,
+      })),
+    )
+    .onConflictDoNothing({
+      target: [account.provider_account_id, account.institution_connection_id],
+    });
 
   for (const acc of accounts) {
     if (!acc.provider_account_id) continue;
@@ -588,13 +614,29 @@ async function handleTellerEnrollmentCreated(
         accountId: acc.provider_account_id,
       });
 
-      if (providerTxns.length) {
-        await db.insert(transaction).values(
-          providerTxns.map((t) => ({
-            ...t,
-            locked_attributes: SYNCED_TRANSACTION_LOCKED_ATTRIBUTES,
-          })),
+      const firstTxn = providerTxns[0];
+      if (firstTxn) {
+        const existingTxnRows = await db
+          .select({ provider_transaction_id: transaction.provider_transaction_id })
+          .from(transaction)
+          .where(eq(transaction.account_id, firstTxn.account_id));
+
+        const knownIds = new Set(
+          existingTxnRows.map((t) => t.provider_transaction_id).filter(Boolean),
         );
+
+        const newTxns = providerTxns.filter(
+          (t) => t.provider_transaction_id && !knownIds.has(t.provider_transaction_id),
+        );
+
+        if (newTxns.length) {
+          await db.insert(transaction).values(
+            newTxns.map((t) => ({
+              ...t,
+              locked_attributes: SYNCED_TRANSACTION_LOCKED_ATTRIBUTES,
+            })),
+          );
+        }
       }
     } catch (error) {
       console.error("[Teller queue] Failed to sync transactions for account:", acc.provider_account_id, error);
