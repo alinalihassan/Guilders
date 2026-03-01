@@ -56,7 +56,7 @@ export async function handleEnableBankingCallback(
     if (providerConn) {
       await db
         .update(providerConnection)
-        .set({ secret: code, updated_at: new Date() })
+        .set({ updated_at: new Date() })
         .where(eq(providerConnection.id, providerConn.id));
     } else {
       const [created] = await db
@@ -64,7 +64,6 @@ export async function handleEnableBankingCallback(
         .values({
           provider_id: providerRecord.id,
           user_id: state.userId,
-          secret: code,
         })
         .returning();
       providerConn = created;
