@@ -152,7 +152,11 @@ export class EnableBankingClient {
           body: body ? JSON.stringify(body) : undefined,
         });
 
-        if (!response.ok) break;
+        if (!response.ok) {
+          throw new Error(
+            `Enable Banking API pagination failed: ${response.status} ${response.statusText} — ${await response.text()}`,
+          );
+        }
 
         data = await response.json();
         resultData = dataField ? (data as Record<string, unknown>)[dataField] : data;
