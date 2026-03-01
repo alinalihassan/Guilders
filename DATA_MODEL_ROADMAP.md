@@ -26,19 +26,19 @@ Improvements inspired by Maybe's data model, plus additional backend/DB features
 
 ### Medium Priority
 
-- [ ] **Tags (Polymorphic Tagging)**
-      A `tag` table (name, color, user-scoped) and `tagging` join table (taggable_type, taggable_id). Gives users flexible labeling orthogonal to categories — "vacation", "tax-deductible", "reimbursable", etc.
-
-- [ ] **Transfers Between Accounts**
-      A `transfer` table linking an `inflow_transaction_id` to an `outflow_transaction_id`. Without this, moving money between accounts distorts spending/income reports. Include a `rejected_transfer` table so users can dismiss false-positive suggestions.
-
 - [ ] **Onboarding Flow & User Preferences Expansion**
       Extend `user_setting` beyond just currency: `locale`, `timezone`, `date_format`, `default_period` (last 30 days, this month, etc.), `theme`, `onboarded_at`. Most of these are trivial columns but important for a polished experience.
 
 - [ ] **User deletion queue**
       Delete users from providers and delete their files from file storage after deletion
 
+- [ ] **Tags (Polymorphic Tagging)**
+      A `tag` table (name, color, user-scoped) and `tagging` join table (taggable_type, taggable_id). Gives users flexible labeling orthogonal to categories — "vacation", "tax-deductible", "reimbursable", etc.
+
 ### Low Priority
+
+- [ ] **Transfers Between Accounts**
+      A `transfer` table linking an `inflow_transaction_id` to an `outflow_transaction_id`. Without this, moving money between accounts distorts spending/income reports. Include a `rejected_transfer` table so users can dismiss false-positive suggestions. Also useful for sharing costs, where you might ask someone for their share.
 
 - [ ] **Budgets**
       A `budget` table (date range, expected income, budgeted spending) and `budget_category` table (budgeted amount per category per period). Core personal finance feature but depends on categories being implemented first.
