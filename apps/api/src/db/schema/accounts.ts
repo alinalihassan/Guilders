@@ -3,6 +3,7 @@ import {
   index,
   integer,
   jsonb,
+  foreignKey,
   numeric,
   pgTable,
   serial,
@@ -50,10 +51,7 @@ export const account = pgTable(
       .default({}),
     name: varchar("name", { length: 100 }).notNull(),
     notes: text("notes").notNull().default(""),
-    parent: integer("parent").references((): AnyPgColumn => account.id, {
-      onDelete: "cascade",
-      onUpdate: "cascade",
-    }),
+    parent: integer("parent"),
     provider_account_id: varchar("provider_account_id", { length: 255 }),
     subtype: accountSubtypeEnum("subtype").notNull(),
     tax_rate: numeric("tax_rate", { precision: 5, scale: 4 }),
@@ -80,6 +78,14 @@ export const account = pgTable(
       table.provider_account_id,
       table.institution_connection_id,
     ),
+    uniqueIndex("account_id_user_unique_idx").on(table.id, table.user_id),
+    foreignKey({
+      columns: [table.parent, table.user_id],
+      foreignColumns: [table.id, table.user_id],
+      name: "account_parent_same_user_fkey",
+    })
+      .onDelete("cascade")
+      .onUpdate("cascade"),
   ],
 );
 
