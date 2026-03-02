@@ -22,7 +22,7 @@ export const handleMcp = async (request: Request, env: Env, executionCtx: Execut
     return handler(request, env, executionCtx);
   }
 
-  let authContext: { userId: string; scopes: string[] };
+  let authContext: { userId: string; scopes: string[] | null };
   try {
     authContext = await verifyMcpRequest(request.headers);
   } catch (error) {

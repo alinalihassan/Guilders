@@ -28,21 +28,28 @@ const normalizeHeaders = (
   return normalized;
 };
 
-const extractScopesFromToken = (token: string): string[] => {
+/**
+ * Extracts OAuth scopes from a JWT access token.
+ * Returns null on decode failure (e.g. opaque token) so callers can enforce a
+ * restrictive default (read-only) instead of granting all tools.
+ */
+const extractScopesFromToken = (token: string): string[] | null => {
   try {
     const payload = decodeJwt(token);
     if (typeof payload.scope === "string") {
       return payload.scope.split(" ").filter(Boolean);
     }
+    // Decoded but no scope claim → treat as no explicit scopes (read-only default)
+    return [];
   } catch {
-    // Opaque token — scopes will be resolved via fallback
+    // Opaque token or decode error — scope unknown; callers must use restrictive default
+    return null;
   }
-  return [];
 };
 
 export const verifyMcpRequest = async (
   headers: Headers | Record<string, string | string[] | undefined> | undefined,
-): Promise<{ userId: string; scopes: string[] }> => {
+): Promise<{ userId: string; scopes: string[] | null }> => {
   const requestHeaders = normalizeHeaders(headers);
   const authHeader =
     requestHeaders.authorization ??

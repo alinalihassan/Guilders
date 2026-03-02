@@ -5,7 +5,7 @@ import { mcpTools, registerMcpTool } from "./tools";
 
 type McpAuthContext = {
   userId: string;
-  scopes: string[];
+  scopes: string[] | null;
 };
 
 export const createMcpServer = ({ userId, scopes }: McpAuthContext) => {
@@ -21,10 +21,10 @@ export const createMcpServer = ({ userId, scopes }: McpAuthContext) => {
     },
   );
 
-  const hasCustomScopes = scopes.some((s) => s === McpScope.read || s === McpScope.write);
-  const grantedTools = hasCustomScopes
-    ? mcpTools.filter((tool) => scopes.includes(tool.requiredScope))
-    : mcpTools;
+  // null = opaque token / decode failure; [] = decoded but no scope. Both get read-only.
+  const effectiveScopes =
+    scopes === null || scopes.length === 0 ? [McpScope.read] : scopes;
+  const grantedTools = mcpTools.filter((tool) => effectiveScopes.includes(tool.requiredScope));
 
   for (const tool of grantedTools) {
     registerMcpTool(server, tool, { userId });
