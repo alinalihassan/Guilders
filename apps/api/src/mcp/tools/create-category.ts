@@ -21,7 +21,7 @@ export const createCategoryTool: McpToolDefinition<CreateCategoryInput> = {
     classification: z.enum(["income", "expense"]).optional(),
     color: z.string().min(4).max(7).optional(),
     icon: z.string().min(1).max(100).optional(),
-    parent_id: z.number().int().optional(),
+    parent_id: z.number().int().positive().optional(),
   },
   handler: async ({ name, classification, color, icon, parent_id }, { userId }) => {
     try {
@@ -35,14 +35,16 @@ export const createCategoryTool: McpToolDefinition<CreateCategoryInput> = {
         };
       }
 
-      if (parent_id) {
+      if (parent_id !== undefined) {
         const parent = await db.query.category.findFirst({
           where: { id: parent_id, user_id: userId },
         });
         if (!parent) {
           return {
             isError: true,
-            content: [{ type: "text", text: "Parent category not found or does not belong to user." }],
+            content: [
+              { type: "text", text: "Parent category not found or does not belong to user." },
+            ],
           };
         }
       }
