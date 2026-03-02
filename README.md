@@ -5,6 +5,11 @@
 <h1 align="center">Guilders</h1>
 
 <p align="center">
+  <a href="https://github.com/alinalihassan/Guilders/blob/main/package.json"><img src="https://badgen.net/badge/version/0.1.0/blue" alt="Version" /></a>
+  <a href="https://github.com/alinalihassan/Guilders/blob/main/LICENSE"><img src="https://badgen.net/github/license/alinalihassan/Guilders" alt="License" /></a>
+</p>
+
+<p align="center">
   Open-source, self-hostable personal finance platform.<br/>
   Track everything — bank accounts, investments, crypto, property — in one place.
 </p>

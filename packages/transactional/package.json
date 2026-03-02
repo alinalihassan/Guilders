@@ -1,6 +1,5 @@
 {
   "name": "@guilders/transactional",
-  "version": "1.0.0",
   "private": true,
   "exports": {
     "./emails/*": "./emails/*.tsx"
