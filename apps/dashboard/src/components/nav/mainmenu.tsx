@@ -69,7 +69,11 @@ export function MainMenu() {
       ? {
           ...item,
           onClick: async () => {
-            await authClient.signOut();
+            try {
+              await authClient.signOut();
+            } catch {
+              // Session may already be invalid; still redirect
+            }
             router.push("/login");
           },
         }

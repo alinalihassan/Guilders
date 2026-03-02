@@ -1,5 +1,3 @@
-import { env } from "cloudflare:workers";
-
 import { AccountSubtypeEnum, AccountTypeEnum } from "../../db/schema/enums";
 import type { InsertTransaction } from "../../db/schema/transactions";
 import { createDb } from "../../lib/db";
@@ -93,10 +91,11 @@ export class TellerProvider implements IProvider {
       });
       if (!inst) return { success: false, error: "Institution not found" };
 
-      const backendUrl = process.env.NODE_ENV === "development" ? env.NGROK_URL : env.BACKEND_URL;
+      const backendUrl =
+        process.env.NODE_ENV === "development" ? process.env.NGROK_URL : process.env.BACKEND_URL;
       if (!backendUrl) return { success: false, error: "BACKEND_URL not configured" };
 
-      const secret = env.GUILDERS_SECRET;
+      const secret = process.env.GUILDERS_SECRET;
       if (!secret) return { success: false, error: "Server configuration error" };
 
       const state = await signState(
@@ -130,10 +129,11 @@ export class TellerProvider implements IProvider {
     try {
       if (!params.connectionId) return { success: false, error: "connectionId required" };
 
-      const backendUrl = process.env.NODE_ENV === "development" ? env.NGROK_URL : env.BACKEND_URL;
+      const backendUrl =
+        process.env.NODE_ENV === "development" ? process.env.NGROK_URL : process.env.BACKEND_URL;
       if (!backendUrl) return { success: false, error: "BACKEND_URL not configured" };
 
-      const secret = env.GUILDERS_SECRET;
+      const secret = process.env.GUILDERS_SECRET;
       if (!secret) return { success: false, error: "Missing GUILDERS_SECRET env var" };
 
       const state = await signState(
@@ -174,10 +174,11 @@ export class TellerProvider implements IProvider {
         return { success: false, error: "Connection not found" };
       }
 
-      const backendUrl = process.env.NODE_ENV === "development" ? env.NGROK_URL : env.BACKEND_URL;
+      const backendUrl =
+        process.env.NODE_ENV === "development" ? process.env.NGROK_URL : process.env.BACKEND_URL;
       if (!backendUrl) return { success: false, error: "BACKEND_URL not configured" };
 
-      const secret = env.GUILDERS_SECRET;
+      const secret = process.env.GUILDERS_SECRET;
       if (!secret) return { success: false, error: "Missing GUILDERS_SECRET env var" };
 
       const state = await signState(

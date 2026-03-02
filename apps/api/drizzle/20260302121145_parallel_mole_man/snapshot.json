@@ -1,9 +1,9 @@
 {
   "version": "8",
   "dialect": "postgres",
-  "id": "ccc96bfe-efdc-41c2-8213-8346240e87ff",
+  "id": "1a375221-46a3-4314-8476-49c7bebe1de8",
   "prevIds": [
-    "1798359a-f7f7-47a6-95a3-2859bd6665b1"
+    "00000000-0000-0000-0000-000000000000"
   ],
   "ddl": [
     {
@@ -521,6 +521,19 @@
     {
       "type": "text",
       "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "'default'",
+      "generated": null,
+      "identity": null,
+      "name": "config_id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "apikey"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
       "notNull": false,
       "dimensions": 0,
       "default": null,
@@ -547,6 +560,19 @@
     {
       "type": "text",
       "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "reference_id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "apikey"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
       "notNull": false,
       "dimensions": 0,
       "default": null,
@@ -566,19 +592,6 @@
       "generated": null,
       "identity": null,
       "name": "key",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "apikey"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "user_id",
       "entityType": "columns",
       "schema": "public",
       "table": "apikey"
@@ -1312,6 +1325,19 @@
       "table": "oauth_client"
     },
     {
+      "type": "boolean",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "require_pkce",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "oauth_client"
+    },
+    {
       "type": "text",
       "typeSchema": null,
       "notNull": false,
@@ -1541,6 +1567,19 @@
       "generated": null,
       "identity": null,
       "name": "revoked",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "oauth_refresh_token"
+    },
+    {
+      "type": "timestamp",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "auth_time",
       "entityType": "columns",
       "schema": "public",
       "table": "oauth_refresh_token"
@@ -1923,19 +1962,6 @@
       "table": "user"
     },
     {
-      "type": "varchar(3)",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "'EUR'",
-      "generated": null,
-      "identity": null,
-      "name": "currency",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "user"
-    },
-    {
       "type": "timestamp",
       "typeSchema": null,
       "notNull": true,
@@ -1970,6 +1996,19 @@
       "generated": null,
       "identity": null,
       "name": "two_factor_enabled",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "user"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": "'EUR'",
+      "generated": null,
+      "identity": null,
+      "name": "currency",
       "entityType": "columns",
       "schema": "public",
       "table": "user"
@@ -3201,6 +3240,104 @@
       "nameExplicit": true,
       "columns": [
         {
+          "value": "provider_account_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        },
+        {
+          "value": "institution_connection_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": true,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "account_provider_account_connection_idx",
+      "entityType": "indexes",
+      "schema": "public",
+      "table": "account"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        },
+        {
+          "value": "user_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": true,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "account_id_user_unique_idx",
+      "entityType": "indexes",
+      "schema": "public",
+      "table": "account"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "config_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "apikey_configId_idx",
+      "entityType": "indexes",
+      "schema": "public",
+      "table": "apikey"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "reference_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "apikey_referenceId_idx",
+      "entityType": "indexes",
+      "schema": "public",
+      "table": "apikey"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
           "value": "key",
           "isExpression": false,
           "asc": true,
@@ -3214,27 +3351,6 @@
       "method": "btree",
       "concurrently": false,
       "name": "apikey_key_idx",
-      "entityType": "indexes",
-      "schema": "public",
-      "table": "apikey"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        {
-          "value": "user_id",
-          "isExpression": false,
-          "asc": true,
-          "nullsFirst": false,
-          "opclass": null
-        }
-      ],
-      "isUnique": false,
-      "where": null,
-      "with": "",
-      "method": "btree",
-      "concurrently": false,
-      "name": "apikey_userId_idx",
       "entityType": "indexes",
       "schema": "public",
       "table": "apikey"
@@ -3523,6 +3639,34 @@
       "nameExplicit": true,
       "columns": [
         {
+          "value": "user_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        },
+        {
+          "value": "name",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": true,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "category_user_name_unique",
+      "entityType": "indexes",
+      "schema": "public",
+      "table": "category"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
           "value": "code",
           "isExpression": false,
           "asc": true,
@@ -3719,6 +3863,27 @@
       "nameExplicit": true,
       "columns": [
         {
+          "value": "connection_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": true,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "institution_connection_connection_id_idx",
+      "entityType": "indexes",
+      "schema": "public",
+      "table": "institution_connection"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
           "value": "id",
           "isExpression": false,
           "asc": true,
@@ -3865,6 +4030,34 @@
       "method": "btree",
       "concurrently": false,
       "name": "provider_connection_provider_idx",
+      "entityType": "indexes",
+      "schema": "public",
+      "table": "provider_connection"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "provider_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        },
+        {
+          "value": "user_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": true,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "provider_connection_provider_user_idx",
       "entityType": "indexes",
       "schema": "public",
       "table": "provider_connection"
@@ -4089,21 +4282,23 @@
       "table": "account"
     },
     {
-      "nameExplicit": false,
+      "nameExplicit": true,
       "columns": [
+        "parent",
         "user_id"
       ],
       "schemaTo": "public",
-      "tableTo": "user",
+      "tableTo": "account",
       "columnsTo": [
-        "id"
+        "id",
+        "user_id"
       ],
-      "onUpdate": "NO ACTION",
+      "onUpdate": "CASCADE",
       "onDelete": "CASCADE",
-      "name": "apikey_user_id_user_id_fkey",
+      "name": "account_parent_same_user_fkey",
       "entityType": "fks",
       "schema": "public",
-      "table": "apikey"
+      "table": "account"
     },
     {
       "nameExplicit": false,
@@ -4882,6 +5077,13 @@
       "schema": "public",
       "table": "user",
       "entityType": "uniques"
+    },
+    {
+      "value": "\"rate\" > 0",
+      "name": "rate_positive",
+      "entityType": "checks",
+      "schema": "public",
+      "table": "rate"
     }
   ],
   "renames": []

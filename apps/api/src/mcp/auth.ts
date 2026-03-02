@@ -1,4 +1,3 @@
-import { env } from "cloudflare:workers";
 import { decodeJwt } from "jose";
 
 const normalizeHeaders = (
@@ -61,7 +60,7 @@ export const verifyMcpRequest = async (
     throw new Error("missing authorization header");
   }
 
-  const userInfoResponse = await fetch(`${env.BACKEND_URL}/api/auth/oauth2/userinfo`, {
+  const userInfoResponse = await fetch(`${process.env.BACKEND_URL}/api/auth/oauth2/userinfo`, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${accessToken}`,

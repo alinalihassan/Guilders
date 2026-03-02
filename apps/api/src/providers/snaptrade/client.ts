@@ -1,4 +1,3 @@
-import { env } from "cloudflare:workers";
 import { Snaptrade } from "snaptrade-typescript-sdk";
 
 type SnapTradeConfig = {
@@ -7,8 +6,8 @@ type SnapTradeConfig = {
 };
 
 function getSnapTradeConfig(): SnapTradeConfig {
-  const clientId = env.SNAPTRADE_CLIENT_ID;
-  const consumerKey = env.SNAPTRADE_CLIENT_SECRET;
+  const clientId = process.env.SNAPTRADE_CLIENT_ID;
+  const consumerKey = process.env.SNAPTRADE_CLIENT_SECRET;
 
   if (!clientId || !consumerKey) {
     throw new Error("Missing SNAPTRADE_CLIENT_ID or SNAPTRADE_CLIENT_SECRET env vars");

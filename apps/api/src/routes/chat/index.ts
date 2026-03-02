@@ -9,7 +9,6 @@ import {
 } from "ai";
 import { createAiGateway } from "ai-gateway-provider";
 import { unified } from "ai-gateway-provider/providers/unified";
-import { env } from "cloudflare:workers";
 import { Elysia, status, t } from "elysia";
 
 import { authPlugin } from "../../middleware/auth";
@@ -109,9 +108,9 @@ export const chatRoutes = new Elysia({
         ];
 
         const aiGateway = createAiGateway({
-          accountId: env.CLOUDFLARE_ACCOUNT_ID,
-          gateway: env.CLOUDFLARE_AI_GATEWAY,
-          apiKey: env.CLOUDFLARE_AI_GATEWAY_TOKEN,
+          accountId: process.env.CLOUDFLARE_ACCOUNT_ID,
+          gateway: process.env.CLOUDFLARE_AI_GATEWAY,
+          apiKey: process.env.CLOUDFLARE_AI_GATEWAY_TOKEN,
         });
 
         // Stream the response using AI Gateway

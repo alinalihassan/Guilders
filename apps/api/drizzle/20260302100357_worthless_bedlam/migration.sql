@@ -1,3 +1,0 @@
-ALTER TABLE "account" RENAME CONSTRAINT "account_parent_account_id_fkey" TO "account_parent_same_user_fkey";--> statement-breakpoint
-CREATE UNIQUE INDEX "account_id_user_unique_idx" ON "account" ("id","user_id");--> statement-breakpoint
-ALTER TABLE "account" DROP CONSTRAINT "account_parent_same_user_fkey", ADD CONSTRAINT "account_parent_same_user_fkey" FOREIGN KEY ("parent","user_id") REFERENCES "account"("id","user_id") ON DELETE CASCADE ON UPDATE CASCADE;

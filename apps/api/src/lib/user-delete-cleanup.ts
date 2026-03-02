@@ -1,4 +1,3 @@
-import { env } from "cloudflare:workers";
 import { eq } from "drizzle-orm";
 
 import { providerConnection } from "../db/schema/provider-connections";
@@ -11,13 +10,16 @@ function isProviderName(name: string): name is ProviderName {
   return (PROVIDER_NAMES as readonly string[]).includes(name);
 }
 
-export async function enqueueUserDeleteCleanupJobs(userId: string): Promise<void> {
+export async function enqueueUserDeleteCleanupJobs(env: Env, userId: string): Promise<void> {
   if (!env?.WEBHOOK_QUEUE) return;
 
-  await Promise.all([enqueueProviderCleanupJobs(userId), enqueueUserFilesCleanupJob(userId)]);
+  await Promise.all([
+    enqueueProviderCleanupJobs(env, userId),
+    enqueueUserFilesCleanupJob(env, userId),
+  ]);
 }
 
-async function enqueueProviderCleanupJobs(userId: string): Promise<void> {
+async function enqueueProviderCleanupJobs(env: Env, userId: string): Promise<void> {
   try {
     const db = createDb();
     const providerConnections = await db
@@ -53,7 +55,7 @@ async function enqueueProviderCleanupJobs(userId: string): Promise<void> {
   }
 }
 
-async function enqueueUserFilesCleanupJob(userId: string): Promise<void> {
+async function enqueueUserFilesCleanupJob(env: Env, userId: string): Promise<void> {
   try {
     const event: UserFilesCleanupEvent = {
       source: "user-files-cleanup",

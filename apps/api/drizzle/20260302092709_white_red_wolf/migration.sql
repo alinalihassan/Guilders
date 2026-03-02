@@ -1,1 +1,0 @@
-ALTER TABLE "account" ADD CONSTRAINT "account_parent_account_id_fkey" FOREIGN KEY ("parent") REFERENCES "account"("id") ON DELETE CASCADE ON UPDATE CASCADE;
