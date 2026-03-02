@@ -34,7 +34,7 @@ export function useAddAccount() {
   const queryClient = useQueryClient();
   return useMutation<Account, Error, CreateAccount>({
     mutationFn: async (account) => {
-      const { data, error } = await api.account.post(account as any);
+      const { data, error } = await api.account.post(account);
       if (error) throw new Error(edenError(error));
       return data as Account;
     },
@@ -56,7 +56,7 @@ export function useUpdateAccount() {
   const queryClient = useQueryClient();
   return useMutation<Account, Error, { id: number; account: UpdateAccount }>({
     mutationFn: async ({ id, account }) => {
-      const { data, error } = await api.account({ id }).put(account as any);
+      const { data, error } = await api.account({ id }).put(account);
       if (error) throw new Error(edenError(error));
       return data as Account;
     },

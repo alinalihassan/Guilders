@@ -1,3 +1,6 @@
+import { env } from "cloudflare:workers";
+import { decodeJwt } from "jose";
+
 const normalizeHeaders = (
   headers: Headers | Record<string, string | string[] | undefined> | undefined,
 ): Record<string, string> => {
@@ -25,14 +28,28 @@ const normalizeHeaders = (
   return normalized;
 };
 
-const getApiOrigin = () => {
-  const authBaseUrl = process.env.DASHBOARD_URL ?? "http://localhost:3000/api/auth";
-  return authBaseUrl.replace(/\/api\/auth\/?$/, "");
+/**
+ * Extracts OAuth scopes from a JWT access token.
+ * Returns null on decode failure (e.g. opaque token) so callers can enforce a
+ * restrictive default (read-only) instead of granting all tools.
+ */
+const extractScopesFromToken = (token: string): string[] | null => {
+  try {
+    const payload = decodeJwt(token);
+    if (typeof payload.scope === "string") {
+      return payload.scope.split(" ").filter(Boolean);
+    }
+    // Decoded but no scope claim → treat as no explicit scopes (read-only default)
+    return [];
+  } catch {
+    // Opaque token or decode error — scope unknown; callers must use restrictive default
+    return null;
+  }
 };
 
 export const verifyMcpRequest = async (
   headers: Headers | Record<string, string | string[] | undefined> | undefined,
-): Promise<{ userId: string }> => {
+): Promise<{ userId: string; scopes: string[] | null }> => {
   const requestHeaders = normalizeHeaders(headers);
   const authHeader =
     requestHeaders.authorization ??
@@ -44,7 +61,7 @@ export const verifyMcpRequest = async (
     throw new Error("missing authorization header");
   }
 
-  const userInfoResponse = await fetch(`${getApiOrigin()}/api/auth/oauth2/userinfo`, {
+  const userInfoResponse = await fetch(`${env.BACKEND_URL}/api/auth/oauth2/userinfo`, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -60,7 +77,10 @@ export const verifyMcpRequest = async (
     throw new Error("Unauthorized: access token missing subject.");
   }
 
+  const scopes = extractScopesFromToken(accessToken);
+
   return {
     userId: userInfo.sub,
+    scopes,
   };
 };

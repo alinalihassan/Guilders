@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "category_user_name_unique" ON "category" ("user_id","name");

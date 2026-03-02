@@ -1,3 +1,4 @@
+import { env } from "cloudflare:workers";
 import { and, eq } from "drizzle-orm";
 
 import { account } from "../db/schema/accounts";
@@ -25,7 +26,11 @@ export async function syncConnectionData(params: {
       break;
     case "EnableBanking":
     case "Teller":
-      await syncPullBasedConnection(params.providerName, params.userId, params.institutionConnectionId);
+      await syncPullBasedConnection(
+        params.providerName,
+        params.userId,
+        params.institutionConnectionId,
+      );
       break;
     default:
       throw new Error(`Unknown provider: ${params.providerName}`);
@@ -55,16 +60,17 @@ export async function syncAccountData(accountId: number): Promise<void> {
     throw new Error("Account or connection not found");
   }
 
-  const providerName = accountRecord.institutionConnection.providerConnection?.provider
-    ?.name as ProviderName | undefined;
+  const providerName = accountRecord.institutionConnection.providerConnection?.provider?.name as
+    | ProviderName
+    | undefined;
   if (!providerName) throw new Error("Provider not found");
 
   const providerAccountId = accountRecord.provider_account_id;
 
   switch (providerName) {
     case "EnableBanking": {
-      const clientId = process.env.ENABLEBANKING_CLIENT_ID;
-      const privateKey = process.env.ENABLEBANKING_CLIENT_PRIVATE_KEY;
+      const clientId = env.ENABLEBANKING_CLIENT_ID;
+      const privateKey = env.ENABLEBANKING_CLIENT_PRIVATE_KEY;
       if (!clientId || !privateKey) throw new Error("EnableBanking not configured");
 
       const ebClient = new EnableBankingClient(clientId, privateKey);
@@ -100,10 +106,7 @@ export async function syncAccountData(accountId: number): Promise<void> {
       const provConn = accountRecord.institutionConnection.providerConnection;
       if (!provConn?.secret) throw new Error("SnapTrade secret not found");
 
-      await syncSnapTradeConnection(
-        provConn.user_id,
-        accountRecord.institution_connection_id!,
-      );
+      await syncSnapTradeConnection(provConn.user_id, accountRecord.institution_connection_id!);
       return;
     }
   }
@@ -118,9 +121,7 @@ export async function syncAccountData(accountId: number): Promise<void> {
     .from(transaction)
     .where(eq(transaction.account_id, accountId));
 
-  const knownIds = new Set(
-    existingTxnRows.map((t) => t.provider_transaction_id).filter(Boolean),
-  );
+  const knownIds = new Set(existingTxnRows.map((t) => t.provider_transaction_id).filter(Boolean));
 
   const newTxns = providerTxns.filter(
     (t) => t.provider_transaction_id && !knownIds.has(t.provider_transaction_id),
@@ -225,7 +226,11 @@ async function syncPullBasedConnection(
           newTxns.map((t) => {
             let txnCurrency = t.currency;
             if (txnCurrency === "RUR") txnCurrency = "RUB";
-            return { ...t, currency: txnCurrency, locked_attributes: SYNCED_TRANSACTION_LOCKED_ATTRIBUTES };
+            return {
+              ...t,
+              currency: txnCurrency,
+              locked_attributes: SYNCED_TRANSACTION_LOCKED_ATTRIBUTES,
+            };
           }),
         );
       }
@@ -296,8 +301,7 @@ async function syncSnapTradeConnection(
       const parentName = snapAccount.institution_name ?? "SnapTrade Account";
       const totalCost =
         response.data?.positions?.reduce(
-          (acc, position) =>
-            acc + (position.average_purchase_price ?? 0) * (position.units ?? 0),
+          (acc, position) => acc + (position.average_purchase_price ?? 0) * (position.units ?? 0),
           0,
         ) ?? totalValue;
 

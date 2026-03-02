@@ -21,8 +21,7 @@ import { useSecurityStore } from "@/lib/store/securityStore";
 
 export function MFADialog() {
   const { isOpen, close } = useDialog("mfa");
-  const { isLoadingMFA, setup, startMFASetup, verifyMFASetup, clearMFASetup } =
-    useSecurityStore();
+  const { isLoadingMFA, setup, startMFASetup, verifyMFASetup, clearMFASetup } = useSecurityStore();
   const queryClient = useQueryClient();
   const [password, setPassword] = useState("");
   const [code, setCode] = useState("");
@@ -85,10 +84,7 @@ export function MFADialog() {
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent
-        className="sm:max-w-lg"
-        onInteractOutside={(e) => e.preventDefault()}
-      >
+      <DialogContent className="sm:max-w-lg" onInteractOutside={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle>Setup Authenticator App</DialogTitle>
           <DialogDescription>
@@ -191,7 +187,6 @@ export function MFADialog() {
               </div>
             </>
           )}
-
         </div>
       </DialogContent>
     </Dialog>

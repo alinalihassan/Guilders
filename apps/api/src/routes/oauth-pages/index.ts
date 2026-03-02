@@ -1,13 +1,12 @@
+import { env } from "cloudflare:workers";
 import { eq } from "drizzle-orm";
 import { Elysia } from "elysia";
 
 import { oauthClient } from "../../db/schema/auth";
 import { createDb } from "../../lib/db";
 
-const getDashboardOrigin = () => process.env.DASHBOARD_URL ?? "http://localhost:3002";
-
 const buildDashboardUrl = (path: "/oauth/sign-in" | "/oauth/consent", query: string) => {
-  const base = `${getDashboardOrigin().replace(/\/$/, "")}${path}`;
+  const base = `${env.DASHBOARD_URL}${path}`;
   return query ? `${base}?${query}` : base;
 };
 

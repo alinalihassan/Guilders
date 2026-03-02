@@ -55,8 +55,7 @@ export function ChangeIndicator({
           maximumFractionDigits: 1,
         }}
       />
-      )
-      {periodLabel && <span className="text-muted-foreground"> vs {periodLabel}</span>}
+      ){periodLabel && <span className="text-muted-foreground"> vs {periodLabel}</span>}
     </div>
   );
 }

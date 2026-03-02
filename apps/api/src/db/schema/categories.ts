@@ -1,4 +1,12 @@
-import { index, integer, pgTable, serial, timestamp, varchar } from "drizzle-orm/pg-core";
+import {
+  index,
+  integer,
+  pgTable,
+  serial,
+  timestamp,
+  uniqueIndex,
+  varchar,
+} from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-orm/typebox-legacy";
 
 import { user } from "./auth";
@@ -25,6 +33,7 @@ export const category = pgTable(
     index("category_id_idx").on(table.id),
     index("category_user_idx").on(table.user_id),
     index("category_parent_idx").on(table.parent_id),
+    uniqueIndex("category_user_name_unique").on(table.user_id, table.name),
   ],
 );
 

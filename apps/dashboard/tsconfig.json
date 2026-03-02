@@ -9,11 +9,6 @@
   ],
   "exclude": ["node_modules"],
   "compilerOptions": {
-    "plugins": [
-      {
-        "name": "next"
-      }
-    ],
     "paths": {
       "@/*": ["./src/*"],
       "@guilders/api/types": ["../api/src/types.ts"]

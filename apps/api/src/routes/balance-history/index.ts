@@ -78,6 +78,7 @@ export const balanceHistoryRoutes = new Elysia({
         : [];
       const rateMap = new Map(rates.map((r) => [r.currency_code, Number(r.rate)]));
 
+      // @ts-ignore TODO: Better Auth 1.5.0 issue, it's not inferring additional fields
       const userCurrency = user.currency ?? "EUR";
       const userRate = rateMap.get(userCurrency) ?? 1;
 

@@ -11,6 +11,7 @@ type GetTransactionsInput = {
 export const getTransactionsTool: McpToolDefinition<GetTransactionsInput> = {
   name: "get_transactions",
   description: "Return authenticated user's transactions (optional account filter)",
+  requiredScope: "read",
   inputSchema: {
     accountId: z.number().int().optional(),
     limit: z.number().int().min(1).max(100).default(50),

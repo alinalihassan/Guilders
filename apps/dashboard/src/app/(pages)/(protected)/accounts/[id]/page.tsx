@@ -124,12 +124,7 @@ export default function AccountPage({ params }: { params: Promise<{ id: string }
               </div>
               <div className="flex items-center gap-2">
                 {account.institution_connection_id && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={handleRefresh}
-                    disabled={isSyncing}
-                  >
+                  <Button variant="ghost" size="icon" onClick={handleRefresh} disabled={isSyncing}>
                     <RefreshCw className={`h-4 w-4 ${isSyncing ? "animate-spin" : ""}`} />
                     <span className="sr-only">Sync data</span>
                   </Button>

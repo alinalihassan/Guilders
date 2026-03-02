@@ -1,19 +1,11 @@
+import type { BalanceSnapshot, NetWorthSnapshot } from "@guilders/api/types";
 import { useQuery } from "@tanstack/react-query";
 
 import { api, edenError } from "../api";
 
+export type { BalanceSnapshot, NetWorthSnapshot };
+
 export type Period = "1W" | "1M" | "3M" | "6M" | "1Y" | "ALL";
-
-interface BalanceSnapshot {
-  date: string;
-  balance: string;
-  currency: string;
-}
-
-interface NetWorthSnapshot {
-  date: string;
-  balance: string;
-}
 
 export function periodToDateRange(period: Period): { from?: string; to?: string } {
   if (period === "ALL") return {};
@@ -50,9 +42,9 @@ export function useBalanceHistory(accountId: number | undefined, period: Period 
   return useQuery<BalanceSnapshot[], Error>({
     queryKey: balanceHistoryKey(accountId ?? 0, period),
     queryFn: async () => {
-      const { data, error } = await api
-        .account({ id: accountId! })
-        ["balance-history"].get({ query: range });
+      const { data, error } = await api.account({ id: accountId! })["balance-history"].get({
+        query: range,
+      });
       if (error) throw new Error(edenError(error));
       return (data as { snapshots: BalanceSnapshot[] }).snapshots;
     },

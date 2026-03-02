@@ -63,6 +63,12 @@ export const transactionRoutes = new Elysia({
         return status(404, { error: "Account not found" });
       }
 
+      if (body.currency !== accountResult.currency) {
+        return status(400, {
+          error: `Transaction currency (${body.currency}) must match account currency (${accountResult.currency})`,
+        });
+      }
+
       const amount = parseFloat(body.amount.toString());
 
       if (body.category_id) {
@@ -117,6 +123,7 @@ export const transactionRoutes = new Elysia({
       body: insertTransactionSchema,
       response: {
         200: "Transaction",
+        400: errorSchema,
         404: errorSchema,
         500: errorSchema,
       },
@@ -214,6 +221,12 @@ export const transactionRoutes = new Elysia({
         return status(404, { error: "Account not found" });
       }
 
+      if (effectiveCurrency !== targetAccount.currency) {
+        return status(400, {
+          error: `Transaction currency (${effectiveCurrency}) must match account currency (${targetAccount.currency})`,
+        });
+      }
+
       if (effectiveCategoryId) {
         const categoryResult = await db.query.category.findFirst({
           where: {
@@ -273,6 +286,7 @@ export const transactionRoutes = new Elysia({
       body: insertTransactionSchema,
       response: {
         200: "Transaction",
+        400: errorSchema,
         409: errorSchema,
         404: errorSchema,
         500: errorSchema,

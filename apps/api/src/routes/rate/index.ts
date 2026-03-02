@@ -1,8 +1,7 @@
 import { eq, max } from "drizzle-orm";
 import { Elysia, status, t } from "elysia";
 
-import { rate } from "../../db/schema/rates";
-import { selectRateSchema } from "../../db/schema/rates";
+import { rate, selectRateSchema } from "../../db/schema/rates";
 import { authPlugin } from "../../middleware/auth";
 import { errorSchema } from "../../utils/error";
 import { rateCodeParamSchema, rateQuerySchema } from "./types";

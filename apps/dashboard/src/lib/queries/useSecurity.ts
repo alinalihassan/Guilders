@@ -13,9 +13,7 @@ export function useMFAStatus() {
     queryFn: async () => {
       const { data, error } = await authClient.getSession();
       if (error) throw new Error(error.message);
-      return Boolean(
-        (data as { user?: { twoFactorEnabled?: boolean } })?.user?.twoFactorEnabled,
-      );
+      return Boolean((data as { user?: { twoFactorEnabled?: boolean } })?.user?.twoFactorEnabled);
     },
     staleTime: 30_000,
   });
@@ -27,10 +25,8 @@ export function usePasskeys() {
     queryFn: async () => {
       const { data, error } = await authClient.passkey.listUserPasskeys({});
       if (error) throw new Error(error.message);
-      return (
-        ((data as Array<{ id: string; name?: string } | null>) ?? []).filter(
-          (item): item is { id: string; name?: string } => Boolean(item?.id),
-        )
+      return ((data as Array<{ id: string; name?: string } | null>) ?? []).filter(
+        (item): item is { id: string; name?: string } => Boolean(item?.id),
       );
     },
     staleTime: 30_000,

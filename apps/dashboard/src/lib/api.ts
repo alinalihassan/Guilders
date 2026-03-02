@@ -14,9 +14,7 @@ export function edenError(error: unknown): string {
   if (typeof error === "string") return error;
   const val = (error as { value?: unknown }).value;
   if (val && typeof val === "object") {
-    const msg =
-      (val as { error?: string }).error ??
-      (val as { message?: string }).message;
+    const msg = (val as { error?: string }).error ?? (val as { message?: string }).message;
     if (msg) return msg;
   }
   try {

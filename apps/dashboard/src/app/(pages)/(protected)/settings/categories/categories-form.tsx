@@ -5,7 +5,12 @@ import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useAddCategory, useCategories, useRemoveCategory, useUpdateCategory } from "@/lib/queries/useCategories";
+import {
+  useAddCategory,
+  useCategories,
+  useRemoveCategory,
+  useUpdateCategory,
+} from "@/lib/queries/useCategories";
 
 export function CategoriesForm() {
   const { data: categories, isLoading } = useCategories();
@@ -81,7 +86,9 @@ export function CategoriesForm() {
       {isLoading ? (
         <p className="text-sm text-muted-foreground">Loading categories...</p>
       ) : !categories || categories.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No categories yet. Add your first one above.</p>
+        <p className="text-sm text-muted-foreground">
+          No categories yet. Add your first one above.
+        </p>
       ) : (
         <div className="space-y-2">
           {categories.map((category) => {

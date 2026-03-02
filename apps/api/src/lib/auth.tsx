@@ -22,16 +22,17 @@ export function createAuth(db?: Database) {
   const authDb = db ?? createDb();
   const baseUrl = env.BACKEND_URL;
   const mcpAudience = `${baseUrl}/mcp`;
-  const passkeyRpId = process.env.PASSKEY_RP_ID ?? new URL(baseUrl).hostname;
+  const passkeyRpId = new URL(baseUrl).hostname;
 
   return betterAuth({
     baseURL: baseUrl,
+    // @ts-ignore TODO: Better Auth 1.5.0 issue, database type is not inferred correctly
     database: drizzleAdapter(authDb, {
       provider: "pg",
       schema: authSchema,
     }),
     appName: "Guilders",
-    secret: process.env.BETTER_AUTH_SECRET,
+    secret: env.GUILDERS_SECRET,
     user: {
       additionalFields: {
         currency: {
@@ -94,9 +95,8 @@ export function createAuth(db?: Database) {
       },
     },
     plugins: [
-      apiKey({
-        enableSessionForAPIKeys: true,
-      }),
+      // @ts-ignore TODO: Better Auth 1.5.0 issue, it's not seen as of type plugin
+      apiKey(),
       twoFactor(),
       jwt(),
       passkey({

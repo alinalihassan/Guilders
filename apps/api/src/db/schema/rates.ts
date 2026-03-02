@@ -1,4 +1,5 @@
-import { date, index, numeric, pgTable, primaryKey, varchar } from "drizzle-orm/pg-core";
+import { check, date, index, numeric, pgTable, primaryKey, varchar } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 import { createInsertSchema, createSelectSchema } from "drizzle-orm/typebox-legacy";
 
 import { currency } from "./currencies";
@@ -16,6 +17,7 @@ export const rate = pgTable(
     primaryKey({ columns: [table.currency_code, table.date] }),
     index("rate_currency_idx").on(table.currency_code),
     index("rate_date_idx").on(table.date),
+    check("rate_positive", sql`${table.rate} > 0`),
   ],
 );
 

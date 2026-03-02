@@ -21,7 +21,7 @@ export function useAddCategory() {
   const queryClient = useQueryClient();
   return useMutation<Category, Error, Pick<CategoryInsert, "name">>({
     mutationFn: async (payload) => {
-      const { data, error } = await api.category.post(payload as any);
+      const { data, error } = await api.category.post(payload);
       if (error) throw new Error(edenError(error));
       return data as Category;
     },
@@ -46,7 +46,7 @@ export function useUpdateCategory() {
   const queryClient = useQueryClient();
   return useMutation<Category, Error, { id: number; category: Pick<CategoryInsert, "name"> }>({
     mutationFn: async ({ id, category }) => {
-      const { data, error } = await api.category({ id }).put(category as any);
+      const { data, error } = await api.category({ id }).put(category);
       if (error) throw new Error(edenError(error));
       return data as Category;
     },

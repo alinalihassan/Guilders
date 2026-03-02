@@ -36,9 +36,9 @@ import { useAccounts } from "@/lib/queries/useAccounts";
 import { useFiles } from "@/lib/queries/useFiles";
 import { useRemoveTransaction, useUpdateTransaction } from "@/lib/queries/useTransactions";
 
+import { CategorySelector } from "../common/category-selector";
 import { DateTimePicker } from "../common/datetime-picker";
 import { FileUploader } from "../common/file-uploader";
-import { CategorySelector } from "../common/category-selector";
 import { AccountIcon } from "../dashboard/accounts/account-icon";
 
 const formSchema = z.object({

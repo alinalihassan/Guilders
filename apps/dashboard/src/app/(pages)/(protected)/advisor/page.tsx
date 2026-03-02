@@ -12,6 +12,7 @@ import { StockCard } from "@/components/generative-ui/stock-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { env } from "@/lib/env";
 import { useUser, useUserToken } from "@/lib/queries/useUser";
 import { isPro } from "@/lib/utils";
 
@@ -77,7 +78,7 @@ export default function AdvisorPage() {
   const transport = useMemo(
     () =>
       new DefaultChatTransport({
-        api: `${process.env.NEXT_PUBLIC_API_URL}/api/chat`,
+        api: `${env.NEXT_PUBLIC_API_URL}/api/chat`,
       }),
     [],
   );

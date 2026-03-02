@@ -180,9 +180,7 @@ export function BalanceChart({
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const isHovering = activeIndex !== null;
   const hoverOffset =
-    activeIndex !== null && effectiveData.length > 1
-      ? activeIndex / (effectiveData.length - 1)
-      : 1;
+    activeIndex !== null && effectiveData.length > 1 ? activeIndex / (effectiveData.length - 1) : 1;
 
   const renderTooltip = useCallback(
     // oxlint-disable-next-line @typescript-eslint/no-explicit-any
@@ -294,9 +292,7 @@ export function BalanceChart({
           dataKey="value"
           type="monotone"
           fill={hasData && !isHovering ? `url(#fill-${chartId})` : "transparent"}
-          stroke={
-            isHovering ? `url(#stroke-split-${chartId})` : "var(--color-value)"
-          }
+          stroke={isHovering ? `url(#stroke-split-${chartId})` : "var(--color-value)"}
           strokeWidth={2}
           strokeLinejoin="round"
           strokeLinecap="round"

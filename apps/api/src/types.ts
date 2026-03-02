@@ -45,3 +45,14 @@ export type PortalResponse = { url: string };
 
 export type CreateDocumentResponse = DbDocument;
 export type DocumentEntityType = `${DbDocument["entity_type"]}`;
+
+export type BalanceSnapshot = {
+  date: string;
+  balance: string;
+  currency: string;
+};
+
+export type NetWorthSnapshot = {
+  date: string;
+  balance: string;
+};

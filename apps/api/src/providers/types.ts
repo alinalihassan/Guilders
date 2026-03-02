@@ -27,7 +27,6 @@ export type AccountParams = {
 
 export type TransactionParams = {
   accountId: string;
-  connectionId: number;
 };
 
 export type ProviderAccount = InsertAccount & {

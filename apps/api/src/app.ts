@@ -17,10 +17,6 @@ export const app = new Elysia({ adapter: CloudflareAdapter })
         "http://localhost:3001",
         "http://localhost:3002",
         "http://localhost:3003",
-
-        // @modelcontextprotocol/inspector
-        "http://localhost:6274",
-        "http://localhost:6277",
       ],
     }),
   )

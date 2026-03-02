@@ -1,0 +1,1 @@
+ALTER TABLE "rate" ADD CONSTRAINT "rate_positive" CHECK ("rate" > 0);

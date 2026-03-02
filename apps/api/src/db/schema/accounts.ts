@@ -1,7 +1,9 @@
+import type { AnyPgColumn } from "drizzle-orm/pg-core";
 import {
   index,
   integer,
   jsonb,
+  foreignKey,
   numeric,
   pgTable,
   serial,
@@ -76,6 +78,14 @@ export const account = pgTable(
       table.provider_account_id,
       table.institution_connection_id,
     ),
+    uniqueIndex("account_id_user_unique_idx").on(table.id, table.user_id),
+    foreignKey({
+      columns: [table.parent, table.user_id],
+      foreignColumns: [table.id, table.user_id],
+      name: "account_parent_same_user_fkey",
+    })
+      .onDelete("cascade")
+      .onUpdate("cascade"),
   ],
 );
 

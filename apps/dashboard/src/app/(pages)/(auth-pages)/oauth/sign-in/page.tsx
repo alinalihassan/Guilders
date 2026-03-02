@@ -13,8 +13,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { authClient } from "@/lib/auth-client";
+import { env } from "@/lib/env";
 
 const DISPLAY_ONLY_QUERY_KEYS = new Set(["client_name", "client_uri"]);
+
+const SCOPE_LABELS: Record<string, string> = {
+  openid: "Verify your identity",
+  read: "Read your financial data",
+  write: "Create accounts and transactions",
+};
 
 const toOAuthQuery = (searchParams: ReturnType<typeof useSearchParams>) => {
   const params = new URLSearchParams(searchParams.toString());
@@ -34,8 +41,7 @@ function OAuthSignInForm() {
   const clientUri = searchParams.get("client_uri");
   const scope = searchParams.get("scope");
   const scopeList = useMemo(() => scope?.split(/\s+/).filter(Boolean).slice(0, 6) ?? [], [scope]);
-  const authApiBase = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000";
-  const authorizeUrl = `${authApiBase}/api/auth/oauth2/authorize${oauthQuery ? `?${oauthQuery}` : ""}`;
+  const authorizeUrl = `${env.NEXT_PUBLIC_API_URL}/api/auth/oauth2/authorize${oauthQuery ? `?${oauthQuery}` : ""}`;
 
   const handleSubmit = async (formData: FormData) => {
     try {
@@ -113,7 +119,7 @@ function OAuthSignInForm() {
                 <div className="mt-2 flex flex-wrap gap-2">
                   {scopeList.map((item) => (
                     <Badge key={item} variant="secondary" className="rounded-md">
-                      {item}
+                      {SCOPE_LABELS[item] ?? item}
                     </Badge>
                   ))}
                 </div>
@@ -171,14 +177,13 @@ function OAuthSignInPage() {
   const searchParams = useSearchParams();
 
   const query = useMemo(() => toOAuthQuery(searchParams), [searchParams]);
-  const authApiBase = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000";
-  const authorizeUrl = `${authApiBase}/api/auth/oauth2/authorize${query ? `?${query}` : ""}`;
+  const authorizeUrl = `${env.NEXT_PUBLIC_API_URL}/api/auth/oauth2/authorize${query ? `?${query}` : ""}`;
 
   useEffect(() => {
     // If user already has a session cookie, Better Auth will immediately continue OAuth.
     void (async () => {
       try {
-        const response = await fetch(`${authApiBase}/api/auth/get-session`, {
+        const response = await fetch(`${env.NEXT_PUBLIC_API_URL}/api/auth/get-session`, {
           credentials: "include",
           cache: "no-store",
         });
@@ -191,7 +196,7 @@ function OAuthSignInPage() {
         // Keep user on sign-in form if session check fails.
       }
     })();
-  }, [authApiBase, authorizeUrl]);
+  }, [authorizeUrl]);
 
   return <OAuthSignInForm />;
 }

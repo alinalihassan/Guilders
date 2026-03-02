@@ -1,3 +1,5 @@
+import { env } from "cloudflare:workers";
+
 import { AccountSubtypeEnum, AccountTypeEnum } from "../../db/schema/enums";
 import type { InsertTransaction } from "../../db/schema/transactions";
 import { createDb } from "../../lib/db";
@@ -19,8 +21,8 @@ import { EnableBankingClient } from "./client";
 import type { CashAccountType } from "./types";
 
 function getConfig() {
-  const clientId = process.env.ENABLEBANKING_CLIENT_ID;
-  const privateKey = process.env.ENABLEBANKING_CLIENT_PRIVATE_KEY;
+  const clientId = env.ENABLEBANKING_CLIENT_ID;
+  const privateKey = env.ENABLEBANKING_CLIENT_PRIVATE_KEY;
   if (!clientId || !privateKey) {
     throw new Error("Missing ENABLEBANKING_CLIENT_ID or ENABLEBANKING_CLIENT_PRIVATE_KEY env vars");
   }
@@ -156,11 +158,11 @@ export class EnableBankingProvider implements IProvider {
       const decoded = decodeInstitutionId(inst.provider_institution_id);
       if (!decoded) return { success: false, error: "Invalid institution ID format" };
 
-      const backendUrl = process.env.NGROK_URL || process.env.BACKEND_URL;
+      const backendUrl = process.env.NODE_ENV === "development" ? env.NGROK_URL : env.BACKEND_URL;
       if (!backendUrl) return { success: false, error: "BACKEND_URL not configured" };
 
-      const secret = process.env.BETTER_AUTH_SECRET;
-      if (!secret) return { success: false, error: "Missing auth secret" };
+      const secret = env.GUILDERS_SECRET;
+      if (!secret) return { success: false, error: "Missing GUILDERS_SECRET env var" };
 
       const state = await signState(
         { userId: params.userId, institutionId: params.institutionId },
@@ -208,11 +210,11 @@ export class EnableBankingProvider implements IProvider {
       const decoded = decodeInstitutionId(instConn.institution.provider_institution_id);
       if (!decoded) return { success: false, error: "Invalid institution ID format" };
 
-      const backendUrl = process.env.NGROK_URL || process.env.BACKEND_URL;
+      const backendUrl = process.env.NODE_ENV === "development" ? env.NGROK_URL : env.BACKEND_URL;
       if (!backendUrl) return { success: false, error: "BACKEND_URL not configured" };
 
-      const secret = process.env.BETTER_AUTH_SECRET;
-      if (!secret) return { success: false, error: "Missing auth secret" };
+      const secret = env.GUILDERS_SECRET;
+      if (!secret) return { success: false, error: "Missing GUILDERS_SECRET env var" };
 
       const state = await signState(
         { userId: instConn.providerConnection.user_id, institutionId: instConn.institution_id },
