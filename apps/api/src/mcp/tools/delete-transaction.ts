@@ -35,26 +35,16 @@ export const deleteTransactionTool: McpToolDefinition<DeleteTransactionInput> = 
         };
       }
 
-      const accountResult = await db.query.account.findFirst({
-        where: { id: existing.account_id },
-      });
-
-      if (!accountResult) {
-        return {
-          isError: true,
-          content: [{ type: "text", text: "Associated account not found." }],
-        };
-      }
-
-      const amount = parseFloat(existing.amount.toString());
-      const currentValue = parseFloat(accountResult.value.toString());
-      const newValue = currentValue - amount;
-
       await db.transaction(async (tx) => {
-        await tx
+        const [updatedAccount] = await tx
           .update(account)
-          .set({ value: newValue.toString(), updated_at: new Date() })
-          .where(eq(account.id, existing.account_id));
+          .set({
+            value: sql`${account.value} - ${existing.amount}`,
+            updated_at: new Date(),
+          })
+          .where(and(eq(account.id, existing.account_id), eq(account.user_id, userId)))
+          .returning({ id: account.id });
+        if (!updatedAccount) throw new Error("Associated account not found.");
 
         await tx.delete(transaction).where(eq(transaction.id, id));
       });
