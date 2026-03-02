@@ -15,4 +15,5 @@ export const env = createEnv({
     NEXT_PUBLIC_NGROK_URL: process.env.NEXT_PUBLIC_NGROK_URL,
   },
   emptyStringAsUndefined: true,
+  skipValidation: process.env.CI === "true",
 });
