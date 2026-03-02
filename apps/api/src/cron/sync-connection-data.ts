@@ -8,7 +8,7 @@ export async function syncConnectionDataCron() {
   const db = createDb();
 
   const providers = await db.query.provider.findMany({
-    where: (fields, { inArray }) => inArray(fields.name, PULL_BASED_PROVIDERS),
+    where: { name: { in: PULL_BASED_PROVIDERS } },
   });
 
   if (!providers.length) {
@@ -19,7 +19,7 @@ export async function syncConnectionDataCron() {
   const providerIds = providers.map((p) => p.id);
 
   const providerConnections = await db.query.providerConnection.findMany({
-    where: (fields, { inArray }) => inArray(fields.provider_id, providerIds),
+    where: { provider_id: { in: providerIds } },
     with: {
       provider: true,
       institutionConnections: true,
