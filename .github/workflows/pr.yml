@@ -67,10 +67,6 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
-      - name: Build API (typegen)
-        run: bun run cf-typegen
-        working-directory: apps/api
-
       - name: Build Dashboard
         run: bun run build
         working-directory: apps/dashboard
