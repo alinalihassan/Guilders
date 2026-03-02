@@ -35,10 +35,7 @@ export function ChangeBadge({
       <Icon size={12} strokeWidth={2.5} />
       {showAbsoluteChange && (
         <>
-          <NumberFlow
-            value={absValue}
-            format={{ style: "currency", currency: change.currency }}
-          />
+          <NumberFlow value={absValue} format={{ style: "currency", currency: change.currency }} />
           <span className="text-muted-foreground">/</span>
         </>
       )}

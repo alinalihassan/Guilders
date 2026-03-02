@@ -246,14 +246,22 @@ POST /api/transaction
 
 ## Environment Variables
 
-See `apps/api/.env.example` for the full list. Key groups:
+- **API:** Use Cloudflare Workers `env` (request/context bindings), not `process.env`. Exceptions: standalone scripts (e.g. `drizzle.config.ts`, CLI scripts) may use `process.env`.
+- **Dashboard:** Use the typed env from `apps/dashboard/src/lib/env.ts` (e.g. `import { env } from "@/lib/env"`), not raw `process.env`.
 
-- **Database:** `DATABASE_URL`
-- **URLs:** `BACKEND_URL`, `DASHBOARD_URL`
-- **Auth:** `BETTER_AUTH_SECRET`
-- **Payments:** `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`
-- **Email:** `RESEND_API_KEY`
-- **AI:** `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_AI_GATEWAY`, `CLOUDFLARE_AI_GATEWAY_TOKEN`
-- **Storage:** `CLOUDFLARE_R2_ACCESS_KEY`, `CLOUDFLARE_R2_SECRET_KEY`
-- **Providers:** `SNAPTRADE_*`, `SALTEDGE_*`
-- **Dev tunnels:** `NGROK_TOKEN`, `NGROK_URL` (optional, for provider callbacks)
+**API:** See `apps/api/.env.example` for the full list. Worker bindings and secrets are defined in `wrangler.jsonc` / dashboard; types in `apps/api/worker-configuration.d.ts`.
+
+| Group | Variables |
+|-------|-----------|
+| **Database** | `DATABASE_URL` (PostgreSQL connection string) |
+| **URLs** | `BACKEND_URL`, `DASHBOARD_URL` |
+| **Secrets** | `GUILDERS_SECRET` (provider state verification), `BETTER_AUTH_SECRET` |
+| **Payments** | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` |
+| **Email** | `RESEND_API_KEY` |
+| **Cloudflare** | `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_AI_GATEWAY`, `CLOUDFLARE_AI_GATEWAY_TOKEN`, `CLOUDFLARE_R2_ACCESS_KEY`, `CLOUDFLARE_R2_SECRET_KEY` |
+| **Bindings** | `PUBLIC_BUCKET` (R2), `USER_BUCKET` (R2), `WEBHOOK_QUEUE` (Queue) |
+| **Dev tunnels** | `NGROK_TOKEN`, `NGROK_URL` (optional, for provider callbacks) |
+| **SnapTrade** | `SNAPTRADE_CLIENT_ID`, `SNAPTRADE_CLIENT_SECRET` |
+| **SaltEdge** | `SALTEDGE_APP_ID`, `SALTEDGE_SECRET` |
+| **EnableBanking** | `ENABLEBANKING_CLIENT_ID`, `ENABLEBANKING_CLIENT_PRIVATE_KEY` |
+| **Teller** | `TELLER_APPLICATION_ID`, `TELLER_PRIVATE_KEY`, `TELLER_ENVIRONMENT`, `TELLER_WEBHOOK_SECRET` |

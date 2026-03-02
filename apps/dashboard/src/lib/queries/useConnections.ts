@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { api, edenError } from "@/lib/api";
+
 import { queryKey as accountQueryKey } from "./useAccounts";
 
 export function useRegisterConnection() {

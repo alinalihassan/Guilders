@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import { env } from "@/lib/env";
 
 const DISPLAY_ONLY_QUERY_KEYS = new Set(["client_name", "client_uri"]);
 
@@ -46,7 +47,7 @@ type ToggleableScope = keyof typeof SCOPE_GROUPS;
 function OAuthConsentForm() {
   const searchParams = useSearchParams();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const authApiBase = process.env.NEXT_PUBLIC_API_URL;
+  const authApiBase = env.NEXT_PUBLIC_API_URL;
 
   const oauthQuery = useMemo(() => toOAuthQuery(searchParams), [searchParams]);
   const clientId = searchParams.get("client_id") ?? "Unknown client";

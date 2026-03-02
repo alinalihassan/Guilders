@@ -22,7 +22,7 @@ export function createAuth(db?: Database) {
   const authDb = db ?? createDb();
   const baseUrl = env.BACKEND_URL;
   const mcpAudience = `${baseUrl}/mcp`;
-  const passkeyRpId = process.env.PASSKEY_RP_ID ?? new URL(baseUrl).hostname;
+  const passkeyRpId = new URL(baseUrl).hostname;
 
   return betterAuth({
     baseURL: baseUrl,
@@ -32,7 +32,7 @@ export function createAuth(db?: Database) {
       schema: authSchema,
     }),
     appName: "Guilders",
-    secret: process.env.BETTER_AUTH_SECRET,
+    secret: env.GUILDERS_SECRET,
     user: {
       additionalFields: {
         currency: {

@@ -5,9 +5,7 @@ import { account } from "../db/schema/accounts";
 import { AccountSubtypeEnum, AccountTypeEnum } from "../db/schema/enums";
 import { institutionConnection } from "../db/schema/institution-connections";
 import { createDb } from "../lib/db";
-import {
-  SYNCED_ACCOUNT_LOCKED_ATTRIBUTES,
-} from "../lib/locked-attributes";
+import { SYNCED_ACCOUNT_LOCKED_ATTRIBUTES } from "../lib/locked-attributes";
 import { syncConnectionData } from "../lib/sync-connection-data";
 import { getProvider } from "../providers";
 import { getSnapTradeClient } from "../providers/snaptrade/client";

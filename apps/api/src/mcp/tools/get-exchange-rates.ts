@@ -34,7 +34,12 @@ export const getExchangeRatesTool: McpToolDefinition<GetExchangeRatesInput> = {
       }
 
       if (baseCurrency === "EUR") {
-        return makeTextPayload({ date: targetDate, base: baseCurrency, count: rates.length, rates });
+        return makeTextPayload({
+          date: targetDate,
+          base: baseCurrency,
+          count: rates.length,
+          rates,
+        });
       }
 
       const baseRate = rates.find((r) => r.currency_code === baseCurrency);
@@ -52,7 +57,12 @@ export const getExchangeRatesTool: McpToolDefinition<GetExchangeRatesInput> = {
         rate: (parseFloat(r.rate) / baseRateValue).toString(),
       }));
 
-      return makeTextPayload({ date: targetDate, base: baseCurrency, count: rebased.length, rates: rebased });
+      return makeTextPayload({
+        date: targetDate,
+        base: baseCurrency,
+        count: rebased.length,
+        rates: rebased,
+      });
     } catch (error) {
       console.error("MCP get_exchange_rates failed:", error);
       return {

@@ -8,11 +8,7 @@ import { TellerProvider } from "../providers/teller/provider";
 import type { IProvider } from "../providers/types";
 
 function getProviderAdapters(): IProvider[] {
-  return [
-    new EnableBankingProvider(),
-    new SnapTradeProvider(),
-    new TellerProvider(),
-  ];
+  return [new EnableBankingProvider(), new SnapTradeProvider(), new TellerProvider()];
 }
 
 export async function syncInstitutions() {

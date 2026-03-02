@@ -11,9 +11,7 @@ export function useTransactions(accountId?: number) {
   return useQuery({
     queryKey: accountId ? [...queryKey, accountId] : queryKey,
     queryFn: async (): Promise<Transaction[]> => {
-      const { data, error } = await api.transaction.get(
-        accountId ? { query: { accountId } } : {},
-      );
+      const { data, error } = await api.transaction.get(accountId ? { query: { accountId } } : {});
       if (error) throw new Error(edenError(error));
       return (data ?? []) as Transaction[];
     },
@@ -63,9 +61,7 @@ export function useUpdateTransaction() {
   return useMutation<Transaction, Error, { transactionId: number; transaction: TransactionInsert }>(
     {
       mutationFn: async ({ transactionId, transaction }) => {
-        const { data, error } = await api
-          .transaction({ id: transactionId })
-          .put(transaction);
+        const { data, error } = await api.transaction({ id: transactionId }).put(transaction);
         if (error) throw new Error(edenError(error));
         return data as Transaction;
       },

@@ -21,9 +21,7 @@ export const createMcpServer = ({ userId, scopes }: McpAuthContext) => {
     },
   );
 
-  const hasCustomScopes = scopes.some(
-    (s) => s === McpScope.read || s === McpScope.write,
-  );
+  const hasCustomScopes = scopes.some((s) => s === McpScope.read || s === McpScope.write);
   const grantedTools = hasCustomScopes
     ? mcpTools.filter((tool) => scopes.includes(tool.requiredScope))
     : mcpTools;

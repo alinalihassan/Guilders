@@ -2,6 +2,7 @@ import {
   oauthProviderAuthServerMetadata,
   oauthProviderOpenIdConfigMetadata,
 } from "@better-auth/oauth-provider";
+import { env } from "cloudflare:workers";
 import { Elysia } from "elysia";
 
 import { createAuth } from "../../lib/auth";
@@ -25,8 +26,8 @@ const withCors = (response: Response) => {
 
 const getProtectedResourceResponse = async () => {
   const metadata = await getOauthResourceClient().getProtectedResourceMetadata({
-    resource: `${process.env.BACKEND_URL}/mcp`,
-    authorization_servers: [`${process.env.BACKEND_URL}/api/auth`],
+    resource: `${env.BACKEND_URL}/mcp`,
+    authorization_servers: [`${env.BACKEND_URL}/api/auth`],
   });
 
   return new Response(JSON.stringify(metadata), {

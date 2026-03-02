@@ -15,7 +15,7 @@ export function useUser() {
       const user = payload?.user as Record<string, unknown> | undefined;
 
       return {
-        email: user?.email as string ?? "",
+        email: (user?.email as string) ?? "",
         currency: (user?.currency as string) ?? "EUR",
         subscription: {
           status: null,
@@ -50,7 +50,7 @@ export function useUpdateUserSettings() {
       const user = payload?.user as Record<string, unknown> | undefined;
 
       return {
-        email: user?.email as string ?? "",
+        email: (user?.email as string) ?? "",
         currency: (user?.currency as string) ?? "EUR",
         subscription: {
           status: null,

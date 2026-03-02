@@ -9,9 +9,9 @@ import { getCategoriesTool } from "./get-categories";
 import { getExchangeRatesTool } from "./get-exchange-rates";
 import { getInstitutionsTool } from "./get-institutions";
 import { getTransactionsTool } from "./get-transactions";
+import type { McpToolDefinition } from "./types";
 import { updateAccountTool } from "./update-account";
 import { updateTransactionTool } from "./update-transaction";
-import type { McpToolDefinition } from "./types";
 
 export { registerMcpTool } from "./types";
 

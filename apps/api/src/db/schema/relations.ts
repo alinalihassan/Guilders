@@ -1,7 +1,6 @@
 import { defineRelations } from "drizzle-orm";
 
 import { account } from "./accounts";
-import { balanceSnapshot } from "./balance-snapshots";
 import {
   apikey,
   oauthAccessToken,
@@ -15,6 +14,7 @@ import {
   user_account,
   verification,
 } from "./auth";
+import { balanceSnapshot } from "./balance-snapshots";
 import { category } from "./categories";
 import { country } from "./countries";
 import { currency } from "./currencies";
@@ -24,7 +24,6 @@ import { providerConnection } from "./provider-connections";
 import { provider } from "./providers";
 import { rate } from "./rates";
 import { transaction } from "./transactions";
-
 
 const schema = {
   user_account,

@@ -1,6 +1,13 @@
 import { type NextRequest, NextResponse } from "next/server";
 
-const AUTH_PAGES = ["/login", "/sign-up", "/forgot-password", "/recovery", "/oauth/sign-in", "/oauth/consent"];
+const AUTH_PAGES = [
+  "/login",
+  "/sign-up",
+  "/forgot-password",
+  "/recovery",
+  "/oauth/sign-in",
+  "/oauth/consent",
+];
 const OAUTH_PAGES = ["/oauth/sign-in", "/oauth/consent"];
 
 const matchesRoute = (pathname: string, route: string) =>
@@ -22,7 +29,8 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  if (hasSessionCookie && authPage && !oauthPage) return NextResponse.redirect(new URL("/", request.url));
+  if (hasSessionCookie && authPage && !oauthPage)
+    return NextResponse.redirect(new URL("/", request.url));
 
   return NextResponse.next();
 }

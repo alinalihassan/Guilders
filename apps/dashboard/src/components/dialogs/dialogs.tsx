@@ -6,7 +6,9 @@ import { useEffect } from "react";
 import { useDialog } from "@/hooks/useDialog";
 import { useStore } from "@/lib/store";
 
-const CommandMenu = dynamic(() => import("./command-menu").then((m) => ({ default: m.CommandMenu })));
+const CommandMenu = dynamic(() =>
+  import("./command-menu").then((m) => ({ default: m.CommandMenu })),
+);
 const AddAccountDialog = dynamic(() =>
   import("./add-account-dialog").then((m) => ({ default: m.AddAccountDialog })),
 );

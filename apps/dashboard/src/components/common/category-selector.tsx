@@ -45,7 +45,9 @@ export function CategorySelector({
   const trimmedSearch = search.trim();
   const canCreate =
     trimmedSearch.length > 0 &&
-    !categoryOptions.some((category) => category.name.toLowerCase() === trimmedSearch.toLowerCase());
+    !categoryOptions.some(
+      (category) => category.name.toLowerCase() === trimmedSearch.toLowerCase(),
+    );
 
   const handleCreateCategory = () => {
     if (!trimmedSearch) return;
@@ -121,7 +123,10 @@ export function CategorySelector({
                     }}
                   >
                     <Check
-                      className={cn("mr-2 h-4 w-4", value === category.id ? "opacity-100" : "opacity-0")}
+                      className={cn(
+                        "mr-2 h-4 w-4",
+                        value === category.id ? "opacity-100" : "opacity-0",
+                      )}
                     />
                     {category.name}
                   </CommandItem>

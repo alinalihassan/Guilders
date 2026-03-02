@@ -1,10 +1,11 @@
 import { createMcpHandler } from "agents/mcp";
+import { env } from "cloudflare:workers";
 
 import { verifyMcpRequest } from "./auth";
 import { createMcpServer } from "./server";
 
 const getResourceMetadataUrl = () => {
-  return `${process.env.BACKEND_URL}/.well-known/oauth-protected-resource`;
+  return `${env.BACKEND_URL}/.well-known/oauth-protected-resource`;
 };
 
 export const handleMcp = async (request: Request, env: Env, executionCtx: ExecutionContext) => {

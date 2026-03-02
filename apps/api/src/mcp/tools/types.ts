@@ -24,14 +24,13 @@ export const makeTextPayload = (payload: Record<string, unknown> | string): McpT
   ],
 });
 
-export type McpToolDefinition<TInput extends Record<string, unknown> = Record<string, unknown>> =
-  {
-    name: string;
-    description: string;
-    requiredScope: McpScope;
-    inputSchema: Record<string, z.ZodTypeAny>;
-    handler: (input: TInput, context: McpToolContext) => Promise<McpToolResult>;
-  };
+export type McpToolDefinition<TInput extends Record<string, unknown> = Record<string, unknown>> = {
+  name: string;
+  description: string;
+  requiredScope: McpScope;
+  inputSchema: Record<string, z.ZodTypeAny>;
+  handler: (input: TInput, context: McpToolContext) => Promise<McpToolResult>;
+};
 
 export const registerMcpTool = <TInput extends Record<string, unknown>>(
   server: McpServer,

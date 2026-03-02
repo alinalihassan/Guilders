@@ -22,8 +22,10 @@
   <img src="assets/dashboard-preview.png" alt="Guilders Dashboard" width="1024" />
 </p>
 
-> [!CAUTION]
+> [!WARNING]
 > This project is very early in the development phase. Each update might not be compatible with previous versions, and you might not be able to migrate your data.
+>
+> **Focus and polish:** The most polished parts are the **API** and **Dashboard**, followed by **Docs**. The **mobile app** is not currently in focus and may be rebuilt from scratch. A separate **landing-page website** will be done later.
 
 ## About
 
