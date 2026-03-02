@@ -246,8 +246,7 @@ POST /api/transaction
 
 ## Environment Variables
 
-- **API:** Use Cloudflare Workers `env` (request/context bindings), not `process.env`. Exceptions: standalone scripts (e.g. `drizzle.config.ts`, CLI scripts) may use `process.env`.
-- **Dashboard:** Use the typed env from `apps/dashboard/src/lib/env.ts` (e.g. `import { env } from "@/lib/env"`), not raw `process.env`.
+Use `process.env` for environment variables everywhere (API, dashboard, db scripts, CLI scripts). This avoids having to determine whether code is used indirectly by scripts (e.g. db code used by `drizzle.config.ts` or migrations).
 
 **API:** See `apps/api/.env.example` for the full list. Worker bindings and secrets are defined in `wrangler.jsonc` / dashboard; types in `apps/api/worker-configuration.d.ts`.
 
