@@ -67,9 +67,9 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
-      - name: Build Dashboard
-        run: bun run build
-        working-directory: apps/dashboard
+      # - name: Build Dashboard
+      #   run: bun run build
+      #   working-directory: apps/dashboard
 
       - name: Build Docs
         run: bun run build
