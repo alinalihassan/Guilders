@@ -31,10 +31,7 @@ export const deleteAccountTool: McpToolDefinition<DeleteAccountInput> = {
         };
       }
 
-      await db.transaction(async (tx) => {
-        await tx.delete(account).where(eq(account.parent, id));
-        await tx.delete(account).where(eq(account.id, id));
-      });
+      await db.delete(account).where(eq(account.id, id));
 
       return makeTextPayload({ success: true, deletedAccountId: id });
     } catch (error) {

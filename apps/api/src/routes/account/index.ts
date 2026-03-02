@@ -245,12 +245,7 @@ export const accountRoutes = new Elysia({
         return status(404, { error: "Account not found" });
       }
 
-      await db.transaction(async (tx) => {
-        // Delete children first
-        await tx.delete(account).where(eq(account.parent, params.id));
-        // Delete the account
-        await tx.delete(account).where(eq(account.id, params.id));
-      });
+      await db.delete(account).where(eq(account.id, params.id));
 
       return { success: true };
     },

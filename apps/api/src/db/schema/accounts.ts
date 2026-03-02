@@ -1,3 +1,4 @@
+import type { AnyPgColumn } from "drizzle-orm/pg-core";
 import {
   index,
   integer,
@@ -49,7 +50,10 @@ export const account = pgTable(
       .default({}),
     name: varchar("name", { length: 100 }).notNull(),
     notes: text("notes").notNull().default(""),
-    parent: integer("parent"),
+    parent: integer("parent").references((): AnyPgColumn => account.id, {
+      onDelete: "cascade",
+      onUpdate: "cascade",
+    }),
     provider_account_id: varchar("provider_account_id", { length: 255 }),
     subtype: accountSubtypeEnum("subtype").notNull(),
     tax_rate: numeric("tax_rate", { precision: 5, scale: 4 }),
