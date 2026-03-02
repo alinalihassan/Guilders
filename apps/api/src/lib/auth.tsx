@@ -32,7 +32,7 @@ export function createAuth(db?: Database) {
       schema: authSchema,
     }),
     appName: "Guilders",
-    secret: process.env.GUILDERS_SECRET,
+    secret: process.env.BETTER_AUTH_SECRET,
     user: {
       additionalFields: {
         currency: {
