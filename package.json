@@ -6,8 +6,8 @@
     "packages/*"
   ],
   "scripts": {
-    "lint": "oxlint .",
-    "lint:fix": "oxlint --fix .",
+    "lint": "oxlint --deny-warnings .",
+    "lint:fix": "oxlint --deny-warnings --fix .",
     "format": "oxfmt --write .",
     "format:check": "oxfmt --check ."
   },
