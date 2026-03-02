@@ -76,10 +76,7 @@ async function processProviderUserCleanupEvent(event: ProviderUserCleanupEvent):
   }
 }
 
-async function processUserFilesCleanupEvent(
-  event: UserFilesCleanupEvent,
-  env: Env,
-): Promise<void> {
+async function processUserFilesCleanupEvent(event: UserFilesCleanupEvent, env: Env): Promise<void> {
   if (event.eventType !== "delete-user-files") return;
   const prefix = `${event.payload.userId}/`;
   let cursor: string | undefined;

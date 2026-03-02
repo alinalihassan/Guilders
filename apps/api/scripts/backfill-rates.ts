@@ -31,9 +31,8 @@ export async function backfillRates(startDate = DEFAULT_START_DATE) {
   console.log(`Backfilling rates from ${today} (most recent) down to ${startDate}...`);
 
   while (chunkEnd >= startDate) {
-    const chunkStart = addDays(chunkEnd, -CHUNK_DAYS) >= startDate
-      ? addDays(chunkEnd, -CHUNK_DAYS)
-      : startDate;
+    const chunkStart =
+      addDays(chunkEnd, -CHUNK_DAYS) >= startDate ? addDays(chunkEnd, -CHUNK_DAYS) : startDate;
 
     console.log(`  Fetching ${chunkStart} .. ${chunkEnd}`);
     const timeseries = await frankfurter.getTimeseries(chunkStart, chunkEnd, "EUR");
