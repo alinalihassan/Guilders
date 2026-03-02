@@ -4,14 +4,15 @@ import { verifyMcpRequest } from "./auth";
 import { createMcpServer } from "./server";
 
 const getResourceMetadataUrl = () => {
-  const origin = process.env.BACKEND_URL ?? "http://localhost:3000";
-  return `${origin.replace(/\/$/, "")}/.well-known/oauth-protected-resource`;
+  return `${process.env.BACKEND_URL}/.well-known/oauth-protected-resource`;
 };
 
 export const handleMcp = async (request: Request, env: Env, executionCtx: ExecutionContext) => {
   if (request.method === "OPTIONS") {
     const handler = createMcpHandler(
-      createMcpServer({ userId: "preflight", scopes: [] }) as unknown as Parameters<typeof createMcpHandler>[0],
+      createMcpServer({ userId: "preflight", scopes: [] }) as unknown as Parameters<
+        typeof createMcpHandler
+      >[0],
       {
         route: "/mcp",
         enableJsonResponse: true,

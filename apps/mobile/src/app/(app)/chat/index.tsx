@@ -38,7 +38,7 @@ const SUGGESTED_PROMPTS = [
   { icon: "📈", text: "How is my net worth trending?" },
 ];
 
-const BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? "http://localhost:3000";
+const BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
 // ─── Components ──────────────────────────────────────────────────────────────
 

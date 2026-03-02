@@ -27,11 +27,6 @@ const normalizeHeaders = (
   return normalized;
 };
 
-const getApiOrigin = () => {
-  const backendUrl = process.env.BACKEND_URL ?? "http://localhost:3000";
-  return backendUrl.replace(/\/api\/auth\/?$/, "");
-};
-
 const extractScopesFromToken = (token: string): string[] => {
   try {
     const payload = decodeJwt(token);
@@ -58,7 +53,7 @@ export const verifyMcpRequest = async (
     throw new Error("missing authorization header");
   }
 
-  const userInfoResponse = await fetch(`${getApiOrigin()}/api/auth/oauth2/userinfo`, {
+  const userInfoResponse = await fetch(`${process.env.BACKEND_URL}/api/auth/oauth2/userinfo`, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${accessToken}`,

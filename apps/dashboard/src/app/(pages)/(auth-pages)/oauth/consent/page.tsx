@@ -46,7 +46,7 @@ type ToggleableScope = keyof typeof SCOPE_GROUPS;
 function OAuthConsentForm() {
   const searchParams = useSearchParams();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const authApiBase = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000";
+  const authApiBase = process.env.NEXT_PUBLIC_API_URL;
 
   const oauthQuery = useMemo(() => toOAuthQuery(searchParams), [searchParams]);
   const clientId = searchParams.get("client_id") ?? "Unknown client";
@@ -98,12 +98,17 @@ function OAuthConsentForm() {
 
       if (!response.ok) {
         toast.error("Consent failed", {
-          description: (payload as { message?: string }).message || (payload as { error?: string }).error || "Please try again.",
+          description:
+            (payload as { message?: string }).message ||
+            (payload as { error?: string }).error ||
+            "Please try again.",
         });
         return;
       }
 
-      const redirectUrl = (payload as { redirect_uri?: string; url?: string }).redirect_uri || (payload as { url?: string }).url;
+      const redirectUrl =
+        (payload as { redirect_uri?: string; url?: string }).redirect_uri ||
+        (payload as { url?: string }).url;
       if (!redirectUrl) {
         toast.error("Consent failed", {
           description: "Missing redirect URL from authorization server.",
@@ -121,7 +126,10 @@ function OAuthConsentForm() {
     }
   };
 
-  const renderScopeGroup = (key: ToggleableScope, opts: { alwaysOn?: boolean; checked: boolean; onToggle?: (v: boolean) => void }) => {
+  const renderScopeGroup = (
+    key: ToggleableScope,
+    opts: { alwaysOn?: boolean; checked: boolean; onToggle?: (v: boolean) => void },
+  ) => {
     const group = SCOPE_GROUPS[key];
     const Icon = group.icon;
 
@@ -142,7 +150,7 @@ function OAuthConsentForm() {
             />
           )}
         </div>
-        <ul className="mt-2.5 grid gap-1.5 pl-6.5 text-sm text-muted-foreground">
+        <ul className="pl-6.5 mt-2.5 grid gap-1.5 text-sm text-muted-foreground">
           {group.capabilities.map((cap) => (
             <li key={cap} className="flex items-center gap-2">
               <span className="h-1 w-1 shrink-0 rounded-full bg-muted-foreground/50" />
@@ -170,8 +178,8 @@ function OAuthConsentForm() {
           <div className="space-y-1 text-center">
             <CardTitle className="text-2xl">Authorize Access</CardTitle>
             <CardDescription>
-              <span className="font-medium text-foreground">{clientName?.trim() || clientId}</span>
-              {" "}is requesting access to your Guilders account.
+              <span className="font-medium text-foreground">{clientName?.trim() || clientId}</span>{" "}
+              is requesting access to your Guilders account.
             </CardDescription>
           </div>
         </CardHeader>
@@ -221,7 +229,11 @@ function OAuthConsentForm() {
             >
               Deny
             </Button>
-            <Button onClick={() => submitConsent(true)} disabled={isSubmitting} className="w-full sm:w-auto">
+            <Button
+              onClick={() => submitConsent(true)}
+              disabled={isSubmitting}
+              className="w-full sm:w-auto"
+            >
               {isSubmitting ? "Processing..." : "Allow Access"}
             </Button>
           </div>
