@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import * as z from "zod/v4";
 
 import { account } from "../../db/schema/accounts";
