@@ -32,7 +32,7 @@ export const getBalanceHistoryTool: McpToolDefinition<GetBalanceHistoryInput> = 
         .where(and(eq(account.user_id, userId), isNull(account.parent)));
 
       if (userAccounts.length === 0) {
-        return makeTextPayload({ userId, snapshots: [] });
+        return makeTextPayload({ snapshots: [] });
       }
 
       const accountIds = userAccounts.map((a) => a.id);
@@ -81,7 +81,7 @@ export const getBalanceHistoryTool: McpToolDefinition<GetBalanceHistoryInput> = 
           balance: balance.toFixed(4),
         }));
 
-      return makeTextPayload({ userId, currency: userCurrency, snapshots: result });
+      return makeTextPayload({ currency: userCurrency, snapshots: result });
     } catch (error) {
       console.error("MCP get_balance_history failed:", error);
       return {
