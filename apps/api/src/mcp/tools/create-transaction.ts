@@ -45,6 +45,19 @@ export const createTransactionTool: McpToolDefinition<CreateTransactionInput> = 
         };
       }
 
+      const accountCurrency = accountResult.currency;
+      if (currency !== accountCurrency) {
+        return {
+          isError: true,
+          content: [
+            {
+              type: "text",
+              text: `Transaction currency (${currency}) must match account currency (${accountCurrency}).`,
+            },
+          ],
+        };
+      }
+
       if (category_id) {
         const categoryResult = await db.query.category.findFirst({
           where: {
