@@ -68,9 +68,7 @@ export function useUpdateUserSettings() {
 export function useDeleteAccount() {
   return useMutation({
     mutationFn: async () => {
-      const { error } = await authClient.signOut();
-      if (error) throw new Error(error.message || "Failed to delete account");
-      return true;
+      // TODO: Implement this
     },
   });
 }

@@ -30,7 +30,7 @@ export function toFinancialDataJson(params: ToFinancialDataJsonParams): Financia
         date: tx.date,
         amount: String(tx.amount),
         currency: tx.currency,
-        category: tx.category,
+        category: tx.category?.name ?? "",
         description: tx.description,
       };
     }),
@@ -55,6 +55,7 @@ export async function getFinancialContext(userId: string, db: Database): Promise
     where: { account: { user_id: userId } },
     orderBy: (tx, { desc }) => desc(tx.date),
     limit: 50,
+    with: { category: true },
   });
 
   const [latest] = await db.select({ date: max(rate.date) }).from(rate);
