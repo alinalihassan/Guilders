@@ -25,14 +25,15 @@ export async function backfillRates(startDate = DEFAULT_START_DATE) {
   const supportedCodes = new Set(supportedCurrencies.map((c) => c.code));
 
   const today = toDateStr(new Date());
-  let chunkStart = startDate;
+  let chunkEnd = today;
   let totalInserted = 0;
 
-  console.log(`Backfilling rates from ${startDate} to ${today}...`);
+  console.log(`Backfilling rates from ${today} (most recent) down to ${startDate}...`);
 
-  while (chunkStart < today) {
-    const chunkEnd =
-      addDays(chunkStart, CHUNK_DAYS) < today ? addDays(chunkStart, CHUNK_DAYS) : today;
+  while (chunkEnd >= startDate) {
+    const chunkStart = addDays(chunkEnd, -CHUNK_DAYS) >= startDate
+      ? addDays(chunkEnd, -CHUNK_DAYS)
+      : startDate;
 
     console.log(`  Fetching ${chunkStart} .. ${chunkEnd}`);
     const timeseries = await frankfurter.getTimeseries(chunkStart, chunkEnd, "EUR");
@@ -63,7 +64,7 @@ export async function backfillRates(startDate = DEFAULT_START_DATE) {
       console.log(`  Inserted ${rows.length} rows`);
     }
 
-    chunkStart = addDays(chunkEnd, 1);
+    chunkEnd = addDays(chunkStart, -1);
   }
 
   console.log(`Done. ${totalInserted} total rate rows upserted.`);
