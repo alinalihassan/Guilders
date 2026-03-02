@@ -100,17 +100,35 @@ export const updateTransactionTool: McpToolDefinition<UpdateTransactionInput> = 
         }
       }
 
-      const oldAmount = parseFloat(existing.amount.toString());
-      const newAmount = parseFloat(String(effectiveAmount));
-      const amountDiff = newAmount - oldAmount;
-      const currentAccountValue = parseFloat(targetAccount.value.toString());
-      const newAccountValue = currentAccountValue + amountDiff;
+      const oldAmount = existing.amount;
+      const newAmount = String(effectiveAmount);
 
       const updated = await db.transaction(async (tx) => {
-        await tx
-          .update(account)
-          .set({ value: newAccountValue.toString(), updated_at: new Date() })
-          .where(eq(account.id, effectiveAccountId));
+        if (existing.account_id === effectiveAccountId) {
+          await tx
+            .update(account)
+            .set({
+              value: sql`${account.value} + (${newAmount}::numeric - ${oldAmount}::numeric)`,
+              updated_at: new Date(),
+            })
+            .where(and(eq(account.id, effectiveAccountId), eq(account.user_id, userId)));
+        } else {
+          await tx
+            .update(account)
+            .set({
+              value: sql`${account.value} - ${oldAmount}::numeric`,
+              updated_at: new Date(),
+            })
+            .where(and(eq(account.id, existing.account_id), eq(account.user_id, userId)));
+
+          await tx
+            .update(account)
+            .set({
+              value: sql`${account.value} + ${newAmount}::numeric`,
+              updated_at: new Date(),
+            })
+            .where(and(eq(account.id, effectiveAccountId), eq(account.user_id, userId)));
+        }
 
         const [result] = await tx
           .update(transaction)
