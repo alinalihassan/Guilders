@@ -24,6 +24,13 @@ export const getBalanceHistoryTool: McpToolDefinition<GetBalanceHistoryInput> = 
   },
   handler: async ({ from, to }, { userId }) => {
     try {
+      if (from && to && from > to) {
+        return {
+          isError: true,
+          content: [{ type: "text", text: "Invalid date range: 'from' must be <= 'to'." }],
+        };
+      }
+
       const db = createDb();
 
       const userAccounts = await db
@@ -32,7 +39,7 @@ export const getBalanceHistoryTool: McpToolDefinition<GetBalanceHistoryInput> = 
         .where(and(eq(account.user_id, userId), isNull(account.parent)));
 
       if (userAccounts.length === 0) {
-        return makeTextPayload({ snapshots: [] });
+        return makeTextPayload({ userId, snapshots: [] });
       }
 
       const accountIds = userAccounts.map((a) => a.id);
