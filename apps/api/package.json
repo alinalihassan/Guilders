@@ -12,7 +12,7 @@
     "typecheck": "tsc --noEmit",
     "cf-typegen": "wrangler types",
     "ngrok": "bun --env-file=.env __ngrok-command",
-    "auth:generate": "bunx --bun auth generate --output src/db/schema/auth.ts -y",
+    "auth:generate": "better-auth generate --output src/db/schema/auth.ts -y",
     "db:generate": "drizzle-kit generate --config drizzle.config.ts",
     "db:migrate": "drizzle-kit migrate --config drizzle.config.ts",
     "db:studio": "drizzle-kit studio",

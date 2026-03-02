@@ -16,6 +16,7 @@
     "@ai-sdk/react": "catalog:",
     "@better-auth/api-key": "catalog:",
     "@better-auth/passkey": "catalog:",
+    "@better-auth/stripe": "catalog:",
     "@elysiajs/eden": "^1.4.8",
     "@guilders/api": "workspace:*",
     "@hookform/resolvers": "^5.0.1",
