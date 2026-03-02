@@ -8,7 +8,7 @@ import { queryKey as accountQueryKey } from "./useAccounts";
 export function useRegisterConnection() {
   return useMutation({
     mutationFn: async (providerId: string) => {
-      const { data, error } = await (api as Record<string, any>).connections.register.post({
+      const { data, error } = await api.connections.register.post({
         provider_id: providerId,
       });
       if (error) throw new Error(edenError(error));
@@ -26,7 +26,7 @@ export function useRegisterConnection() {
 export function useDeregisterConnection() {
   return useMutation({
     mutationFn: async (providerId: string) => {
-      const { data, error } = await (api as Record<string, any>).connections.deregister.post({
+      const { data, error } = await api.connections.deregister.post({
         provider_id: providerId,
       });
       if (error) throw new Error(edenError(error));
@@ -50,7 +50,7 @@ export function useCreateConnection() {
       providerId: string;
       institutionId: string;
     }): Promise<ConnectionResponse> => {
-      const { data, error } = await (api as Record<string, any>).connections.post({
+      const { data, error } = await api.connections.post({
         provider_id: providerId,
         institution_id: institutionId,
       });
@@ -77,7 +77,7 @@ export function useReconnectConnection() {
       institutionId: string;
       accountId: string;
     }): Promise<ConnectionResponse> => {
-      const { data, error } = await (api as Record<string, any>).connections.reconnect.post({
+      const { data, error } = await api.connections.reconnect.post({
         provider_id: providerId,
         institution_id: institutionId,
         account_id: accountId,
@@ -102,13 +102,13 @@ export function useRefreshConnection() {
     }: {
       providerId: string;
       connectionId: string;
-    }): Promise<{ success: boolean; redirectURI?: string; type?: "redirect" | "popup" }> => {
-      const { data, error } = await (api as Record<string, any>).connections.refresh.post({
+    }) => {
+      const { data, error } = await api.connections.refresh.post({
         provider_id: providerId,
         connection_id: connectionId,
       });
       if (error) throw new Error(edenError(error));
-      return data as { success: boolean; redirectURI?: string; type?: "redirect" | "popup" };
+      return data;
     },
     onError: (error) => {
       console.error("Failed to refresh connection:", error);
@@ -124,7 +124,7 @@ export function useSyncAccount() {
 
   return useMutation({
     mutationFn: async ({ accountId }: { accountId: string }): Promise<void> => {
-      const { error } = await (api as Record<string, any>).connections.sync.post({
+      const { error } = await api.connections.sync.post({
         account_id: accountId,
       });
       if (error) throw new Error(edenError(error));

@@ -1,3 +1,5 @@
+import { decodeJwt } from "jose";
+
 const normalizeHeaders = (
   headers: Headers | Record<string, string | string[] | undefined> | undefined,
 ): Record<string, string> => {
@@ -25,14 +27,21 @@ const normalizeHeaders = (
   return normalized;
 };
 
-const getApiOrigin = () => {
-  const authBaseUrl = process.env.DASHBOARD_URL ?? "http://localhost:3000/api/auth";
-  return authBaseUrl.replace(/\/api\/auth\/?$/, "");
+const extractScopesFromToken = (token: string): string[] => {
+  try {
+    const payload = decodeJwt(token);
+    if (typeof payload.scope === "string") {
+      return payload.scope.split(" ").filter(Boolean);
+    }
+  } catch {
+    // Opaque token — scopes will be resolved via fallback
+  }
+  return [];
 };
 
 export const verifyMcpRequest = async (
   headers: Headers | Record<string, string | string[] | undefined> | undefined,
-): Promise<{ userId: string }> => {
+): Promise<{ userId: string; scopes: string[] }> => {
   const requestHeaders = normalizeHeaders(headers);
   const authHeader =
     requestHeaders.authorization ??
@@ -44,7 +53,7 @@ export const verifyMcpRequest = async (
     throw new Error("missing authorization header");
   }
 
-  const userInfoResponse = await fetch(`${getApiOrigin()}/api/auth/oauth2/userinfo`, {
+  const userInfoResponse = await fetch(`${process.env.BACKEND_URL}/api/auth/oauth2/userinfo`, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -60,7 +69,10 @@ export const verifyMcpRequest = async (
     throw new Error("Unauthorized: access token missing subject.");
   }
 
+  const scopes = extractScopesFromToken(accessToken);
+
   return {
     userId: userInfo.sub,
+    scopes,
   };
 };

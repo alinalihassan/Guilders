@@ -10,6 +10,7 @@ type GetAccountsInput = {
 export const getAccountsTool: McpToolDefinition<GetAccountsInput> = {
   name: "get_accounts",
   description: "Return authenticated user's accounts",
+  requiredScope: "read",
   inputSchema: {
     limit: z.number().int().min(1).max(100).default(50),
   },

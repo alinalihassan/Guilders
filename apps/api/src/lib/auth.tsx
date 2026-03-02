@@ -26,6 +26,7 @@ export function createAuth(db?: Database) {
 
   return betterAuth({
     baseURL: baseUrl,
+    // @ts-ignore TODO: Better Auth 1.5.0 issue, database type is not inferred correctly
     database: drizzleAdapter(authDb, {
       provider: "pg",
       schema: authSchema,
@@ -94,9 +95,8 @@ export function createAuth(db?: Database) {
       },
     },
     plugins: [
-      apiKey({
-        enableSessionForAPIKeys: true,
-      }),
+      // @ts-ignore TODO: Better Auth 1.5.0 issue, it's not seen as of type plugin
+      apiKey(),
       twoFactor(),
       jwt(),
       passkey({

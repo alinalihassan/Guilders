@@ -7,7 +7,9 @@ import { Elysia } from "elysia";
 import { createAuth } from "../../lib/auth";
 import { getOauthResourceClient } from "../../lib/oauth-resource-client";
 
+// @ts-ignore TODO: Better Auth 1.5.0 issue, plugin API types not inferred on Auth return type
 const getAuthHandler = () => oauthProviderAuthServerMetadata(createAuth());
+// @ts-ignore TODO: Better Auth 1.5.0 issue, plugin API types not inferred on Auth return type
 const getOpenIdHandler = () => oauthProviderOpenIdConfigMetadata(createAuth());
 const metadataHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -22,10 +24,9 @@ const withCors = (response: Response) => {
 };
 
 const getProtectedResourceResponse = async () => {
-  const apiOrigin = process.env.DASHBOARD_URL ?? "http://localhost:3000";
   const metadata = await getOauthResourceClient().getProtectedResourceMetadata({
-    resource: `${apiOrigin}/mcp`,
-    authorization_servers: [apiOrigin],
+    resource: `${process.env.BACKEND_URL}/mcp`,
+    authorization_servers: [`${process.env.BACKEND_URL}/api/auth`],
   });
 
   return new Response(JSON.stringify(metadata), {
