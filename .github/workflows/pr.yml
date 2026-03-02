@@ -77,6 +77,6 @@ jobs:
         run: bun run build
         working-directory: apps/docs
 
-      - name: Build transactional package
+      - name: Build Emails
         run: bun run build
         working-directory: packages/transactional
