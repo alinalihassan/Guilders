@@ -9,7 +9,8 @@
     "build": "email build",
     "dev": "email dev -p 3004",
     "export": "email export",
-    "start": "email start"
+    "start": "email start",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@react-email/components": "1.0.1",

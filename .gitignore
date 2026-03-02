@@ -1,6 +1,9 @@
 # Dependency directories
 node_modules/
 
+# TypeScript incremental build info
+*.tsbuildinfo
+
 # Environment variables
 .env
 .env.local
