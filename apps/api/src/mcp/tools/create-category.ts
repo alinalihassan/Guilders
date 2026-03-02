@@ -49,15 +49,7 @@ export const createCategoryTool: McpToolDefinition<CreateCategoryInput> = {
         }
       }
 
-      const existing = await db.query.category.findFirst({
-        where: { user_id: userId, name: normalizedName },
-      });
-
-      if (existing) {
-        return makeTextPayload({ userId, category: existing, alreadyExisted: true });
-      }
-
-      const [newCategory] = await db
+      const [inserted] = await db
         .insert(category)
         .values({
           user_id: userId,
@@ -69,16 +61,24 @@ export const createCategoryTool: McpToolDefinition<CreateCategoryInput> = {
           created_at: new Date(),
           updated_at: new Date(),
         })
+        .onConflictDoNothing({ target: [category.user_id, category.name] })
         .returning();
 
-      if (!newCategory) {
-        return {
-          isError: true,
-          content: [{ type: "text", text: "Failed to create category." }],
-        };
+      if (inserted) {
+        return makeTextPayload({ userId, category: inserted });
       }
 
-      return makeTextPayload({ userId, category: newCategory });
+      const existing = await db.query.category.findFirst({
+        where: { user_id: userId, name: normalizedName },
+      });
+      if (existing) {
+        return makeTextPayload({ userId, category: existing, alreadyExisted: true });
+      }
+
+      return {
+        isError: true,
+        content: [{ type: "text", text: "Failed to create category." }],
+      };
     } catch (error) {
       console.error("MCP create_category failed:", error);
       return {
