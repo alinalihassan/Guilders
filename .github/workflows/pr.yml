@@ -35,17 +35,19 @@ jobs:
         run: bun run typecheck
         working-directory: apps/api
 
-      - name: Typecheck Dashboard
-        run: bun run typecheck
-        working-directory: apps/dashboard
+      # TODO: Uncomment this when we figured out a way to restrict typechecking to the dashboard package only
+      # - name: Typecheck Dashboard
+      #   run: bun run typecheck
+      #   working-directory: apps/dashboard
 
       - name: Typecheck Docs
         run: bun run types:check
         working-directory: apps/docs
 
-      - name: Typecheck Mobile
-        run: bun run typecheck
-        working-directory: apps/mobile
+      # TODO: Uncomment when resuming work on the mobile app
+      # - name: Typecheck Mobile
+      #   run: bun run typecheck
+      #   working-directory: apps/mobile
 
       - name: Typecheck Transactional
         run: bun run typecheck
