@@ -1,4 +1,3 @@
-import type { AnyPgColumn } from "drizzle-orm/pg-core";
 import {
   index,
   integer,
