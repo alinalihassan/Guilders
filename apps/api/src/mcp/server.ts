@@ -22,8 +22,7 @@ export const createMcpServer = ({ userId, scopes }: McpAuthContext) => {
   );
 
   // null = opaque token / decode failure; [] = decoded but no scope. Both get read-only.
-  const effectiveScopes =
-    scopes === null || scopes.length === 0 ? [McpScope.read] : scopes;
+  const effectiveScopes = scopes === null || scopes.length === 0 ? [McpScope.read] : scopes;
   const grantedTools = mcpTools.filter((tool) => effectiveScopes.includes(tool.requiredScope));
 
   for (const tool of grantedTools) {

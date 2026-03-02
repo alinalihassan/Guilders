@@ -6,12 +6,12 @@ Guilders is an open-source, self-hostable personal finance platform. It aggregat
 
 **Live instances:**
 
-| Service   | URL                          |
-|-----------|------------------------------|
-| API       | https://api.guilders.app     |
+| Service   | URL                            |
+| --------- | ------------------------------ |
+| API       | https://api.guilders.app       |
 | Dashboard | https://dashboard.guilders.app |
-| Website   | https://guilders.app         |
-| Docs      | https://docs.guilders.app    |
+| Website   | https://guilders.app           |
+| Docs      | https://docs.guilders.app      |
 
 ## Monorepo Structure
 
@@ -33,20 +33,20 @@ guilders-elysia/
 
 ## Tech Stack
 
-| Layer          | Technology                                           |
-|----------------|------------------------------------------------------|
-| API Framework  | Elysia 1.4 (Bun runtime, Cloudflare Workers adapter) |
-| Database       | PostgreSQL (Neon serverless) via Drizzle ORM         |
-| Auth           | Better Auth (session cookies, bearer tokens, passkeys, API keys, OAuth provider) |
-| AI             | Vercel AI SDK → Google Gemini 2.5 Flash via Cloudflare AI Gateway |
-| MCP            | `@modelcontextprotocol/sdk` — OAuth-authenticated    |
-| Dashboard      | Next.js 16, React 19, Tailwind CSS, shadcn/ui, Recharts, Zustand, TanStack Query |
-| Mobile         | Expo 55, React Native 0.83, Expo Router              |
-| Docs           | Fumadocs 16 (Next.js), OpenAPI integration            |
-| Email          | Resend + React Email                                 |
-| Payments       | Stripe (via Better Auth Stripe plugin)               |
-| Storage        | Cloudflare R2 (public + per-user buckets)            |
-| Providers      | SaltEdge (open banking), SnapTrade (brokerages)      |
+| Layer         | Technology                                                                       |
+| ------------- | -------------------------------------------------------------------------------- |
+| API Framework | Elysia 1.4 (Bun runtime, Cloudflare Workers adapter)                             |
+| Database      | PostgreSQL (Neon serverless) via Drizzle ORM                                     |
+| Auth          | Better Auth (session cookies, bearer tokens, passkeys, API keys, OAuth provider) |
+| AI            | Vercel AI SDK → Google Gemini 2.5 Flash via Cloudflare AI Gateway                |
+| MCP           | `@modelcontextprotocol/sdk` — OAuth-authenticated                                |
+| Dashboard     | Next.js 16, React 19, Tailwind CSS, shadcn/ui, Recharts, Zustand, TanStack Query |
+| Mobile        | Expo 55, React Native 0.83, Expo Router                                          |
+| Docs          | Fumadocs 16 (Next.js), OpenAPI integration                                       |
+| Email         | Resend + React Email                                                             |
+| Payments      | Stripe (via Better Auth Stripe plugin)                                           |
+| Storage       | Cloudflare R2 (public + per-user buckets)                                        |
+| Providers     | SaltEdge (open banking), SnapTrade (brokerages)                                  |
 
 ## Data Model
 
@@ -76,17 +76,17 @@ Provider  (e.g. SaltEdge, SnapTrade)
 
 Schema files live in `apps/api/src/db/schema/`:
 
-| File               | Tables                                                         |
-|--------------------|----------------------------------------------------------------|
-| `auth.ts`          | user, session, user_account, apikey, twoFactor, passkey, OAuth tables |
-| `accounts.ts`      | account                                                        |
-| `transactions.ts`  | transaction                                                    |
-| `categories.ts`    | category                                                       |
-| `providers.ts`     | provider, institution, provider_connection, institution_connection |
-| `currencies.ts`    | currency, rate                                                 |
-| `countries.ts`     | country                                                        |
-| `documents.ts`     | documents                                                      |
-| `relations.ts`     | Drizzle relation definitions                                   |
+| File              | Tables                                                                |
+| ----------------- | --------------------------------------------------------------------- |
+| `auth.ts`         | user, session, user_account, apikey, twoFactor, passkey, OAuth tables |
+| `accounts.ts`     | account                                                               |
+| `transactions.ts` | transaction                                                           |
+| `categories.ts`   | category                                                              |
+| `providers.ts`    | provider, institution, provider_connection, institution_connection    |
+| `currencies.ts`   | currency, rate                                                        |
+| `countries.ts`    | country                                                               |
+| `documents.ts`    | documents                                                             |
+| `relations.ts`    | Drizzle relation definitions                                          |
 
 Migrations: `apps/api/drizzle/`
 
@@ -96,41 +96,41 @@ All routes live under `/api` (see `apps/api/src/routes/`).
 
 ### Financial Data
 
-| Method   | Path                                  | Purpose                         |
-|----------|---------------------------------------|---------------------------------|
-| `GET`    | `/api/account`                        | List all user accounts          |
-| `POST`   | `/api/account`                        | Create manual account           |
-| `GET`    | `/api/account/:id`                    | Get account by ID               |
-| `PUT`    | `/api/account/:id`                    | Update account                  |
-| `DELETE` | `/api/account/:id`                    | Delete account                  |
-| `GET`    | `/api/transaction`                    | List transactions (date desc)   |
-| `POST`   | `/api/transaction`                    | Create transaction              |
-| `GET`    | `/api/account/:id/transaction`        | Transactions for one account    |
-| `GET`    | `/api/category`                       | List categories                 |
-| `POST`   | `/api/category`                       | Create category                 |
+| Method   | Path                           | Purpose                       |
+| -------- | ------------------------------ | ----------------------------- |
+| `GET`    | `/api/account`                 | List all user accounts        |
+| `POST`   | `/api/account`                 | Create manual account         |
+| `GET`    | `/api/account/:id`             | Get account by ID             |
+| `PUT`    | `/api/account/:id`             | Update account                |
+| `DELETE` | `/api/account/:id`             | Delete account                |
+| `GET`    | `/api/transaction`             | List transactions (date desc) |
+| `POST`   | `/api/transaction`             | Create transaction            |
+| `GET`    | `/api/account/:id/transaction` | Transactions for one account  |
+| `GET`    | `/api/category`                | List categories               |
+| `POST`   | `/api/category`                | Create category               |
 
 ### Connections & Providers
 
-| Method   | Path                                  | Purpose                         |
-|----------|---------------------------------------|---------------------------------|
-| `GET`    | `/api/provider`                       | List providers                  |
-| `GET`    | `/api/institution`                    | List institutions               |
-| `GET`    | `/api/provider-connection`            | List provider connections       |
-| `GET`    | `/api/institution-connection`         | List institution connections    |
-| `*`      | `/api/connections`                    | Connection management           |
+| Method | Path                          | Purpose                      |
+| ------ | ----------------------------- | ---------------------------- |
+| `GET`  | `/api/provider`               | List providers               |
+| `GET`  | `/api/institution`            | List institutions            |
+| `GET`  | `/api/provider-connection`    | List provider connections    |
+| `GET`  | `/api/institution-connection` | List institution connections |
+| `*`    | `/api/connections`            | Connection management        |
 
 ### Other
 
-| Path              | Purpose                                    |
-|-------------------|--------------------------------------------|
-| `/api/auth/*`     | Better Auth handlers                       |
-| `/api/chat`       | AI financial advisor (streaming)           |
-| `/api/currency`   | Currency list                              |
-| `/api/rate`       | Exchange rates                             |
-| `/api/country`    | Country list                               |
-| `/mcp`            | MCP server endpoint (OAuth-authenticated)  |
-| `/callback/*`     | Provider OAuth callbacks                   |
-| `/oauth/*`        | OAuth consent / sign-in pages              |
+| Path            | Purpose                                   |
+| --------------- | ----------------------------------------- |
+| `/api/auth/*`   | Better Auth handlers                      |
+| `/api/chat`     | AI financial advisor (streaming)          |
+| `/api/currency` | Currency list                             |
+| `/api/rate`     | Exchange rates                            |
+| `/api/country`  | Country list                              |
+| `/mcp`          | MCP server endpoint (OAuth-authenticated) |
+| `/callback/*`   | Provider OAuth callbacks                  |
+| `/oauth/*`      | OAuth consent / sign-in pages             |
 
 ### OpenAPI
 
@@ -163,9 +163,9 @@ Endpoint: `/mcp` (OAuth-authenticated via Better Auth as OAuth provider).
 
 **Tools:**
 
-| Tool               | Description                                      |
-|--------------------|--------------------------------------------------|
-| `get_accounts`     | Returns user accounts (limit 1–100, default 50)  |
+| Tool               | Description                                                      |
+| ------------------ | ---------------------------------------------------------------- |
+| `get_accounts`     | Returns user accounts (limit 1–100, default 50)                  |
 | `get_transactions` | Returns user transactions (optional account filter, limit 1–100) |
 
 Implementation: `apps/api/src/mcp/`
@@ -186,11 +186,11 @@ The provider interface is designed so developers can add their own integrations 
 
 ## Background Jobs
 
-| Schedule  | Job                     | Location                          |
-|-----------|-------------------------|-----------------------------------|
-| Hourly    | Sync exchange rates     | `apps/api/src/cron/`              |
-| Daily     | Sync institution data   | `apps/api/src/cron/`              |
-| Queue     | Process webhook events  | `apps/api/src/queues/webhook-events.ts` |
+| Schedule | Job                    | Location                                |
+| -------- | ---------------------- | --------------------------------------- |
+| Hourly   | Sync exchange rates    | `apps/api/src/cron/`                    |
+| Daily    | Sync institution data  | `apps/api/src/cron/`                    |
+| Queue    | Process webhook events | `apps/api/src/queues/webhook-events.ts` |
 
 Queue: `guilders-webhook-events` (Cloudflare Queues, max batch 10, 5 retries, DLQ).
 
@@ -251,17 +251,17 @@ POST /api/transaction
 
 **API:** See `apps/api/.env.example` for the full list. Worker bindings and secrets are defined in `wrangler.jsonc` / dashboard; types in `apps/api/worker-configuration.d.ts`.
 
-| Group | Variables |
-|-------|-----------|
-| **Database** | `DATABASE_URL` (PostgreSQL connection string) |
-| **URLs** | `BACKEND_URL`, `DASHBOARD_URL` |
-| **Secrets** | `GUILDERS_SECRET` (provider state verification), `BETTER_AUTH_SECRET` |
-| **Payments** | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` |
-| **Email** | `RESEND_API_KEY` |
-| **Cloudflare** | `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_AI_GATEWAY`, `CLOUDFLARE_AI_GATEWAY_TOKEN`, `CLOUDFLARE_R2_ACCESS_KEY`, `CLOUDFLARE_R2_SECRET_KEY` |
-| **Bindings** | `PUBLIC_BUCKET` (R2), `USER_BUCKET` (R2), `WEBHOOK_QUEUE` (Queue) |
-| **Dev tunnels** | `NGROK_TOKEN`, `NGROK_URL` (optional, for provider callbacks) |
-| **SnapTrade** | `SNAPTRADE_CLIENT_ID`, `SNAPTRADE_CLIENT_SECRET` |
-| **SaltEdge** | `SALTEDGE_APP_ID`, `SALTEDGE_SECRET` |
-| **EnableBanking** | `ENABLEBANKING_CLIENT_ID`, `ENABLEBANKING_CLIENT_PRIVATE_KEY` |
-| **Teller** | `TELLER_APPLICATION_ID`, `TELLER_PRIVATE_KEY`, `TELLER_ENVIRONMENT`, `TELLER_WEBHOOK_SECRET` |
+| Group             | Variables                                                                                                                               |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| **Database**      | `DATABASE_URL` (PostgreSQL connection string)                                                                                           |
+| **URLs**          | `BACKEND_URL`, `DASHBOARD_URL`                                                                                                          |
+| **Secrets**       | `GUILDERS_SECRET` (provider state verification), `BETTER_AUTH_SECRET`                                                                   |
+| **Payments**      | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`                                                                                            |
+| **Email**         | `RESEND_API_KEY`                                                                                                                        |
+| **Cloudflare**    | `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_AI_GATEWAY`, `CLOUDFLARE_AI_GATEWAY_TOKEN`, `CLOUDFLARE_R2_ACCESS_KEY`, `CLOUDFLARE_R2_SECRET_KEY` |
+| **Bindings**      | `PUBLIC_BUCKET` (R2), `USER_BUCKET` (R2), `WEBHOOK_QUEUE` (Queue)                                                                       |
+| **Dev tunnels**   | `NGROK_TOKEN`, `NGROK_URL` (optional, for provider callbacks)                                                                           |
+| **SnapTrade**     | `SNAPTRADE_CLIENT_ID`, `SNAPTRADE_CLIENT_SECRET`                                                                                        |
+| **SaltEdge**      | `SALTEDGE_APP_ID`, `SALTEDGE_SECRET`                                                                                                    |
+| **EnableBanking** | `ENABLEBANKING_CLIENT_ID`, `ENABLEBANKING_CLIENT_PRIVATE_KEY`                                                                           |
+| **Teller**        | `TELLER_APPLICATION_ID`, `TELLER_PRIVATE_KEY`, `TELLER_ENVIRONMENT`, `TELLER_WEBHOOK_SECRET`                                            |
