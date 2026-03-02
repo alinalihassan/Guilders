@@ -10,6 +10,7 @@
     "lint:fix": "oxlint --fix .",
     "format": "oxfmt --write .",
     "format:check": "oxfmt --check .",
+    "typecheck": "tsc --noEmit",
     "cf-typegen": "wrangler types",
     "ngrok": "bun --env-file=.env __ngrok-command",
     "auth:generate": "bunx --bun auth generate --output src/db/schema/auth.ts -y",

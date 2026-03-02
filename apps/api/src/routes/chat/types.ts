@@ -51,7 +51,7 @@ export interface ToFinancialDataJsonParams {
     date: string;
     amount: string | number;
     currency: string;
-    category: string;
+    category?: { name: string } | null;
     description: string;
   }>;
   exchangeRates: Array<{ currency_code: string; rate: string | number }>;

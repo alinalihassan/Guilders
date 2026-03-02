@@ -7,7 +7,7 @@ import ChangeEmail from "@guilders/transactional/emails/change-email";
 import PasswordResetEmail from "@guilders/transactional/emails/password-reset";
 import { betterAuth } from "better-auth";
 import { bearer, jwt, openAPI, twoFactor } from "better-auth/plugins";
-import { env, waitUntil } from "cloudflare:workers";
+import { waitUntil } from "cloudflare:workers";
 
 import * as authSchema from "../db/schema/auth";
 import { seedDefaultCategoriesForUser } from "./categories";
@@ -20,7 +20,7 @@ import { resend } from "./resend";
  */
 export function createAuth(db?: Database) {
   const authDb = db ?? createDb();
-  const baseUrl = env.BACKEND_URL;
+  const baseUrl = process.env.BACKEND_URL;
   const mcpAudience = `${baseUrl}/mcp`;
   const passkeyRpId = new URL(baseUrl).hostname;
 
@@ -32,7 +32,7 @@ export function createAuth(db?: Database) {
       schema: authSchema,
     }),
     appName: "Guilders",
-    secret: env.GUILDERS_SECRET,
+    secret: process.env.GUILDERS_SECRET,
     user: {
       additionalFields: {
         currency: {
@@ -60,7 +60,11 @@ export function createAuth(db?: Database) {
             to: user.email,
             subject: "Verify your new email",
             react: (
-              <ChangeEmail dashboardUrl={env.DASHBOARD_URL} newEmail={user.email} verifyUrl={url} />
+              <ChangeEmail
+                dashboardUrl={process.env.DASHBOARD_URL}
+                newEmail={user.email}
+                verifyUrl={url}
+              />
             ),
           }),
         );
@@ -76,7 +80,7 @@ export function createAuth(db?: Database) {
             subject: "Reset your password",
             react: (
               <PasswordResetEmail
-                dashboardUrl={env.DASHBOARD_URL}
+                dashboardUrl={process.env.DASHBOARD_URL}
                 userEmail={user.email}
                 resetUrl={url}
               />

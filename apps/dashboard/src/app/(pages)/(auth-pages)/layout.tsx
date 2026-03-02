@@ -7,6 +7,8 @@ import { env } from "@/lib/env";
 
 import { defaultMetadata } from "../metadata";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   ...defaultMetadata,
   robots: {

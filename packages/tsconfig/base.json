@@ -16,8 +16,7 @@
     "isolatedModules": true,
     "noUncheckedIndexedAccess": true,
     "noImplicitOverride": true,
-    "jsx": "preserve",
-    "incremental": true
+    "jsx": "preserve"
   },
   "exclude": ["node_modules"]
 }

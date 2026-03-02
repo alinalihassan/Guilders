@@ -1,0 +1,82 @@
+name: PR Checks
+
+on:
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: pr-${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  lint-format-typecheck:
+    name: Lint, format & typecheck
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Lint
+        run: bun run lint
+
+      - name: Format check
+        run: bun run format:check
+
+      - name: Typecheck API
+        run: bun run typecheck
+        working-directory: apps/api
+
+      # TODO: Uncomment this when we figured out a way to restrict typechecking to the dashboard package only
+      # - name: Typecheck Dashboard
+      #   run: bun run typecheck
+      #   working-directory: apps/dashboard
+
+      - name: Typecheck Docs
+        run: bun run types:check
+        working-directory: apps/docs
+
+      # TODO: Uncomment when resuming work on the mobile app
+      # - name: Typecheck Mobile
+      #   run: bun run typecheck
+      #   working-directory: apps/mobile
+
+      - name: Typecheck Transactional
+        run: bun run typecheck
+        working-directory: packages/transactional
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      # - name: Build Dashboard
+      #   run: bun run build
+      #   working-directory: apps/dashboard
+
+      - name: Build Docs
+        run: bun run build
+        working-directory: apps/docs
+
+      - name: Build Emails
+        run: bun run build
+        working-directory: packages/transactional

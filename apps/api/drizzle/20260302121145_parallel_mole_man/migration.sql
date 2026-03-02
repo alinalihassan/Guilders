@@ -31,11 +31,12 @@ CREATE TABLE "account" (
 --> statement-breakpoint
 CREATE TABLE "apikey" (
 	"id" text PRIMARY KEY,
+	"config_id" text DEFAULT 'default' NOT NULL,
 	"name" text,
 	"start" text,
+	"reference_id" text NOT NULL,
 	"prefix" text,
 	"key" text NOT NULL,
-	"user_id" text NOT NULL,
 	"refill_interval" integer,
 	"refill_amount" integer,
 	"last_refill_at" timestamp,
@@ -101,6 +102,7 @@ CREATE TABLE "oauth_client" (
 	"response_types" text[],
 	"public" boolean,
 	"type" text,
+	"require_pkce" boolean,
 	"reference_id" text,
 	"metadata" jsonb
 );
@@ -125,6 +127,7 @@ CREATE TABLE "oauth_refresh_token" (
 	"expires_at" timestamp,
 	"created_at" timestamp,
 	"revoked" timestamp,
+	"auth_time" timestamp,
 	"scopes" text[] NOT NULL
 );
 --> statement-breakpoint
@@ -166,10 +169,10 @@ CREATE TABLE "user" (
 	"email" text NOT NULL UNIQUE,
 	"email_verified" boolean DEFAULT false NOT NULL,
 	"image" text,
-	"currency" varchar(3) DEFAULT 'EUR' NOT NULL,
 	"created_at" timestamp NOT NULL,
 	"updated_at" timestamp NOT NULL,
-	"two_factor_enabled" boolean DEFAULT false
+	"two_factor_enabled" boolean DEFAULT false,
+	"currency" text DEFAULT 'EUR'
 );
 --> statement-breakpoint
 CREATE TABLE "user_account" (
@@ -280,13 +283,14 @@ CREATE TABLE "rate" (
 	"currency_code" varchar(3),
 	"date" date,
 	"rate" numeric(19,8) NOT NULL,
-	CONSTRAINT "rate_pkey" PRIMARY KEY("currency_code","date")
+	CONSTRAINT "rate_pkey" PRIMARY KEY("currency_code","date"),
+	CONSTRAINT "rate_positive" CHECK ("rate" > 0)
 );
 --> statement-breakpoint
 CREATE TABLE "transaction" (
 	"account_id" integer NOT NULL,
 	"amount" numeric(19,4) NOT NULL,
-	"category_id" integer NOT NULL,
+	"category_id" integer,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"currency" varchar(3) NOT NULL,
 	"date" date NOT NULL,
@@ -303,8 +307,11 @@ CREATE INDEX "account_user_idx" ON "account" ("user_id");--> statement-breakpoin
 CREATE INDEX "account_currency_idx" ON "account" ("currency");--> statement-breakpoint
 CREATE INDEX "account_parent_idx" ON "account" ("parent");--> statement-breakpoint
 CREATE INDEX "account_institution_connection_idx" ON "account" ("institution_connection_id");--> statement-breakpoint
+CREATE UNIQUE INDEX "account_provider_account_connection_idx" ON "account" ("provider_account_id","institution_connection_id");--> statement-breakpoint
+CREATE UNIQUE INDEX "account_id_user_unique_idx" ON "account" ("id","user_id");--> statement-breakpoint
+CREATE INDEX "apikey_configId_idx" ON "apikey" ("config_id");--> statement-breakpoint
+CREATE INDEX "apikey_referenceId_idx" ON "apikey" ("reference_id");--> statement-breakpoint
 CREATE INDEX "apikey_key_idx" ON "apikey" ("key");--> statement-breakpoint
-CREATE INDEX "apikey_userId_idx" ON "apikey" ("user_id");--> statement-breakpoint
 CREATE INDEX "passkey_userId_idx" ON "passkey" ("user_id");--> statement-breakpoint
 CREATE INDEX "passkey_credentialID_idx" ON "passkey" ("credential_id");--> statement-breakpoint
 CREATE INDEX "session_userId_idx" ON "session" ("user_id");--> statement-breakpoint
@@ -318,6 +325,7 @@ CREATE UNIQUE INDEX "balance_snapshot_account_date_idx" ON "balance_snapshot" ("
 CREATE INDEX "category_id_idx" ON "category" ("id");--> statement-breakpoint
 CREATE INDEX "category_user_idx" ON "category" ("user_id");--> statement-breakpoint
 CREATE INDEX "category_parent_idx" ON "category" ("parent_id");--> statement-breakpoint
+CREATE UNIQUE INDEX "category_user_name_unique" ON "category" ("user_id","name");--> statement-breakpoint
 CREATE INDEX "country_code_idx" ON "country" ("code");--> statement-breakpoint
 CREATE INDEX "country_currency_idx" ON "country" ("currency_code");--> statement-breakpoint
 CREATE INDEX "currency_code_idx" ON "currency" ("code");--> statement-breakpoint
@@ -327,6 +335,7 @@ CREATE INDEX "document_entity_idx" ON "document" ("entity_id","entity_type");-->
 CREATE INDEX "institution_connection_id_idx" ON "institution_connection" ("id");--> statement-breakpoint
 CREATE INDEX "institution_connection_institution_idx" ON "institution_connection" ("institution_id");--> statement-breakpoint
 CREATE INDEX "institution_connection_provider_idx" ON "institution_connection" ("provider_connection_id");--> statement-breakpoint
+CREATE UNIQUE INDEX "institution_connection_connection_id_idx" ON "institution_connection" ("connection_id");--> statement-breakpoint
 CREATE INDEX "institution_id_idx" ON "institution" ("id");--> statement-breakpoint
 CREATE INDEX "institution_provider_idx" ON "institution" ("provider_id");--> statement-breakpoint
 CREATE INDEX "institution_country_idx" ON "institution" ("country");--> statement-breakpoint
@@ -334,6 +343,7 @@ CREATE UNIQUE INDEX "institution_provider_provider_institution_unique" ON "insti
 CREATE INDEX "provider_connection_id_idx" ON "provider_connection" ("id");--> statement-breakpoint
 CREATE INDEX "provider_connection_user_idx" ON "provider_connection" ("user_id");--> statement-breakpoint
 CREATE INDEX "provider_connection_provider_idx" ON "provider_connection" ("provider_id");--> statement-breakpoint
+CREATE UNIQUE INDEX "provider_connection_provider_user_idx" ON "provider_connection" ("provider_id","user_id");--> statement-breakpoint
 CREATE INDEX "provider_id_idx" ON "provider" ("id");--> statement-breakpoint
 CREATE INDEX "rate_currency_idx" ON "rate" ("currency_code");--> statement-breakpoint
 CREATE INDEX "rate_date_idx" ON "rate" ("date");--> statement-breakpoint
@@ -345,7 +355,7 @@ CREATE INDEX "transaction_date_idx" ON "transaction" ("date");--> statement-brea
 ALTER TABLE "account" ADD CONSTRAINT "account_currency_currency_code_fkey" FOREIGN KEY ("currency") REFERENCES "currency"("code");--> statement-breakpoint
 ALTER TABLE "account" ADD CONSTRAINT "account_ok0j2ud8i0Kr_fkey" FOREIGN KEY ("institution_connection_id") REFERENCES "institution_connection"("id") ON DELETE CASCADE ON UPDATE CASCADE;--> statement-breakpoint
 ALTER TABLE "account" ADD CONSTRAINT "account_user_id_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;--> statement-breakpoint
-ALTER TABLE "apikey" ADD CONSTRAINT "apikey_user_id_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE;--> statement-breakpoint
+ALTER TABLE "account" ADD CONSTRAINT "account_parent_same_user_fkey" FOREIGN KEY ("parent","user_id") REFERENCES "account"("id","user_id") ON DELETE CASCADE ON UPDATE CASCADE;--> statement-breakpoint
 ALTER TABLE "oauth_access_token" ADD CONSTRAINT "oauth_access_token_client_id_oauth_client_client_id_fkey" FOREIGN KEY ("client_id") REFERENCES "oauth_client"("client_id") ON DELETE CASCADE;--> statement-breakpoint
 ALTER TABLE "oauth_access_token" ADD CONSTRAINT "oauth_access_token_session_id_session_id_fkey" FOREIGN KEY ("session_id") REFERENCES "session"("id") ON DELETE SET NULL;--> statement-breakpoint
 ALTER TABLE "oauth_access_token" ADD CONSTRAINT "oauth_access_token_user_id_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE;--> statement-breakpoint
@@ -373,5 +383,5 @@ ALTER TABLE "provider_connection" ADD CONSTRAINT "provider_connection_provider_i
 ALTER TABLE "provider_connection" ADD CONSTRAINT "provider_connection_user_id_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;--> statement-breakpoint
 ALTER TABLE "rate" ADD CONSTRAINT "rate_currency_code_currency_code_fkey" FOREIGN KEY ("currency_code") REFERENCES "currency"("code");--> statement-breakpoint
 ALTER TABLE "transaction" ADD CONSTRAINT "transaction_account_id_account_id_fkey" FOREIGN KEY ("account_id") REFERENCES "account"("id") ON DELETE CASCADE ON UPDATE CASCADE;--> statement-breakpoint
-ALTER TABLE "transaction" ADD CONSTRAINT "transaction_category_id_category_id_fkey" FOREIGN KEY ("category_id") REFERENCES "category"("id") ON DELETE RESTRICT ON UPDATE CASCADE;--> statement-breakpoint
+ALTER TABLE "transaction" ADD CONSTRAINT "transaction_category_id_category_id_fkey" FOREIGN KEY ("category_id") REFERENCES "category"("id") ON DELETE SET NULL ON UPDATE CASCADE;--> statement-breakpoint
 ALTER TABLE "transaction" ADD CONSTRAINT "transaction_currency_currency_code_fkey" FOREIGN KEY ("currency") REFERENCES "currency"("code");

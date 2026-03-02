@@ -1,4 +1,3 @@
-import { env } from "cloudflare:workers";
 import { and, eq } from "drizzle-orm";
 
 import { account } from "../db/schema/accounts";
@@ -69,8 +68,8 @@ export async function syncAccountData(accountId: number): Promise<void> {
 
   switch (providerName) {
     case "EnableBanking": {
-      const clientId = env.ENABLEBANKING_CLIENT_ID;
-      const privateKey = env.ENABLEBANKING_CLIENT_PRIVATE_KEY;
+      const clientId = process.env.ENABLEBANKING_CLIENT_ID;
+      const privateKey = process.env.ENABLEBANKING_CLIENT_PRIVATE_KEY;
       if (!clientId || !privateKey) throw new Error("EnableBanking not configured");
 
       const ebClient = new EnableBankingClient(clientId, privateKey);

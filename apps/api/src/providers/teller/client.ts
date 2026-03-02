@@ -1,5 +1,3 @@
-import { env } from "cloudflare:workers";
-
 import type { TellerAccount, TellerBalance, TellerInstitution, TellerTransaction } from "./types";
 
 const BASE_URL = "https://api.teller.io";
@@ -10,8 +8,8 @@ type TellerConfig = {
 };
 
 function getTellerConfig(): TellerConfig {
-  const applicationId = env.TELLER_APPLICATION_ID;
-  const environment = env.TELLER_ENVIRONMENT ?? "sandbox";
+  const applicationId = process.env.TELLER_APPLICATION_ID;
+  const environment = process.env.TELLER_ENVIRONMENT ?? "sandbox";
 
   if (!applicationId) {
     throw new Error("Missing TELLER_APPLICATION_ID env var");

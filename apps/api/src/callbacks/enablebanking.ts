@@ -31,7 +31,7 @@ export async function handleEnableBankingCallback(
     return errorResponse("Missing required parameters. Please try again.");
   }
 
-  const secret = env.GUILDERS_SECRET;
+  const secret = process.env.GUILDERS_SECRET;
   if (!secret) {
     console.error("[EnableBanking callback] Missing GUILDERS_SECRET");
     return errorResponse("Server configuration error. Please try again later.");
@@ -76,8 +76,8 @@ export async function handleEnableBankingCallback(
 
     if (!providerConn) return errorResponse("Failed to establish connection.");
 
-    const clientId = env.ENABLEBANKING_CLIENT_ID;
-    const privateKey = env.ENABLEBANKING_CLIENT_PRIVATE_KEY;
+    const clientId = process.env.ENABLEBANKING_CLIENT_ID;
+    const privateKey = process.env.ENABLEBANKING_CLIENT_PRIVATE_KEY;
     if (!clientId || !privateKey) return errorResponse("Provider configuration error.");
 
     const enableBankingClient = new EnableBankingClient(clientId, privateKey);

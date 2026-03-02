@@ -1,4 +1,3 @@
-import { env } from "cloudflare:workers";
 import { and, eq } from "drizzle-orm";
 
 import { account } from "../db/schema/accounts";
@@ -20,7 +19,7 @@ import type {
 
 export async function handleWebhookQueue(
   batch: MessageBatch<WebhookEvent>,
-  _env: Env,
+  env: Env,
 ): Promise<void> {
   for (const message of batch.messages) {
     try {
@@ -44,7 +43,7 @@ export async function handleWebhookQueue(
           await processProviderUserCleanupEvent(event);
           break;
         case "user-files-cleanup":
-          await processUserFilesCleanupEvent(event);
+          await processUserFilesCleanupEvent(event, env);
           break;
         default:
           console.error("Unknown webhook source:", event);
@@ -77,7 +76,7 @@ async function processProviderUserCleanupEvent(event: ProviderUserCleanupEvent):
   }
 }
 
-async function processUserFilesCleanupEvent(event: UserFilesCleanupEvent): Promise<void> {
+async function processUserFilesCleanupEvent(event: UserFilesCleanupEvent, env: Env): Promise<void> {
   if (event.eventType !== "delete-user-files") return;
   const prefix = `${event.payload.userId}/`;
   let cursor: string | undefined;

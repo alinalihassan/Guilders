@@ -1,3 +1,4 @@
+// oxlint-disable typescript/no-explicit-any TODO: We need to implement it again on the backend
 import type { CreateDocumentResponse, DocumentEntityType } from "@guilders/api/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 

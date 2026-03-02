@@ -25,7 +25,7 @@ export async function handleTellerCallback(
     return errorResponse("Missing required parameters. Please try again.");
   }
 
-  const secret = env.GUILDERS_SECRET;
+  const secret = process.env.GUILDERS_SECRET;
   if (!secret) {
     console.error("[Teller callback] Missing GUILDERS_SECRET");
     return errorResponse("Server configuration error. Please try again later.");
@@ -157,7 +157,7 @@ const TELLER_EVENT_TYPE_MAP: Record<string, TellerEventType | undefined> = {
 };
 
 async function handleTellerWebhook(request: Request, env: Env): Promise<Response> {
-  const webhookSecret = env.TELLER_WEBHOOK_SECRET;
+  const webhookSecret = process.env.TELLER_WEBHOOK_SECRET;
   if (!webhookSecret) {
     return Response.json({ error: "Webhook not configured" }, { status: 500 });
   }

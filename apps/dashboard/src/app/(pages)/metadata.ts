@@ -2,8 +2,10 @@ import type { Metadata } from "next/types";
 
 import { env } from "@/lib/env";
 
+const dashboardUrl = env.NEXT_PUBLIC_DASHBOARD_URL ?? "https://dashboard.guilders.app";
+
 export const defaultMetadata: Metadata = {
-  metadataBase: new URL(env.NEXT_PUBLIC_DASHBOARD_URL),
+  metadataBase: new URL(dashboardUrl),
   title: {
     default: "Guilders - AI-Powered Personal Finance Management",
     template: "%s | Guilders",

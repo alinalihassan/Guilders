@@ -1,14 +1,13 @@
 import { createMcpHandler } from "agents/mcp";
-import { env } from "cloudflare:workers";
 
 import { verifyMcpRequest } from "./auth";
 import { createMcpServer } from "./server";
 
 const getResourceMetadataUrl = () => {
-  return `${env.BACKEND_URL}/.well-known/oauth-protected-resource`;
+  return `${process.env.BACKEND_URL}/.well-known/oauth-protected-resource`;
 };
 
-export const handleMcp = async (request: Request, env: Env, executionCtx: ExecutionContext) => {
+export const handleMcp = async (request: Request, _env: Env, executionCtx: ExecutionContext) => {
   if (request.method === "OPTIONS") {
     const handler = createMcpHandler(
       createMcpServer({ userId: "preflight", scopes: [] }) as unknown as Parameters<
@@ -19,7 +18,7 @@ export const handleMcp = async (request: Request, env: Env, executionCtx: Execut
         enableJsonResponse: true,
       },
     );
-    return handler(request, env, executionCtx);
+    return handler(request, _env, executionCtx);
   }
 
   let authContext: { userId: string; scopes: string[] | null };
@@ -52,5 +51,5 @@ export const handleMcp = async (request: Request, env: Env, executionCtx: Execut
     },
   );
 
-  return handler(request, env, executionCtx);
+  return handler(request, _env, executionCtx);
 };

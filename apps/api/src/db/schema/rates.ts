@@ -1,5 +1,5 @@
-import { check, date, index, numeric, pgTable, primaryKey, varchar } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
+import { check, date, index, numeric, pgTable, primaryKey, varchar } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-orm/typebox-legacy";
 
 import { currency } from "./currencies";

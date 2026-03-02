@@ -1,5 +1,3 @@
-import { env } from "cloudflare:workers";
-
 type TemplateOptions = {
   status: "success" | "error";
   title?: string;
@@ -38,7 +36,7 @@ function getTemplate({
     ? "You can safely close this window and return to Guilders."
     : "There was an error connecting to your bank. Please close this window and try again in Guilders.",
 }: TemplateOptions) {
-  const safeOrigin = validateOrigin(env.DASHBOARD_URL);
+  const safeOrigin = validateOrigin(process.env.DASHBOARD_URL);
 
   const safeTitle = escapeHtml(title);
   const safeMessage = escapeHtml(message);

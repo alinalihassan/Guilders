@@ -35,7 +35,11 @@ export function UserButton() {
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={async () => {
-            await authClient.signOut();
+            try {
+              await authClient.signOut();
+            } catch {
+              // Session may already be invalid; still redirect
+            }
             router.push("/login");
           }}
         >

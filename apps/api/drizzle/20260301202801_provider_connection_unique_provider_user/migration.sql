@@ -1,1 +1,0 @@
-CREATE UNIQUE INDEX "provider_connection_provider_user_idx" ON "provider_connection" ("provider_id","user_id");
