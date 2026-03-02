@@ -67,7 +67,7 @@ export const getBalanceHistoryTool: McpToolDefinition<GetBalanceHistoryInput> = 
       const dateMap = new Map<string, number>();
       for (const snap of snapshots) {
         const bal = Number(snap.balance);
-        const fromRate = rateMap.get(snap.currency) ?? 1;
+        const fromRate = rateMap.get(snap.currency) || 1;
         const converted = (bal * userRate) / fromRate;
         const accountType = accountTypeMap.get(snap.account_id);
         const signedBalance = accountType === "liability" ? -Math.abs(converted) : converted;
