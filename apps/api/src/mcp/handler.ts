@@ -8,7 +8,7 @@ const getResourceMetadataUrl = () => {
   return `${env.BACKEND_URL}/.well-known/oauth-protected-resource`;
 };
 
-export const handleMcp = async (request: Request, env: Env, executionCtx: ExecutionContext) => {
+export const handleMcp = async (request: Request, _env: Env, executionCtx: ExecutionContext) => {
   if (request.method === "OPTIONS") {
     const handler = createMcpHandler(
       createMcpServer({ userId: "preflight", scopes: [] }) as unknown as Parameters<
