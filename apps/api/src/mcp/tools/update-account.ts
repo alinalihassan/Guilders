@@ -66,7 +66,14 @@ export const updateAccountTool: McpToolDefinition<UpdateAccountInput> = {
 
       let type: AccountTypeEnum = existing.type;
       if (allowed.subtype && allowed.subtype !== existing.subtype) {
-        type = (subtypeToType[allowed.subtype as string] || AccountTypeEnum.asset) as AccountTypeEnum;
+        const mappedType = subtypeToType[allowed.subtype as string];
+        if (!mappedType) {
+          return {
+            isError: true,
+            content: [{ type: "text", text: `Unsupported subtype: ${String(allowed.subtype)}` }],
+          };
+        }
+        type = mappedType as AccountTypeEnum;
       }
 
       let value: number;
