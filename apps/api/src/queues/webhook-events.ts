@@ -207,12 +207,11 @@ async function handleSnapTradeConnectionDeleted(
   if (!payload.brokerageAuthorizationId) return;
   const db = createDb();
 
-  const conn = await db.query.institutionConnection.findFirst({
+  const connections = await db.query.institutionConnection.findMany({
     where: { connection_id: payload.brokerageAuthorizationId },
+    columns: { id: true },
   });
-  if (conn) {
-    await cleanupInstitutionConnectionDocuments(db, conn.id);
-  }
+  await Promise.all(connections.map((conn) => cleanupInstitutionConnectionDocuments(db, conn.id)));
 
   await db
     .delete(institutionConnection)
