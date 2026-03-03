@@ -364,7 +364,11 @@ function ExistingDocumentTile({
           disabled={isRemoving}
           aria-label={isRemoving ? `Removing ${document.name}` : `Remove file ${document.name}`}
         >
-          {isRemoving ? <Loader2 className="size-3 animate-spin" aria-hidden /> : <X className="size-3" aria-hidden />}
+          {isRemoving ? (
+            <Loader2 className="size-3 animate-spin" aria-hidden />
+          ) : (
+            <X className="size-3" aria-hidden />
+          )}
         </Button>
       </div>
 
