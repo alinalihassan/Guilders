@@ -3,7 +3,7 @@
 import type { UpdateAccount } from "@guilders/api/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertTriangle, Loader2, Trash2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -75,6 +75,8 @@ const formSchema = detailsSchema.merge(taxSchema).merge(notesSchema);
 
 type FormSchema = z.infer<typeof formSchema>;
 
+const CLOSE_DELAY_MS = 220;
+
 export function EditAccountDialog() {
   const { isOpen, data, close } = useDialog("editAccount");
   const { open: openProviderDialog } = useDialog("provider");
@@ -130,14 +132,39 @@ export function EditAccountDialog() {
   }, [data?.account, form]);
 
   const [sheetOpen, setSheetOpen] = useState(false);
+  const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const scheduleClose = (afterClose?: () => void) => {
+    if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
+    closeTimeoutRef.current = setTimeout(() => {
+      closeTimeoutRef.current = null;
+      close();
+      afterClose?.();
+    }, CLOSE_DELAY_MS);
+  };
+
   useEffect(() => {
     setSheetOpen(!!isOpen);
+    if (isOpen && closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current);
+      closeTimeoutRef.current = null;
+    }
   }, [isOpen]);
+
+  useEffect(
+    () => () => {
+      if (closeTimeoutRef.current) {
+        clearTimeout(closeTimeoutRef.current);
+        closeTimeoutRef.current = null;
+      }
+    },
+    [],
+  );
 
   const handleOpenChange = (open: boolean) => {
     if (!open) {
       setSheetOpen(false);
-      setTimeout(() => close(), 220);
+      scheduleClose();
     } else {
       setSheetOpen(true);
     }
@@ -164,22 +191,20 @@ export function EditAccountDialog() {
 
     if (redirectURI) {
       setSheetOpen(false);
-      setTimeout(() => {
-        close();
+      scheduleClose(() =>
         openProviderDialog({
           redirectUri: redirectURI,
           operation: "reconnect",
           redirectType,
-        });
-      }, 220);
+        }),
+      );
     } else {
       setSheetOpen(false);
-      setTimeout(() => {
-        close();
+      scheduleClose(() =>
         toast.error("Failed to fix connection", {
           description: "Unable to fix connection. Please try again later.",
-        });
-      }, 220);
+        }),
+      );
     }
   };
 
@@ -203,7 +228,7 @@ export function EditAccountDialog() {
       {
         onSuccess: () => {
           setSheetOpen(false);
-          setTimeout(() => close(), 220);
+          scheduleClose();
         },
         onError: (error) => {
           console.error("Error updating account:", error);
@@ -216,7 +241,7 @@ export function EditAccountDialog() {
     deleteAccount(account.id, {
       onSuccess: () => {
         setSheetOpen(false);
-        setTimeout(() => close(), 220);
+        scheduleClose();
       },
       onError: (error) => {
         console.error("Error deleting account:", error);
