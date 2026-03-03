@@ -86,11 +86,25 @@ export const chatRoutes = new Elysia({
             showStockCard,
           },
           stopWhen: stepCountIs(10),
+          onError(error) {
+            console.error("Chat streamText error:", error);
+          },
         });
 
         const stream = createUIMessageStream({
           execute: async ({ writer }) => {
-            writer.merge(result.toUIMessageStream());
+            writer.merge(
+              result.toUIMessageStream({
+                onError(error) {
+                  console.error("Chat toUIMessageStream error:", error);
+                  return "An error occurred while generating the response.";
+                },
+              }),
+            );
+          },
+          onError(error) {
+            console.error("Chat createUIMessageStream error:", error);
+            return "An error occurred while generating the response.";
           },
         });
 
