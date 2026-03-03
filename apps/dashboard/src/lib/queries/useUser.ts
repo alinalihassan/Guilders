@@ -30,9 +30,21 @@ async function fetchSubscription(): Promise<User["subscription"]> {
       current_period_end: active.periodEnd ? new Date(active.periodEnd).toISOString() : null,
       trial_end: active.trialEnd ? new Date(active.trialEnd).toISOString() : null,
     };
-  } catch {
+  } catch (error) {
+    console.error("[useUser] Failed to fetch subscription", error);
     return { status: null, current_period_end: null, trial_end: null };
   }
+}
+
+function mapRawToUser(
+  user: Record<string, unknown> | undefined,
+  subscription: User["subscription"],
+): User {
+  return {
+    email: (user?.email as string) ?? "",
+    currency: (user?.currency as string) ?? "EUR",
+    subscription,
+  } as User;
 }
 
 export function useUser() {
@@ -44,12 +56,7 @@ export function useUser() {
         fetchSubscription(),
       ]);
       const user = payload?.user as Record<string, unknown> | undefined;
-
-      return {
-        email: (user?.email as string) ?? "",
-        currency: (user?.currency as string) ?? "EUR",
-        subscription,
-      } as User;
+      return mapRawToUser(user, subscription);
     },
   });
 }
@@ -78,12 +85,7 @@ export function useUpdateUserSettings() {
         fetchSubscription(),
       ]);
       const user = payload?.user as Record<string, unknown> | undefined;
-
-      return {
-        email: (user?.email as string) ?? "",
-        currency: (user?.currency as string) ?? "EUR",
-        subscription,
-      } as User;
+      return mapRawToUser(user, subscription);
     },
     onSuccess: (data) => {
       queryClient.setQueryData(queryKey, data);
