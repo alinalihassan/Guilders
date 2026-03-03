@@ -95,18 +95,24 @@ export const documentRoutes = new Elysia({
         httpMetadata: { contentType: body.file.type },
       });
 
-      const [doc] = await db
-        .insert(document)
-        .values({
-          user_id: user.id,
-          entity_type: body.entity_type,
-          entity_id: body.entity_id,
-          name: body.file.name || `${uuid}.${ext}`,
-          path: r2Key,
-          size: body.file.size,
-          type: body.file.type,
-        })
-        .returning();
+      let doc;
+      try {
+        [doc] = await db
+          .insert(document)
+          .values({
+            user_id: user.id,
+            entity_type: body.entity_type,
+            entity_id: body.entity_id,
+            name: body.file.name || `${uuid}.${ext}`,
+            path: r2Key,
+            size: body.file.size,
+            type: body.file.type,
+          })
+          .returning();
+      } catch {
+        await env.USER_BUCKET.delete(r2Key);
+        return status(500, { error: "Failed to create document record" });
+      }
 
       if (!doc) {
         await env.USER_BUCKET.delete(r2Key);
