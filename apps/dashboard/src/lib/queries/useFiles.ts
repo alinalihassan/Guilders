@@ -45,7 +45,11 @@ export function useFiles({ entityType, entityId, onSuccess }: UseFilesOptions) {
 
       return uploadedFiles;
     },
-    onSuccess: () => {
+    onSuccess: (newDocs) => {
+      queryClient.setQueryData<CreateDocumentResponse[]>(queryKey, (old = []) => [
+        ...old,
+        ...newDocs,
+      ]);
       queryClient.invalidateQueries({ queryKey });
     },
     onError: (error) => {
@@ -57,8 +61,12 @@ export function useFiles({ entityType, entityId, onSuccess }: UseFilesOptions) {
     mutationFn: async (id: number) => {
       const { error } = await api.document({ id }).delete();
       if (error) throw new Error(edenError(error));
+      return id;
     },
-    onSuccess: () => {
+    onSuccess: (deletedId) => {
+      queryClient.setQueryData<CreateDocumentResponse[]>(queryKey, (old = []) =>
+        old.filter((doc) => doc.id !== deletedId),
+      );
       queryClient.invalidateQueries({ queryKey });
     },
   });
