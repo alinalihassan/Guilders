@@ -22,9 +22,12 @@ export function getDefaultSessionTitle(): string {
   return `New chat ${y}-${m}-${d} ${h}:${min}`;
 }
 
+/** Static initial title to avoid server/client hydration mismatch (getDefaultSessionTitle uses Date). */
+const INITIAL_SESSION_TITLE = "New chat";
+
 export const createAdvisorStore: StateSlice<AdvisorState & AdvisorActions> = (set) => ({
   advisorOpen: false,
-  sessionTitle: getDefaultSessionTitle(),
+  sessionTitle: INITIAL_SESSION_TITLE,
   openAdvisorSidebar: () => set({ advisorOpen: true }),
   closeAdvisorSidebar: () => set({ advisorOpen: false }),
   setSessionTitle: (title) => set({ sessionTitle: title }),
