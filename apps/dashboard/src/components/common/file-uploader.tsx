@@ -2,6 +2,7 @@
 
 import type { CreateDocumentResponse } from "@guilders/api/types";
 import { FileText, Loader2, Upload, X } from "lucide-react";
+import dynamic from "next/dynamic";
 import * as React from "react";
 import { useState } from "react";
 import Dropzone, { type DropEvent, type DropzoneProps, type FileRejection } from "react-dropzone";
@@ -10,6 +11,18 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useControllableState } from "@/hooks/useControllableState";
 import { cn, formatBytes } from "@/lib/utils";
+
+const PdfThumbnail = dynamic(
+  () => import("./pdf-thumbnail").then((mod) => ({ default: mod.PdfThumbnail })),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex size-full items-center justify-center">
+        <Loader2 className="size-5 animate-spin text-muted-foreground" />
+      </div>
+    ),
+  },
+);
 
 export interface DocumentRecord {
   id: number;
@@ -263,6 +276,7 @@ interface ExistingDocumentTileProps {
 function ExistingDocumentTile({ document, fileUrl, onRemove }: ExistingDocumentTileProps) {
   const [isRemoving, setIsRemoving] = useState(false);
   const isImage = document.type.startsWith("image/");
+  const isPdf = document.type === "application/pdf";
 
   const handleView = () => {
     if (fileUrl) window.open(fileUrl, "_blank");
@@ -293,6 +307,10 @@ function ExistingDocumentTile({ document, fileUrl, onRemove }: ExistingDocumentT
             alt={document.name}
             className="size-full object-cover"
           />
+        ) : isPdf && fileUrl ? (
+          <div className="flex size-full items-center justify-center overflow-hidden bg-muted">
+            <PdfThumbnail file={fileUrl} width={200} className="relative" />
+          </div>
         ) : (
           <div className="flex size-full items-center justify-center bg-muted">
             <FileText className="size-10 text-red-500/70" />
@@ -331,6 +349,7 @@ interface UploadingFileTileProps {
 
 function UploadingFileTile({ file, isUploading, onRemove }: UploadingFileTileProps) {
   const isImage = file.type.startsWith("image/");
+  const isPdf = file.type === "application/pdf";
 
   const handleRemove = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -348,6 +367,13 @@ function UploadingFileTile({ file, isUploading, onRemove }: UploadingFileTilePro
             className={cn("size-full object-cover", isUploading && "opacity-50")}
             onLoad={() => URL.revokeObjectURL(file.preview!)}
           />
+        ) : isPdf ? (
+          <div className={cn(
+            "flex size-full items-center justify-center overflow-hidden bg-muted",
+            isUploading && "opacity-50",
+          )}>
+            <PdfThumbnail file={file} width={200} className="relative" />
+          </div>
         ) : (
           <div className={cn(
             "flex size-full items-center justify-center bg-muted",
