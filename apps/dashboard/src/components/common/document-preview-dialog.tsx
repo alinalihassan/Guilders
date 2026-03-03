@@ -179,21 +179,21 @@ function PdfPreview({
           <div className="flex min-h-[40vh] items-center justify-center text-sm text-destructive">
             {errorMessage}
           </div>
-        ) : (
-          loading && (
-            <div className="flex min-h-[40vh] items-center justify-center">
-              <Loader2 className="size-8 animate-spin text-muted-foreground" />
-            </div>
-          )
+        ) : loading ? (
+          <div className="flex min-h-[40vh] items-center justify-center">
+            <Loader2 className="size-8 animate-spin text-muted-foreground" />
+          </div>
+        ) : null}
+        {!errorMessage && (
+          <Page
+            pageNumber={pageNumber}
+            width={800}
+            renderTextLayer={false}
+            renderAnnotationLayer={false}
+            onRenderSuccess={() => setLoading(false)}
+            onRenderError={onPageRenderError}
+          />
         )}
-        <Page
-          pageNumber={pageNumber}
-          width={800}
-          renderTextLayer={false}
-          renderAnnotationLayer={false}
-          onRenderSuccess={() => setLoading(false)}
-          onRenderError={onPageRenderError}
-        />
       </Document>
       {numPages !== null && numPages > 1 && (
         <div className="flex items-center gap-2 rounded-md border bg-background px-3 py-1.5">

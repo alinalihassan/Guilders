@@ -15,7 +15,7 @@ export const createDocumentSchema = t.Object({
 });
 
 export const documentIdParamSchema = t.Object({
-  id: t.Number(),
+  id: t.Numeric(),
 });
 
 export const documentQuerySchema = t.Object({
