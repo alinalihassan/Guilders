@@ -11,6 +11,7 @@ import {
   documentIdParamSchema,
   documentQuerySchema,
   getExtension,
+  sanitizeFilenameForDisposition,
   selectDocumentSchema,
   validateFile,
 } from "./types";
@@ -176,8 +177,10 @@ export const documentRoutes = new Elysia({
         return status(404, { error: "File not found in storage" });
       }
 
+      const { safe: safeName, encoded: encodedName } =
+        sanitizeFilenameForDisposition(doc[0].name);
       set.headers["content-type"] = doc[0].type;
-      set.headers["content-disposition"] = `inline; filename="${doc[0].name}"`;
+      set.headers["content-disposition"] = `inline; filename="${safeName}"; filename*=UTF-8''${encodedName}`;
       set.headers["cache-control"] = "private, max-age=3600";
 
       return new Response(object.body);
