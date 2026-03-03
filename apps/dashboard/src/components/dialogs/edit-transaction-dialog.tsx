@@ -73,10 +73,11 @@ export function EditTransactionDialog() {
   const { mutate: updateTransaction, isPending: isUpdating } = useUpdateTransaction();
   const { mutate: deleteTransaction, isPending: isDeleting } = useRemoveTransaction();
   const { data: accounts } = useAccounts();
-  const { uploadFile, deleteFile, getSignedUrl, isUploading } = useFiles({
-    entityType: "transaction",
-    entityId: data?.transaction?.id ?? 0,
-  });
+  const { documents, isLoadingDocuments, uploadFile, deleteFile, getFileUrl, isUploading } =
+    useFiles({
+      entityType: "transaction",
+      entityId: data?.transaction?.id ?? 0,
+    });
 
   const currentAccount = accounts?.find((account) => account.id === data?.transaction?.account_id);
 
@@ -98,7 +99,7 @@ export function EditTransactionDialog() {
         accountId: data.transaction.account_id,
         amount: data.transaction.amount.toString(),
         description: data.transaction.description,
-        categoryId: data.transaction.category_id,
+        categoryId: data.transaction.category_id ?? undefined,
         date: formatDateForInput(data.transaction.date),
         documents: [],
       });
@@ -334,13 +335,10 @@ export function EditTransactionDialog() {
                                 }}
                                 onUpload={uploadFile}
                                 disabled={isUploading}
-                                documents={data?.transaction?.documents?.map((id) => ({
-                                  id: Number(id),
-                                  name: `Document ${id}`,
-                                  path: "",
-                                }))}
+                                documents={documents}
+                                isLoadingDocuments={isLoadingDocuments}
                                 onRemoveExisting={deleteFile}
-                                onView={getSignedUrl}
+                                getFileUrl={getFileUrl}
                               />
                             </FormControl>
                             <FormMessage />

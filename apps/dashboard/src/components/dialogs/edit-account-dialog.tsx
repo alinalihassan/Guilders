@@ -1,5 +1,6 @@
 "use client";
 
+import type { UpdateAccount } from "@guilders/api/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertTriangle, Loader2, Trash2 } from "lucide-react";
 import { useEffect } from "react";
@@ -91,10 +92,11 @@ export function EditAccountDialog() {
   const { mutateAsync: reconnectConnection, isPending: isReconnecting } = useReconnectConnection();
   const { mutate: deleteAccount, isPending: isDeleting } = useRemoveAccount();
 
-  const { uploadFile, deleteFile, getSignedUrl, isUploading } = useFiles({
-    entityType: "account",
-    entityId: data?.account?.id ?? 0,
-  });
+  const { documents, isLoadingDocuments, uploadFile, deleteFile, getFileUrl, isUploading } =
+    useFiles({
+      entityType: "account",
+      entityId: data?.account?.id ?? 0,
+    });
 
   const form = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
@@ -162,13 +164,13 @@ export function EditAccountDialog() {
   };
 
   const handleSubmit = form.handleSubmit(async (formData: FormSchema) => {
-    const updatedAccount = {
-      subtype: formData.accountType,
+    const updatedAccount: UpdateAccount = {
+      subtype: formData.accountType as UpdateAccount["subtype"],
       name: formData.accountName,
       value: formData.value,
       currency: formData.currency,
-      investable: formData.investable,
-      taxability: formData.taxability,
+      investable: formData.investable as UpdateAccount["investable"],
+      taxability: formData.taxability as UpdateAccount["taxability"],
       tax_rate: formData.taxRate ? formData.taxRate : null,
       notes: formData.notes ?? "",
     };
@@ -464,13 +466,10 @@ export function EditAccountDialog() {
                                 }}
                                 onUpload={uploadFile}
                                 disabled={isUploading}
-                                documents={data?.account?.documents?.map((id) => ({
-                                  id: Number(id),
-                                  name: `Document ${id}`,
-                                  path: "",
-                                }))}
+                                documents={documents}
+                                isLoadingDocuments={isLoadingDocuments}
                                 onRemoveExisting={deleteFile}
-                                onView={getSignedUrl}
+                                getFileUrl={getFileUrl}
                               />
                             </FormControl>
                             <FormMessage />

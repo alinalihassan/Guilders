@@ -1,8 +1,8 @@
-// oxlint-disable typescript/no-explicit-any TODO: We need to implement it again on the backend
 import type { CreateDocumentResponse, DocumentEntityType } from "@guilders/api/types";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { api, edenError } from "@/lib/api";
+import { env } from "@/lib/env";
 
 interface UseFilesOptions {
   entityType: DocumentEntityType;
@@ -13,12 +13,27 @@ interface UseFilesOptions {
 export function useFiles({ entityType, entityId, onSuccess }: UseFilesOptions) {
   const queryClient = useQueryClient();
 
+  const queryKey = ["documents", entityType, entityId];
+
+  const { data: documents = [], isLoading: isLoadingDocuments } = useQuery({
+    queryKey,
+    queryFn: async () => {
+      if (!entityId) return [];
+      const { data, error } = await api.document.get({
+        query: { entity_type: entityType, entity_id: entityId },
+      });
+      if (error) throw new Error(edenError(error));
+      return (data ?? []) as CreateDocumentResponse[];
+    },
+    enabled: entityId > 0,
+  });
+
   const { mutateAsync: uploadFile, isPending: isUploading } = useMutation({
     mutationFn: async (files: File[]) => {
       const uploadedFiles: CreateDocumentResponse[] = [];
 
       for (const file of files) {
-        const { data, error } = await (api as Record<string, any>).documents.post({
+        const { data, error } = await api.document.post({
           entity_id: entityId,
           entity_type: entityType,
           file,
@@ -30,8 +45,12 @@ export function useFiles({ entityType, entityId, onSuccess }: UseFilesOptions) {
 
       return uploadedFiles;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [entityType, entityId] });
+    onSuccess: (newDocs) => {
+      queryClient.setQueryData<CreateDocumentResponse[]>(queryKey, (old = []) => [
+        ...old,
+        ...newDocs,
+      ]);
+      queryClient.invalidateQueries({ queryKey });
     },
     onError: (error) => {
       console.error("Error uploading file", error);
@@ -40,28 +59,29 @@ export function useFiles({ entityType, entityId, onSuccess }: UseFilesOptions) {
 
   const { mutateAsync: deleteFile, isPending: isDeleting } = useMutation({
     mutationFn: async (id: number) => {
-      const { error } = await (api as Record<string, any>).documents.delete({ id });
+      const { error } = await api.document({ id }).delete();
       if (error) throw new Error(edenError(error));
+      return id;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [entityType, entityId] });
+    onSuccess: (deletedId) => {
+      queryClient.setQueryData<CreateDocumentResponse[]>(queryKey, (old = []) =>
+        old.filter((doc) => doc.id !== deletedId),
+      );
+      queryClient.invalidateQueries({ queryKey });
     },
   });
 
-  const { mutateAsync: getSignedUrl, isPending: isGettingUrl } = useMutation({
-    mutationFn: async (id: number) => {
-      const { data, error } = await (api as Record<string, any>).documents({ id }).get();
-      if (error) throw new Error(edenError(error));
-      return (data as { url: string }).url;
-    },
-  });
+  function getFileUrl(id: number): string {
+    return `${env.NEXT_PUBLIC_API_URL}/api/document/${id}/file`;
+  }
 
   return {
+    documents,
+    isLoadingDocuments,
     uploadFile,
     deleteFile,
-    getSignedUrl,
+    getFileUrl,
     isUploading,
     isDeleting,
-    isGettingUrl,
   };
 }

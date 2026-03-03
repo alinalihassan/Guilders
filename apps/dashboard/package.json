@@ -48,6 +48,7 @@
     "react-dom": "catalog:",
     "react-dropzone": "^15.0.0",
     "react-hook-form": "^7.71.2",
+    "react-pdf": "^10.4.1",
     "react-qr-code": "^2.0.18",
     "recharts": "2.15.4",
     "sonner": "^2.0.7",

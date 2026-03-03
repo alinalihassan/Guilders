@@ -1,16 +1,37 @@
 "use client";
 
 import type { CreateDocumentResponse } from "@guilders/api/types";
-import { Loader2, Upload, X } from "lucide-react";
+import { FileText, Loader2, Upload, X } from "lucide-react";
+import dynamic from "next/dynamic";
 import * as React from "react";
 import { useState } from "react";
 import Dropzone, { type DropEvent, type DropzoneProps, type FileRejection } from "react-dropzone";
 import { toast } from "sonner";
 
+import { DocumentPreviewDialog } from "@/components/common/document-preview-dialog";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { useControllableState } from "@/hooks/useControllableState";
 import { cn, formatBytes } from "@/lib/utils";
+
+const PdfThumbnail = dynamic(
+  () => import("./pdf-thumbnail").then((mod) => ({ default: mod.PdfThumbnail })),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex size-full items-center justify-center">
+        <Loader2 className="size-5 animate-spin text-muted-foreground" />
+      </div>
+    ),
+  },
+);
+
+export interface DocumentRecord {
+  id: number;
+  name: string;
+  type: string;
+  size: number;
+  path: string;
+}
 
 interface FileUploaderProps extends React.HTMLAttributes<HTMLDivElement> {
   value?: File[];
@@ -21,23 +42,38 @@ interface FileUploaderProps extends React.HTMLAttributes<HTMLDivElement> {
   maxFileCount?: number;
   multiple?: boolean;
   disabled?: boolean;
-  documents?: Array<{ id: number; name: string; path: string }>;
+  documents?: DocumentRecord[];
+  isLoadingDocuments?: boolean;
   onRemoveExisting?: (id: number) => Promise<void>;
-  onView?: (id: number) => Promise<string>;
+  getFileUrl?: (id: number) => string;
 }
+
+const DEFAULT_ACCEPT: DropzoneProps["accept"] = {
+  "image/jpeg": [],
+  "image/png": [],
+  "image/webp": [],
+  "image/heic": [],
+  "application/pdf": [],
+};
+
+const MAX_SIZE = 10 * 1024 * 1024;
+
+/** File with a stable unique id for upload state and React keys (avoids collisions when names duplicate). */
+type UploadableFile = File & { __uploadId: string };
 
 export function FileUploader({
   value: valueProp,
   onValueChange,
   onUpload,
-  accept = { "image/*": [] },
-  maxSize = 1024 * 1024 * 2,
-  maxFileCount = 1,
-  multiple = false,
+  accept = DEFAULT_ACCEPT,
+  maxSize = MAX_SIZE,
+  maxFileCount = 10,
+  multiple = true,
   disabled = false,
   documents = [],
+  isLoadingDocuments = false,
   onRemoveExisting,
-  onView,
+  getFileUrl,
   className,
   ...dropzoneProps
 }: FileUploaderProps) {
@@ -46,17 +82,14 @@ export function FileUploader({
     onChange: onValueChange,
   });
 
-  const [uploadingFiles, setUploadingFiles] = useState<Record<string, boolean>>({});
+  const [uploadingFiles, setUploadingFiles] = useState<Set<string>>(new Set());
+  const [previewDocument, setPreviewDocument] = useState<DocumentRecord | null>(null);
 
   const handleUpload = React.useCallback(
-    async (newFiles: File[]) => {
+    async (newFiles: UploadableFile[]) => {
       if (!onUpload) return;
 
-      const uploading = newFiles.reduce(
-        (acc, file) => ({ ...acc, [file.name]: true }),
-        {} as Record<string, boolean>,
-      );
-      setUploadingFiles(uploading);
+      setUploadingFiles(new Set(newFiles.map((f) => f.__uploadId)));
 
       try {
         await onUpload(newFiles);
@@ -66,26 +99,39 @@ export function FileUploader({
         console.error("Upload error:", error);
         toast.error("Failed to upload files");
       } finally {
-        setUploadingFiles({});
+        setUploadingFiles(new Set());
       }
     },
     [onUpload, setFiles],
   );
 
   const onDrop = React.useCallback(
-    (acceptedFiles: File[], _rejectedFiles: FileRejection[], _: DropEvent) => {
+    (acceptedFiles: File[], rejectedFiles: FileRejection[], _: DropEvent) => {
+      if (rejectedFiles.length > 0) {
+        const firstError = rejectedFiles[0]?.errors[0];
+        if (firstError?.code === "file-too-large") {
+          toast.error(`File exceeds the ${formatBytes(maxSize)} limit`);
+        } else if (firstError?.code === "file-invalid-type") {
+          toast.error("File type not supported");
+        } else {
+          toast.error(firstError?.message ?? "File rejected");
+        }
+        return;
+      }
+
       if (!multiple && maxFileCount === 1 && acceptedFiles.length > 1) {
         toast.error("Cannot upload more than 1 file at a time");
         return;
       }
 
-      if ((files?.length ?? 0) + acceptedFiles.length > maxFileCount) {
+      const totalCount = (files?.length ?? 0) + documents.length + acceptedFiles.length;
+      if (totalCount > maxFileCount) {
         toast.error(`Cannot upload more than ${maxFileCount} files`);
         return;
       }
 
-      const newFiles = acceptedFiles.map((file) =>
-        Object.assign(file, { preview: URL.createObjectURL(file) }),
+      const newFiles: UploadableFile[] = acceptedFiles.map((file) =>
+        Object.assign(file, { __uploadId: crypto.randomUUID() }),
       );
 
       setFiles(newFiles);
@@ -94,10 +140,17 @@ export function FileUploader({
         handleUpload(newFiles);
       }
     },
-    [files, maxFileCount, multiple, setFiles, handleUpload],
+    [files, documents.length, maxFileCount, maxSize, multiple, setFiles, handleUpload],
   );
 
-  const onRemove = async (index: number) => {
+  const removeFileById = (id: string) => {
+    if (!files) return;
+    const newFiles = files.filter((f) => (f as UploadableFile).__uploadId !== id);
+    setFiles(newFiles);
+    onValueChange?.(newFiles);
+  };
+
+  const removeFileByIndex = (index: number) => {
     if (!files) return;
     const newFiles = files.filter((_, i) => i !== index);
     setFiles(newFiles);
@@ -106,20 +159,50 @@ export function FileUploader({
 
   const handleRemoveExisting = async (id: number) => {
     if (!onRemoveExisting) return;
-
     try {
       await onRemoveExisting(id);
       toast.success("File removed");
-    } catch (error) {
+    } catch {
       toast.error("Failed to remove file");
-      throw error;
     }
   };
 
-  const isDisabled = disabled || (files?.length ?? 0 + documents.length) >= maxFileCount;
+  const isDisabled = disabled || (files?.length ?? 0) + documents.length >= maxFileCount;
+  const hasItems = (files?.length ?? 0) > 0 || documents.length > 0 || isLoadingDocuments;
 
   return (
-    <div className="relative flex flex-col gap-6 overflow-hidden">
+    <div className="relative flex flex-col gap-4 overflow-hidden">
+      {hasItems && (
+        <div className="grid grid-cols-3 gap-2">
+          {documents.map((doc) => (
+            <ExistingDocumentTile
+              key={doc.id}
+              document={doc}
+              fileUrl={getFileUrl?.(doc.id)}
+              onPreview={getFileUrl ? () => setPreviewDocument(doc) : undefined}
+              onRemove={() => handleRemoveExisting(doc.id)}
+            />
+          ))}
+          {files?.map((file, index) => {
+            const uploadable = file as UploadableFile;
+            const id = uploadable.__uploadId;
+            return (
+              <UploadingFileTile
+                key={id ?? `${file.name}-${index}`}
+                file={file}
+                isUploading={id ? uploadingFiles.has(id) : false}
+                onRemove={id ? () => removeFileById(id) : () => removeFileByIndex(index)}
+              />
+            );
+          })}
+          {isLoadingDocuments && documents.length === 0 && (
+            <div className="col-span-3 flex items-center justify-center py-4">
+              <Loader2 className="size-5 animate-spin text-muted-foreground" />
+            </div>
+          )}
+        </div>
+      )}
+
       <Dropzone
         // @ts-ignore
         onDrop={onDrop}
@@ -134,50 +217,28 @@ export function FileUploader({
           <div
             {...getRootProps()}
             className={cn(
-              "group relative grid h-52 w-full cursor-pointer place-items-center rounded-lg border-2 border-dashed border-muted-foreground/25 px-5 py-2.5 text-center transition hover:bg-muted/25",
+              "group relative grid w-full cursor-pointer place-items-center rounded-lg border-2 border-dashed border-muted-foreground/25 px-5 py-6 text-center transition hover:bg-muted/25",
               "ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-              isDragActive && "border-muted-foreground/50",
+              isDragActive && "border-primary/50 bg-primary/5",
               isDisabled && "pointer-events-none opacity-60",
+              hasItems && "py-4",
               className,
             )}
           >
             <input {...getInputProps()} />
-            <DropzoneContent
-              isDragActive={isDragActive}
-              maxSize={maxSize}
-              maxFileCount={maxFileCount}
-            />
+            <DropzoneContent isDragActive={isDragActive} maxSize={maxSize} compact={hasItems} />
           </div>
         )}
       </Dropzone>
 
-      {((files?.length ?? 0) > 0 || documents.length > 0) && (
-        <ScrollArea className="h-fit w-full px-3">
-          <div className="flex max-h-48 flex-col gap-4">
-            {documents.map((doc) => (
-              <FileCard
-                key={doc.id}
-                file={{
-                  name: doc.name,
-                  size: 0,
-                  type: doc.path.toLowerCase().endsWith(".pdf") ? "application/pdf" : "image/*",
-                }}
-                documentId={doc.id}
-                onRemove={() => handleRemoveExisting(doc.id)}
-                onView={onView}
-              />
-            ))}
-            {files?.map((file, index) => (
-              <FileCard
-                key={file.name}
-                file={file}
-                onRemove={() => onRemove(index)}
-                isUploading={uploadingFiles[file.name]}
-                onView={onView}
-              />
-            ))}
-          </div>
-        </ScrollArea>
+      {previewDocument && getFileUrl && (
+        <DocumentPreviewDialog
+          open={!!previewDocument}
+          onOpenChange={(open) => !open && setPreviewDocument(null)}
+          name={previewDocument.name}
+          type={previewDocument.type}
+          fileUrl={getFileUrl(previewDocument.id)}
+        />
       )}
     </div>
   );
@@ -186,125 +247,216 @@ export function FileUploader({
 function DropzoneContent({
   isDragActive,
   maxSize,
-  maxFileCount,
+  compact,
 }: {
   isDragActive: boolean;
   maxSize: number;
-  maxFileCount: number;
+  compact: boolean;
 }) {
   if (isDragActive) {
     return (
-      <div className="flex flex-col items-center justify-center gap-4 sm:px-5">
-        <div className="rounded-full border border-dashed p-3">
-          <Upload className="size-7 text-muted-foreground" aria-hidden="true" />
+      <div className="flex flex-col items-center justify-center gap-2">
+        <div className="rounded-full border border-dashed border-primary/50 p-2">
+          <Upload className="size-5 text-primary" aria-hidden="true" />
         </div>
-        <p className="font-medium text-muted-foreground">Drop the files here</p>
+        <p className="text-sm font-medium text-primary">Drop files here</p>
+      </div>
+    );
+  }
+
+  if (compact) {
+    return (
+      <div className="flex items-center gap-2">
+        <Upload className="size-4 text-muted-foreground" aria-hidden="true" />
+        <p className="text-sm text-muted-foreground">Add more files</p>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col items-center justify-center gap-4 sm:px-5">
+    <div className="flex flex-col items-center justify-center gap-2">
       <div className="rounded-full border border-dashed p-3">
-        <Upload className="size-7 text-muted-foreground" aria-hidden="true" />
+        <Upload className="size-6 text-muted-foreground" aria-hidden="true" />
       </div>
       <div className="flex flex-col gap-px">
-        <p className="font-medium text-muted-foreground">
-          Drag and drop files here, or click to select files
+        <p className="text-sm font-medium text-muted-foreground">
+          Drag and drop files, or click to browse
         </p>
-        <p className="text-sm text-muted-foreground/70">
-          You can upload
-          {maxFileCount > 1
-            ? ` ${maxFileCount === Number.POSITIVE_INFINITY ? "multiple" : maxFileCount}
-            files (up to ${formatBytes(maxSize)} each)`
-            : ` a file with ${formatBytes(maxSize)}`}
+        <p className="text-xs text-muted-foreground/70">
+          PDF, JPEG, PNG, WebP, HEIC up to {formatBytes(maxSize)}
         </p>
       </div>
     </div>
   );
 }
 
-interface FileCardProps {
-  file: File | { name: string; size: number; type: string };
-  documentId?: number;
-  onRemove: () => Promise<void>;
-  onView?: (id: number) => Promise<string>;
-  isUploading?: boolean;
+interface ExistingDocumentTileProps {
+  document: DocumentRecord;
+  fileUrl?: string;
+  onPreview?: () => void;
+  onRemove: () => void;
 }
 
-function FileCard({ file, documentId, isUploading, onRemove, onView }: FileCardProps) {
-  const [isLoading, setIsLoading] = useState(false);
+function ExistingDocumentTile({
+  document,
+  fileUrl,
+  onPreview,
+  onRemove,
+}: ExistingDocumentTileProps) {
   const [isRemoving, setIsRemoving] = useState(false);
+  const isImage = document.type.startsWith("image/");
+  const isPdf = document.type === "application/pdf";
 
-  const handleView = async () => {
-    if (!documentId || !onView) return;
+  const handleView = () => {
+    if (onPreview) onPreview();
+    else if (fileUrl) window.open(fileUrl, "_blank", "noopener,noreferrer");
+  };
 
-    setIsLoading(true);
-    try {
-      const url = await onView(documentId);
-      window.open(url, "_blank");
-    } catch (error) {
-      toast.error("Failed to open document");
-      console.error("Error opening document:", error);
-    } finally {
-      setIsLoading(false);
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.target !== e.currentTarget) return;
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      handleView();
     }
   };
 
-  const handleRemove = async () => {
+  const handleRemove = async (e: React.MouseEvent) => {
+    e.stopPropagation();
     setIsRemoving(true);
     try {
       await onRemove();
-    } catch (error) {
-      console.error("Error removing file:", error);
-      toast.error("Failed to remove file");
+    } catch {
+      // handled by parent
     } finally {
       setIsRemoving(false);
     }
   };
 
   return (
-    <div className="relative flex items-center gap-2.5">
-      <div className="flex flex-1 gap-2.5">
-        <div className="flex w-full flex-col gap-2">
-          <div className="flex flex-col gap-px">
-            <p className="line-clamp-1 text-sm font-medium text-foreground/80">{file.name}</p>
-            {"size" in file && file.size > 0 && (
-              <p className="text-xs text-muted-foreground">{formatBytes(file.size)}</p>
-            )}
-          </div>
-        </div>
-      </div>
-      <div className="flex items-center gap-2">
-        {documentId && (
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="text-primary hover:text-primary/90"
-            disabled={isLoading}
-            onClick={handleView}
-          >
-            {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "View"}
-          </Button>
-        )}
-        {isUploading ? (
-          <div className="grid size-7 place-items-center">
-            <Loader2 className="size-4 animate-spin text-muted-foreground" />
+    <div
+      role="button"
+      tabIndex={0}
+      className="group relative flex cursor-pointer flex-col overflow-hidden rounded-lg border bg-muted/30 transition hover:border-foreground/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+      onClick={handleView}
+      onKeyDown={handleKeyDown}
+      aria-label={`View ${document.name}`}
+    >
+      <div className="relative aspect-square w-full overflow-hidden">
+        {isImage && fileUrl ? (
+          // oxlint-disable-next-line nextjs/no-img-element
+          <img src={fileUrl} alt={document.name} className="size-full object-cover" />
+        ) : isPdf && fileUrl ? (
+          <div className="flex size-full items-center justify-center overflow-hidden bg-muted">
+            <PdfThumbnail file={fileUrl} width={200} className="relative" />
           </div>
         ) : (
+          <div className="flex size-full items-center justify-center bg-muted">
+            <FileText className="size-10 text-red-500/70" />
+          </div>
+        )}
+
+        <Button
+          type="button"
+          variant="secondary"
+          size="icon"
+          className="absolute right-1 top-1 size-6 opacity-0 shadow-sm transition group-hover:opacity-100"
+          onClick={handleRemove}
+          disabled={isRemoving}
+          aria-label={isRemoving ? `Removing ${document.name}` : `Remove file ${document.name}`}
+        >
+          {isRemoving ? (
+            <Loader2 className="size-3 animate-spin" aria-hidden />
+          ) : (
+            <X className="size-3" aria-hidden />
+          )}
+        </Button>
+      </div>
+
+      <div className="px-2 py-1.5">
+        <p className="truncate text-xs font-medium">{document.name}</p>
+        <p className="text-[10px] text-muted-foreground">{formatBytes(document.size)}</p>
+      </div>
+    </div>
+  );
+}
+
+interface UploadingFileTileProps {
+  file: File;
+  isUploading: boolean;
+  onRemove: () => void;
+}
+
+function UploadingFileTile({ file, isUploading, onRemove }: UploadingFileTileProps) {
+  const isImage = file.type.startsWith("image/");
+  const isPdf = file.type === "application/pdf";
+
+  // Create object URL only when we need to show an image preview; revoke when tile unmounts.
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  React.useEffect(() => {
+    if (!isImage) return;
+    const url = URL.createObjectURL(file);
+    setPreviewUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [file, isImage]);
+
+  const handleRemove = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onRemove();
+  };
+
+  return (
+    <div className="group relative flex flex-col overflow-hidden rounded-lg border bg-muted/30">
+      <div className="relative aspect-square w-full overflow-hidden">
+        {isImage && previewUrl ? (
+          // oxlint-disable-next-line nextjs/no-img-element
+          <img
+            src={previewUrl}
+            alt={file.name}
+            className={cn("size-full object-cover", isUploading && "opacity-50")}
+          />
+        ) : isPdf ? (
+          <div
+            className={cn(
+              "flex size-full items-center justify-center overflow-hidden bg-muted",
+              isUploading && "opacity-50",
+            )}
+          >
+            <PdfThumbnail file={file} width={200} className="relative" />
+          </div>
+        ) : (
+          <div
+            className={cn(
+              "flex size-full items-center justify-center bg-muted",
+              isUploading && "opacity-50",
+            )}
+          >
+            <FileText className="size-10 text-red-500/70" />
+          </div>
+        )}
+
+        {isUploading && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <Loader2 className="size-6 animate-spin text-foreground" />
+          </div>
+        )}
+
+        {!isUploading && (
           <Button
             type="button"
-            variant="outline"
+            variant="secondary"
             size="icon"
-            className="size-7"
+            className="absolute right-1 top-1 size-6 opacity-0 shadow-sm transition group-hover:opacity-100"
             onClick={handleRemove}
-            disabled={isRemoving}
+            aria-label={`Remove file ${file.name}`}
           >
-            {isRemoving ? <Loader2 className="size-4 animate-spin" /> : <X className="size-4" />}
-            <span className="sr-only">Remove file</span>
+            <X className="size-3" aria-hidden />
           </Button>
         )}
+      </div>
+
+      <div className="px-2 py-1.5">
+        <p className="truncate text-xs font-medium">{file.name}</p>
+        <p className="text-[10px] text-muted-foreground">{formatBytes(file.size)}</p>
       </div>
     </div>
   );
