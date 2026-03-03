@@ -30,6 +30,7 @@ export default function ProtectedLayout({ children }: { children: ReactNode }) {
         aria-hidden={!advisorOpen}
       >
         <div
+          hidden={!advisorOpen}
           className="flex h-full min-w-[400px] flex-col"
           style={{ width: ADVISOR_SIDEBAR_WIDTH }}
         >
