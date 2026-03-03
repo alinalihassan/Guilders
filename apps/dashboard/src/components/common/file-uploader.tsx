@@ -299,7 +299,7 @@ function ExistingDocumentTile({
 
   const handleView = () => {
     if (onPreview) onPreview();
-    else if (fileUrl) window.open(fileUrl, "_blank");
+    else if (fileUrl) window.open(fileUrl, "_blank", "noopener,noreferrer");
   };
 
   const handleRemove = async (e: React.MouseEvent) => {
