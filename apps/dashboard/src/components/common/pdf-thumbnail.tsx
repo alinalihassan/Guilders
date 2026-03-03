@@ -1,7 +1,7 @@
 "use client";
 
 import { FileText, Loader2 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
@@ -15,6 +15,11 @@ interface PdfThumbnailProps {
 export function PdfThumbnail({ file, width = 200, className }: PdfThumbnailProps) {
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState(false);
+
+  useEffect(() => {
+    setLoaded(false);
+    setError(false);
+  }, [file]);
 
   const fileSource = typeof file === "string" ? { url: file, withCredentials: true } : file;
 
