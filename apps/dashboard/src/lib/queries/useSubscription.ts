@@ -51,9 +51,10 @@ export function usePortalSession() {
         disableRedirect: true,
       });
       if (error) throw new Error(error.message ?? "Unknown error");
-      if (data?.url) {
-        window.location.href = data.url;
+      if (!data?.url) {
+        throw new Error("Billing portal URL was not returned");
       }
+      window.location.assign(data.url);
     },
     onError: (error) => {
       console.error("Failed to open customer portal:", error);
