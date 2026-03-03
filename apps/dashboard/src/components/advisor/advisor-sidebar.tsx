@@ -160,7 +160,7 @@ export function AdvisorSidebar() {
             console.error("Failed to delete conversation:", edenError(err));
           }
         }
-        await createNewConversation();
+        await loadLastConversation();
         setChatKey((k) => k + 1);
       },
     });
