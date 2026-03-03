@@ -10,6 +10,7 @@ const subscriptionClient = authClient.subscription as {
     successUrl: string;
     cancelUrl: string;
     disableRedirect: boolean;
+    scheduleAtPeriodEnd?: boolean;
   }) => Promise<unknown>;
   billingPortal: (opts: {
     returnUrl: string;
@@ -30,6 +31,7 @@ export function useSubscription() {
         successUrl: url,
         cancelUrl: url,
         disableRedirect: false,
+        scheduleAtPeriodEnd: true,
       });
     },
     onError: (error) => {
