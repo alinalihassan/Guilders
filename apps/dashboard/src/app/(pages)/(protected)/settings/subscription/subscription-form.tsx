@@ -94,11 +94,7 @@ export function SubscriptionForm() {
             Manage subscription
           </Button>
         ) : (
-          <Button
-            className="w-full"
-            disabled={upgrade.isPending}
-            onClick={() => upgrade.mutate()}
-          >
+          <Button className="w-full" disabled={upgrade.isPending} onClick={() => upgrade.mutate()}>
             {upgrade.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {hasTrialExpired ? "Upgrade to Pro" : "Start free trial"}
           </Button>
