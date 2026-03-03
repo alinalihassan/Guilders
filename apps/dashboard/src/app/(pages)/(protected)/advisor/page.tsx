@@ -167,9 +167,7 @@ export default function AdvisorPage() {
     message: (typeof messages)[number];
     loading: boolean;
   }) => {
-    const toolParts = message.parts.filter((part) =>
-      part.type.startsWith("tool-"),
-    ) as ToolPart[];
+    const toolParts = message.parts.filter((part) => part.type.startsWith("tool-")) as ToolPart[];
     if (toolParts.length === 0) return null;
 
     return (
@@ -316,7 +314,7 @@ export default function AdvisorPage() {
                       </div>
                     ) : null}
 
-                    <div className={isUser ? "max-w-[82%]" : "w-fit max-w-[88%]"}>
+                    <div className="w-fit max-w-2xl">
                       {!isUser && getMessageText(message).trim().length > 0 ? (
                         <div className="rounded-2xl border bg-background px-4 py-3">
                           <AssistantMessageText message={message} />
@@ -326,8 +324,7 @@ export default function AdvisorPage() {
                           <div className="whitespace-pre-wrap">{getMessageText(message)}</div>
                         </div>
                       ) : null}
-                      {!isUser &&
-                      (getMessageText(message).trim().length > 0 || !isGenerating) ? (
+                      {!isUser && (getMessageText(message).trim().length > 0 || !isGenerating) ? (
                         <AssistantMessageCards message={message} loading={isGenerating} />
                       ) : null}
 
