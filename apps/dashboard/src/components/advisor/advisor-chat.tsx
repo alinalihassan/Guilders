@@ -3,16 +3,15 @@
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
 import {
-  AlertTriangle,
   ArrowUp,
-  BarChart3,
   Check,
   CopyIcon,
+  LayoutDashboard,
   Loader2,
+  Lock,
   RefreshCcw,
   Sparkles,
   Square,
-  TrendingUp,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -31,10 +30,15 @@ const CHAT_AI_ICONS = [
   { icon: RefreshCcw, label: "Refresh" },
 ];
 
-const WELCOME_SUGGESTIONS = [
-  { label: "Evaluate investment portfolio", icon: BarChart3 },
-  { label: "Show spending insights", icon: TrendingUp },
-  { label: "Find unusual patterns", icon: AlertTriangle },
+const EMPTY_STATE_POINTS = [
+  {
+    icon: LayoutDashboard,
+    text: "View and update your accounts, transactions, categories and more.",
+  },
+  {
+    icon: Lock,
+    text: "Secure and private by design — your data stays yours. We don't share your messages with anyone.",
+  },
 ] as const;
 
 const getMessageText = (message: UIMessage) =>
@@ -74,24 +78,11 @@ type ToolPart = {
   output?: unknown;
 };
 
-function getDisplayName(user: { name?: string; email?: string } | undefined): string {
-  if (!user) return "there";
-  const name = (user as { name?: string }).name;
-  if (name && typeof name === "string" && name.trim()) return name.trim();
-  const email = user.email;
-  if (email && typeof email === "string") {
-    const part = email.split("@")[0];
-    if (part) return part.charAt(0).toUpperCase() + part.slice(1).toLowerCase();
-  }
-  return "there";
-}
-
 export function AdvisorChat() {
   const router = useRouter();
   const { data: user, isLoading } = useUser();
   const { data: token } = useUserToken();
   const isSubscribed = isPro(user);
-  const displayName = getDisplayName(user as { name?: string; email?: string } | undefined);
   const [inputText, setInputText] = useState("");
 
   const tokenRef = useRef(token);
@@ -139,11 +130,6 @@ export function AdvisorChat() {
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     await sendUserMessage(inputText);
-  };
-
-  const handleExampleClick = (question: string) => {
-    if (isGenerating) return;
-    void sendUserMessage(question);
   };
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -223,7 +209,7 @@ export function AdvisorChat() {
 
   const renderComposer = (className?: string) => (
     <form onSubmit={onSubmit} className={className}>
-      <div className="flex items-end gap-2 rounded-xl bg-muted/50 p-2 focus-within:bg-muted/70">
+      <div className="flex items-end gap-2 rounded-xl border border-border/70 bg-muted/40 p-2 transition-colors focus-within:border-border focus-within:bg-muted/60">
         <textarea
           value={inputText}
           onKeyDown={onKeyDown}
@@ -239,7 +225,7 @@ export function AdvisorChat() {
           className="h-9 w-9 shrink-0 rounded-full"
         >
           {isGenerating ? (
-            <Square className="size-3.5 fill-current" />
+            <Square className="size-3 fill-current" />
           ) : (
             <ArrowUp className="size-4" />
           )}
@@ -312,9 +298,9 @@ export function AdvisorChat() {
         </div>
       )}
 
-      <div className="min-h-0 flex-1">
+      <div className="flex min-h-0 flex-1 flex-col">
         {hasMessages ? (
-          <div ref={messagesRef} className="h-full overflow-y-auto">
+          <div ref={messagesRef} className="min-h-0 flex-1 overflow-y-auto">
             <div className="flex w-full flex-col gap-5 px-3 py-6">
               {messages?.map((message, index) => {
                 if (shouldHideAssistantPlaceholder(message, index)) return null;
@@ -329,9 +315,7 @@ export function AdvisorChat() {
                         ✦
                       </div>
                     ) : null}
-                    <div
-                      className={isUser ? "w-fit max-w-[85%]" : "min-w-0 w-full"}
-                    >
+                    <div className={isUser ? "w-fit max-w-[85%]" : "w-full min-w-0"}>
                       {!isUser && getMessageText(message).trim().length > 0 ? (
                         <div className="w-full py-0.5">
                           <AssistantMessageText message={message} />
@@ -382,32 +366,24 @@ export function AdvisorChat() {
             </div>
           </div>
         ) : (
-          <div className="flex flex-1 flex-col gap-4 overflow-y-auto px-4 py-6">
-            <div className="space-y-3 text-sm">
-              <p>
-                Hey {displayName}! I'm an AI/large-language-model that can help with your finances.
-                I have access to the web and your account data.
-              </p>
-              <p className="text-muted-foreground">
-                You can use{" "}
-                <kbd className="rounded border bg-muted px-1.5 py-0.5 font-mono text-xs">/</kbd> to
-                access commands.
-              </p>
-              <p className="font-medium">Here's a few questions you can ask:</p>
-            </div>
-            <div className="flex flex-col gap-2">
-              {WELCOME_SUGGESTIONS.map(({ label, icon: Icon }) => (
-                <Button
-                  key={label}
-                  variant="outline"
-                  className="h-auto justify-start gap-2 py-2.5 text-left text-sm font-normal"
-                  onClick={() => handleExampleClick(label)}
-                  disabled={isGenerating}
-                >
-                  <Icon className="size-4 shrink-0 text-muted-foreground" />
-                  {label}
-                </Button>
-              ))}
+          <div className="flex min-h-0 flex-1 flex-col items-center justify-center px-6 py-8">
+            <div className="flex flex-col items-center">
+              <h2 className="max-w-[16rem] text-center text-xl font-semibold leading-tight tracking-tight">
+                Your advisor is here to help. Just ask.
+              </h2>
+              <ul className="mt-8 flex w-full max-w-sm flex-col gap-5 text-sm text-muted-foreground">
+                {EMPTY_STATE_POINTS.map(({ icon: Icon, text }) => (
+                  <li key={text} className="flex items-start gap-3">
+                    <span
+                      className="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted"
+                      aria-hidden
+                    >
+                      <Icon className="size-5 text-foreground/70" />
+                    </span>
+                    <span className="leading-snug">{text}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
         )}
