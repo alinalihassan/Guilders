@@ -9,6 +9,7 @@ import Dropzone, { type DropEvent, type DropzoneProps, type FileRejection } from
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { DocumentPreviewDialog } from "@/components/common/document-preview-dialog";
 import { useControllableState } from "@/hooks/useControllableState";
 import { cn, formatBytes } from "@/lib/utils";
 
@@ -79,6 +80,7 @@ export function FileUploader({
   });
 
   const [uploadingFiles, setUploadingFiles] = useState<Set<string>>(new Set());
+  const [previewDocument, setPreviewDocument] = useState<DocumentRecord | null>(null);
 
   const handleUpload = React.useCallback(
     async (newFiles: File[]) => {
@@ -171,6 +173,7 @@ export function FileUploader({
               key={doc.id}
               document={doc}
               fileUrl={getFileUrl?.(doc.id)}
+              onPreview={getFileUrl ? () => setPreviewDocument(doc) : undefined}
               onRemove={() => handleRemoveExisting(doc.id)}
             />
           ))}
@@ -217,6 +220,16 @@ export function FileUploader({
           </div>
         )}
       </Dropzone>
+
+      {previewDocument && getFileUrl && (
+        <DocumentPreviewDialog
+          open={!!previewDocument}
+          onOpenChange={(open) => !open && setPreviewDocument(null)}
+          name={previewDocument.name}
+          type={previewDocument.type}
+          fileUrl={getFileUrl(previewDocument.id)}
+        />
+      )}
     </div>
   );
 }
@@ -270,16 +283,18 @@ function DropzoneContent({
 interface ExistingDocumentTileProps {
   document: DocumentRecord;
   fileUrl?: string;
+  onPreview?: () => void;
   onRemove: () => void;
 }
 
-function ExistingDocumentTile({ document, fileUrl, onRemove }: ExistingDocumentTileProps) {
+function ExistingDocumentTile({ document, fileUrl, onPreview, onRemove }: ExistingDocumentTileProps) {
   const [isRemoving, setIsRemoving] = useState(false);
   const isImage = document.type.startsWith("image/");
   const isPdf = document.type === "application/pdf";
 
   const handleView = () => {
-    if (fileUrl) window.open(fileUrl, "_blank");
+    if (onPreview) onPreview();
+    else if (fileUrl) window.open(fileUrl, "_blank");
   };
 
   const handleRemove = async (e: React.MouseEvent) => {
