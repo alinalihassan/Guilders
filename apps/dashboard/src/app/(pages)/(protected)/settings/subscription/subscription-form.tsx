@@ -80,11 +80,8 @@ export function SubscriptionForm() {
               Cancel anytime. No credit card required.
             </p>
           </div>
-        )}
-      </CardContent>
-      <CardContent className="pt-0">
-        {isSubscribed || isTrialing ? (
           <Button
+            type="button"
             variant="outline"
             className="w-full"
             disabled={portal.isPending}
@@ -94,7 +91,12 @@ export function SubscriptionForm() {
             Manage subscription
           </Button>
         ) : (
-          <Button className="w-full" disabled={upgrade.isPending} onClick={() => upgrade.mutate()}>
+          <Button
+            type="button"
+            className="w-full"
+            disabled={upgrade.isPending}
+            onClick={() => upgrade.mutate()}
+          >
             {upgrade.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {hasTrialExpired ? "Upgrade to Pro" : "Start free trial"}
           </Button>
