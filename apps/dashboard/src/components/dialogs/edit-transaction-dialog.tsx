@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, Trash2 } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -106,7 +106,21 @@ export function EditTransactionDialog() {
     }
   }, [data?.transaction, form]);
 
-  if (!isOpen || !data?.transaction) return null;
+  const [sheetOpen, setSheetOpen] = useState(false);
+  useEffect(() => {
+    setSheetOpen(!!isOpen);
+  }, [isOpen]);
+
+  const handleOpenChange = (open: boolean) => {
+    if (!open) {
+      setSheetOpen(false);
+      setTimeout(() => close(), 220);
+    } else {
+      setSheetOpen(true);
+    }
+  };
+
+  if (!data?.transaction) return null;
   const { transaction } = data;
 
   const isSyncedTransaction = !!transaction.provider_transaction_id;
@@ -131,7 +145,8 @@ export function EditTransactionDialog() {
       },
       {
         onSuccess: () => {
-          close();
+          setSheetOpen(false);
+          setTimeout(() => close(), 220);
         },
         onError: (error) => {
           console.error("Error updating transaction:", error);
@@ -143,7 +158,8 @@ export function EditTransactionDialog() {
   const handleDelete = () => {
     deleteTransaction(transaction, {
       onSuccess: () => {
-        close();
+        setSheetOpen(false);
+        setTimeout(() => close(), 220);
       },
       onError: (error) => {
         console.error("Error deleting transaction:", error);
@@ -152,7 +168,7 @@ export function EditTransactionDialog() {
   };
 
   return (
-    <Sheet open={isOpen} onOpenChange={close}>
+    <Sheet open={sheetOpen} onOpenChange={handleOpenChange}>
       <SheetContent className="flex h-full flex-col overflow-hidden p-0">
         <div className="flex-1 overflow-y-auto p-6">
           <SheetTitle className="hidden">Edit Transaction</SheetTitle>
