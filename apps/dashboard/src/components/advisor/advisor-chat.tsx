@@ -329,9 +329,11 @@ export function AdvisorChat() {
                         ✦
                       </div>
                     ) : null}
-                    <div className="w-fit max-w-[85%]">
+                    <div
+                      className={isUser ? "w-fit max-w-[85%]" : "min-w-0 w-full"}
+                    >
                       {!isUser && getMessageText(message).trim().length > 0 ? (
-                        <div className="rounded-2xl border bg-background px-4 py-3">
+                        <div className="w-full py-0.5">
                           <AssistantMessageText message={message} />
                         </div>
                       ) : isUser ? (
@@ -371,7 +373,7 @@ export function AdvisorChat() {
                   <div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border bg-background text-xs">
                     ✦
                   </div>
-                  <div className="flex items-center gap-2 rounded-2xl border bg-background px-4 py-3 text-sm text-muted-foreground">
+                  <div className="flex w-full items-center gap-2 py-0.5 text-sm text-muted-foreground">
                     <Loader2 className="size-4 shrink-0 animate-spin" aria-hidden />
                     <span>Thinking...</span>
                   </div>
