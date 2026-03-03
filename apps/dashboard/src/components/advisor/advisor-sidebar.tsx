@@ -23,17 +23,18 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useDialog } from "@/hooks/useDialog";
-import { api, edenError } from "@/lib/api";
+import { edenError } from "@/lib/api";
+import {
+  useConversation,
+  useConversations,
+  useCreateConversation,
+  useDeleteConversation,
+  useLastConversation,
+  useRenameConversation,
+} from "@/lib/queries/useConversations";
 import { useStore } from "@/lib/store";
 import { getDefaultSessionTitle } from "@/lib/store/advisorStore";
 import { cn } from "@/lib/utils";
-
-type ConversationListItem = {
-  id: string;
-  title: string;
-  created_at: string;
-  updated_at: string;
-};
 
 export function AdvisorSidebar() {
   const sessionTitle = useStore((state) => state.sessionTitle);
@@ -47,80 +48,62 @@ export function AdvisorSidebar() {
   const { open: openInputPrompt } = useDialog("inputPrompt");
 
   const [chatKey, setChatKey] = useState(0);
-  const [loading, setLoading] = useState(true);
   const [pickerOpen, setPickerOpen] = useState(false);
-  const [conversations, setConversations] = useState<ConversationListItem[]>([]);
-  const [loadingList, setLoadingList] = useState(false);
+  const [selectedConvId, setSelectedConvId] = useState<string | null>(null);
 
-  const createNewConversation = useCallback(async () => {
-    const { data, error } = await api.conversation.post();
-    if (error || !data) {
-      clearChat();
-      return;
-    }
-    const conv = data as { id: string; title: string };
-    setCurrentChat(conv.id, conv.title, []);
-  }, [clearChat, setCurrentChat]);
+  const { data: lastConversation, isLoading: loadingLast } = useLastConversation();
+  const { data: conversations, isLoading: loadingList } = useConversations(pickerOpen);
+  const { data: selectedConversation } = useConversation(selectedConvId);
 
-  const loadLastConversation = useCallback(async () => {
-    try {
-      const { data, error } = await api.conversation.last.get();
-      if (error || !data) {
-        await createNewConversation();
-        return;
-      }
-      const conv = data as { id: string; title: string; messages: unknown[] };
-      setCurrentChat(conv.id, conv.title, conv.messages as UIMessage[]);
-    } catch {
-      await createNewConversation();
-    } finally {
-      setLoading(false);
-    }
-  }, [createNewConversation, setCurrentChat]);
+  const createConversation = useCreateConversation();
+  const deleteConversation = useDeleteConversation();
+  const renameConversation = useRenameConversation();
 
-  useEffect(() => {
-    void loadLastConversation();
-  }, [loadLastConversation]);
+  const createConversationRef = useRef(createConversation);
+  createConversationRef.current = createConversation;
 
-  const fetchConversations = useCallback(async () => {
-    setLoadingList(true);
-    try {
-      const { data, error } = await api.conversation.get();
-      if (!error && data) {
-        setConversations(data as unknown as ConversationListItem[]);
-      }
-    } catch {
-      // ignore
-    } finally {
-      setLoadingList(false);
-    }
-  }, []);
-
-  const pickerOpenRef = useRef(false);
-  useEffect(() => {
-    if (pickerOpen && !pickerOpenRef.current) {
-      void fetchConversations();
-    }
-    pickerOpenRef.current = pickerOpen;
-  }, [pickerOpen, fetchConversations]);
-
-  const handleSelectConversation = async (conv: ConversationListItem) => {
-    setPickerOpen(false);
-    if (conv.id === currentChatId) return;
-    try {
-      const { data, error } = await api.conversation({ id: conv.id }).get();
-      if (error || !data) return;
-      const full = data as { id: string; title: string; messages: unknown[] };
-      setCurrentChat(full.id, full.title, full.messages as UIMessage[]);
+  const applyConversation = useCallback(
+    (conv: { id: string; title: string; messages?: unknown[] }) => {
+      setCurrentChat(conv.id, conv.title, (conv.messages ?? []) as UIMessage[]);
       setChatKey((k) => k + 1);
-    } catch {
-      // ignore
+    },
+    [setCurrentChat],
+  );
+
+  // Load last conversation (or create one) on mount
+  useEffect(() => {
+    if (loadingLast || currentChatId) return;
+
+    if (lastConversation) {
+      setCurrentChat(
+        lastConversation.id,
+        lastConversation.title,
+        lastConversation.messages as UIMessage[],
+      );
+    } else {
+      createConversationRef.current.mutate(undefined, {
+        onSuccess: (conv) => setCurrentChat(conv.id, conv.title, []),
+      });
     }
+  }, [loadingLast, lastConversation, currentChatId, setCurrentChat]);
+
+  // When a conversation is selected from the picker, load it
+  useEffect(() => {
+    if (!selectedConvId || !selectedConversation) return;
+    applyConversation(selectedConversation);
+    setSelectedConvId(null);
+  }, [selectedConversation, selectedConvId, applyConversation]);
+
+  const handleSelectConversation = (convId: string) => {
+    setPickerOpen(false);
+    if (convId === currentChatId) return;
+    setSelectedConvId(convId);
   };
 
-  const handleNewChat = async () => {
-    await createNewConversation();
-    setChatKey((k) => k + 1);
+  const handleNewChat = () => {
+    createConversation.mutate(undefined, {
+      onSuccess: (conv) => applyConversation(conv),
+    });
   };
 
   const handleChangeName = () => {
@@ -136,7 +119,7 @@ export function AdvisorSidebar() {
         setSessionTitle(newTitle);
         if (currentChatId) {
           try {
-            await api.conversation({ id: currentChatId }).patch({ title: newTitle });
+            await renameConversation.mutateAsync({ id: currentChatId, title: newTitle });
           } catch (err) {
             console.error("Failed to rename conversation:", edenError(err));
           }
@@ -153,15 +136,23 @@ export function AdvisorSidebar() {
       cancelText: "Cancel",
       variant: "destructive",
       onConfirm: async () => {
-        if (currentChatId) {
-          try {
-            await api.conversation({ id: currentChatId }).delete();
-          } catch (err) {
-            console.error("Failed to delete conversation:", edenError(err));
-          }
+        if (!currentChatId) return;
+        try {
+          await deleteConversation.mutateAsync(currentChatId);
+        } catch (err) {
+          console.error("Failed to delete conversation:", edenError(err));
         }
-        await loadLastConversation();
-        setChatKey((k) => k + 1);
+        clearChat();
+
+        const remaining = (conversations ?? []).filter((c) => c.id !== currentChatId);
+        const next = remaining[0];
+        if (next) {
+          handleSelectConversation(next.id);
+        } else {
+          createConversation.mutate(undefined, {
+            onSuccess: (conv) => applyConversation(conv),
+          });
+        }
       },
     });
   };
@@ -188,7 +179,7 @@ export function AdvisorSidebar() {
                 <div className="flex items-center justify-center py-6">
                   <Loader2 className="size-4 animate-spin text-muted-foreground" />
                 </div>
-              ) : conversations.length === 0 ? (
+              ) : !conversations || conversations.length === 0 ? (
                 <p className="py-6 text-center text-sm text-muted-foreground">
                   No conversations yet
                 </p>
@@ -198,7 +189,7 @@ export function AdvisorSidebar() {
                     <button
                       key={conv.id}
                       type="button"
-                      onClick={() => handleSelectConversation(conv)}
+                      onClick={() => handleSelectConversation(conv.id)}
                       className={cn(
                         "flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm transition-colors hover:bg-accent",
                         conv.id === currentChatId && "bg-accent",
@@ -243,7 +234,7 @@ export function AdvisorSidebar() {
         </DropdownMenu>
       </header>
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-        {loading ? (
+        {!currentChatId ? (
           <div className="flex flex-1 items-center justify-center">
             <Loader2 className="size-6 animate-spin text-muted-foreground" />
           </div>

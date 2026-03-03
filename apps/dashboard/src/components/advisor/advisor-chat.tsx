@@ -13,6 +13,7 @@ import {
   Sparkles,
   Square,
 } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -23,6 +24,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { api } from "@/lib/api";
 import { env } from "@/lib/env";
+import { conversationsKey } from "@/lib/queries/useConversations";
 import { useUser, useUserToken } from "@/lib/queries/useUser";
 import { useStore } from "@/lib/store";
 import { cn, isPro } from "@/lib/utils";
@@ -95,6 +97,9 @@ export function AdvisorChat({ chatId, initialMessages }: AdvisorChatProps) {
   const tokenRef = useRef(token);
   tokenRef.current = token;
 
+  const chatIdRef = useRef(chatId);
+  chatIdRef.current = chatId;
+
   const [transport] = useState(
     () =>
       new DefaultChatTransport({
@@ -103,11 +108,11 @@ export function AdvisorChat({ chatId, initialMessages }: AdvisorChatProps) {
           const t = tokenRef.current;
           return t ? { Authorization: `Bearer ${t}` } : {};
         },
-        prepareSendMessagesRequest: chatId
-          ? ({ messages, id }) => ({
-              body: { id, message: messages[messages.length - 1] },
-            })
-          : undefined,
+        prepareSendMessagesRequest: ({ messages }) => {
+          const cid = chatIdRef.current;
+          if (!cid) return { body: { messages } };
+          return { body: { id: cid, message: messages[messages.length - 1] } };
+        },
       }),
   );
 
@@ -123,6 +128,7 @@ export function AdvisorChat({ chatId, initialMessages }: AdvisorChatProps) {
   const isGenerating = status === "submitted" || status === "streaming";
   const messagesRef = useRef<HTMLDivElement>(null);
   const setSessionTitle = useStore((state) => state.setSessionTitle);
+  const queryClient = useQueryClient();
   const titleRefreshed = useRef(false);
 
   useEffect(() => {
@@ -144,12 +150,13 @@ export function AdvisorChat({ chatId, initialMessages }: AdvisorChatProps) {
         const conv = data as { title?: string } | null;
         if (conv?.title && conv.title !== "New chat") {
           setSessionTitle(conv.title);
+          queryClient.invalidateQueries({ queryKey: conversationsKey });
         }
       } catch {
         // ignore
       }
     })();
-  }, [chatId, status, messages, setSessionTitle]);
+  }, [chatId, status, messages, setSessionTitle, queryClient]);
 
   const sendUserMessage = async (text: string) => {
     const trimmedText = text.trim();
