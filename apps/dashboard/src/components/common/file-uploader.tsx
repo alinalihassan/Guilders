@@ -312,6 +312,14 @@ function ExistingDocumentTile({
     else if (fileUrl) window.open(fileUrl, "_blank", "noopener,noreferrer");
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.target !== e.currentTarget) return;
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      handleView();
+    }
+  };
+
   const handleRemove = async (e: React.MouseEvent) => {
     e.stopPropagation();
     setIsRemoving(true);
@@ -326,8 +334,12 @@ function ExistingDocumentTile({
 
   return (
     <div
-      className="group relative flex cursor-pointer flex-col overflow-hidden rounded-lg border bg-muted/30 transition hover:border-foreground/20"
+      role="button"
+      tabIndex={0}
+      className="group relative flex cursor-pointer flex-col overflow-hidden rounded-lg border bg-muted/30 transition hover:border-foreground/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
       onClick={handleView}
+      onKeyDown={handleKeyDown}
+      aria-label={`View ${document.name}`}
     >
       <div className="relative aspect-square w-full overflow-hidden">
         {isImage && fileUrl ? (
@@ -350,8 +362,9 @@ function ExistingDocumentTile({
           className="absolute right-1 top-1 size-6 opacity-0 shadow-sm transition group-hover:opacity-100"
           onClick={handleRemove}
           disabled={isRemoving}
+          aria-label={isRemoving ? `Removing ${document.name}` : `Remove file ${document.name}`}
         >
-          {isRemoving ? <Loader2 className="size-3 animate-spin" /> : <X className="size-3" />}
+          {isRemoving ? <Loader2 className="size-3 animate-spin" aria-hidden /> : <X className="size-3" aria-hidden />}
         </Button>
       </div>
 
@@ -430,8 +443,9 @@ function UploadingFileTile({ file, isUploading, onRemove }: UploadingFileTilePro
             size="icon"
             className="absolute right-1 top-1 size-6 opacity-0 shadow-sm transition group-hover:opacity-100"
             onClick={handleRemove}
+            aria-label={`Remove file ${file.name}`}
           >
-            <X className="size-3" />
+            <X className="size-3" aria-hidden />
           </Button>
         )}
       </div>
