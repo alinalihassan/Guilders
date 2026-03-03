@@ -1,5 +1,6 @@
 "use client";
 
+import type { UpdateAccount } from "@guilders/api/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertTriangle, Loader2, Trash2 } from "lucide-react";
 import { useEffect } from "react";
@@ -35,7 +36,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useDialog } from "@/hooks/useDialog";
 import { type AccountSubtype, accountSubtypeLabels, accountSubtypes } from "@/lib/account-types";
-import type { UpdateAccount } from "@guilders/api/types";
 import { useRemoveAccount, useUpdateAccount } from "@/lib/queries/useAccounts";
 import { useReconnectConnection } from "@/lib/queries/useConnections";
 import { useCurrencies } from "@/lib/queries/useCurrencies";

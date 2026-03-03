@@ -5,12 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogClose, DialogContent, DialogTitle } from "@/components/ui/dialog";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
@@ -46,10 +41,7 @@ export function DocumentPreviewDialog({
   const isImage = type.startsWith("image/");
   const isPdf = type === "application/pdf";
 
-  const fileSource = useMemo(
-    () => ({ url: fileUrl, withCredentials: true }),
-    [fileUrl],
-  );
+  const fileSource = useMemo(() => ({ url: fileUrl, withCredentials: true }), [fileUrl]);
 
   const handleDownload = async () => {
     setDownloading(true);
@@ -82,9 +74,7 @@ export function DocumentPreviewDialog({
         showCloseIcon={false}
       >
         <div className="flex shrink-0 items-center justify-between gap-2 border-b px-4 py-3 pr-4">
-          <DialogTitle className="truncate text-base font-medium">
-            {name}
-          </DialogTitle>
+          <DialogTitle className="truncate text-base font-medium">{name}</DialogTitle>
 
           <div className="flex shrink-0 items-center gap-1">
             <Button
@@ -102,15 +92,8 @@ export function DocumentPreviewDialog({
               )}
               <span className="sr-only">Download</span>
             </Button>
-            <DialogClose
-              className={dialogIconButtonClass}
-              asChild
-            >
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-              >
+            <DialogClose className={dialogIconButtonClass} asChild>
+              <Button type="button" variant="ghost" size="icon">
                 <X className="size-4" />
                 <span className="sr-only">Close</span>
               </Button>
@@ -134,9 +117,7 @@ export function DocumentPreviewDialog({
               numPages={numPages}
               onDocumentLoadSuccess={onDocumentLoadSuccess}
               onPrevPage={() => setPageNumber((p) => Math.max(1, p - 1))}
-              onNextPage={() =>
-                setPageNumber((p) => Math.min(numPages ?? 1, p + 1))
-              }
+              onNextPage={() => setPageNumber((p) => Math.min(numPages ?? 1, p + 1))}
             />
           )}
           {!isImage && !isPdf && (
@@ -171,12 +152,7 @@ function PdfPreview({
 
   return (
     <div className="flex flex-col items-center gap-3">
-      <Document
-        file={fileSource}
-        loading={null}
-        error={null}
-        onLoadSuccess={onDocumentLoadSuccess}
-      >
+      <Document file={fileSource} loading={null} error={null} onLoadSuccess={onDocumentLoadSuccess}>
         {loading && (
           <div className="flex min-h-[40vh] items-center justify-center">
             <Loader2 className="size-8 animate-spin text-muted-foreground" />

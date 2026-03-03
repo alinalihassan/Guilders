@@ -78,12 +78,7 @@ export const documentRoutes = new Elysia({
         return status(400, { error: validationError });
       }
 
-      const ownsEntity = await verifyEntityOwnership(
-        db,
-        user.id,
-        body.entity_type,
-        body.entity_id,
-      );
+      const ownsEntity = await verifyEntityOwnership(db, user.id, body.entity_type, body.entity_id);
       if (!ownsEntity) {
         return status(404, {
           error: `${body.entity_type === "account" ? "Account" : "Transaction"} not found`,

@@ -8,8 +8,8 @@ import { useState } from "react";
 import Dropzone, { type DropEvent, type DropzoneProps, type FileRejection } from "react-dropzone";
 import { toast } from "sonner";
 
-import { Button } from "@/components/ui/button";
 import { DocumentPreviewDialog } from "@/components/common/document-preview-dialog";
+import { Button } from "@/components/ui/button";
 import { useControllableState } from "@/hooks/useControllableState";
 import { cn, formatBytes } from "@/lib/utils";
 
@@ -287,7 +287,12 @@ interface ExistingDocumentTileProps {
   onRemove: () => void;
 }
 
-function ExistingDocumentTile({ document, fileUrl, onPreview, onRemove }: ExistingDocumentTileProps) {
+function ExistingDocumentTile({
+  document,
+  fileUrl,
+  onPreview,
+  onRemove,
+}: ExistingDocumentTileProps) {
   const [isRemoving, setIsRemoving] = useState(false);
   const isImage = document.type.startsWith("image/");
   const isPdf = document.type === "application/pdf";
@@ -317,11 +322,7 @@ function ExistingDocumentTile({ document, fileUrl, onPreview, onRemove }: Existi
       <div className="relative aspect-square w-full overflow-hidden">
         {isImage && fileUrl ? (
           // oxlint-disable-next-line nextjs/no-img-element
-          <img
-            src={fileUrl}
-            alt={document.name}
-            className="size-full object-cover"
-          />
+          <img src={fileUrl} alt={document.name} className="size-full object-cover" />
         ) : isPdf && fileUrl ? (
           <div className="flex size-full items-center justify-center overflow-hidden bg-muted">
             <PdfThumbnail file={fileUrl} width={200} className="relative" />
@@ -340,11 +341,7 @@ function ExistingDocumentTile({ document, fileUrl, onPreview, onRemove }: Existi
           onClick={handleRemove}
           disabled={isRemoving}
         >
-          {isRemoving ? (
-            <Loader2 className="size-3 animate-spin" />
-          ) : (
-            <X className="size-3" />
-          )}
+          {isRemoving ? <Loader2 className="size-3 animate-spin" /> : <X className="size-3" />}
         </Button>
       </div>
 
@@ -383,17 +380,21 @@ function UploadingFileTile({ file, isUploading, onRemove }: UploadingFileTilePro
             onLoad={() => URL.revokeObjectURL(file.preview!)}
           />
         ) : isPdf ? (
-          <div className={cn(
-            "flex size-full items-center justify-center overflow-hidden bg-muted",
-            isUploading && "opacity-50",
-          )}>
+          <div
+            className={cn(
+              "flex size-full items-center justify-center overflow-hidden bg-muted",
+              isUploading && "opacity-50",
+            )}
+          >
             <PdfThumbnail file={file} width={200} className="relative" />
           </div>
         ) : (
-          <div className={cn(
-            "flex size-full items-center justify-center bg-muted",
-            isUploading && "opacity-50",
-          )}>
+          <div
+            className={cn(
+              "flex size-full items-center justify-center bg-muted",
+              isUploading && "opacity-50",
+            )}
+          >
             <FileText className="size-10 text-red-500/70" />
           </div>
         )}
