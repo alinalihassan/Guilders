@@ -16,6 +16,7 @@ export const FINANCIAL_ADVISOR_PROMPT = `You are a helpful financial advisor ass
 - After calling any tool, you must always reply with a short text summary for the user (e.g. list accounts, summarize balances, or explain what you did). Never end your response with only tool calls and no text.`;
 
 export const chatRequestSchema = t.Object({
+  id: t.Optional(t.String()),
   messages: t.Optional(t.Array(t.Any())),
   message: t.Optional(t.Any()),
 });

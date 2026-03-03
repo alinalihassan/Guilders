@@ -1,6 +1,7 @@
 import { defineRelations } from "drizzle-orm";
 
 import { account } from "./accounts";
+import { conversation } from "./conversations";
 import {
   apikey,
   oauthAccessToken,
@@ -39,6 +40,7 @@ const schema = {
   oauthAccessToken,
   oauthConsent,
   subscription,
+  conversation,
   category,
   account,
   balanceSnapshot,
@@ -63,6 +65,10 @@ export const relations = defineRelations(schema, (r) => ({
     accounts: r.many.user_account({
       from: r.user.id,
       to: r.user_account.userId,
+    }),
+    conversations: r.many.conversation({
+      from: r.user.id,
+      to: r.conversation.user_id,
     }),
     categories: r.many.category({
       from: r.user.id,
@@ -108,6 +114,12 @@ export const relations = defineRelations(schema, (r) => ({
   subscription: {
     user: r.one.user({
       from: r.subscription.referenceId,
+      to: r.user.id,
+    }),
+  },
+  conversation: {
+    user: r.one.user({
+      from: r.conversation.user_id,
       to: r.user.id,
     }),
   },

@@ -78,7 +78,12 @@ type ToolPart = {
   output?: unknown;
 };
 
-export function AdvisorChat() {
+interface AdvisorChatProps {
+  chatId?: string | null;
+  initialMessages?: UIMessage[];
+}
+
+export function AdvisorChat({ chatId, initialMessages }: AdvisorChatProps) {
   const router = useRouter();
   const { data: user, isLoading } = useUser();
   const { data: token } = useUserToken();
@@ -96,10 +101,17 @@ export function AdvisorChat() {
           const t = tokenRef.current;
           return t ? { Authorization: `Bearer ${t}` } : {};
         },
+        prepareSendMessagesRequest: chatId
+          ? ({ messages, id }) => ({
+              body: { id, message: messages[messages.length - 1] },
+            })
+          : undefined,
       }),
   );
 
   const { messages, sendMessage, regenerate, stop, status } = useChat({
+    id: chatId ?? undefined,
+    messages: initialMessages,
     transport,
     onError(error) {
       toast.error(error.message || "An error occurred. Please try again.");
@@ -307,7 +319,7 @@ export function AdvisorChat() {
                 const isUser = message.role === "user";
                 return (
                   <div
-                    key={message.id}
+                    key={`${message.id}-${index}`}
                     className={isUser ? "flex justify-end" : "flex items-start gap-3"}
                   >
                     {!isUser ? (

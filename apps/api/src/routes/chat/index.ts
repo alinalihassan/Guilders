@@ -1,16 +1,20 @@
 import {
   convertToModelMessages,
+  createIdGenerator,
   createUIMessageStream,
   createUIMessageStreamResponse,
   stepCountIs,
   streamText,
   type UIMessage,
 } from "ai";
+import { and, eq } from "drizzle-orm";
 import { createAiGateway } from "ai-gateway-provider";
 import { unified } from "ai-gateway-provider/providers/unified";
 import { Elysia, status, t } from "elysia";
 
+import { conversation } from "../../db/schema/conversations";
 import { authPlugin } from "../../middleware/auth";
+import { createDb } from "../../lib/db";
 import { errorSchema } from "../../utils/error";
 import {
   showStockCard,
@@ -18,6 +22,8 @@ import {
 } from "./generative-ui-tools";
 import { buildChatTools, getMcpToolsOverview } from "./mcp-tools";
 import { chatRequestSchema, FINANCIAL_ADVISOR_PROMPT } from "./types";
+
+const generateMessageId = createIdGenerator({ prefix: "msg", size: 16 });
 
 function buildSystemContent(today: string): string {
   const mcpSection = getMcpToolsOverview();
@@ -48,11 +54,26 @@ export const chatRoutes = new Elysia({
     "/",
     async ({ body, user }) => {
       try {
-        const inputMessages = Array.isArray(body.messages)
-          ? body.messages
-          : body.message
-            ? [body.message]
-            : [];
+        const persistenceMode = !!(body.id && body.message);
+        let inputMessages: UIMessage[];
+
+        if (persistenceMode) {
+          const db = createDb();
+          const chat = await db.query.conversation.findFirst({
+            where: { id: body.id!, user_id: user.id },
+          });
+          if (!chat) {
+            return status(404, { error: "Conversation not found" });
+          }
+          const previousMessages = (chat.messages ?? []) as UIMessage[];
+          inputMessages = [...previousMessages, body.message as UIMessage];
+        } else {
+          inputMessages = Array.isArray(body.messages)
+            ? body.messages
+            : body.message
+              ? [body.message]
+              : [];
+        }
 
         if (inputMessages.length === 0) {
           return status(400, {
@@ -69,7 +90,7 @@ export const chatRoutes = new Elysia({
             role: "system" as const,
             content: systemContent,
           },
-          ...(await convertToModelMessages(inputMessages as UIMessage[])),
+          ...(await convertToModelMessages(inputMessages)),
         ];
 
         const aiGateway = createAiGateway({
@@ -90,6 +111,33 @@ export const chatRoutes = new Elysia({
             console.error("Chat streamText error:", error);
           },
         });
+
+        if (persistenceMode) {
+          const chatId = body.id!;
+          result.consumeStream();
+
+          return result.toUIMessageStreamResponse({
+            originalMessages: inputMessages,
+            generateMessageId,
+            onFinish: async ({ messages }) => {
+              try {
+                const db = createDb();
+                await db
+                  .update(conversation)
+                  .set({ messages: messages as unknown[], updated_at: new Date() })
+                  .where(
+                    and(eq(conversation.id, chatId), eq(conversation.user_id, user.id)),
+                  );
+              } catch (err) {
+                console.error("Failed to save conversation:", err);
+              }
+            },
+            headers: {
+              "Cache-Control": "no-cache",
+              Connection: "keep-alive",
+            },
+          });
+        }
 
         const stream = createUIMessageStream({
           execute: async ({ writer }) => {
@@ -129,6 +177,7 @@ export const chatRoutes = new Elysia({
         200: t.Any(),
         400: errorSchema,
         401: errorSchema,
+        404: errorSchema,
         500: errorSchema,
       },
       detail: {
