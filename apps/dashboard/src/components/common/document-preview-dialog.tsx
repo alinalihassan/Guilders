@@ -149,14 +149,42 @@ function PdfPreview({
   onNextPage,
 }: PdfPreviewProps) {
   const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    setLoading(true);
+    setErrorMessage(null);
+  }, [fileSource, pageNumber]);
+
+  const onDocumentLoadError = () => {
+    setLoading(false);
+    setErrorMessage("Failed to load PDF.");
+  };
+
+  const onPageRenderError = () => {
+    setLoading(false);
+    setErrorMessage("Failed to render page.");
+  };
 
   return (
     <div className="flex flex-col items-center gap-3">
-      <Document file={fileSource} loading={null} error={null} onLoadSuccess={onDocumentLoadSuccess}>
-        {loading && (
-          <div className="flex min-h-[40vh] items-center justify-center">
-            <Loader2 className="size-8 animate-spin text-muted-foreground" />
+      <Document
+        file={fileSource}
+        loading={null}
+        error={null}
+        onLoadSuccess={onDocumentLoadSuccess}
+        onLoadError={onDocumentLoadError}
+      >
+        {errorMessage ? (
+          <div className="flex min-h-[40vh] items-center justify-center text-sm text-destructive">
+            {errorMessage}
           </div>
+        ) : (
+          loading && (
+            <div className="flex min-h-[40vh] items-center justify-center">
+              <Loader2 className="size-8 animate-spin text-muted-foreground" />
+            </div>
+          )
         )}
         <Page
           pageNumber={pageNumber}
@@ -164,6 +192,7 @@ function PdfPreview({
           renderTextLayer={false}
           renderAnnotationLayer={false}
           onRenderSuccess={() => setLoading(false)}
+          onRenderError={onPageRenderError}
         />
       </Document>
       {numPages !== null && numPages > 1 && (

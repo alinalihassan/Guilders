@@ -191,11 +191,7 @@ export function FileUploader({
                 key={id ?? `${file.name}-${index}`}
                 file={file}
                 isUploading={id ? uploadingFiles.has(id) : false}
-                onRemove={
-                  id
-                    ? () => removeFileById(id)
-                    : () => removeFileByIndex(index)
-                }
+                onRemove={id ? () => removeFileById(id) : () => removeFileByIndex(index)}
               />
             );
           })}

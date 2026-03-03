@@ -67,9 +67,10 @@ const FALLBACK_DISPOSITION_FILENAME = "download";
  * Removes control characters (CR/LF etc.), quotes and path separators, enforces max length,
  * and returns a safe ASCII name for `filename=` and a percent-encoded value for `filename*=`.
  */
-export function sanitizeFilenameForDisposition(
-  name: string | null | undefined,
-): { safe: string; encoded: string } {
+export function sanitizeFilenameForDisposition(name: string | null | undefined): {
+  safe: string;
+  encoded: string;
+} {
   if (typeof name !== "string" || !name.trim()) {
     return {
       safe: FALLBACK_DISPOSITION_FILENAME,

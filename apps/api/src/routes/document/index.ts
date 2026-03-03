@@ -3,6 +3,7 @@ import { and, eq } from "drizzle-orm";
 import { Elysia, status, t } from "elysia";
 
 import { document } from "../../db/schema/documents";
+import type { DocumentEntityTypeEnum } from "../../db/schema/enums";
 import type { Database } from "../../lib/db";
 import { authPlugin } from "../../middleware/auth";
 import { errorSchema } from "../../utils/error";
@@ -49,7 +50,7 @@ export const documentRoutes = new Elysia({
       const conditions = [eq(document.user_id, user.id)];
 
       if (query.entity_type) {
-        conditions.push(eq(document.entity_type, query.entity_type));
+        conditions.push(eq(document.entity_type, query.entity_type as DocumentEntityTypeEnum));
       }
       if (query.entity_id) {
         conditions.push(eq(document.entity_id, query.entity_id));
@@ -101,7 +102,7 @@ export const documentRoutes = new Elysia({
           .insert(document)
           .values({
             user_id: user.id,
-            entity_type: body.entity_type,
+            entity_type: body.entity_type as DocumentEntityTypeEnum,
             entity_id: body.entity_id,
             name: body.file.name || `${uuid}.${ext}`,
             path: r2Key,
@@ -183,10 +184,10 @@ export const documentRoutes = new Elysia({
         return status(404, { error: "File not found in storage" });
       }
 
-      const { safe: safeName, encoded: encodedName } =
-        sanitizeFilenameForDisposition(doc[0].name);
+      const { safe: safeName, encoded: encodedName } = sanitizeFilenameForDisposition(doc[0].name);
       set.headers["content-type"] = doc[0].type;
-      set.headers["content-disposition"] = `inline; filename="${safeName}"; filename*=UTF-8''${encodedName}`;
+      set.headers["content-disposition"] =
+        `inline; filename="${safeName}"; filename*=UTF-8''${encodedName}`;
       set.headers["cache-control"] = "private, max-age=3600";
 
       return new Response(object.body);
