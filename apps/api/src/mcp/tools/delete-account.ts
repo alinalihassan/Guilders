@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm";
 import * as z from "zod/v4";
 
 import { account } from "../../db/schema/accounts";
+import { cleanupAccountDocuments } from "../../lib/cleanup-documents";
 import { createDb } from "../../lib/db";
 import { makeTextPayload, type McpToolDefinition } from "./types";
 
@@ -46,6 +47,7 @@ export const deleteAccountTool: McpToolDefinition<DeleteAccountInput> = {
         };
       }
 
+      await cleanupAccountDocuments(db, userId, id);
       await db.delete(account).where(eq(account.id, id));
 
       return makeTextPayload({ success: true, deletedAccountId: id });

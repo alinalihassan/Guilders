@@ -3,6 +3,10 @@ import { and, eq } from "drizzle-orm";
 import { account } from "../db/schema/accounts";
 import { AccountSubtypeEnum, AccountTypeEnum } from "../db/schema/enums";
 import { institutionConnection } from "../db/schema/institution-connections";
+import {
+  cleanupAccountDocuments,
+  cleanupInstitutionConnectionDocuments,
+} from "../lib/cleanup-documents";
 import { createDb } from "../lib/db";
 import { SYNCED_ACCOUNT_LOCKED_ATTRIBUTES } from "../lib/locked-attributes";
 import { syncConnectionData } from "../lib/sync-connection-data";
@@ -202,6 +206,14 @@ async function handleSnapTradeConnectionDeleted(
 ): Promise<void> {
   if (!payload.brokerageAuthorizationId) return;
   const db = createDb();
+
+  const conn = await db.query.institutionConnection.findFirst({
+    where: { connection_id: payload.brokerageAuthorizationId },
+  });
+  if (conn) {
+    await cleanupInstitutionConnectionDocuments(db, conn.id);
+  }
+
   await db
     .delete(institutionConnection)
     .where(eq(institutionConnection.connection_id, payload.brokerageAuthorizationId));
@@ -250,6 +262,15 @@ async function handleSnapTradeAccountRemoved(
 ): Promise<void> {
   if (!payload.accountId) return;
   const db = createDb();
+
+  const existing = await db.query.account.findFirst({
+    where: { provider_account_id: payload.accountId },
+    columns: { id: true, user_id: true },
+  });
+  if (existing) {
+    await cleanupAccountDocuments(db, existing.user_id, existing.id);
+  }
+
   await db.delete(account).where(eq(account.provider_account_id, payload.accountId));
 }
 

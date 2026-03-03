@@ -1,7 +1,6 @@
 import { defineRelations } from "drizzle-orm";
 
 import { account } from "./accounts";
-import { conversation } from "./conversations";
 import {
   apikey,
   oauthAccessToken,
@@ -18,6 +17,7 @@ import {
 } from "./auth";
 import { balanceSnapshot } from "./balance-snapshots";
 import { category } from "./categories";
+import { conversation } from "./conversations";
 import { country } from "./countries";
 import { currency } from "./currencies";
 import { document } from "./documents";

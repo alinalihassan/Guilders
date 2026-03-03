@@ -40,7 +40,11 @@ export const createAdvisorStore: StateSlice<AdvisorState & AdvisorActions> = (se
   setSessionTitle: (title) => set({ sessionTitle: title }),
   resetSessionTitle: () => set({ sessionTitle: getDefaultSessionTitle() }),
   setCurrentChat: (id, title, messages) =>
-    set({ currentChatId: id, sessionTitle: title || getDefaultSessionTitle(), initialMessages: messages }),
+    set({
+      currentChatId: id,
+      sessionTitle: title || getDefaultSessionTitle(),
+      initialMessages: messages,
+    }),
   clearChat: () =>
     set({ currentChatId: null, initialMessages: [], sessionTitle: getDefaultSessionTitle() }),
 });

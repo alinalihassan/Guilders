@@ -1,11 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import {
-  ArrowRightLeft,
-  Briefcase,
-  LayoutDashboard,
-  LogOut,
-  Settings,
-} from "lucide-react";
+import { ArrowRightLeft, Briefcase, LayoutDashboard, LogOut, Settings } from "lucide-react";
 
 export interface NavItem {
   name: string;

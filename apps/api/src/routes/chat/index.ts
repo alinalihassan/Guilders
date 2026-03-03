@@ -8,19 +8,16 @@ import {
   streamText,
   type UIMessage,
 } from "ai";
-import { and, eq } from "drizzle-orm";
 import { createAiGateway } from "ai-gateway-provider";
 import { unified } from "ai-gateway-provider/providers/unified";
+import { and, eq } from "drizzle-orm";
 import { Elysia, status, t } from "elysia";
 
 import { conversation } from "../../db/schema/conversations";
-import { authPlugin } from "../../middleware/auth";
 import { createDb } from "../../lib/db";
+import { authPlugin } from "../../middleware/auth";
 import { errorSchema } from "../../utils/error";
-import {
-  showStockCard,
-  GENERATIVE_UI_TOOLS_OVERVIEW,
-} from "./generative-ui-tools";
+import { showStockCard, GENERATIVE_UI_TOOLS_OVERVIEW } from "./generative-ui-tools";
 import { buildChatTools, getMcpToolsOverview } from "./mcp-tools";
 import { chatRequestSchema, FINANCIAL_ADVISOR_PROMPT } from "./types";
 
@@ -131,7 +128,7 @@ export const chatRoutes = new Elysia({
               .slice(0, 500);
 
             titlePromise = generateText({
-              model: aiGateway(unified("google-ai-studio/gemini-2.5-flash")),
+              model: aiGateway(unified("workers-ai/@cf/meta/llama-4-scout-17b-16e-instruct")),
               prompt: `Generate a short title (max 6 words, no quotes, no punctuation at the end) for a conversation that starts with:\n"${userText}"`,
             })
               .then(({ text }) => text.trim() || null)
@@ -159,9 +156,7 @@ export const chatRoutes = new Elysia({
                 await db
                   .update(conversation)
                   .set(updates)
-                  .where(
-                    and(eq(conversation.id, chatId), eq(conversation.user_id, user.id)),
-                  );
+                  .where(and(eq(conversation.id, chatId), eq(conversation.user_id, user.id)));
               } catch (err) {
                 console.error("Failed to save conversation:", err);
               }

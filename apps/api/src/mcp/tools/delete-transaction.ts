@@ -3,6 +3,7 @@ import * as z from "zod/v4";
 
 import { account } from "../../db/schema/accounts";
 import { transaction } from "../../db/schema/transactions";
+import { cleanupEntityDocuments } from "../../lib/cleanup-documents";
 import { createDb } from "../../lib/db";
 import { makeTextPayload, type McpToolDefinition } from "./types";
 
@@ -49,6 +50,8 @@ export const deleteTransactionTool: McpToolDefinition<DeleteTransactionInput> = 
           ],
         };
       }
+
+      await cleanupEntityDocuments(db, userId, "transaction", id);
 
       await db.transaction(async (tx) => {
         const [updatedAccount] = await tx

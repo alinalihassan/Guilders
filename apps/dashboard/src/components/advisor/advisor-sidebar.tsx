@@ -2,14 +2,7 @@
 
 import type { UIMessage } from "ai";
 import { formatDistanceToNow } from "date-fns";
-import {
-  ChevronsUpDown,
-  Loader2,
-  MoreVertical,
-  Pencil,
-  PlusCircle,
-  Trash2,
-} from "lucide-react";
+import { ChevronsUpDown, Loader2, MoreVertical, Pencil, PlusCircle, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { AdvisorChat } from "@/components/advisor/advisor-chat";
@@ -239,11 +232,7 @@ export function AdvisorSidebar() {
             <Loader2 className="size-6 animate-spin text-muted-foreground" />
           </div>
         ) : (
-          <AdvisorChat
-            key={chatKey}
-            chatId={currentChatId}
-            initialMessages={initialMessages}
-          />
+          <AdvisorChat key={chatKey} chatId={currentChatId} initialMessages={initialMessages} />
         )}
       </div>
     </div>

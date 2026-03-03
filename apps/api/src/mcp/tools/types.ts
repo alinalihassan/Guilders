@@ -7,12 +7,14 @@ export type McpToolContext = {
   userId: string;
 };
 
+export type McpContentBlock =
+  | { type: "text"; text: string }
+  | { type: "image"; data: string; mimeType: string }
+  | { type: "resource"; resource: { uri: string; mimeType: string; blob: string } };
+
 export type McpToolResult = {
   isError?: boolean;
-  content: Array<{
-    type: "text";
-    text: string;
-  }>;
+  content: McpContentBlock[];
 };
 
 export const makeTextPayload = (payload: Record<string, unknown> | string): McpToolResult => ({
