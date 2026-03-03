@@ -2,7 +2,6 @@ import type { LucideIcon } from "lucide-react";
 import {
   ArrowRightLeft,
   Briefcase,
-  ConciergeBell,
   LayoutDashboard,
   LogOut,
   Settings,
@@ -20,14 +19,6 @@ export interface NavItem {
 
 export const mainNavigation: NavItem[] = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
-  {
-    name: "Advisor",
-    href: "/advisor",
-    icon: ConciergeBell,
-    breadcrumb: {
-      parent: { name: "Dashboard", href: "/" },
-    },
-  },
   {
     name: "Accounts",
     href: "/accounts",

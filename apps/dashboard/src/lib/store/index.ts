@@ -1,6 +1,7 @@
 // oxlint-disable typescript/no-explicit-any
 import { create, type StateCreator } from "zustand";
 
+import { createAdvisorStore } from "./advisorStore";
 import { createDialogStore } from "./dialogStore";
 import { createMenuStore } from "./menuStore";
 
@@ -12,9 +13,12 @@ type StateFromFunctions<T extends [...any]> = T extends [infer F, ...infer R]
     : unknown
   : unknown;
 
-type State = StateFromFunctions<[typeof createDialogStore, typeof createMenuStore]>;
+type State = StateFromFunctions<
+  [typeof createDialogStore, typeof createMenuStore, typeof createAdvisorStore]
+>;
 
 export const useStore = create<State>((...a) => ({
   ...createDialogStore(...a),
   ...createMenuStore(...a),
+  ...createAdvisorStore(...a),
 }));

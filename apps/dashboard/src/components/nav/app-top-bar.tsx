@@ -1,6 +1,6 @@
 "use client";
 
-import { Menu } from "lucide-react";
+import { Menu, PanelRight } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -8,12 +8,15 @@ import { useStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
 import { SearchBar } from "../nav/search-bar";
-import { UserButton } from "../nav/user-button";
 import { DynamicBreadcrumbs } from "./dynamic-breadcrumbs";
 
 export function AppTopBar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const toggleMenu = useStore((state) => state.toggleMenu);
+  const advisorOpen = useStore((state) => state.advisorOpen);
+  const openAdvisorSidebar = useStore((state) => state.openAdvisorSidebar);
+  const closeAdvisorSidebar = useStore((state) => state.closeAdvisorSidebar);
+  const toggleAdvisor = () => (advisorOpen ? closeAdvisorSidebar() : openAdvisorSidebar());
 
   useEffect(() => {
     setIsScrolled(window.scrollY > 0);
@@ -44,7 +47,15 @@ export function AppTopBar() {
       </div>
       <div className="flex flex-shrink-0 items-center gap-2">
         <SearchBar />
-        <UserButton />
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-9 w-9"
+          onClick={toggleAdvisor}
+          aria-label={advisorOpen ? "Close AI advisor" : "Open AI advisor"}
+        >
+          <PanelRight className="h-5 w-5" />
+        </Button>
       </div>
     </header>
   );
