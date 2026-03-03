@@ -66,11 +66,12 @@ export const chatRoutes = new Elysia({
           const previousMessages = (chat.messages ?? []) as UIMessage[];
           inputMessages = [...previousMessages, body.message as UIMessage];
         } else {
-          inputMessages = Array.isArray(body.messages)
-            ? body.messages
-            : body.message
-              ? [body.message]
-              : [];
+          inputMessages =
+            Array.isArray(body.messages) && body.messages.length > 0
+              ? body.messages
+              : body.message
+                ? [body.message]
+                : [];
         }
 
         if (inputMessages.length === 0) {
