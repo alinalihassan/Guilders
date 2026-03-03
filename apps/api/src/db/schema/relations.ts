@@ -9,6 +9,7 @@ import {
   oauthRefreshToken,
   passkey,
   session,
+  subscription,
   twoFactor,
   user,
   user_account,
@@ -36,6 +37,7 @@ const schema = {
   oauthRefreshToken,
   oauthAccessToken,
   oauthConsent,
+  subscription,
   category,
   account,
   balanceSnapshot,
@@ -91,6 +93,16 @@ export const relations = defineRelations(schema, (r) => ({
     oauthConsents: r.many.oauthConsent({
       from: r.user.id,
       to: r.oauthConsent.userId,
+    }),
+    subscriptions: r.many.subscription({
+      from: r.user.id,
+      to: r.subscription.referenceId,
+    }),
+  },
+  subscription: {
+    user: r.one.user({
+      from: r.subscription.referenceId,
+      to: r.user.id,
     }),
   },
   session: {

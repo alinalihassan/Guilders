@@ -37,7 +37,5 @@ export function formatBytes(
 }
 
 export function isPro(user: User | undefined | null) {
-  return (
-    user?.subscription?.status === "active" || user?.subscription?.status === "trialing" || true
-  );
+  return user?.subscription?.status === "active" || user?.subscription?.status === "trialing";
 }

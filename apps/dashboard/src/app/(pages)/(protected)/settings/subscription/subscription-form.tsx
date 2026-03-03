@@ -1,12 +1,16 @@
 "use client";
 
-import { Check } from "lucide-react";
+import { Check, Loader2 } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { usePortalSession, useSubscription } from "@/lib/queries/useSubscription";
 import { useUser } from "@/lib/queries/useUser";
 
 export function SubscriptionForm() {
   const { data: user, isLoading } = useUser();
+  const upgrade = useSubscription();
+  const portal = usePortalSession();
 
   if (isLoading) {
     return <div className="flex items-center justify-center py-6">Loading...</div>;
@@ -79,10 +83,28 @@ export function SubscriptionForm() {
         )}
       </CardContent>
       <CardContent className="pt-0">
-        <p className="text-sm text-muted-foreground">
-          Billing actions are temporarily unavailable while Stripe callbacks are being migrated to
-          the new backend.
-        </p>
+        {isSubscribed || isTrialing ? (
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full"
+            disabled={portal.isPending}
+            onClick={() => portal.mutate()}
+          >
+            {portal.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Manage subscription
+          </Button>
+        ) : (
+          <Button
+            type="button"
+            className="w-full"
+            disabled={upgrade.isPending}
+            onClick={() => upgrade.mutate()}
+          >
+            {upgrade.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {hasTrialExpired ? "Upgrade to Pro" : "Start free trial"}
+          </Button>
+        )}
       </CardContent>
     </Card>
   );

@@ -3,11 +3,13 @@ import { drizzleAdapter } from "@better-auth/drizzle-adapter";
 import { expo } from "@better-auth/expo";
 import { oauthProvider } from "@better-auth/oauth-provider";
 import { passkey } from "@better-auth/passkey";
+import { stripe } from "@better-auth/stripe";
 import ChangeEmail from "@guilders/transactional/emails/change-email";
 import PasswordResetEmail from "@guilders/transactional/emails/password-reset";
 import { betterAuth } from "better-auth";
 import { bearer, jwt, openAPI, twoFactor } from "better-auth/plugins";
 import { waitUntil } from "cloudflare:workers";
+import { Stripe } from "stripe";
 
 import * as authSchema from "../db/schema/auth";
 import { seedDefaultCategoriesForUser } from "./categories";
@@ -18,6 +20,32 @@ import { resend } from "./resend";
  * Create a per-request Better Auth instance with its own db connection.
  * Required for Cloudflare Workers where I/O can't be shared across requests.
  */
+const stripeSDK = new Stripe(process.env.STRIPE_SECRET_KEY || "sk_placeholder");
+
+function stripePlugin() {
+  if (!process.env.STRIPE_PRO_PRICE_ID) {
+    console.warn("[Stripe] STRIPE_PRO_PRICE_ID is not set — subscription upgrades will fail");
+  }
+
+  return stripe({
+    stripeClient: stripeSDK,
+    stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET ?? "",
+    createCustomerOnSignUp: true,
+    subscription: {
+      enabled: true,
+      plans: [
+        {
+          name: "pro",
+          priceId: process.env.STRIPE_PRO_PRICE_ID ?? "",
+          freeTrial: {
+            days: 14,
+          },
+        },
+      ],
+    },
+  });
+}
+
 export function createAuth(db?: Database) {
   const authDb = db ?? createDb();
   const baseUrl = process.env.BACKEND_URL;
@@ -121,6 +149,7 @@ export function createAuth(db?: Database) {
       }),
       openAPI({ disableDefaultReference: true }),
       expo({ disableOriginOverride: true }),
+      stripePlugin(),
     ],
     advanced: {
       disableOriginCheck: process.env.NODE_ENV === "development",
@@ -145,8 +174,10 @@ export function createAuth(db?: Database) {
   });
 }
 
-/** Lazily-created instance for OpenAPI schema generation only */
+/** Lazily-created instance for OpenAPI schema generation and CLI */
 let _auth: ReturnType<typeof createAuth>;
 export function getAuth() {
   return (_auth ??= createAuth());
 }
+
+export const auth = getAuth();
