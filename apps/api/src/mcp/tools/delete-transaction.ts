@@ -44,7 +44,7 @@ export const deleteTransactionTool: McpToolDefinition<DeleteTransactionInput> = 
           content: [
             {
               type: "text",
-              text: "Cannot delete this transaction; it is synced from a provider and managed by them. Only manual transactions can be deleted.",
+              text: "Cannot delete this transaction; it is synced from a provider and managed by them. Only manual transactions can be deleted. To remove synced data, go to Settings → Connections and disconnect from that provider.",
             },
           ],
         };

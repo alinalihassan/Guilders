@@ -40,7 +40,7 @@ export const deleteAccountTool: McpToolDefinition<DeleteAccountInput> = {
           content: [
             {
               type: "text",
-              text: "Cannot delete this account; it is synced with a provider and managed by them. Only manual accounts can be deleted.",
+              text: "Cannot delete this account; it is synced with a provider and managed by them. Only manual accounts can be deleted. To remove a synced account, go to Settings → Connections and disconnect from that provider.",
             },
           ],
         };
