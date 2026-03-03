@@ -154,21 +154,26 @@ export default function AdvisorPage() {
 
   const hasMessages = messages.length > 0;
 
-  const AssistantMessageContent = ({
+  const AssistantMessageText = ({ message }: { message: (typeof messages)[number] }) => {
+    const text = getMessageText(message);
+    if (text.trim().length === 0) return null;
+    return <Markdown className="text-sm leading-6">{text}</Markdown>;
+  };
+
+  const AssistantMessageCards = ({
     message,
     loading,
   }: {
     message: (typeof messages)[number];
     loading: boolean;
   }) => {
-    const text = getMessageText(message);
     const toolParts = message.parts.filter((part) =>
       part.type.startsWith("tool-"),
     ) as ToolPart[];
+    if (toolParts.length === 0) return null;
 
     return (
-      <div className="space-y-3">
-        {text.trim().length > 0 ? <Markdown className="text-sm leading-6">{text}</Markdown> : null}
+      <div className="mt-3 w-fit space-y-3">
         {toolParts.map((part, index) => {
           const tp = part as ToolPart;
           const key = `tool-${part.type}-${index}`;
@@ -311,20 +316,20 @@ export default function AdvisorPage() {
                       </div>
                     ) : null}
 
-                    <div className={isUser ? "max-w-[82%]" : "w-full max-w-[88%]"}>
-                      <div
-                        className={
-                          isUser
-                            ? "rounded-2xl bg-primary px-4 py-2.5 text-sm text-primary-foreground"
-                            : "space-y-3 rounded-2xl border bg-background px-4 py-3"
-                        }
-                      >
-                        {isUser ? (
+                    <div className={isUser ? "max-w-[82%]" : "w-fit max-w-[88%]"}>
+                      {!isUser && getMessageText(message).trim().length > 0 ? (
+                        <div className="rounded-2xl border bg-background px-4 py-3">
+                          <AssistantMessageText message={message} />
+                        </div>
+                      ) : isUser ? (
+                        <div className="rounded-2xl bg-primary px-4 py-2.5 text-sm text-primary-foreground">
                           <div className="whitespace-pre-wrap">{getMessageText(message)}</div>
-                        ) : (
-                          <AssistantMessageContent message={message} loading={isGenerating} />
-                        )}
-                      </div>
+                        </div>
+                      ) : null}
+                      {!isUser &&
+                      (getMessageText(message).trim().length > 0 || !isGenerating) ? (
+                        <AssistantMessageCards message={message} loading={isGenerating} />
+                      ) : null}
 
                       {!isUser && messages.length - 1 === index && !isGenerating ? (
                         <div className="mt-1.5 flex items-center gap-1">
