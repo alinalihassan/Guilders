@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, Trash2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -107,14 +107,36 @@ export function EditTransactionDialog() {
   }, [data?.transaction, form]);
 
   const [sheetOpen, setSheetOpen] = useState(false);
+  const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   useEffect(() => {
     setSheetOpen(!!isOpen);
   }, [isOpen]);
 
+  useEffect(() => {
+    return () => {
+      if (closeTimeoutRef.current !== null) {
+        clearTimeout(closeTimeoutRef.current);
+        closeTimeoutRef.current = null;
+      }
+    };
+  }, []);
+
+  const scheduleClose = () => {
+    if (closeTimeoutRef.current !== null) {
+      clearTimeout(closeTimeoutRef.current);
+      closeTimeoutRef.current = null;
+    }
+    setSheetOpen(false);
+    closeTimeoutRef.current = setTimeout(() => {
+      closeTimeoutRef.current = null;
+      close();
+    }, 220);
+  };
+
   const handleOpenChange = (open: boolean) => {
     if (!open) {
-      setSheetOpen(false);
-      setTimeout(() => close(), 220);
+      scheduleClose();
     } else {
       setSheetOpen(true);
     }
@@ -145,8 +167,7 @@ export function EditTransactionDialog() {
       },
       {
         onSuccess: () => {
-          setSheetOpen(false);
-          setTimeout(() => close(), 220);
+          scheduleClose();
         },
         onError: (error) => {
           console.error("Error updating transaction:", error);
@@ -158,8 +179,7 @@ export function EditTransactionDialog() {
   const handleDelete = () => {
     deleteTransaction(transaction, {
       onSuccess: () => {
-        setSheetOpen(false);
-        setTimeout(() => close(), 220);
+        scheduleClose();
       },
       onError: (error) => {
         console.error("Error deleting transaction:", error);
@@ -353,7 +373,9 @@ export function EditTransactionDialog() {
                                 disabled={isUploading}
                                 documents={documents}
                                 isLoadingDocuments={isLoadingDocuments}
-                                onRemoveExisting={deleteFile}
+                                onRemoveExisting={async (id) => {
+                                  await deleteFile(id);
+                                }}
                                 getFileUrl={getFileUrl}
                               />
                             </FormControl>

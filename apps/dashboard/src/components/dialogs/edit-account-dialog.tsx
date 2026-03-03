@@ -515,7 +515,9 @@ export function EditAccountDialog() {
                                 disabled={isUploading}
                                 documents={documents}
                                 isLoadingDocuments={isLoadingDocuments}
-                                onRemoveExisting={deleteFile}
+                                onRemoveExisting={async (id) => {
+                                  await deleteFile(id);
+                                }}
                                 getFileUrl={getFileUrl}
                               />
                             </FormControl>
