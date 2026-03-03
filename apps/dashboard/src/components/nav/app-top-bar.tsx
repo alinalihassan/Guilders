@@ -53,6 +53,7 @@ export function AppTopBar() {
           className="h-9 w-9"
           onClick={toggleAdvisor}
           aria-label={advisorOpen ? "Close AI advisor" : "Open AI advisor"}
+          aria-pressed={advisorOpen}
         >
           <PanelRight className="h-5 w-5" />
         </Button>
