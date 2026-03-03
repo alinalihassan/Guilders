@@ -80,6 +80,10 @@ export function SubscriptionForm() {
               Cancel anytime. No credit card required.
             </p>
           </div>
+        )}
+      </CardContent>
+      <CardContent className="pt-0">
+        {isSubscribed || isTrialing ? (
           <Button
             type="button"
             variant="outline"
