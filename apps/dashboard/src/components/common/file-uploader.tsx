@@ -58,6 +58,9 @@ const DEFAULT_ACCEPT: DropzoneProps["accept"] = {
 
 const MAX_SIZE = 10 * 1024 * 1024;
 
+/** File with a stable unique id for upload state and React keys (avoids collisions when names duplicate). */
+type UploadableFile = File & { __uploadId: string };
+
 export function FileUploader({
   value: valueProp,
   onValueChange,
@@ -83,10 +86,10 @@ export function FileUploader({
   const [previewDocument, setPreviewDocument] = useState<DocumentRecord | null>(null);
 
   const handleUpload = React.useCallback(
-    async (newFiles: File[]) => {
+    async (newFiles: UploadableFile[]) => {
       if (!onUpload) return;
 
-      setUploadingFiles(new Set(newFiles.map((f) => f.name)));
+      setUploadingFiles(new Set(newFiles.map((f) => f.__uploadId)));
 
       try {
         await onUpload(newFiles);
@@ -127,8 +130,8 @@ export function FileUploader({
         return;
       }
 
-      const newFiles = acceptedFiles.map((file) =>
-        Object.assign(file, { preview: URL.createObjectURL(file) }),
+      const newFiles: UploadableFile[] = acceptedFiles.map((file) =>
+        Object.assign(file, { __uploadId: crypto.randomUUID() }),
       );
 
       setFiles(newFiles);
@@ -140,12 +143,15 @@ export function FileUploader({
     [files, documents.length, maxFileCount, maxSize, multiple, setFiles, handleUpload],
   );
 
-  const onRemove = (index: number) => {
+  const removeFileById = (id: string) => {
     if (!files) return;
-    const file = files[index];
-    if (file && "preview" in file) {
-      URL.revokeObjectURL((file as File & { preview: string }).preview);
-    }
+    const newFiles = files.filter((f) => (f as UploadableFile).__uploadId !== id);
+    setFiles(newFiles);
+    onValueChange?.(newFiles);
+  };
+
+  const removeFileByIndex = (index: number) => {
+    if (!files) return;
     const newFiles = files.filter((_, i) => i !== index);
     setFiles(newFiles);
     onValueChange?.(newFiles);
@@ -177,14 +183,22 @@ export function FileUploader({
               onRemove={() => handleRemoveExisting(doc.id)}
             />
           ))}
-          {files?.map((file, index) => (
-            <UploadingFileTile
-              key={file.name}
-              file={file}
-              isUploading={uploadingFiles.has(file.name)}
-              onRemove={() => onRemove(index)}
-            />
-          ))}
+          {files?.map((file, index) => {
+            const uploadable = file as UploadableFile;
+            const id = uploadable.__uploadId;
+            return (
+              <UploadingFileTile
+                key={id ?? `${file.name}-${index}`}
+                file={file}
+                isUploading={id ? uploadingFiles.has(id) : false}
+                onRemove={
+                  id
+                    ? () => removeFileById(id)
+                    : () => removeFileByIndex(index)
+                }
+              />
+            );
+          })}
           {isLoadingDocuments && documents.length === 0 && (
             <div className="col-span-3 flex items-center justify-center py-4">
               <Loader2 className="size-5 animate-spin text-muted-foreground" />
@@ -354,7 +368,7 @@ function ExistingDocumentTile({
 }
 
 interface UploadingFileTileProps {
-  file: File & { preview?: string };
+  file: File;
   isUploading: boolean;
   onRemove: () => void;
 }
@@ -362,6 +376,15 @@ interface UploadingFileTileProps {
 function UploadingFileTile({ file, isUploading, onRemove }: UploadingFileTileProps) {
   const isImage = file.type.startsWith("image/");
   const isPdf = file.type === "application/pdf";
+
+  // Create object URL only when we need to show an image preview; revoke when tile unmounts.
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  React.useEffect(() => {
+    if (!isImage) return;
+    const url = URL.createObjectURL(file);
+    setPreviewUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [file, isImage]);
 
   const handleRemove = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -371,13 +394,12 @@ function UploadingFileTile({ file, isUploading, onRemove }: UploadingFileTilePro
   return (
     <div className="group relative flex flex-col overflow-hidden rounded-lg border bg-muted/30">
       <div className="relative aspect-square w-full overflow-hidden">
-        {isImage && file.preview ? (
+        {isImage && previewUrl ? (
           // oxlint-disable-next-line nextjs/no-img-element
           <img
-            src={file.preview}
+            src={previewUrl}
             alt={file.name}
             className={cn("size-full object-cover", isUploading && "opacity-50")}
-            onLoad={() => URL.revokeObjectURL(file.preview!)}
           />
         ) : isPdf ? (
           <div
