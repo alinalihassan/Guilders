@@ -8,6 +8,7 @@ import { chatRoutes } from "./chat";
 import { connectionsRoutes } from "./connections";
 import { countryRoutes } from "./country";
 import { currencyRoutes } from "./currency";
+import { documentRoutes } from "./document";
 import { institutionRoutes } from "./institution";
 import { institutionConnectionRoutes } from "./institution-connection";
 import { providerRoutes } from "./provider";
@@ -25,6 +26,7 @@ export const api = new Elysia({ prefix: "/api" })
   .use(connectionsRoutes)
   .use(countryRoutes)
   .use(currencyRoutes)
+  .use(documentRoutes)
   .use(rateRoutes)
   .use(providerRoutes)
   .use(institutionRoutes)

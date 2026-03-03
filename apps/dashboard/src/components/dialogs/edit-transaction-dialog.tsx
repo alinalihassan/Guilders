@@ -73,7 +73,7 @@ export function EditTransactionDialog() {
   const { mutate: updateTransaction, isPending: isUpdating } = useUpdateTransaction();
   const { mutate: deleteTransaction, isPending: isDeleting } = useRemoveTransaction();
   const { data: accounts } = useAccounts();
-  const { uploadFile, deleteFile, getSignedUrl, isUploading } = useFiles({
+  const { uploadFile, deleteFile, getFileUrl, isUploading } = useFiles({
     entityType: "transaction",
     entityId: data?.transaction?.id ?? 0,
   });
@@ -98,7 +98,7 @@ export function EditTransactionDialog() {
         accountId: data.transaction.account_id,
         amount: data.transaction.amount.toString(),
         description: data.transaction.description,
-        categoryId: data.transaction.category_id,
+        categoryId: data.transaction.category_id ?? undefined,
         date: formatDateForInput(data.transaction.date),
         documents: [],
       });
@@ -340,7 +340,7 @@ export function EditTransactionDialog() {
                                   path: "",
                                 }))}
                                 onRemoveExisting={deleteFile}
-                                onView={getSignedUrl}
+                                onView={getFileUrl}
                               />
                             </FormControl>
                             <FormMessage />

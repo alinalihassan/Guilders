@@ -1,8 +1,8 @@
-// oxlint-disable typescript/no-explicit-any TODO: We need to implement it again on the backend
 import type { CreateDocumentResponse, DocumentEntityType } from "@guilders/api/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { api, edenError } from "@/lib/api";
+import { env } from "@/lib/env";
 
 interface UseFilesOptions {
   entityType: DocumentEntityType;
@@ -18,7 +18,7 @@ export function useFiles({ entityType, entityId, onSuccess }: UseFilesOptions) {
       const uploadedFiles: CreateDocumentResponse[] = [];
 
       for (const file of files) {
-        const { data, error } = await (api as Record<string, any>).documents.post({
+        const { data, error } = await api.document.post({
           entity_id: entityId,
           entity_type: entityType,
           file,
@@ -40,7 +40,7 @@ export function useFiles({ entityType, entityId, onSuccess }: UseFilesOptions) {
 
   const { mutateAsync: deleteFile, isPending: isDeleting } = useMutation({
     mutationFn: async (id: number) => {
-      const { error } = await (api as Record<string, any>).documents.delete({ id });
+      const { error } = await api.document({ id }).delete();
       if (error) throw new Error(edenError(error));
     },
     onSuccess: () => {
@@ -48,20 +48,15 @@ export function useFiles({ entityType, entityId, onSuccess }: UseFilesOptions) {
     },
   });
 
-  const { mutateAsync: getSignedUrl, isPending: isGettingUrl } = useMutation({
-    mutationFn: async (id: number) => {
-      const { data, error } = await (api as Record<string, any>).documents({ id }).get();
-      if (error) throw new Error(edenError(error));
-      return (data as { url: string }).url;
-    },
-  });
+  function getFileUrl(id: number): string {
+    return `${env.NEXT_PUBLIC_API_URL}/api/document/${id}/file`;
+  }
 
   return {
     uploadFile,
     deleteFile,
-    getSignedUrl,
+    getFileUrl,
     isUploading,
     isDeleting,
-    isGettingUrl,
   };
 }

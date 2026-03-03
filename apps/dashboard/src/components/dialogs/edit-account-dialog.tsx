@@ -35,6 +35,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useDialog } from "@/hooks/useDialog";
 import { type AccountSubtype, accountSubtypeLabels, accountSubtypes } from "@/lib/account-types";
+import type { UpdateAccount } from "@guilders/api/types";
 import { useRemoveAccount, useUpdateAccount } from "@/lib/queries/useAccounts";
 import { useReconnectConnection } from "@/lib/queries/useConnections";
 import { useCurrencies } from "@/lib/queries/useCurrencies";
@@ -91,7 +92,7 @@ export function EditAccountDialog() {
   const { mutateAsync: reconnectConnection, isPending: isReconnecting } = useReconnectConnection();
   const { mutate: deleteAccount, isPending: isDeleting } = useRemoveAccount();
 
-  const { uploadFile, deleteFile, getSignedUrl, isUploading } = useFiles({
+  const { uploadFile, deleteFile, getFileUrl, isUploading } = useFiles({
     entityType: "account",
     entityId: data?.account?.id ?? 0,
   });
@@ -162,13 +163,13 @@ export function EditAccountDialog() {
   };
 
   const handleSubmit = form.handleSubmit(async (formData: FormSchema) => {
-    const updatedAccount = {
-      subtype: formData.accountType,
+    const updatedAccount: UpdateAccount = {
+      subtype: formData.accountType as UpdateAccount["subtype"],
       name: formData.accountName,
       value: formData.value,
       currency: formData.currency,
-      investable: formData.investable,
-      taxability: formData.taxability,
+      investable: formData.investable as UpdateAccount["investable"],
+      taxability: formData.taxability as UpdateAccount["taxability"],
       tax_rate: formData.taxRate ? formData.taxRate : null,
       notes: formData.notes ?? "",
     };
@@ -470,7 +471,7 @@ export function EditAccountDialog() {
                                   path: "",
                                 }))}
                                 onRemoveExisting={deleteFile}
-                                onView={getSignedUrl}
+                                onView={getFileUrl}
                               />
                             </FormControl>
                             <FormMessage />

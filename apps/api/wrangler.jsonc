@@ -46,10 +46,12 @@
     {
       "binding": "PUBLIC_BUCKET",
       "bucket_name": "guilders-bucket",
+      "remote": true,
     },
     {
       "binding": "USER_BUCKET",
       "bucket_name": "guilders-user-bucket",
+      "remote": true,
     },
   ],
 }

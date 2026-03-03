@@ -19,6 +19,7 @@ import { balanceSnapshot } from "./balance-snapshots";
 import { category } from "./categories";
 import { country } from "./countries";
 import { currency } from "./currencies";
+import { document } from "./documents";
 import { institutionConnection } from "./institution-connections";
 import { institution } from "./institutions";
 import { providerConnection } from "./provider-connections";
@@ -43,6 +44,7 @@ const schema = {
   balanceSnapshot,
   country,
   currency,
+  document,
   institutionConnection,
   institution,
   providerConnection,
@@ -97,6 +99,10 @@ export const relations = defineRelations(schema, (r) => ({
     subscriptions: r.many.subscription({
       from: r.user.id,
       to: r.subscription.referenceId,
+    }),
+    documents: r.many.document({
+      from: r.user.id,
+      to: r.document.user_id,
     }),
   },
   subscription: {
@@ -334,6 +340,12 @@ export const relations = defineRelations(schema, (r) => ({
     institutions: r.many.institution({
       from: r.provider.id,
       to: r.institution.provider_id,
+    }),
+  },
+  document: {
+    user: r.one.user({
+      from: r.document.user_id,
+      to: r.user.id,
     }),
   },
   country: {
