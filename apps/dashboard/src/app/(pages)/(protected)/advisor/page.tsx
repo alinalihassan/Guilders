@@ -2,7 +2,7 @@
 
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
-import { ArrowUp, Check, CopyIcon, RefreshCcw, Sparkles, Square } from "lucide-react";
+import { ArrowUp, Check, CopyIcon, Loader2, RefreshCcw, Sparkles, Square } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -181,9 +181,10 @@ export default function AdvisorPage() {
               return (
                 <div
                   key={key}
-                  className="rounded-xl border border-dashed px-3 py-2 text-sm text-muted-foreground"
+                  className="flex items-center gap-2 rounded-xl border border-dashed px-3 py-2 text-sm text-muted-foreground"
                 >
-                  Preparing stock card...
+                  <Loader2 className="size-4 shrink-0 animate-spin" aria-hidden />
+                  <span>Preparing stock card...</span>
                 </div>
               );
             }
@@ -247,7 +248,11 @@ export default function AdvisorPage() {
   };
 
   if (isLoading) {
-    return <div className="flex h-[calc(100vh-4rem)] items-center justify-center">Loading...</div>;
+    return (
+      <div className="flex h-[calc(100vh-4rem)] items-center justify-center">
+        <Loader2 className="size-8 animate-spin text-muted-foreground" aria-label="Loading" />
+      </div>
+    );
   }
 
   return (
@@ -351,8 +356,9 @@ export default function AdvisorPage() {
                   <div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border bg-background text-xs">
                     ✦
                   </div>
-                  <div className="rounded-2xl border bg-background px-4 py-3 text-sm text-muted-foreground">
-                    Thinking...
+                  <div className="flex items-center gap-2 rounded-2xl border bg-background px-4 py-3 text-sm text-muted-foreground">
+                    <Loader2 className="size-4 shrink-0 animate-spin" aria-hidden />
+                    <span>Thinking...</span>
                   </div>
                 </div>
               ) : null}
