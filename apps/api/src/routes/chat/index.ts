@@ -3,6 +3,7 @@ import {
   createIdGenerator,
   createUIMessageStream,
   createUIMessageStreamResponse,
+  generateText,
   stepCountIs,
   streamText,
   type UIMessage,
@@ -114,6 +115,7 @@ export const chatRoutes = new Elysia({
 
         if (persistenceMode) {
           const chatId = body.id!;
+          const isFirstExchange = inputMessages.length === 1;
           result.consumeStream();
 
           return result.toUIMessageStreamResponse({
@@ -128,6 +130,33 @@ export const chatRoutes = new Elysia({
                   .where(
                     and(eq(conversation.id, chatId), eq(conversation.user_id, user.id)),
                   );
+
+                if (isFirstExchange) {
+                  const userText = inputMessages
+                    .filter((m) => m.role === "user")
+                    .map((m) =>
+                      m.parts
+                        .filter((p): p is { type: "text"; text: string } => p.type === "text")
+                        .map((p) => p.text)
+                        .join(""),
+                    )
+                    .join(" ")
+                    .slice(0, 500);
+
+                  const { text: title } = await generateText({
+                    model: aiGateway(unified("google-ai-studio/gemini-2.5-flash")),
+                    prompt: `Generate a short title (max 6 words, no quotes, no punctuation at the end) for a conversation that starts with:\n"${userText}"`,
+                  });
+
+                  if (title.trim()) {
+                    await db
+                      .update(conversation)
+                      .set({ title: title.trim().slice(0, 200) })
+                      .where(
+                        and(eq(conversation.id, chatId), eq(conversation.user_id, user.id)),
+                      );
+                  }
+                }
               } catch (err) {
                 console.error("Failed to save conversation:", err);
               }

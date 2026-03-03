@@ -21,8 +21,10 @@ import { Markdown } from "@/components/common/markdown-component";
 import { StockCard } from "@/components/generative-ui/stock-card";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { api } from "@/lib/api";
 import { env } from "@/lib/env";
 import { useUser, useUserToken } from "@/lib/queries/useUser";
+import { useStore } from "@/lib/store";
 import { cn, isPro } from "@/lib/utils";
 
 const CHAT_AI_ICONS = [
@@ -120,6 +122,8 @@ export function AdvisorChat({ chatId, initialMessages }: AdvisorChatProps) {
 
   const isGenerating = status === "submitted" || status === "streaming";
   const messagesRef = useRef<HTMLDivElement>(null);
+  const setSessionTitle = useStore((state) => state.setSessionTitle);
+  const titleRefreshed = useRef(false);
 
   useEffect(() => {
     if (!messages.length) return;
@@ -127,6 +131,25 @@ export function AdvisorChat({ chatId, initialMessages }: AdvisorChatProps) {
       messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
     }
   }, [messages]);
+
+  useEffect(() => {
+    if (titleRefreshed.current || !chatId || status !== "ready") return;
+    const hasAssistant = messages.some((m) => m.role === "assistant");
+    if (!hasAssistant) return;
+
+    titleRefreshed.current = true;
+    void (async () => {
+      try {
+        const { data } = await api.conversation({ id: chatId }).get();
+        const conv = data as { title?: string } | null;
+        if (conv?.title && conv.title !== "New chat") {
+          setSessionTitle(conv.title);
+        }
+      } catch {
+        // ignore
+      }
+    })();
+  }, [chatId, status, messages, setSessionTitle]);
 
   const sendUserMessage = async (text: string) => {
     const trimmedText = text.trim();
