@@ -263,15 +263,21 @@ async function handleSnapTradeAccountRemoved(
   if (!payload.accountId) return;
   const db = createDb();
 
-  const existing = await db.query.account.findFirst({
-    where: { provider_account_id: payload.accountId },
+  const existing = await db.query.account.findMany({
+    where: {
+      provider_account_id: payload.accountId,
+      user_id: payload.userId,
+    },
     columns: { id: true, user_id: true },
   });
-  if (existing) {
-    await cleanupAccountDocuments(db, existing.user_id, existing.id);
-  }
 
-  await db.delete(account).where(eq(account.provider_account_id, payload.accountId));
+  await Promise.all(existing.map((acc) => cleanupAccountDocuments(db, acc.user_id, acc.id)));
+
+  await db
+    .delete(account)
+    .where(
+      and(eq(account.provider_account_id, payload.accountId), eq(account.user_id, payload.userId)),
+    );
 }
 
 async function syncSnapTradeHoldings(
