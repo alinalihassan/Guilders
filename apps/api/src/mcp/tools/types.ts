@@ -10,7 +10,7 @@ export type McpToolContext = {
 export type McpContentBlock =
   | { type: "text"; text: string }
   | { type: "image"; data: string; mimeType: string }
-  | { type: "resource"; resource: { uri: string; mimeType: string; blob: string } };
+  | { type: "resource"; resource: { uri: string; mimeType: string; blob?: string } };
 
 export type McpToolResult = {
   isError?: boolean;

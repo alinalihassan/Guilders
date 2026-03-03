@@ -26,27 +26,21 @@ export async function cleanupEntityDocuments(
 
   if (docs.length === 0) return;
 
-  const results = await Promise.allSettled(
+  const deletionResults = await Promise.allSettled(
     docs.map((doc) => env.USER_BUCKET.delete(doc.path)),
   );
 
-  const successfulIds: number[] = [];
-  results.forEach((result, i) => {
-    const doc = docs[i];
-    if (!doc) return;
-    if (result.status === "fulfilled") {
-      successfulIds.push(doc.id);
-    } else {
-      console.warn("[cleanup-documents] USER_BUCKET.delete failed", {
-        documentId: doc.id,
-        path: doc.path,
-        error: result.reason,
-      });
-    }
-  });
+  const successfulDocIds = docs
+    .filter((_, i) => deletionResults[i]?.status === "fulfilled")
+    .map((d) => d.id);
 
-  if (successfulIds.length > 0) {
-    await db.delete(document).where(inArray(document.id, successfulIds));
+  if (successfulDocIds.length > 0) {
+    await db.delete(document).where(inArray(document.id, successfulDocIds));
+  }
+
+  const failedCount = deletionResults.filter((r) => r.status === "rejected").length;
+  if (failedCount > 0) {
+    throw new Error(`Failed to delete ${failedCount} document file(s) from storage`);
   }
 }
 

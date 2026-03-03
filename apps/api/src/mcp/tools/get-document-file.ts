@@ -10,6 +10,9 @@ type GetDocumentFileInput = {
   id: number;
 };
 
+/** Max bytes to buffer in memory (arrayBuffer/toBase64). Larger files return resource without blob. */
+const MAX_IN_MEMORY_BYTES = 5 * 1024 * 1024; // 5 MiB (tunable)
+
 const IMAGE_MIME_TYPES = new Set([
   "image/jpeg",
   "image/png",
@@ -70,6 +73,25 @@ export const getDocumentFileTool: McpToolDefinition<GetDocumentFileInput> = {
           entity_id: doc.entity_id,
         }),
       };
+
+      const sizeBytes = object.size ?? doc.size;
+      if (sizeBytes > MAX_IN_MEMORY_BYTES) {
+        const message = `Document too large to embed (${sizeBytes} bytes > ${MAX_IN_MEMORY_BYTES} limit). Returning resource metadata only.`;
+        console.warn("MCP get_document_file:", message, { documentId: doc.id, sizeBytes });
+        return {
+          content: [
+            metadata,
+            { type: "text", text: message },
+            {
+              type: "resource",
+              resource: {
+                uri: `guilders://document/${doc.id}`,
+                mimeType: doc.type,
+              },
+            },
+          ],
+        };
+      }
 
       const arrayBuffer = await object.arrayBuffer();
       const base64 = toBase64(arrayBuffer);
