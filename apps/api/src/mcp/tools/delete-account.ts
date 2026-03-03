@@ -11,7 +11,8 @@ type DeleteAccountInput = {
 
 export const deleteAccountTool: McpToolDefinition<DeleteAccountInput> = {
   name: "delete_account",
-  description: "Delete an account and all its children",
+  description:
+    "Delete a manual account and all its children. Fails for synced (provider-managed) accounts; only accounts created manually can be deleted.",
   requiredScope: "write",
   inputSchema: {
     id: z.number().int(),
@@ -28,6 +29,20 @@ export const deleteAccountTool: McpToolDefinition<DeleteAccountInput> = {
         return {
           isError: true,
           content: [{ type: "text", text: "Account not found or does not belong to user." }],
+        };
+      }
+
+      const locked = existing.locked_attributes as Record<string, unknown> | null | undefined;
+      const isManual = !locked || Object.keys(locked).length === 0;
+      if (!isManual) {
+        return {
+          isError: true,
+          content: [
+            {
+              type: "text",
+              text: "Cannot delete this account; it is synced with a provider and managed by them. Only manual accounts can be deleted.",
+            },
+          ],
         };
       }
 

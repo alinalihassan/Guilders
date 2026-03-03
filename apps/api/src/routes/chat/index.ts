@@ -2,9 +2,8 @@ import {
   convertToModelMessages,
   createUIMessageStream,
   createUIMessageStreamResponse,
+  stepCountIs,
   streamText,
-  jsonSchema,
-  tool,
   type UIMessage,
 } from "ai";
 import { createAiGateway } from "ai-gateway-provider";
@@ -13,53 +12,28 @@ import { Elysia, status, t } from "elysia";
 
 import { authPlugin } from "../../middleware/auth";
 import { errorSchema } from "../../utils/error";
-import { chatRequestSchema } from "./types";
-import { getFinancialContext } from "./utils";
+import {
+  showStockCard,
+  GENERATIVE_UI_TOOLS_OVERVIEW,
+} from "./generative-ui-tools";
+import { buildChatTools, getMcpToolsOverview } from "./mcp-tools";
+import { chatRequestSchema, FINANCIAL_ADVISOR_PROMPT } from "./types";
 
-const STOCK_CARD_TOOL_RULES = `You can render a stock card by calling the tool "showStockCard".
+function buildSystemContent(today: string): string {
+  const mcpSection = getMcpToolsOverview();
+  const uiSection = GENERATIVE_UI_TOOLS_OVERVIEW.map(
+    (ui) => `- **${ui.name}**: ${ui.description}`,
+  ).join("\n");
+  return `${FINANCIAL_ADVISOR_PROMPT}
 
-Always respond with a concise text explanation first. Then, if the user asks about a single stock account/asset, call "showStockCard" exactly once.
+## Available tools (data and actions)
+${mcpSection}
 
-The tool input must be:
-- accountId: number
-- subtype: string | null
-- image: string | null
-- symbol: string
-- accountName: string
-- currency: string
-- value: number
-- cost: number | null
-- currentValue: string | null
-- totalChange: string | null
+## UI tools (display in chat)
+${uiSection}
 
-Use values from provided financial JSON context only. Do not invent data.
-Do not call the tool for non-stock requests.`;
-
-// For future "buy stock" / "sell stock" actions, add a mutating tool with `needsApproval: true`
-// so execution only continues after explicit user confirmation in the chat UI.
-
-const showStockCard = tool({
-  description:
-    "Render a stock account summary card in the UI when the user asks about a single stock account/asset.",
-  inputSchema: jsonSchema({
-    type: "object",
-    properties: {
-      accountId: { type: "number" },
-      subtype: { type: ["string", "null"] },
-      image: { type: ["string", "null"] },
-      symbol: { type: "string" },
-      accountName: { type: "string" },
-      currency: { type: "string" },
-      value: { type: "number" },
-      cost: { type: ["number", "null"] },
-      currentValue: { type: ["string", "null"] },
-      totalChange: { type: ["string", "null"] },
-    },
-    required: ["accountId", "symbol", "accountName", "currency", "value"],
-    additionalProperties: false,
-  }),
-  execute: async (input) => input,
-});
+Current date (use when the user says "today", "now", or similar): ${today}.`;
+}
 
 export const chatRoutes = new Elysia({
   prefix: "/chat",
@@ -72,7 +46,7 @@ export const chatRoutes = new Elysia({
   .use(authPlugin)
   .post(
     "/",
-    async ({ body, user, db }) => {
+    async ({ body, user }) => {
       try {
         const inputMessages = Array.isArray(body.messages)
           ? body.messages
@@ -86,19 +60,10 @@ export const chatRoutes = new Elysia({
           });
         }
 
-        // Get financial context: standalone prompt + user data as JSON
-        const { prompt, data } = await getFinancialContext(user.id, db);
+        const chatTools = buildChatTools(user.id);
+        const today = new Date().toISOString().slice(0, 10);
+        const systemContent = buildSystemContent(today);
 
-        const systemContent = [
-          prompt,
-          "",
-          "User's financial data (JSON):",
-          JSON.stringify(data, null, 2),
-          "",
-          STOCK_CARD_TOOL_RULES,
-        ].join("\n");
-
-        // Convert UIMessages to ModelMessages (AI SDK handles text, tools, files, etc.)
         const modelMessages = [
           {
             role: "system" as const,
@@ -113,17 +78,16 @@ export const chatRoutes = new Elysia({
           apiKey: process.env.CLOUDFLARE_AI_GATEWAY_TOKEN,
         });
 
-        // Stream the response using AI Gateway
         const result = streamText({
           model: aiGateway(unified("google-ai-studio/gemini-2.5-flash")),
           messages: modelMessages,
           tools: {
+            ...chatTools,
             showStockCard,
           },
-          experimental_activeTools: ["showStockCard"],
+          stopWhen: stepCountIs(10),
         });
 
-        // Stream tool and text parts directly to the UI.
         const stream = createUIMessageStream({
           execute: async ({ writer }) => {
             writer.merge(result.toUIMessageStream());
@@ -148,7 +112,7 @@ export const chatRoutes = new Elysia({
       auth: true,
       body: chatRequestSchema,
       response: {
-        200: t.Any(), // Streaming response
+        200: t.Any(),
         400: errorSchema,
         401: errorSchema,
         500: errorSchema,

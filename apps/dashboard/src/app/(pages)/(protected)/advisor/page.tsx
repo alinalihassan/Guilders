@@ -4,7 +4,7 @@ import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
 import { ArrowUp, Check, CopyIcon, RefreshCcw, Sparkles, Square } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { Markdown } from "@/components/common/markdown-component";
@@ -68,6 +68,12 @@ const isStockCardToolOutput = (value: unknown): value is StockCardToolOutput => 
   );
 };
 
+type ToolPart = {
+  type: string;
+  state?: string;
+  output?: unknown;
+};
+
 export default function AdvisorPage() {
   const router = useRouter();
   const { data: user, isLoading } = useUser();
@@ -75,12 +81,18 @@ export default function AdvisorPage() {
   const isSubscribed = isPro(user);
   const [inputText, setInputText] = useState("");
 
-  const transport = useMemo(
+  const tokenRef = useRef(token);
+  tokenRef.current = token;
+
+  const [transport] = useState(
     () =>
       new DefaultChatTransport({
         api: `${env.NEXT_PUBLIC_API_URL}/api/chat`,
+        headers: (): Record<string, string> => {
+          const t = tokenRef.current;
+          return t ? { Authorization: `Bearer ${t}` } : {};
+        },
       }),
-    [],
   );
 
   const { messages, sendMessage, regenerate, stop, status } = useChat({
@@ -110,7 +122,7 @@ export default function AdvisorPage() {
     }
 
     setInputText("");
-    await sendMessage({ text: trimmedText }, { headers: { Authorization: `Bearer ${token}` } });
+    await sendMessage({ text: trimmedText });
   };
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -136,8 +148,8 @@ export default function AdvisorPage() {
     if (!isGenerating) return false;
     if (index !== messages.length - 1) return false;
     const hasText = getMessageText(message).trim().length > 0;
-    const hasStockCardPart = message.parts.some((part) => part.type === "tool-showStockCard");
-    return !hasText && !hasStockCardPart;
+    const hasStockCard = message.parts.some((part) => part.type === "tool-showStockCard");
+    return !hasText && !hasStockCard;
   };
 
   const hasMessages = messages.length > 0;
@@ -150,24 +162,21 @@ export default function AdvisorPage() {
     loading: boolean;
   }) => {
     const text = getMessageText(message);
+    const toolParts = message.parts.filter((part) =>
+      part.type.startsWith("tool-"),
+    ) as ToolPart[];
 
     return (
       <div className="space-y-3">
         {text.trim().length > 0 ? <Markdown className="text-sm leading-6">{text}</Markdown> : null}
-        {message.parts
-          .filter((part) => part.type === "tool-showStockCard")
-          .map((part, index) => {
-            const toolPart = part as {
-              toolCallId?: string;
-              state?: string;
-              output?: unknown;
-            };
-            const key = toolPart.toolCallId ?? `stock-card-${index}`;
+        {toolParts.map((part, index) => {
+          const tp = part as ToolPart;
+          const key = `tool-${part.type}-${index}`;
 
-            if (toolPart.state === "output-available" && isStockCardToolOutput(toolPart.output)) {
-              return <StockCard key={key} {...toolPart.output} />;
+          if (part.type === "tool-showStockCard") {
+            if (tp.state === "output-available" && isStockCardToolOutput(tp.output)) {
+              return <StockCard key={key} {...tp.output} />;
             }
-
             if (loading) {
               return (
                 <div
@@ -178,9 +187,11 @@ export default function AdvisorPage() {
                 </div>
               );
             }
-
             return null;
-          })}
+          }
+
+          return null;
+        })}
       </div>
     );
   };
@@ -222,7 +233,7 @@ export default function AdvisorPage() {
         return;
       }
       try {
-        await regenerate({ headers: { Authorization: `Bearer ${token}` } });
+        await regenerate();
       } catch {
         toast.error("Couldn't regenerate the response. Please try again.");
       }
