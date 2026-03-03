@@ -92,10 +92,11 @@ export function EditAccountDialog() {
   const { mutateAsync: reconnectConnection, isPending: isReconnecting } = useReconnectConnection();
   const { mutate: deleteAccount, isPending: isDeleting } = useRemoveAccount();
 
-  const { uploadFile, deleteFile, getFileUrl, isUploading } = useFiles({
-    entityType: "account",
-    entityId: data?.account?.id ?? 0,
-  });
+  const { documents, isLoadingDocuments, uploadFile, deleteFile, getFileUrl, isUploading } =
+    useFiles({
+      entityType: "account",
+      entityId: data?.account?.id ?? 0,
+    });
 
   const form = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
@@ -465,13 +466,10 @@ export function EditAccountDialog() {
                                 }}
                                 onUpload={uploadFile}
                                 disabled={isUploading}
-                                documents={data?.account?.documents?.map((id) => ({
-                                  id: Number(id),
-                                  name: `Document ${id}`,
-                                  path: "",
-                                }))}
+                                documents={documents}
+                                isLoadingDocuments={isLoadingDocuments}
                                 onRemoveExisting={deleteFile}
-                                onView={getFileUrl}
+                                getFileUrl={getFileUrl}
                               />
                             </FormControl>
                             <FormMessage />

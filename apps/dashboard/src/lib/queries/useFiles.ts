@@ -1,5 +1,5 @@
 import type { CreateDocumentResponse, DocumentEntityType } from "@guilders/api/types";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { api, edenError } from "@/lib/api";
 import { env } from "@/lib/env";
@@ -12,6 +12,21 @@ interface UseFilesOptions {
 
 export function useFiles({ entityType, entityId, onSuccess }: UseFilesOptions) {
   const queryClient = useQueryClient();
+
+  const queryKey = ["documents", entityType, entityId];
+
+  const { data: documents = [], isLoading: isLoadingDocuments } = useQuery({
+    queryKey,
+    queryFn: async () => {
+      if (!entityId) return [];
+      const { data, error } = await api.document.get({
+        query: { entity_type: entityType, entity_id: entityId },
+      });
+      if (error) throw new Error(edenError(error));
+      return (data ?? []) as CreateDocumentResponse[];
+    },
+    enabled: entityId > 0,
+  });
 
   const { mutateAsync: uploadFile, isPending: isUploading } = useMutation({
     mutationFn: async (files: File[]) => {
@@ -31,7 +46,7 @@ export function useFiles({ entityType, entityId, onSuccess }: UseFilesOptions) {
       return uploadedFiles;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [entityType, entityId] });
+      queryClient.invalidateQueries({ queryKey });
     },
     onError: (error) => {
       console.error("Error uploading file", error);
@@ -44,7 +59,7 @@ export function useFiles({ entityType, entityId, onSuccess }: UseFilesOptions) {
       if (error) throw new Error(edenError(error));
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [entityType, entityId] });
+      queryClient.invalidateQueries({ queryKey });
     },
   });
 
@@ -53,6 +68,8 @@ export function useFiles({ entityType, entityId, onSuccess }: UseFilesOptions) {
   }
 
   return {
+    documents,
+    isLoadingDocuments,
     uploadFile,
     deleteFile,
     getFileUrl,

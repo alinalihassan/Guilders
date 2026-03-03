@@ -1,16 +1,23 @@
 "use client";
 
 import type { CreateDocumentResponse } from "@guilders/api/types";
-import { FileText, Image, Loader2, Upload, X } from "lucide-react";
+import { FileText, Loader2, Upload, X } from "lucide-react";
 import * as React from "react";
 import { useState } from "react";
 import Dropzone, { type DropEvent, type DropzoneProps, type FileRejection } from "react-dropzone";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { useControllableState } from "@/hooks/useControllableState";
 import { cn, formatBytes } from "@/lib/utils";
+
+export interface DocumentRecord {
+  id: number;
+  name: string;
+  type: string;
+  size: number;
+  path: string;
+}
 
 interface FileUploaderProps extends React.HTMLAttributes<HTMLDivElement> {
   value?: File[];
@@ -21,9 +28,10 @@ interface FileUploaderProps extends React.HTMLAttributes<HTMLDivElement> {
   maxFileCount?: number;
   multiple?: boolean;
   disabled?: boolean;
-  documents?: Array<{ id: number; name: string; path: string }>;
+  documents?: DocumentRecord[];
+  isLoadingDocuments?: boolean;
   onRemoveExisting?: (id: number) => Promise<void>;
-  onView?: (id: number) => string;
+  getFileUrl?: (id: number) => string;
 }
 
 const DEFAULT_ACCEPT: DropzoneProps["accept"] = {
@@ -34,7 +42,7 @@ const DEFAULT_ACCEPT: DropzoneProps["accept"] = {
   "application/pdf": [],
 };
 
-const MAX_SIZE = 10 * 1024 * 1024; // 10MB
+const MAX_SIZE = 10 * 1024 * 1024;
 
 export function FileUploader({
   value: valueProp,
@@ -46,8 +54,9 @@ export function FileUploader({
   multiple = true,
   disabled = false,
   documents = [],
+  isLoadingDocuments = false,
   onRemoveExisting,
-  onView,
+  getFileUrl,
   className,
   ...dropzoneProps
 }: FileUploaderProps) {
@@ -138,9 +147,36 @@ export function FileUploader({
   };
 
   const isDisabled = disabled || (files?.length ?? 0) + documents.length >= maxFileCount;
+  const hasItems = (files?.length ?? 0) > 0 || documents.length > 0 || isLoadingDocuments;
 
   return (
     <div className="relative flex flex-col gap-4 overflow-hidden">
+      {hasItems && (
+        <div className="grid grid-cols-3 gap-2">
+          {documents.map((doc) => (
+            <ExistingDocumentTile
+              key={doc.id}
+              document={doc}
+              fileUrl={getFileUrl?.(doc.id)}
+              onRemove={() => handleRemoveExisting(doc.id)}
+            />
+          ))}
+          {files?.map((file, index) => (
+            <UploadingFileTile
+              key={file.name}
+              file={file}
+              isUploading={uploadingFiles.has(file.name)}
+              onRemove={() => onRemove(index)}
+            />
+          ))}
+          {isLoadingDocuments && documents.length === 0 && (
+            <div className="col-span-3 flex items-center justify-center py-4">
+              <Loader2 className="size-5 animate-spin text-muted-foreground" />
+            </div>
+          )}
+        </div>
+      )}
+
       <Dropzone
         // @ts-ignore
         onDrop={onDrop}
@@ -155,41 +191,19 @@ export function FileUploader({
           <div
             {...getRootProps()}
             className={cn(
-              "group relative grid h-40 w-full cursor-pointer place-items-center rounded-lg border-2 border-dashed border-muted-foreground/25 px-5 py-2.5 text-center transition hover:bg-muted/25",
+              "group relative grid w-full cursor-pointer place-items-center rounded-lg border-2 border-dashed border-muted-foreground/25 px-5 py-6 text-center transition hover:bg-muted/25",
               "ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
               isDragActive && "border-primary/50 bg-primary/5",
               isDisabled && "pointer-events-none opacity-60",
+              hasItems && "py-4",
               className,
             )}
           >
             <input {...getInputProps()} />
-            <DropzoneContent isDragActive={isDragActive} maxSize={maxSize} />
+            <DropzoneContent isDragActive={isDragActive} maxSize={maxSize} compact={hasItems} />
           </div>
         )}
       </Dropzone>
-
-      {((files?.length ?? 0) > 0 || documents.length > 0) && (
-        <ScrollArea className="h-fit w-full">
-          <div className="flex max-h-48 flex-col gap-2">
-            {documents.map((doc) => (
-              <ExistingFileCard
-                key={doc.id}
-                document={doc}
-                onRemove={() => handleRemoveExisting(doc.id)}
-                onView={onView ? () => onView(doc.id) : undefined}
-              />
-            ))}
-            {files?.map((file, index) => (
-              <NewFileCard
-                key={file.name}
-                file={file}
-                onRemove={() => onRemove(index)}
-                isUploading={uploadingFiles.has(file.name)}
-              />
-            ))}
-          </div>
-        </ScrollArea>
-      )}
     </div>
   );
 }
@@ -197,23 +211,34 @@ export function FileUploader({
 function DropzoneContent({
   isDragActive,
   maxSize,
+  compact,
 }: {
   isDragActive: boolean;
   maxSize: number;
+  compact: boolean;
 }) {
   if (isDragActive) {
     return (
-      <div className="flex flex-col items-center justify-center gap-2 sm:px-5">
-        <div className="rounded-full border border-dashed border-primary/50 p-3">
-          <Upload className="size-6 text-primary" aria-hidden="true" />
+      <div className="flex flex-col items-center justify-center gap-2">
+        <div className="rounded-full border border-dashed border-primary/50 p-2">
+          <Upload className="size-5 text-primary" aria-hidden="true" />
         </div>
         <p className="text-sm font-medium text-primary">Drop files here</p>
       </div>
     );
   }
 
+  if (compact) {
+    return (
+      <div className="flex items-center gap-2">
+        <Upload className="size-4 text-muted-foreground" aria-hidden="true" />
+        <p className="text-sm text-muted-foreground">Add more files</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex flex-col items-center justify-center gap-2 sm:px-5">
+    <div className="flex flex-col items-center justify-center gap-2">
       <div className="rounded-full border border-dashed p-3">
         <Upload className="size-6 text-muted-foreground" aria-hidden="true" />
       </div>
@@ -229,137 +254,131 @@ function DropzoneContent({
   );
 }
 
-function FileTypeIcon({ type, className }: { type: string; className?: string }) {
-  if (type.startsWith("image/")) {
-    return <Image className={cn("text-blue-500", className)} />;
-  }
-  if (type === "application/pdf") {
-    return <FileText className={cn("text-red-500", className)} />;
-  }
-  return <FileText className={cn("text-muted-foreground", className)} />;
-}
-
-function FilePreview({ file }: { file: File & { preview?: string } }) {
-  if (file.type.startsWith("image/") && file.preview) {
-    return (
-      // oxlint-disable-next-line nextjs/no-img-element
-      <img
-        src={file.preview}
-        alt={file.name}
-        className="size-10 rounded-md border object-cover"
-        onLoad={() => URL.revokeObjectURL(file.preview!)}
-      />
-    );
-  }
-
-  return (
-    <div className="flex size-10 items-center justify-center rounded-md border bg-muted">
-      <FileTypeIcon type={file.type} className="size-5" />
-    </div>
-  );
-}
-
-interface ExistingFileCardProps {
-  document: { id: number; name: string; path: string };
+interface ExistingDocumentTileProps {
+  document: DocumentRecord;
+  fileUrl?: string;
   onRemove: () => void;
-  onView?: () => string;
 }
 
-function ExistingFileCard({ document, onRemove, onView }: ExistingFileCardProps) {
+function ExistingDocumentTile({ document, fileUrl, onRemove }: ExistingDocumentTileProps) {
   const [isRemoving, setIsRemoving] = useState(false);
+  const isImage = document.type.startsWith("image/");
 
   const handleView = () => {
-    if (!onView) return;
-    const url = onView();
-    window.open(url, "_blank");
+    if (fileUrl) window.open(fileUrl, "_blank");
   };
 
-  const handleRemove = async () => {
+  const handleRemove = async (e: React.MouseEvent) => {
+    e.stopPropagation();
     setIsRemoving(true);
     try {
       await onRemove();
     } catch {
-      // toast handled by parent
+      // handled by parent
     } finally {
       setIsRemoving(false);
     }
   };
 
-  const isPdf =
-    document.name.toLowerCase().endsWith(".pdf") ||
-    document.path.toLowerCase().endsWith(".pdf");
-
   return (
-    <div className="flex items-center gap-3 rounded-md border p-2">
-      <div className="flex size-10 items-center justify-center rounded-md bg-muted">
-        {isPdf ? (
-          <FileText className="size-5 text-red-500" />
+    <div
+      className="group relative flex cursor-pointer flex-col overflow-hidden rounded-lg border bg-muted/30 transition hover:border-foreground/20"
+      onClick={handleView}
+    >
+      <div className="relative aspect-square w-full overflow-hidden">
+        {isImage && fileUrl ? (
+          // oxlint-disable-next-line nextjs/no-img-element
+          <img
+            src={fileUrl}
+            alt={document.name}
+            className="size-full object-cover"
+          />
         ) : (
-          <Image className="size-5 text-blue-500" />
+          <div className="flex size-full items-center justify-center bg-muted">
+            <FileText className="size-10 text-red-500/70" />
+          </div>
         )}
-      </div>
-      <div className="flex-1 truncate">
-        <p className="truncate text-sm font-medium">{document.name}</p>
-      </div>
-      <div className="flex shrink-0 items-center gap-1">
-        {onView && (
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="h-7 px-2 text-xs"
-            onClick={handleView}
-          >
-            View
-          </Button>
-        )}
+
         <Button
           type="button"
-          variant="ghost"
+          variant="secondary"
           size="icon"
-          className="size-7"
+          className="absolute right-1 top-1 size-6 opacity-0 shadow-sm transition group-hover:opacity-100"
           onClick={handleRemove}
           disabled={isRemoving}
         >
-          {isRemoving ? <Loader2 className="size-3.5 animate-spin" /> : <X className="size-3.5" />}
-          <span className="sr-only">Remove file</span>
+          {isRemoving ? (
+            <Loader2 className="size-3 animate-spin" />
+          ) : (
+            <X className="size-3" />
+          )}
         </Button>
+      </div>
+
+      <div className="px-2 py-1.5">
+        <p className="truncate text-xs font-medium">{document.name}</p>
+        <p className="text-[10px] text-muted-foreground">{formatBytes(document.size)}</p>
       </div>
     </div>
   );
 }
 
-interface NewFileCardProps {
+interface UploadingFileTileProps {
   file: File & { preview?: string };
+  isUploading: boolean;
   onRemove: () => void;
-  isUploading?: boolean;
 }
 
-function NewFileCard({ file, onRemove, isUploading }: NewFileCardProps) {
+function UploadingFileTile({ file, isUploading, onRemove }: UploadingFileTileProps) {
+  const isImage = file.type.startsWith("image/");
+
+  const handleRemove = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onRemove();
+  };
+
   return (
-    <div className="flex items-center gap-3 rounded-md border p-2">
-      <FilePreview file={file} />
-      <div className="flex min-w-0 flex-1 flex-col">
-        <p className="truncate text-sm font-medium">{file.name}</p>
-        <p className="text-xs text-muted-foreground">{formatBytes(file.size)}</p>
-      </div>
-      <div className="flex shrink-0 items-center">
-        {isUploading ? (
-          <div className="grid size-7 place-items-center">
-            <Loader2 className="size-3.5 animate-spin text-muted-foreground" />
-          </div>
+    <div className="group relative flex flex-col overflow-hidden rounded-lg border bg-muted/30">
+      <div className="relative aspect-square w-full overflow-hidden">
+        {isImage && file.preview ? (
+          // oxlint-disable-next-line nextjs/no-img-element
+          <img
+            src={file.preview}
+            alt={file.name}
+            className={cn("size-full object-cover", isUploading && "opacity-50")}
+            onLoad={() => URL.revokeObjectURL(file.preview!)}
+          />
         ) : (
+          <div className={cn(
+            "flex size-full items-center justify-center bg-muted",
+            isUploading && "opacity-50",
+          )}>
+            <FileText className="size-10 text-red-500/70" />
+          </div>
+        )}
+
+        {isUploading && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <Loader2 className="size-6 animate-spin text-foreground" />
+          </div>
+        )}
+
+        {!isUploading && (
           <Button
             type="button"
-            variant="ghost"
+            variant="secondary"
             size="icon"
-            className="size-7"
-            onClick={onRemove}
+            className="absolute right-1 top-1 size-6 opacity-0 shadow-sm transition group-hover:opacity-100"
+            onClick={handleRemove}
           >
-            <X className="size-3.5" />
-            <span className="sr-only">Remove file</span>
+            <X className="size-3" />
           </Button>
         )}
+      </div>
+
+      <div className="px-2 py-1.5">
+        <p className="truncate text-xs font-medium">{file.name}</p>
+        <p className="text-[10px] text-muted-foreground">{formatBytes(file.size)}</p>
       </div>
     </div>
   );
