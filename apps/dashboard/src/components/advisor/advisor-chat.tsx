@@ -292,7 +292,11 @@ export function AdvisorChat({ chatId, initialMessages }: AdvisorChatProps) {
       const message = messages[messageIndex];
       if (message && message.role === "assistant") {
         const content = getMessageText(message);
-        navigator.clipboard.writeText(content);
+        try {
+          await navigator.clipboard.writeText(content);
+        } catch {
+          toast.error("Couldn't copy the response. Please try again.");
+        }
       }
     }
   };
