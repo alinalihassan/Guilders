@@ -1,4 +1,5 @@
 import {
+  consumeStream,
   convertToModelMessages,
   createIdGenerator,
   createUIMessageStream,
@@ -141,6 +142,7 @@ export const chatRoutes = new Elysia({
           return result.toUIMessageStreamResponse({
             originalMessages: inputMessages,
             generateMessageId,
+            consumeSseStream: consumeStream,
             onFinish: async ({ messages }) => {
               try {
                 const db = createDb();
