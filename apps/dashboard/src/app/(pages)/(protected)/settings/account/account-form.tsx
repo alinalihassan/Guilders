@@ -185,7 +185,7 @@ export function AccountForm() {
         </AlertDialogTrigger>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
               This action cannot be undone. This will:
             </AlertDialogDescription>
@@ -204,7 +204,7 @@ export function AccountForm() {
                 handleDeleteAccount();
               }}
               disabled={isDeletingAccount}
-              className="bg-destructive hover:bg-destructive/90"
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               {isDeletingAccount ? (
                 <>
