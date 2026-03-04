@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm";
 import * as z from "zod/v4";
 
 import { account } from "../../db/schema/accounts";
+import { cleanupAccountDocuments } from "../../lib/cleanup-documents";
 import { createDb } from "../../lib/db";
 import { makeTextPayload, type McpToolDefinition } from "./types";
 
@@ -11,7 +12,8 @@ type DeleteAccountInput = {
 
 export const deleteAccountTool: McpToolDefinition<DeleteAccountInput> = {
   name: "delete_account",
-  description: "Delete an account and all its children",
+  description:
+    "Delete a manual account and all its children. Fails for synced (provider-managed) accounts; only accounts created manually can be deleted.",
   requiredScope: "write",
   inputSchema: {
     id: z.number().int(),
@@ -31,6 +33,21 @@ export const deleteAccountTool: McpToolDefinition<DeleteAccountInput> = {
         };
       }
 
+      const locked = existing.locked_attributes as Record<string, unknown> | null | undefined;
+      const isManual = !locked || Object.keys(locked).length === 0;
+      if (!isManual) {
+        return {
+          isError: true,
+          content: [
+            {
+              type: "text",
+              text: "Cannot delete this account; it is synced with a provider and managed by them. Only manual accounts can be deleted. To remove a synced account, go to Settings → Connections and disconnect from that provider.",
+            },
+          ],
+        };
+      }
+
+      await cleanupAccountDocuments(db, userId, id);
       await db.delete(account).where(eq(account.id, id));
 
       return makeTextPayload({ success: true, deletedAccountId: id });

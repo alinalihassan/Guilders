@@ -3,6 +3,7 @@ import { Elysia, status, t } from "elysia";
 
 import { institutionConnection } from "../../db/schema/institution-connections";
 import { providerConnection } from "../../db/schema/provider-connections";
+import { cleanupInstitutionConnectionDocuments } from "../../lib/cleanup-documents";
 import { syncAccountData } from "../../lib/sync-connection-data";
 import { authPlugin } from "../../middleware/auth";
 import { getProvider } from "../../providers";
@@ -324,6 +325,14 @@ export const connectionsRoutes = new Elysia({
             error: result.error || "Failed to deregister provider user",
           });
         }
+
+        const connectionsToDelete = await db.query.institutionConnection.findMany({
+          where: { provider_connection_id: existing.id },
+        });
+
+        await Promise.all(
+          connectionsToDelete.map((c) => cleanupInstitutionConnectionDocuments(db, c.id)),
+        );
 
         await db
           .delete(institutionConnection)

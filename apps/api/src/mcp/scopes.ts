@@ -17,6 +17,7 @@ export const MCP_SCOPE_INFO: Record<McpScope, McpScopeInfo> = {
     description: "View your financial data",
     capabilities: [
       "View your accounts, transactions, and categories",
+      "View your documents and file attachments",
       "View net worth and balance history",
       "View exchange rates and available institutions",
     ],

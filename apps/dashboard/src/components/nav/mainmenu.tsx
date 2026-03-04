@@ -17,49 +17,60 @@ interface NavItemProps {
   pathname: string;
 }
 
-const NavItem = ({ item, pathname }: NavItemProps) => (
-  <li>
-    <Tooltip>
-      <TooltipTrigger asChild>
-        {item.href ? (
-          <Link
-            href={item.href}
-            className={cn(
-              "flex items-center justify-center rounded-md text-sm transition-colors relative",
-              "hover:text-accent-foreground",
-              "group",
-              pathname === item.href
-                ? [
-                    "text-accent-foreground font-medium",
-                    "after:absolute after:inset-0 after:bg-foreground/5 after:rounded-md",
-                  ]
-                : "after:absolute after:inset-0 after:bg-foreground/0 after:rounded-md after:transition-colors hover:after:bg-foreground/5",
-              "h-10 w-10",
-            )}
-          >
-            <item.icon className="relative z-10 h-5 w-5" />
-            <span className="sr-only">{item.name}</span>
-          </Link>
-        ) : (
-          <button
-            type="button"
-            onClick={item.onClick}
-            className={cn(
-              "flex items-center justify-center rounded-md text-sm transition-colors relative",
-              "hover:text-accent-foreground",
-              "after:absolute after:inset-0 after:bg-foreground/0 after:rounded-md after:transition-colors hover:after:bg-foreground/5",
-              "h-11 w-11",
-            )}
-          >
-            <item.icon className="relative z-10 h-5 w-5" />
-            <span className="sr-only">{item.name}</span>
-          </button>
-        )}
-      </TooltipTrigger>
-      <TooltipContent side="right">{item.name}</TooltipContent>
-    </Tooltip>
-  </li>
-);
+const NavItem = ({ item, pathname }: NavItemProps) => {
+  const href = item.href;
+  const isActive = href ? pathname === href : false;
+
+  return (
+    <li>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          {href ? (
+            <Link
+              href={href}
+              className={cn(
+                "flex items-center justify-center rounded-md text-sm transition-colors relative",
+                "hover:text-accent-foreground",
+                "group",
+                isActive
+                  ? [
+                      "text-accent-foreground font-medium",
+                      "after:absolute after:inset-0 after:bg-foreground/5 after:rounded-md",
+                    ]
+                  : "after:absolute after:inset-0 after:bg-foreground/0 after:rounded-md after:transition-colors hover:after:bg-foreground/5",
+                "h-10 w-10",
+              )}
+            >
+              <item.icon className="relative z-10 h-5 w-5" />
+              <span className="sr-only">{item.name}</span>
+            </Link>
+          ) : (
+            <button
+              type="button"
+              onClick={item.onClick}
+              className={cn(
+                "flex items-center justify-center rounded-md text-sm transition-colors relative",
+                "hover:text-accent-foreground",
+                "group",
+                isActive
+                  ? [
+                      "text-accent-foreground font-medium",
+                      "after:absolute after:inset-0 after:bg-foreground/5 after:rounded-md",
+                    ]
+                  : "after:absolute after:inset-0 after:bg-foreground/0 after:rounded-md after:transition-colors hover:after:bg-foreground/5",
+                "h-10 w-10",
+              )}
+            >
+              <item.icon className="relative z-10 h-5 w-5" />
+              <span className="sr-only">{item.name}</span>
+            </button>
+          )}
+        </TooltipTrigger>
+        <TooltipContent side="right">{item.name}</TooltipContent>
+      </Tooltip>
+    </li>
+  );
+};
 
 export function MainMenu() {
   const pathname = usePathname();

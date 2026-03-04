@@ -1,65 +1,44 @@
 import {
+  consumeStream,
   convertToModelMessages,
+  createIdGenerator,
   createUIMessageStream,
   createUIMessageStreamResponse,
+  generateText,
+  stepCountIs,
   streamText,
-  jsonSchema,
-  tool,
   type UIMessage,
 } from "ai";
 import { createAiGateway } from "ai-gateway-provider";
 import { unified } from "ai-gateway-provider/providers/unified";
+import { and, eq } from "drizzle-orm";
 import { Elysia, status, t } from "elysia";
 
+import { conversation } from "../../db/schema/conversations";
+import { createDb } from "../../lib/db";
 import { authPlugin } from "../../middleware/auth";
 import { errorSchema } from "../../utils/error";
-import { chatRequestSchema } from "./types";
-import { getFinancialContext } from "./utils";
+import { showStockCard, GENERATIVE_UI_TOOLS_OVERVIEW } from "./generative-ui-tools";
+import { buildChatTools, getMcpToolsOverview } from "./mcp-tools";
+import { chatRequestSchema, FINANCIAL_ADVISOR_PROMPT } from "./types";
 
-const STOCK_CARD_TOOL_RULES = `You can render a stock card by calling the tool "showStockCard".
+const generateMessageId = createIdGenerator({ prefix: "msg", size: 16 });
 
-Always respond with a concise text explanation first. Then, if the user asks about a single stock account/asset, call "showStockCard" exactly once.
+function buildSystemContent(today: string): string {
+  const mcpSection = getMcpToolsOverview();
+  const uiSection = GENERATIVE_UI_TOOLS_OVERVIEW.map(
+    (ui) => `- **${ui.name}**: ${ui.description}`,
+  ).join("\n");
+  return `${FINANCIAL_ADVISOR_PROMPT}
 
-The tool input must be:
-- accountId: number
-- subtype: string | null
-- image: string | null
-- symbol: string
-- accountName: string
-- currency: string
-- value: number
-- cost: number | null
-- currentValue: string | null
-- totalChange: string | null
+## Available tools (data and actions)
+${mcpSection}
 
-Use values from provided financial JSON context only. Do not invent data.
-Do not call the tool for non-stock requests.`;
+## UI tools (display in chat)
+${uiSection}
 
-// For future "buy stock" / "sell stock" actions, add a mutating tool with `needsApproval: true`
-// so execution only continues after explicit user confirmation in the chat UI.
-
-const showStockCard = tool({
-  description:
-    "Render a stock account summary card in the UI when the user asks about a single stock account/asset.",
-  inputSchema: jsonSchema({
-    type: "object",
-    properties: {
-      accountId: { type: "number" },
-      subtype: { type: ["string", "null"] },
-      image: { type: ["string", "null"] },
-      symbol: { type: "string" },
-      accountName: { type: "string" },
-      currency: { type: "string" },
-      value: { type: "number" },
-      cost: { type: ["number", "null"] },
-      currentValue: { type: ["string", "null"] },
-      totalChange: { type: ["string", "null"] },
-    },
-    required: ["accountId", "symbol", "accountName", "currency", "value"],
-    additionalProperties: false,
-  }),
-  execute: async (input) => input,
-});
+Current date (use when the user says "today", "now", or similar): ${today}.`;
+}
 
 export const chatRoutes = new Elysia({
   prefix: "/chat",
@@ -72,13 +51,29 @@ export const chatRoutes = new Elysia({
   .use(authPlugin)
   .post(
     "/",
-    async ({ body, user, db }) => {
+    async ({ body, user }) => {
       try {
-        const inputMessages = Array.isArray(body.messages)
-          ? body.messages
-          : body.message
-            ? [body.message]
-            : [];
+        const persistenceMode = !!(body.id && body.message);
+        let inputMessages: UIMessage[];
+
+        if (persistenceMode) {
+          const db = createDb();
+          const chat = await db.query.conversation.findFirst({
+            where: { id: body.id!, user_id: user.id },
+          });
+          if (!chat) {
+            return status(404, { error: "Conversation not found" });
+          }
+          const previousMessages = (chat.messages ?? []) as UIMessage[];
+          inputMessages = [...previousMessages, body.message as UIMessage];
+        } else {
+          inputMessages =
+            Array.isArray(body.messages) && body.messages.length > 0
+              ? body.messages
+              : body.message
+                ? [body.message]
+                : [];
+        }
 
         if (inputMessages.length === 0) {
           return status(400, {
@@ -86,25 +81,16 @@ export const chatRoutes = new Elysia({
           });
         }
 
-        // Get financial context: standalone prompt + user data as JSON
-        const { prompt, data } = await getFinancialContext(user.id, db);
+        const chatTools = buildChatTools(user.id);
+        const today = new Date().toISOString().slice(0, 10);
+        const systemContent = buildSystemContent(today);
 
-        const systemContent = [
-          prompt,
-          "",
-          "User's financial data (JSON):",
-          JSON.stringify(data, null, 2),
-          "",
-          STOCK_CARD_TOOL_RULES,
-        ].join("\n");
-
-        // Convert UIMessages to ModelMessages (AI SDK handles text, tools, files, etc.)
         const modelMessages = [
           {
             role: "system" as const,
             content: systemContent,
           },
-          ...(await convertToModelMessages(inputMessages as UIMessage[])),
+          ...(await convertToModelMessages(inputMessages)),
         ];
 
         const aiGateway = createAiGateway({
@@ -113,20 +99,92 @@ export const chatRoutes = new Elysia({
           apiKey: process.env.CLOUDFLARE_AI_GATEWAY_TOKEN,
         });
 
-        // Stream the response using AI Gateway
         const result = streamText({
           model: aiGateway(unified("google-ai-studio/gemini-2.5-flash")),
           messages: modelMessages,
           tools: {
+            ...chatTools,
             showStockCard,
           },
-          experimental_activeTools: ["showStockCard"],
+          stopWhen: stepCountIs(10),
+          onError(error) {
+            console.error("Chat streamText error:", error);
+          },
         });
 
-        // Stream tool and text parts directly to the UI.
+        if (persistenceMode) {
+          const chatId = body.id!;
+          const isFirstExchange = inputMessages.length === 1;
+
+          let titlePromise: Promise<string | null> | null = null;
+          if (isFirstExchange) {
+            const userText = inputMessages
+              .filter((m) => m.role === "user")
+              .map((m) =>
+                m.parts
+                  .filter((p): p is { type: "text"; text: string } => p.type === "text")
+                  .map((p) => p.text)
+                  .join(""),
+              )
+              .join(" ")
+              .slice(0, 500);
+
+            titlePromise = generateText({
+              model: aiGateway(unified("workers-ai/@cf/meta/llama-4-scout-17b-16e-instruct")),
+              prompt: `Generate a short title (max 6 words, no quotes, no punctuation at the end) for a conversation that starts with:\n"${userText}"`,
+            })
+              .then(({ text }) => text.trim() || null)
+              .catch(() => null);
+          }
+
+          result.consumeStream();
+
+          return result.toUIMessageStreamResponse({
+            originalMessages: inputMessages,
+            generateMessageId,
+            consumeSseStream: consumeStream,
+            onFinish: async ({ messages }) => {
+              try {
+                const db = createDb();
+                const updates: Record<string, unknown> = {
+                  messages: messages as unknown[],
+                  updated_at: new Date(),
+                };
+
+                if (titlePromise) {
+                  const title = await titlePromise;
+                  if (title) updates.title = title.slice(0, 200);
+                }
+
+                await db
+                  .update(conversation)
+                  .set(updates)
+                  .where(and(eq(conversation.id, chatId), eq(conversation.user_id, user.id)));
+              } catch (err) {
+                console.error("Failed to save conversation:", err);
+              }
+            },
+            headers: {
+              "Cache-Control": "no-cache",
+              Connection: "keep-alive",
+            },
+          });
+        }
+
         const stream = createUIMessageStream({
           execute: async ({ writer }) => {
-            writer.merge(result.toUIMessageStream());
+            writer.merge(
+              result.toUIMessageStream({
+                onError(error) {
+                  console.error("Chat toUIMessageStream error:", error);
+                  return "An error occurred while generating the response.";
+                },
+              }),
+            );
+          },
+          onError(error) {
+            console.error("Chat createUIMessageStream error:", error);
+            return "An error occurred while generating the response.";
           },
         });
 
@@ -148,9 +206,10 @@ export const chatRoutes = new Elysia({
       auth: true,
       body: chatRequestSchema,
       response: {
-        200: t.Any(), // Streaming response
+        200: t.Any(),
         400: errorSchema,
         401: errorSchema,
+        404: errorSchema,
         500: errorSchema,
       },
       detail: {

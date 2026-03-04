@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, Trash2 } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -106,7 +106,43 @@ export function EditTransactionDialog() {
     }
   }, [data?.transaction, form]);
 
-  if (!isOpen || !data?.transaction) return null;
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    setSheetOpen(!!isOpen);
+  }, [isOpen]);
+
+  useEffect(() => {
+    return () => {
+      if (closeTimeoutRef.current !== null) {
+        clearTimeout(closeTimeoutRef.current);
+        closeTimeoutRef.current = null;
+      }
+    };
+  }, []);
+
+  const scheduleClose = () => {
+    if (closeTimeoutRef.current !== null) {
+      clearTimeout(closeTimeoutRef.current);
+      closeTimeoutRef.current = null;
+    }
+    setSheetOpen(false);
+    closeTimeoutRef.current = setTimeout(() => {
+      closeTimeoutRef.current = null;
+      close();
+    }, 220);
+  };
+
+  const handleOpenChange = (open: boolean) => {
+    if (!open) {
+      scheduleClose();
+    } else {
+      setSheetOpen(true);
+    }
+  };
+
+  if (!data?.transaction) return null;
   const { transaction } = data;
 
   const isSyncedTransaction = !!transaction.provider_transaction_id;
@@ -131,7 +167,7 @@ export function EditTransactionDialog() {
       },
       {
         onSuccess: () => {
-          close();
+          scheduleClose();
         },
         onError: (error) => {
           console.error("Error updating transaction:", error);
@@ -143,7 +179,7 @@ export function EditTransactionDialog() {
   const handleDelete = () => {
     deleteTransaction(transaction, {
       onSuccess: () => {
-        close();
+        scheduleClose();
       },
       onError: (error) => {
         console.error("Error deleting transaction:", error);
@@ -152,7 +188,7 @@ export function EditTransactionDialog() {
   };
 
   return (
-    <Sheet open={isOpen} onOpenChange={close}>
+    <Sheet open={sheetOpen} onOpenChange={handleOpenChange}>
       <SheetContent className="flex h-full flex-col overflow-hidden p-0">
         <div className="flex-1 overflow-y-auto p-6">
           <SheetTitle className="hidden">Edit Transaction</SheetTitle>
@@ -337,7 +373,9 @@ export function EditTransactionDialog() {
                                 disabled={isUploading}
                                 documents={documents}
                                 isLoadingDocuments={isLoadingDocuments}
-                                onRemoveExisting={deleteFile}
+                                onRemoveExisting={async (id) => {
+                                  await deleteFile(id);
+                                }}
                                 getFileUrl={getFileUrl}
                               />
                             </FormControl>

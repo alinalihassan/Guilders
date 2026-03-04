@@ -7,6 +7,7 @@ import {
   selectTransactionSchema,
   transaction,
 } from "../../db/schema/transactions";
+import { cleanupEntityDocuments } from "../../lib/cleanup-documents";
 import { filterLockedUpdate } from "../../lib/locked-attributes";
 import { authPlugin } from "../../middleware/auth";
 import { errorSchema } from "../../utils/error";
@@ -330,14 +331,14 @@ export const transactionRoutes = new Elysia({
       const currentValue = parseFloat(targetAccount.value.toString());
       const newValue = currentValue - amount;
 
+      await cleanupEntityDocuments(db, user.id, "transaction", params.id);
+
       await db.transaction(async (tx) => {
-        // Update account value
         await tx
           .update(account)
           .set({ value: newValue.toString(), updated_at: new Date() })
           .where(eq(account.id, existingTransaction.account_id));
 
-        // Delete transaction
         await tx.delete(transaction).where(eq(transaction.id, params.id));
       });
 

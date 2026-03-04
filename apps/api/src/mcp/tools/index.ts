@@ -6,6 +6,8 @@ import { deleteTransactionTool } from "./delete-transaction";
 import { getAccountsTool } from "./get-accounts";
 import { getBalanceHistoryTool } from "./get-balance-history";
 import { getCategoriesTool } from "./get-categories";
+import { getDocumentFileTool } from "./get-document-file";
+import { getDocumentsTool } from "./get-documents";
 import { getExchangeRatesTool } from "./get-exchange-rates";
 import { getInstitutionsTool } from "./get-institutions";
 import { getTransactionsTool } from "./get-transactions";
@@ -20,6 +22,8 @@ export const mcpTools: McpToolDefinition<any>[] = [
   getAccountsTool,
   getTransactionsTool,
   getCategoriesTool,
+  getDocumentsTool,
+  getDocumentFileTool,
   getBalanceHistoryTool,
   getExchangeRatesTool,
   getInstitutionsTool,

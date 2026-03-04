@@ -6,6 +6,7 @@ import { accountBalanceHistoryRoutes, balanceHistoryRoutes } from "./balance-his
 import { categoryRoutes } from "./category";
 import { chatRoutes } from "./chat";
 import { connectionsRoutes } from "./connections";
+import { conversationRoutes } from "./conversation";
 import { countryRoutes } from "./country";
 import { currencyRoutes } from "./currency";
 import { documentRoutes } from "./document";
@@ -24,6 +25,7 @@ export const api = new Elysia({ prefix: "/api" })
   .use(categoryRoutes)
   .use(chatRoutes)
   .use(connectionsRoutes)
+  .use(conversationRoutes)
   .use(countryRoutes)
   .use(currencyRoutes)
   .use(documentRoutes)

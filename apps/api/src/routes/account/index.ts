@@ -3,6 +3,7 @@ import { Elysia, status, t } from "elysia";
 
 import { account, selectAccountSchema } from "../../db/schema/accounts";
 import { AccountTypeEnum } from "../../db/schema/enums";
+import { cleanupAccountDocuments } from "../../lib/cleanup-documents";
 import { filterLockedUpdate } from "../../lib/locked-attributes";
 import { authPlugin } from "../../middleware/auth";
 import { errorSchema } from "../../utils/error";
@@ -244,6 +245,8 @@ export const accountRoutes = new Elysia({
       if (!existingAccount) {
         return status(404, { error: "Account not found" });
       }
+
+      await cleanupAccountDocuments(db, user.id, params.id);
 
       const deleted = await db
         .delete(account)

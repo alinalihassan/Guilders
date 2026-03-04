@@ -38,7 +38,7 @@ guilders-elysia/
 | API Framework | Elysia 1.4 (Bun runtime, Cloudflare Workers adapter)                             |
 | Database      | PostgreSQL (Neon serverless) via Drizzle ORM                                     |
 | Auth          | Better Auth (session cookies, bearer tokens, passkeys, API keys, OAuth provider) |
-| AI            | Vercel AI SDK → Google Gemini 2.5 Flash via Cloudflare AI Gateway                |
+| AI            | Vercel AI SDK via Cloudflare AI Gateway                                          |
 | MCP           | `@modelcontextprotocol/sdk` — OAuth-authenticated                                |
 | Dashboard     | Next.js 16, React 19, Tailwind CSS, shadcn/ui, Recharts, Zustand, TanStack Query |
 | Mobile        | Expo 55, React Native 0.83, Expo Router                                          |
@@ -152,9 +152,9 @@ The auth middleware at `apps/api/src/middleware/auth.ts` is an Elysia plugin tha
 
 ## AI Features
 
-- **Chat endpoint** (`apps/api/src/routes/chat/`): streams responses via Vercel AI SDK using Gemini 2.5 Flash through Cloudflare AI Gateway.
+- **Chat endpoint** (`apps/api/src/routes/chat/`): streams responses via Vercel AI SDK through Cloudflare AI Gateway.
 - **Financial context** (`apps/api/src/routes/chat/utils.ts`): injects accounts, transactions, and categories into the system prompt.
-- **Dashboard advisor** (`apps/dashboard/src/app/(pages)/(protected)/advisor/page.tsx`): React chat UI via `@ai-sdk/react`.
+- **Dashboard advisor** (sidebar in protected layout): React chat UI via `@ai-sdk/react` in `apps/dashboard/src/components/advisor/`.
 - **Mobile chat** (`apps/mobile/src/app/(app)/chat/`): streaming chat with markdown rendering.
 
 ## MCP Server
@@ -246,7 +246,8 @@ POST /api/transaction
 
 ## Environment Variables
 
-Use `process.env` for environment variables everywhere (API, dashboard, db scripts, CLI scripts). This avoids having to determine whether code is used indirectly by scripts (e.g. db code used by `drizzle.config.ts` or migrations).
+- **Backend / scripts:** Use `process.env` for environment variables (API, db scripts, CLI scripts). This avoids having to determine whether code is used indirectly by scripts (e.g. db code used by `drizzle.config.ts` or migrations).
+- **Frontend:** For dashboard (and other frontend) code that needs env vars, **t3 env is preferred** (`@t3-oss/env-nextjs` or equivalent t3 env setup). You can use `process.env` as well, but t3 env gives validated, typed access and makes which variables are exposed to the client explicit.
 
 **API:** See `apps/api/.env.example` for the full list. Worker bindings and secrets are defined in `wrangler.jsonc` / dashboard; types in `apps/api/worker-configuration.d.ts`.
 

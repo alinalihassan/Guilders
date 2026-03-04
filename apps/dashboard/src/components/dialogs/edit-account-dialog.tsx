@@ -3,7 +3,7 @@
 import type { UpdateAccount } from "@guilders/api/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertTriangle, Loader2, Trash2 } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -75,6 +75,8 @@ const formSchema = detailsSchema.merge(taxSchema).merge(notesSchema);
 
 type FormSchema = z.infer<typeof formSchema>;
 
+const CLOSE_DELAY_MS = 220;
+
 export function EditAccountDialog() {
   const { isOpen, data, close } = useDialog("editAccount");
   const { open: openProviderDialog } = useDialog("provider");
@@ -129,7 +131,46 @@ export function EditAccountDialog() {
     }
   }, [data?.account, form]);
 
-  if (!isOpen || !data?.account) return null;
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const scheduleClose = (afterClose?: () => void) => {
+    if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
+    closeTimeoutRef.current = setTimeout(() => {
+      closeTimeoutRef.current = null;
+      close();
+      afterClose?.();
+    }, CLOSE_DELAY_MS);
+  };
+
+  useEffect(() => {
+    setSheetOpen(!!isOpen);
+    if (isOpen && closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current);
+      closeTimeoutRef.current = null;
+    }
+  }, [isOpen]);
+
+  useEffect(
+    () => () => {
+      if (closeTimeoutRef.current) {
+        clearTimeout(closeTimeoutRef.current);
+        closeTimeoutRef.current = null;
+      }
+    },
+    [],
+  );
+
+  const handleOpenChange = (open: boolean) => {
+    if (!open) {
+      setSheetOpen(false);
+      scheduleClose();
+    } else {
+      setSheetOpen(true);
+    }
+  };
+
+  if (!data?.account) return null;
   const { account } = data;
 
   const isSyncedAccount = !!account.institution_connection_id;
@@ -149,17 +190,21 @@ export function EditAccountDialog() {
     });
 
     if (redirectURI) {
-      close();
-      openProviderDialog({
-        redirectUri: redirectURI,
-        operation: "reconnect",
-        redirectType,
-      });
+      setSheetOpen(false);
+      scheduleClose(() =>
+        openProviderDialog({
+          redirectUri: redirectURI,
+          operation: "reconnect",
+          redirectType,
+        }),
+      );
     } else {
-      close();
-      toast.error("Failed to fix connection", {
-        description: "Unable to fix connection. Please try again later.",
-      });
+      setSheetOpen(false);
+      scheduleClose(() =>
+        toast.error("Failed to fix connection", {
+          description: "Unable to fix connection. Please try again later.",
+        }),
+      );
     }
   };
 
@@ -182,7 +227,8 @@ export function EditAccountDialog() {
       },
       {
         onSuccess: () => {
-          close();
+          setSheetOpen(false);
+          scheduleClose();
         },
         onError: (error) => {
           console.error("Error updating account:", error);
@@ -194,7 +240,8 @@ export function EditAccountDialog() {
   const handleDelete = () => {
     deleteAccount(account.id, {
       onSuccess: () => {
-        close();
+        setSheetOpen(false);
+        scheduleClose();
       },
       onError: (error) => {
         console.error("Error deleting account:", error);
@@ -203,7 +250,7 @@ export function EditAccountDialog() {
   };
 
   return (
-    <Sheet open={isOpen} onOpenChange={close}>
+    <Sheet open={sheetOpen} onOpenChange={handleOpenChange}>
       <SheetContent className="flex h-full flex-col overflow-hidden p-0">
         <div className="flex-1 overflow-y-auto p-6">
           <SheetTitle className="hidden">Edit Account</SheetTitle>
@@ -468,7 +515,9 @@ export function EditAccountDialog() {
                                 disabled={isUploading}
                                 documents={documents}
                                 isLoadingDocuments={isLoadingDocuments}
-                                onRemoveExisting={deleteFile}
+                                onRemoveExisting={async (id) => {
+                                  await deleteFile(id);
+                                }}
                                 getFileUrl={getFileUrl}
                               />
                             </FormControl>

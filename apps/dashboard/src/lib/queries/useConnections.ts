@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { api, edenError } from "@/lib/api";
 
 import { queryKey as accountQueryKey } from "./useAccounts";
+import { queryKey as transactionQueryKey } from "./useTransactions";
 
 export function useRegisterConnection() {
   return useMutation({
@@ -25,6 +26,7 @@ export function useRegisterConnection() {
 }
 
 export function useDeregisterConnection() {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (providerId: string) => {
       const { data, error } = await api.connections.deregister.post({
@@ -32,6 +34,10 @@ export function useDeregisterConnection() {
       });
       if (error) throw new Error(edenError(error));
       return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: accountQueryKey });
+      queryClient.invalidateQueries({ queryKey: transactionQueryKey });
     },
     onError: (error) => {
       console.error("Failed to deregister connection:", error);

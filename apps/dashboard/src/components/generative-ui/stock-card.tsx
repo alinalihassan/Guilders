@@ -121,7 +121,7 @@ export function StockCard({
                 alt={accountName}
                 width={36}
                 height={36}
-                className="rounded-full border bg-background/70 p-1"
+                className="rounded-full border bg-background/70"
               />
             ) : (
               <div className="rounded-full border bg-background/70 p-2 text-muted-foreground">
