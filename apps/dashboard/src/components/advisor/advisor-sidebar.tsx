@@ -1,9 +1,9 @@
 "use client";
 
+import { useQueryClient } from "@tanstack/react-query";
 import type { UIMessage } from "ai";
 import { formatDistanceToNow } from "date-fns";
 import { ChevronsUpDown, Loader2, MoreVertical, Pencil, PlusCircle, Trash2 } from "lucide-react";
-import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { AdvisorChat } from "@/components/advisor/advisor-chat";
