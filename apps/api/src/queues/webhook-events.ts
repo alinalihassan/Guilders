@@ -68,12 +68,18 @@ export async function handleWebhookQueue(
 async function processProviderUserCleanupEvent(event: ProviderUserCleanupEvent): Promise<void> {
   if (event.eventType !== "deregister-user") return;
 
+  const { userId, userSecret, connectionIds } = event.payload;
+  const options =
+    userSecret != null || (connectionIds != null && connectionIds.length > 0)
+      ? { userSecret, connectionIds }
+      : undefined;
+
   const provider = getProvider(event.payload.providerName);
-  const result = await provider.deregisterUser(event.payload.userId);
+  const result = await provider.deregisterUser(userId, options);
 
   if (!result.success) {
     throw new Error(
-      `Failed to deregister provider user ${event.payload.userId} on ${event.payload.providerName}: ${
+      `Failed to deregister provider user ${userId} on ${event.payload.providerName}: ${
         result.error ?? "unknown error"
       }`,
     );

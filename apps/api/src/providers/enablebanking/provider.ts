@@ -112,10 +112,25 @@ export class EnableBankingProvider implements IProvider {
     return { success: true, data: { userId: _userId, userSecret: _userId } };
   }
 
-  async deregisterUser(userId: string): Promise<DeregisterUserResult> {
+  async deregisterUser(
+    userId: string,
+    options?: { userSecret?: string; connectionIds?: string[] },
+  ): Promise<DeregisterUserResult> {
     const client = this.createClient();
-    const db = createDb();
+    const connectionIds = options?.connectionIds;
 
+    if (connectionIds && connectionIds.length > 0) {
+      for (const connectionId of connectionIds) {
+        try {
+          await client.deleteSession(connectionId);
+        } catch (error) {
+          console.error("[EnableBanking] Failed to delete session:", connectionId, error);
+        }
+      }
+      return { success: true };
+    }
+
+    const db = createDb();
     const providerRecord = await db.query.provider.findFirst({
       where: { name: this.name },
     });

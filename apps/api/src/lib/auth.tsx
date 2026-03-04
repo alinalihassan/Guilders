@@ -7,14 +7,16 @@ import { stripe } from "@better-auth/stripe";
 import ChangeEmail from "@guilders/transactional/emails/change-email";
 import PasswordResetEmail from "@guilders/transactional/emails/password-reset";
 import { betterAuth } from "better-auth";
+import { APIError } from "better-auth/api";
 import { bearer, jwt, openAPI, twoFactor } from "better-auth/plugins";
-import { waitUntil } from "cloudflare:workers";
+import { env as cfEnv, waitUntil } from "cloudflare:workers";
 import { Stripe } from "stripe";
 
 import * as authSchema from "../db/schema/auth";
 import { seedDefaultCategoriesForUser } from "./categories";
 import { createDb, type Database } from "./db";
 import { resend } from "./resend";
+import { enqueueUserDeleteCleanupJobs } from "./user-delete-cleanup";
 
 /**
  * Create a per-request Better Auth instance with its own db connection.
@@ -74,6 +76,19 @@ export function createAuth(db?: Database) {
       },
       deleteUser: {
         enabled: true,
+        beforeDelete: async (user) => {
+          try {
+            await enqueueUserDeleteCleanupJobs(cfEnv, user.id);
+          } catch (error) {
+            console.error("[deleteUser] Failed to enqueue cleanup jobs:", {
+              userId: user.id,
+              error: error instanceof Error ? error.message : error,
+            });
+            throw new APIError("INTERNAL_SERVER_ERROR", {
+              message: "Failed to prepare account deletion. Please try again.",
+            });
+          }
+        },
       },
     },
     account: {

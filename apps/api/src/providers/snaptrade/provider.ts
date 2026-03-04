@@ -117,7 +117,10 @@ export class SnapTradeProvider implements IProvider {
     }
   }
 
-  async deregisterUser(userId: string): Promise<DeregisterUserResult> {
+  async deregisterUser(
+    userId: string,
+    _options?: { userSecret?: string; connectionIds?: string[] },
+  ): Promise<DeregisterUserResult> {
     const client = getSnapTradeClient();
     try {
       const response = await client.authentication.deleteSnapTradeUser({

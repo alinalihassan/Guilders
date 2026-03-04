@@ -94,9 +94,15 @@ export function useUpdateUserSettings() {
 }
 
 export function useDeleteAccount() {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: async () => {
-      // TODO: Implement this
+      const { error } = await authClient.deleteUser();
+      if (error) throw new Error(error.message ?? "Failed to delete account");
+    },
+    onSuccess: () => {
+      queryClient.clear();
     },
   });
 }
