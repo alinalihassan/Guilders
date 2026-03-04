@@ -76,18 +76,14 @@ export const getDocumentFileTool: McpToolDefinition<GetDocumentFileInput> = {
 
       const sizeBytes = object.size ?? doc.size;
       if (sizeBytes > MAX_IN_MEMORY_BYTES) {
-        const message = `Document too large to embed (${sizeBytes} bytes > ${MAX_IN_MEMORY_BYTES} limit). Returning resource metadata only.`;
+        const message = `Document too large to embed (${sizeBytes} bytes > ${MAX_IN_MEMORY_BYTES} limit). Returning metadata only.`;
         console.warn("MCP get_document_file:", message, { documentId: doc.id, sizeBytes });
         return {
           content: [
             metadata,
-            { type: "text", text: message },
             {
-              type: "resource",
-              resource: {
-                uri: `guilders://document/${doc.id}`,
-                mimeType: doc.type,
-              },
+              type: "text",
+              text: `${message} URI: guilders://document/${doc.id}`,
             },
           ],
         };

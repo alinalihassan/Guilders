@@ -11,11 +11,19 @@ export function getMcpToolsOverview(): string {
   return mcpTools.map((t) => `- **${t.name}**: ${t.description}`).join("\n");
 }
 
-function mcpContentToModelOutput(content: McpContentBlock[]) {
+/** AI SDK content block for tool result: text, media (image), or file-data (blob required). */
+type ToolResultContentBlock =
+  | { type: "text"; text: string }
+  | { type: "media"; data: string; mediaType: string }
+  | { type: "file-data"; data: string; mediaType: string };
+
+function mcpContentToModelOutput(
+  content: McpContentBlock[],
+): { type: "text"; value: string } | { type: "content"; value: ToolResultContentBlock[] } {
   const hasMedia = content.some((c) => c.type === "image" || c.type === "resource");
   if (!hasMedia) {
     return {
-      type: "text" as const,
+      type: "text",
       value: content
         .filter((c): c is Extract<typeof c, { type: "text" }> => c.type === "text")
         .map((c) => c.text)
@@ -23,26 +31,27 @@ function mcpContentToModelOutput(content: McpContentBlock[]) {
     };
   }
 
-  return {
-    type: "content" as const,
-    value: content.map((block) => {
-      if (block.type === "text") {
-        return { type: "text" as const, text: block.text };
-      }
-      if (block.type === "image") {
-        return {
-          type: "image-data" as const,
-          data: block.data,
-          mediaType: block.mimeType,
-        };
-      }
-      return {
-        type: "file-data" as const,
+  const value: ToolResultContentBlock[] = [];
+  for (const block of content) {
+    if (block.type === "text") {
+      value.push({ type: "text", text: block.text });
+    } else if (block.type === "image") {
+      value.push({
+        type: "media",
+        data: block.data,
+        mediaType: block.mimeType,
+      });
+    } else if ("blob" in block.resource) {
+      value.push({
+        type: "file-data",
         data: block.resource.blob,
-        mediaType: block.resource.mimeType,
-      };
-    }),
-  };
+        mediaType: block.resource.mimeType ?? "application/octet-stream",
+      });
+    }
+    // resource with text only: skip or could add as text; AI SDK content prefers blob for file-data
+  }
+
+  return { type: "content", value };
 }
 
 /**

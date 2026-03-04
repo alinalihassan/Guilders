@@ -7,10 +7,25 @@ export type McpToolContext = {
   userId: string;
 };
 
+/** Resource with inline text (e.g. small document). */
+export type McpResourceWithText = {
+  uri: string;
+  mimeType?: string;
+  text: string;
+};
+
+/** Resource with inline blob (e.g. base64 file). MCP SDK requires blob when present. */
+export type McpResourceWithBlob = {
+  uri: string;
+  mimeType?: string;
+  blob: string;
+};
+
 export type McpContentBlock =
   | { type: "text"; text: string }
   | { type: "image"; data: string; mimeType: string }
-  | { type: "resource"; resource: { uri: string; mimeType: string; blob?: string } };
+  | { type: "resource"; resource: McpResourceWithText }
+  | { type: "resource"; resource: McpResourceWithBlob };
 
 export type McpToolResult = {
   isError?: boolean;
