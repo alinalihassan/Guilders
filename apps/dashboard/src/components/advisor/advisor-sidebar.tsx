@@ -3,6 +3,7 @@
 import type { UIMessage } from "ai";
 import { formatDistanceToNow } from "date-fns";
 import { ChevronsUpDown, Loader2, MoreVertical, Pencil, PlusCircle, Trash2 } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { AdvisorChat } from "@/components/advisor/advisor-chat";
@@ -18,6 +19,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useDialog } from "@/hooks/useDialog";
 import { edenError } from "@/lib/api";
 import {
+  conversationsKey,
   useConversation,
   useConversations,
   useCreateConversation,
@@ -44,6 +46,7 @@ export function AdvisorSidebar() {
   const [pickerOpen, setPickerOpen] = useState(false);
   const [selectedConvId, setSelectedConvId] = useState<string | null>(null);
 
+  const queryClient = useQueryClient();
   const { data: lastConversation, isLoading: loadingLast } = useLastConversation();
   const { data: conversations, isLoading: loadingList } = useConversations(pickerOpen);
   const { data: selectedConversation } = useConversation(selectedConvId);
@@ -132,19 +135,22 @@ export function AdvisorSidebar() {
         if (!currentChatId) return;
         try {
           await deleteConversation.mutateAsync(currentChatId);
+          clearChat();
+          await queryClient.refetchQueries({ queryKey: conversationsKey });
+          const fresh =
+            (queryClient.getQueryData(conversationsKey) as Array<{ id: string }> | undefined) ?? [];
+          const remaining = fresh.filter((c) => c.id !== currentChatId);
+          const next = remaining[0];
+          if (next) {
+            handleSelectConversation(next.id);
+          } else {
+            createConversation.mutate(undefined, {
+              onSuccess: (conv) => applyConversation(conv),
+            });
+          }
         } catch (err) {
           console.error("Failed to delete conversation:", edenError(err));
-        }
-        clearChat();
-
-        const remaining = (conversations ?? []).filter((c) => c.id !== currentChatId);
-        const next = remaining[0];
-        if (next) {
-          handleSelectConversation(next.id);
-        } else {
-          createConversation.mutate(undefined, {
-            onSuccess: (conv) => applyConversation(conv),
-          });
+          return;
         }
       },
     });
