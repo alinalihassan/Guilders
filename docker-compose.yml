@@ -1,0 +1,37 @@
+# Local PostgreSQL database for development and self-hosting.
+#
+# Usage:
+#   docker compose up -d          Start the database
+#   docker compose down            Stop the database (data is preserved)
+#   docker compose down -v         Stop and delete all data (full reset)
+#
+# The default connection string matches apps/api/.env.example:
+#   postgresql://postgres:postgres@localhost:5432/guilders
+#
+# After starting, run migrations and seed data from apps/api/:
+#   bun run db:migrate && bun run db:init
+#
+# Or reset everything in one command:
+#   bun run db:reset
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: guilders-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: guilders
+    ports:
+      - "5432:5432"
+    volumes:
+      - guilders_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d guilders"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  guilders_postgres_data:
