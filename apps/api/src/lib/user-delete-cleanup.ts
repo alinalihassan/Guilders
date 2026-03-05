@@ -12,10 +12,8 @@ function isProviderName(name: string): name is ProviderName {
 }
 
 export async function enqueueUserDeleteCleanupJobs(env: Env, userId: string): Promise<void> {
-  await Promise.all([
-    enqueueProviderCleanupJobs(env, userId),
-    enqueueUserFilesCleanupJob(env, userId),
-  ]);
+  await enqueueProviderCleanupJobs(env, userId);
+  await enqueueUserFilesCleanupJob(env, userId);
 }
 
 async function enqueueProviderCleanupJobs(env: Env, userId: string): Promise<void> {
