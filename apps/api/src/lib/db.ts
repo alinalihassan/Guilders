@@ -46,5 +46,10 @@ export function createDb(): Database {
     }
     return pgliteDb;
   }
+
+  if (!process.env.DATABASE_URL) {
+    throw new Error("DATABASE_URL environment variable is required");
+  }
+
   return drizzle(process.env.DATABASE_URL, { relations });
 }
