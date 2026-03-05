@@ -2,20 +2,14 @@ import { drizzle } from "drizzle-orm/node-postgres";
 
 import { relations } from "../db/schema/relations";
 
-/** Builds the node-postgres Drizzle instance (used only for typing). */
 function nodeDbWithRelations() {
   return drizzle(process.env.DATABASE_URL!, { relations });
 }
 
-/** Type of a Drizzle instance with our relations (so db.query.* is typed). */
 export type Database = ReturnType<typeof nodeDbWithRelations>;
 
 let pgliteDb: Database | null = null;
 
-/**
- * Initialize PGLite in-memory Postgres for testing.
- * Must be called (and awaited) from a Vitest setup file before any tests run.
- */
 export async function initPgliteDb(): Promise<void> {
   if (pgliteDb) return;
 
@@ -41,15 +35,7 @@ export async function initPgliteDb(): Promise<void> {
 
 export function createDb(): Database {
   if (process.env.USE_PGLITE === "1") {
-    if (!pgliteDb) {
-      throw new Error("PGLite not initialized — call initPgliteDb() in test setup first");
-    }
-    return pgliteDb;
+    return pgliteDb!;
   }
-
-  if (!process.env.DATABASE_URL) {
-    throw new Error("DATABASE_URL environment variable is required");
-  }
-
   return drizzle(process.env.DATABASE_URL, { relations });
 }

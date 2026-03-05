@@ -8,7 +8,7 @@ import ChangeEmail from "@guilders/transactional/emails/change-email";
 import PasswordResetEmail from "@guilders/transactional/emails/password-reset";
 import { betterAuth } from "better-auth";
 import { APIError } from "better-auth/api";
-import { bearer, jwt, openAPI, twoFactor } from "better-auth/plugins";
+import { bearer, jwt, openAPI, testUtils, twoFactor } from "better-auth/plugins";
 import { env as cfEnv, waitUntil } from "cloudflare:workers";
 import { Stripe } from "stripe";
 
@@ -166,6 +166,7 @@ export function createAuth(db?: Database) {
       // @ts-ignore TODO: Better Auth 1.5.0 issue, it's not seen as of type plugin
       expo({ disableOriginOverride: true }),
       stripePlugin(),
+      ...(process.env.VITEST === "true" ? [testUtils()] : []),
     ],
     trustedOrigins: [
       "guilders-mobile://",

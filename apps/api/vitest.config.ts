@@ -33,6 +33,9 @@ export default defineConfig({
   test: {
     setupFiles: ["./test/setup.ts"],
     testTimeout: 30_000,
+    poolOptions: {
+      threads: { maxThreads: 8 },
+    },
     server: {
       deps: {
         inline: ["agents", "partyserver", /cloudflare:/],

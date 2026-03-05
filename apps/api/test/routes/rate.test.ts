@@ -2,13 +2,13 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { rate } from "../../src/db/schema/rates";
 import { createDb } from "../../src/lib/db";
-import { authedFetch, resetTestDb, selfFetch, signUpTestUser } from "../helpers";
+import { authedFetch, resetTestDb, selfFetch, signUpTestUser, uniqueTestEmail } from "../helpers";
 
 describe("Rate routes", () => {
   let token: string;
 
   beforeAll(async () => {
-    const result = await signUpTestUser("rate-test@guilders.test");
+    const result = await signUpTestUser(uniqueTestEmail("rate"));
     token = result.token;
 
     const db = createDb();

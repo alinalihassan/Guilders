@@ -1,7 +1,7 @@
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 
 import { handleMcp } from "../../src/mcp/handler";
-import { authedFetch, resetTestDb, signUpTestUser, TEST_ORIGIN } from "../helpers";
+import { createTestUserWithAccount, resetTestDb, TEST_ORIGIN, uniqueTestEmail } from "../helpers";
 
 const TEST_ENV = {} as Env;
 const TEST_CTX = {
@@ -21,10 +21,6 @@ function mcpRequest(body: object, headers?: Record<string, string>): Request {
   });
 }
 
-/**
- * Intercept the MCP handler's internal userinfo fetch.
- * Non-userinfo fetches fall through to the real implementation.
- */
 function interceptUserInfo(response: Response): () => void {
   const originalFetch = globalThis.fetch;
   const spy = vi
@@ -44,20 +40,11 @@ describe("MCP endpoint", () => {
   let userId: string;
 
   beforeAll(async () => {
-    const result = await signUpTestUser("mcp-test@guilders.test");
-    userId = result.userId;
-
-    await authedFetch("/api/account", result.token, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name: "MCP Test Account",
-        type: "asset",
-        subtype: "depository",
-        value: "2500",
-        currency: "EUR",
-      }),
+    const result = await createTestUserWithAccount({
+      email: uniqueTestEmail("mcp"),
+      account: { name: "MCP Test Account", value: "2500" },
     });
+    userId = result.userId;
   });
 
   afterAll(async () => {

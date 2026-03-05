@@ -1,12 +1,12 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-import { authedFetch, resetTestDb, selfFetch, signUpTestUser } from "../helpers";
+import { authedFetch, resetTestDb, selfFetch, signUpTestUser, uniqueTestEmail } from "../helpers";
 
 describe("Document routes", () => {
   let token: string;
 
   beforeAll(async () => {
-    const result = await signUpTestUser("document-test@guilders.test");
+    const result = await signUpTestUser(uniqueTestEmail("document"));
     token = result.token;
   });
 

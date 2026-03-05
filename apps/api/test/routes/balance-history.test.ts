@@ -3,36 +3,19 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { balanceSnapshot } from "../../src/db/schema/balance-snapshots";
 import { rate } from "../../src/db/schema/rates";
 import { createDb } from "../../src/lib/db";
-import { authedFetch, resetTestDb, selfFetch, signUpTestUser } from "../helpers";
+import { authedFetch, createTestUserWithAccount, resetTestDb, selfFetch, uniqueTestEmail } from "../helpers";
 
 describe("Balance history routes", () => {
   let token: string;
   let accountId: number;
 
   beforeAll(async () => {
-    const result = await signUpTestUser("balance-test@guilders.test");
-    token = result.token;
-
-    const accountRes = await authedFetch("/api/account", token, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name: "Balance Test Account",
-        type: "asset",
-        subtype: "depository",
-        value: "3000",
-        currency: "EUR",
-      }),
+    const result = await createTestUserWithAccount({
+      email: uniqueTestEmail("balance"),
+      account: { name: "Balance Test Account", value: "3000" },
     });
-
-    if (!accountRes.ok) {
-      throw new Error(
-        `Failed to create test account: ${accountRes.status} ${await accountRes.text()}`,
-      );
-    }
-
-    const accountBody = (await accountRes.json()) as { id: number };
-    accountId = accountBody.id;
+    token = result.token;
+    accountId = result.accountId;
 
     const db = createDb();
     await db

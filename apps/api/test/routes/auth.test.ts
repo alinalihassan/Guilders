@@ -1,13 +1,15 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-import { authedFetch, resetTestDb, selfFetch, signUpTestUser } from "../helpers";
+import { authedFetch, resetTestDb, selfFetch, signUpTestUser, uniqueTestEmail } from "../helpers";
 
 describe("Authentication", () => {
   let token: string;
   let userId: string;
+  let testEmail: string;
 
   beforeAll(async () => {
-    const result = await signUpTestUser();
+    testEmail = uniqueTestEmail("auth");
+    const result = await signUpTestUser(testEmail);
     token = result.token;
     userId = result.userId;
   });
@@ -38,7 +40,7 @@ describe("Authentication", () => {
       const body = (await res.json()) as { user?: { id: string; email: string } };
       expect(body.user).toBeDefined();
       expect(body.user!.id).toBe(userId);
-      expect(body.user!.email).toBe("test@guilders.test");
+      expect(body.user!.email).toBe(testEmail);
     });
   });
 

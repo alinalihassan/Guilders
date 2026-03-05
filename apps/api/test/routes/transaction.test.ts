@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-import { authedFetch, resetTestDb, selfFetch, signUpTestUser } from "../helpers";
+import { authedFetch, createTestUserWithAccount, resetTestDb, selfFetch, uniqueTestEmail } from "../helpers";
 
 describe("Transaction routes", () => {
   let token: string;
@@ -8,29 +8,12 @@ describe("Transaction routes", () => {
   let transactionId: number;
 
   beforeAll(async () => {
-    const result = await signUpTestUser("transaction-test@guilders.test");
-    token = result.token;
-
-    const accountRes = await authedFetch("/api/account", token, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name: "Checking Account",
-        type: "asset",
-        subtype: "depository",
-        value: "1000",
-        currency: "EUR",
-      }),
+    const result = await createTestUserWithAccount({
+      email: uniqueTestEmail("transaction"),
+      account: { name: "Checking Account" },
     });
-
-    if (!accountRes.ok) {
-      throw new Error(
-        `Failed to create test account: ${accountRes.status} ${await accountRes.text()}`,
-      );
-    }
-
-    const accountBody = (await accountRes.json()) as { id: number };
-    accountId = accountBody.id;
+    token = result.token;
+    accountId = result.accountId;
   });
 
   afterAll(async () => {

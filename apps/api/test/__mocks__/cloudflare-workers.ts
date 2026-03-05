@@ -1,9 +1,3 @@
-/**
- * Minimal stub for `cloudflare:workers`.
- * Only R2 bucket, Queue, and runtime-specific classes are stubbed.
- * Everything else (DB, auth, routes) runs for real.
- */
-
 export class DurableObject {
   ctx: unknown;
   env: unknown;

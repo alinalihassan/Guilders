@@ -2,14 +2,16 @@ import { sql } from "drizzle-orm";
 import type { MaybePromise } from "elysia/types";
 
 import { app } from "../src/app";
+import { getAuth } from "../src/lib/auth";
+import { seedDefaultCategoriesForUser } from "../src/lib/categories";
 import { createDb } from "../src/lib/db";
 
 export const TEST_ORIGIN = "http://localhost:8787";
 
-/**
- * Truncate all user-data tables in the test database (PGLite).
- * Call in afterAll() to isolate test suites.
- */
+export function uniqueTestEmail(prefix = "test"): string {
+  return `${prefix}+${Date.now()}-${Math.random().toString(36).slice(2)}@guilders.test`;
+}
+
 export async function resetTestDb(): Promise<void> {
   const db = createDb();
   await db.execute(sql`
@@ -39,39 +41,54 @@ export function authedFetch(
   return app.fetch(request);
 }
 
-/**
- * Sign up a test user via Better Auth and return the session token.
- */
+async function getAuthTestUtils() {
+  const ctx = await getAuth().$context;
+  return ctx.test!;
+}
+
 export async function signUpTestUser(
-  email = "test@guilders.test",
-  password = "TestPassword123!",
+  email = uniqueTestEmail("test"),
   name = "Test User",
 ): Promise<{ token: string; userId: string }> {
-  const res = await selfFetch("/api/auth/sign-up/email", {
+  const authTestUtils = await getAuthTestUtils();
+  const user = authTestUtils.createUser({ email, name });
+  await authTestUtils.saveUser(user);
+  await seedDefaultCategoriesForUser(createDb(), user.id);
+  const { token } = await authTestUtils.login({ userId: user.id });
+  return { token, userId: user.id };
+}
+
+export async function createTestUserWithAccount(options: {
+  email?: string;
+  account: {
+    name: string;
+    type?: string;
+    subtype?: string;
+    value?: string;
+    currency?: string;
+  };
+}): Promise<{ token: string; userId: string; accountId: number }> {
+  const email = options.email ?? uniqueTestEmail("test");
+  const result = await signUpTestUser(email);
+
+  const accountPayload = {
+    type: "asset",
+    subtype: "depository",
+    value: "1000",
+    currency: "EUR",
+    ...options.account,
+  };
+
+  const res = await authedFetch("/api/account", result.token, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password, name }),
+    body: JSON.stringify(accountPayload),
   });
 
   if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`Sign-up failed (${res.status}): ${text}`);
+    throw new Error(`Failed to create test account: ${res.status} ${await res.text()}`);
   }
 
-  const body = (await res.json()) as { token?: string; user?: { id: string } };
-
-  const setCookie = res.headers.get("set-cookie") ?? "";
-  const tokenMatch = setCookie.match(/better-auth\.session_token=([^;]+)/);
-  const sessionToken = tokenMatch?.[1];
-
-  if (!sessionToken) {
-    throw new Error("No session token in sign-up response cookies");
-  }
-
-  const userId = body.user?.id;
-  if (!userId) {
-    throw new Error("No user ID in sign-up response");
-  }
-
-  return { token: sessionToken, userId };
+  const body = (await res.json()) as { id: number };
+  return { token: result.token, userId: result.userId, accountId: body.id };
 }

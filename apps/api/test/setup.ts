@@ -3,8 +3,6 @@ import { vi } from "vitest";
 import { currency } from "../src/db/schema/currencies";
 import { createDb, initPgliteDb } from "../src/lib/db";
 
-// Mock the Stripe SDK so tests never make real network calls.
-// Better Auth's stripe plugin calls customers.search/list/create on sign-up.
 vi.mock("stripe", () => {
   const mockCustomers = {
     search: vi.fn().mockResolvedValue({ data: [] }),
@@ -64,7 +62,6 @@ vi.mock("stripe", () => {
   };
 });
 
-// Mock Resend so email sending never hits the network.
 vi.mock("resend", () => {
   class MockResend {
     emails = {
