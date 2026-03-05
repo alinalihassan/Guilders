@@ -1,7 +1,16 @@
 import { vi } from "vitest";
+/**
+ * Polyfill for agents/partyserver: they reference WebSocket at load time.
+ * Node has no global WebSocket. vitest-websocket-mock (via mock-socket) patches
+ * the global when a WS server is created.
+ */
+import { WS } from "vitest-websocket-mock";
 
 import { currency } from "../src/db/schema/currencies";
 import { createDb, initPgliteDb } from "../src/lib/db";
+
+const _mcpWebSocketPolyfill = new WS("ws://localhost:1");
+void _mcpWebSocketPolyfill;
 
 vi.mock("stripe", () => {
   const mockCustomers = {
