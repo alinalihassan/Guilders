@@ -1,6 +1,12 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-import { authedFetch, createTestUserWithAccount, resetTestDb, selfFetch, uniqueTestEmail } from "../helpers";
+import {
+  authedFetch,
+  createTestUserWithAccount,
+  resetTestDb,
+  selfFetch,
+  uniqueTestEmail,
+} from "../helpers";
 
 describe("Transaction routes", () => {
   let token: string;
