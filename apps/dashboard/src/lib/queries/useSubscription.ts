@@ -11,7 +11,7 @@ export function useSubscription() {
   return useMutation({
     mutationFn: async () => {
       const url = getSubscriptionUrl();
-      console.log("url", url);
+      await authClient.subscription.upgrade({
       await authClient.subscription.upgrade({
         plan: "pro",
         successUrl: url,
