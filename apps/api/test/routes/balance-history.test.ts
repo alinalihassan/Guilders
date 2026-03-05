@@ -24,6 +24,13 @@ describe("Balance history routes", () => {
         currency: "EUR",
       }),
     });
+
+    if (!accountRes.ok) {
+      throw new Error(
+        `Failed to create test account: ${accountRes.status} ${await accountRes.text()}`,
+      );
+    }
+
     const accountBody = (await accountRes.json()) as { id: number };
     accountId = accountBody.id;
 

@@ -22,6 +22,13 @@ describe("Transaction routes", () => {
         currency: "EUR",
       }),
     });
+
+    if (!accountRes.ok) {
+      throw new Error(
+        `Failed to create test account: ${accountRes.status} ${await accountRes.text()}`,
+      );
+    }
+
     const accountBody = (await accountRes.json()) as { id: number };
     accountId = accountBody.id;
   });
@@ -70,6 +77,11 @@ describe("Transaction routes", () => {
     transactionId = body.id;
 
     const accountRes = await authedFetch(`/api/account/${accountId}`, token);
+    if (!accountRes.ok) {
+      throw new Error(
+        `Failed to get test account: ${accountRes.status} ${await accountRes.text()}`,
+      );
+    }
     const accountBody = (await accountRes.json()) as { account: { value: string } };
     expect(parseFloat(accountBody.account.value)).toBe(950);
   });
@@ -117,6 +129,13 @@ describe("Transaction routes", () => {
     expect(res.status).toBe(200);
 
     const accountRes = await authedFetch(`/api/account/${accountId}`, token);
+
+    if (!accountRes.ok) {
+      throw new Error(
+        `Failed to get test account: ${accountRes.status} ${await accountRes.text()}`,
+      );
+    }
+
     const accountBody = (await accountRes.json()) as { account: { value: string } };
     expect(parseFloat(accountBody.account.value)).toBe(1000);
   });
