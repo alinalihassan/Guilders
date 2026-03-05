@@ -10,7 +10,7 @@ concurrency:
 
 jobs:
   lint-format-typecheck:
-    name: Lint, format & typecheck
+    name: Test, lint, format & typecheck
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -33,6 +33,10 @@ jobs:
 
       - name: Typecheck API
         run: bun run typecheck
+        working-directory: apps/api
+
+      - name: Test API
+        run: bun run test
         working-directory: apps/api
 
       # TODO: Uncomment this when we figured out a way to restrict typechecking to the dashboard package only

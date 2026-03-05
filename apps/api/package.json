@@ -2,6 +2,8 @@
   "name": "@guilders/api",
   "module": "src/index.ts",
   "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
     "deploy:secrets": "wrangler secret bulk .env.production",
@@ -26,6 +28,7 @@
     "@better-auth/oauth-provider": "catalog:",
     "@better-auth/passkey": "catalog:",
     "@better-auth/stripe": "catalog:",
+    "@electric-sql/pglite": "^0.3.15",
     "@elysiajs/cors": "^1.4.1",
     "@elysiajs/openapi": "^1.4.14",
     "@guilders/transactional": "workspace:*",
@@ -55,6 +58,8 @@
     "@types/react": "catalog:",
     "auth": "catalog:",
     "drizzle-kit": "1.0.0-beta.15-859cf75",
+    "vitest": "~3.2.0",
+    "vitest-websocket-mock": "^0.5.0",
     "wrangler": "catalog:"
   }
 }
