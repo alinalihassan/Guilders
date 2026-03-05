@@ -167,10 +167,6 @@ export function createAuth(db?: Database) {
       expo({ disableOriginOverride: true }),
       stripePlugin(),
     ],
-    advanced: {
-      disableOriginCheck: process.env.NODE_ENV === "development",
-      disableCSRFCheck: process.env.NODE_ENV === "development",
-    },
     trustedOrigins: [
       "guilders-mobile://",
       ...(process.env.NODE_ENV === "development"
