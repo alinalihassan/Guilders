@@ -4,5 +4,5 @@
     "moduleResolution": "bundler",
     "types": ["vitest/globals"]
   },
-  "include": ["./**/*.ts", "../src/**/*.ts", "../src/worker-configuration.d.ts"]
+  "include": ["./**/*.ts", "../src/**/*.ts", "../worker-configuration.d.ts"]
 }

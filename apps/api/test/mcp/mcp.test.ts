@@ -25,13 +25,13 @@ function interceptUserInfo(response: Response): () => void {
   const originalFetch = globalThis.fetch;
   const spy = vi
     .spyOn(globalThis, "fetch")
-    .mockImplementation((input: string | URL | Request, init?: RequestInit) => {
+    .mockImplementation((input: string | URL | Request, init?: RequestInit): Promise<Response> => {
       const url =
         typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url;
       if (url.includes("/api/auth/oauth2/userinfo")) {
-        return Promise.resolve(response.clone());
+        return Promise.resolve(response.clone()) as Promise<Response>;
       }
-      return originalFetch(input, init);
+      return originalFetch(input, init) as Promise<Response>;
     });
   return () => spy.mockRestore();
 }
@@ -144,7 +144,18 @@ describe("MCP endpoint", () => {
         },
         { Authorization: "Bearer valid-test-token" },
       );
-      await handleMcp(initReq, TEST_ENV, TEST_CTX);
+      const initRes = await handleMcp(initReq, TEST_ENV, TEST_CTX);
+      expect(initRes.status).toBe(200);
+      const initBody = (await initRes.json()) as {
+        jsonrpc?: string;
+        id?: number;
+        result?: unknown;
+        error?: unknown;
+      };
+      expect(initBody.jsonrpc).toBe("2.0");
+      expect(initBody.id).toBe(1);
+      expect(initBody.result).toBeDefined();
+      expect(initBody.error).toBeUndefined();
 
       vi.restoreAllMocks();
       interceptUserInfo(Response.json({ sub: userId }));
