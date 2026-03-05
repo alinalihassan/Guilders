@@ -97,13 +97,11 @@ export function FileUploader({
         toast.success("Upload complete");
       } catch (error) {
         setFiles([]);
-        const message = error instanceof Error ? error.message : "Failed to upload files";
-        const isUnsupportedType = message.includes("Expected kind 'File'");
-        toast.error(
-          isUnsupportedType
+        const safeMessage =
+          error instanceof Error && error.message.includes("Expected kind 'File'")
             ? "This file type isn't supported. Please use JPEG, PNG, WebP, HEIC, or PDF."
-            : message,
-        );
+            : "Failed to upload files. Please try again.";
+        toast.error(safeMessage);
       } finally {
         setUploadingFiles(new Set());
       }
