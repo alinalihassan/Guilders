@@ -1,8 +1,8 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-import { createDb } from "../../src/lib/db";
 import { balanceSnapshot } from "../../src/db/schema/balance-snapshots";
 import { rate } from "../../src/db/schema/rates";
+import { createDb } from "../../src/lib/db";
 import { authedFetch, resetTestDb, selfFetch, signUpTestUser } from "../helpers";
 
 describe("Balance history routes", () => {

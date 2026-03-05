@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-import { createDb } from "../../src/lib/db";
 import { country } from "../../src/db/schema/countries";
+import { createDb } from "../../src/lib/db";
 import { authedFetch, resetTestDb, selfFetch, signUpTestUser } from "../helpers";
 
 describe("Country routes", () => {

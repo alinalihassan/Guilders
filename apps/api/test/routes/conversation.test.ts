@@ -86,10 +86,7 @@ describe("Conversation routes", () => {
   });
 
   it("GET /api/conversation/:id for non-existent returns 404", async () => {
-    const res = await authedFetch(
-      "/api/conversation/00000000-0000-0000-0000-000000000000",
-      token,
-    );
+    const res = await authedFetch("/api/conversation/00000000-0000-0000-0000-000000000000", token);
     expect(res.status).toBe(404);
   });
 
@@ -112,11 +109,9 @@ describe("Conversation routes", () => {
   });
 
   it("DELETE /api/conversation/:id for non-existent returns 404", async () => {
-    const res = await authedFetch(
-      "/api/conversation/00000000-0000-0000-0000-000000000000",
-      token,
-      { method: "DELETE" },
-    );
+    const res = await authedFetch("/api/conversation/00000000-0000-0000-0000-000000000000", token, {
+      method: "DELETE",
+    });
     expect(res.status).toBe(404);
   });
 });

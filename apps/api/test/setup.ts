@@ -41,12 +41,16 @@ vi.mock("stripe", () => {
     subscriptions = mockSubscriptions;
     checkout = {
       sessions: {
-        create: vi.fn().mockResolvedValue({ id: "cs_test_mock", url: "https://checkout.stripe.com/test" }),
+        create: vi
+          .fn()
+          .mockResolvedValue({ id: "cs_test_mock", url: "https://checkout.stripe.com/test" }),
       },
     };
     billingPortal = {
       sessions: {
-        create: vi.fn().mockResolvedValue({ id: "bps_test_mock", url: "https://billing.stripe.com/test" }),
+        create: vi
+          .fn()
+          .mockResolvedValue({ id: "bps_test_mock", url: "https://billing.stripe.com/test" }),
       },
     };
     webhooks = {

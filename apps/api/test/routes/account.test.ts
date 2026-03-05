@@ -76,7 +76,13 @@ describe("Account routes", () => {
     const res = await authedFetch(`/api/account/${createdAccountId}`, token, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: "Updated Savings", type: "asset", subtype: "depository", value: "7500", currency: "EUR" }),
+      body: JSON.stringify({
+        name: "Updated Savings",
+        type: "asset",
+        subtype: "depository",
+        value: "7500",
+        currency: "EUR",
+      }),
     });
 
     expect(res.status).toBe(200);

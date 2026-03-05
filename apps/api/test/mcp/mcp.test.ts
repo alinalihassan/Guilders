@@ -25,26 +25,18 @@ function mcpRequest(body: object, headers?: Record<string, string>): Request {
  * Intercept the MCP handler's internal userinfo fetch.
  * Non-userinfo fetches fall through to the real implementation.
  */
-function interceptUserInfo(
-  response: Response,
-): () => void {
+function interceptUserInfo(response: Response): () => void {
   const originalFetch = globalThis.fetch;
   const spy = vi
     .spyOn(globalThis, "fetch")
-    .mockImplementation(
-      (input: string | URL | Request, init?: RequestInit) => {
-        const url =
-          typeof input === "string"
-            ? input
-            : input instanceof URL
-              ? input.toString()
-              : input.url;
-        if (url.includes("/api/auth/oauth2/userinfo")) {
-          return Promise.resolve(response.clone());
-        }
-        return originalFetch(input, init);
-      },
-    );
+    .mockImplementation((input: string | URL | Request, init?: RequestInit) => {
+      const url =
+        typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url;
+      if (url.includes("/api/auth/oauth2/userinfo")) {
+        return Promise.resolve(response.clone());
+      }
+      return originalFetch(input, init);
+    });
   return () => spy.mockRestore();
 }
 
