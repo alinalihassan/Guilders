@@ -25,7 +25,6 @@ export const authPlugin = new Elysia({ name: "auth" }).macro({
         return { user: session.user, session: session.session, db };
       }
 
-      console.log("Fallback: manually resolve Bearer token from Authorization header");
       const authHeader = headers.get("authorization");
       if (authHeader?.startsWith("Bearer ")) {
         const token = authHeader.slice(7);

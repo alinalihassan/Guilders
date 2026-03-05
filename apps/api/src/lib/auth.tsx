@@ -163,11 +163,13 @@ export function createAuth(db?: Database) {
         },
       }),
       openAPI({ disableDefaultReference: true }),
+      // @ts-ignore TODO: Better Auth 1.5.0 issue, it's not seen as of type plugin
       expo({ disableOriginOverride: true }),
       stripePlugin(),
     ],
     advanced: {
       disableOriginCheck: process.env.NODE_ENV === "development",
+      disableCSRFCheck: process.env.NODE_ENV === "development",
     },
     trustedOrigins: [
       "guilders-mobile://",
@@ -194,5 +196,3 @@ let _auth: ReturnType<typeof createAuth>;
 export function getAuth() {
   return (_auth ??= createAuth());
 }
-
-export const auth = getAuth();
