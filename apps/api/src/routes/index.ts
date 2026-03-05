@@ -10,6 +10,7 @@ import { conversationRoutes } from "./conversation";
 import { countryRoutes } from "./country";
 import { currencyRoutes } from "./currency";
 import { documentRoutes } from "./document";
+import { exportRoutes } from "./export";
 import { institutionRoutes } from "./institution";
 import { institutionConnectionRoutes } from "./institution-connection";
 import { providerRoutes } from "./provider";
@@ -29,6 +30,7 @@ export const api = new Elysia({ prefix: "/api" })
   .use(countryRoutes)
   .use(currencyRoutes)
   .use(documentRoutes)
+  .use(exportRoutes)
   .use(rateRoutes)
   .use(providerRoutes)
   .use(institutionRoutes)

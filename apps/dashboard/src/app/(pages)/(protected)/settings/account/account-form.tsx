@@ -2,7 +2,7 @@
 
 import type { Currency } from "@guilders/api/types";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
+import { Download, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -57,6 +57,7 @@ const customOrder = ["EUR", "GBP", "USD"];
 export function AccountForm() {
   const router = useRouter();
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
   const { mutateAsync: deleteAccount } = useDeleteAccount();
 
   const { data: user, isLoading: isUserLoading, error: userError } = useUser();
@@ -221,6 +222,39 @@ export function AccountForm() {
     </div>
   );
 
+  async function handleDownloadData() {
+    setIsExporting(true);
+    try {
+      const res = await fetch(`${env.NEXT_PUBLIC_API_URL}/api/export`, {
+        credentials: "include",
+      });
+
+      if (!res.ok) {
+        const body = (await res.json().catch(() => ({}))) as { error?: string };
+        toast.error(body.error ?? `Export failed`);
+        return;
+      }
+
+      const blob = await res.blob();
+      const disposition = res.headers.get("content-disposition");
+      const match = disposition?.match(/filename="?([^";\n]+)"?/);
+      const filename = match?.[1]?.trim() ?? "guilders-export.zip";
+
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+
+      toast.success("Your data has been downloaded.");
+    } catch {
+      toast.error("Failed to download export.");
+    } finally {
+      setIsExporting(false);
+    }
+  }
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
@@ -274,6 +308,30 @@ export function AccountForm() {
       </form>
       <div className="border-t pt-6">
         <ThemeSelector />
+      </div>
+      <div className="space-y-4 border-t pt-6">
+        <h4 className="text-sm font-medium">Data</h4>
+        <p className="text-sm text-muted-foreground">
+          Export all of your data as a ZIP. Useful for backups or moving your data elsewhere.
+        </p>
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={handleDownloadData}
+          disabled={isExporting}
+        >
+          {isExporting ? (
+            <>
+              <Loader2 className="mr-2 size-4 animate-spin" />
+              Preparing export…
+            </>
+          ) : (
+            <>
+              <Download className="mr-2 size-4" />
+              Download my data
+            </>
+          )}
+        </Button>
       </div>
       {deleteAccountButton}
     </Form>
