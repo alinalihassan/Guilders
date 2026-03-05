@@ -39,10 +39,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { api, edenError } from "@/lib/api";
 import { authClient } from "@/lib/auth-client";
 import { env } from "@/lib/env";
 import { useCurrencies } from "@/lib/queries/useCurrencies";
 import { useDeleteAccount, useUpdateUserSettings, useUser } from "@/lib/queries/useUser";
+import { downloadFile } from "@/lib/utils";
 
 const accountFormSchema = z.object({
   email: z.string().email(),
@@ -225,27 +227,16 @@ export function AccountForm() {
   async function handleDownloadData() {
     setIsExporting(true);
     try {
-      const res = await fetch(`${env.NEXT_PUBLIC_API_URL}/api/export`, {
-        credentials: "include",
-      });
+      const { data, error, response } = await api.export.get();
 
-      if (!res.ok) {
-        const body = (await res.json().catch(() => ({}))) as { error?: string };
-        toast.error(body.error ?? `Export failed`);
+      if (error || data == null || !response) {
+        toast.error("Export failed");
         return;
       }
 
-      const blob = await res.blob();
-      const disposition = res.headers.get("content-disposition");
-      const match = disposition?.match(/filename="?([^";\n]+)"?/);
-      const filename = match?.[1]?.trim() ?? "guilders-export.zip";
-
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = filename;
-      a.click();
-      URL.revokeObjectURL(url);
+      // Eden parses binary into data (body already consumed); build blob from data, filename from response headers
+      const blob = data instanceof Blob ? data : new Blob([data as unknown as ArrayBuffer]);
+      downloadFile(blob, "guilders-export.zip");
 
       toast.success("Your data has been downloaded.");
     } catch {

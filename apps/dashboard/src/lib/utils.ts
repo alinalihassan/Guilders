@@ -39,3 +39,12 @@ export function formatBytes(
 export function isPro(user: User | undefined | null) {
   return user?.subscription?.status === "active" || user?.subscription?.status === "trialing";
 }
+
+export function downloadFile(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
