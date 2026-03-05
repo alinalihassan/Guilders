@@ -65,12 +65,18 @@ export type RefreshConnectionResult = {
   };
 };
 
+/** Optional data so deregister can run without DB (e.g. after user is deleted). */
+export type DeregisterUserOptions = {
+  userSecret?: string;
+  connectionIds?: string[];
+};
+
 export interface IProvider {
   readonly name: ProviderName;
   readonly enabled: boolean;
   getInstitutions(): Promise<ProviderInstitution[]>;
   registerUser(userId: string): Promise<RegisterUserResult>;
-  deregisterUser(userId: string): Promise<DeregisterUserResult>;
+  deregisterUser(userId: string, options?: DeregisterUserOptions): Promise<DeregisterUserResult>;
   connect(params: ConnectionParams): Promise<ConnectResult>;
   reconnect(params: ConnectionParams): Promise<ConnectResult>;
   refreshConnection(connectionId: string): Promise<RefreshConnectionResult>;

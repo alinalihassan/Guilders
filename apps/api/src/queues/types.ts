@@ -67,6 +67,10 @@ export type ProviderUserCleanupEvent = {
   payload: {
     providerName: ProviderName;
     userId: string;
+    /** Passed so worker can deregister without DB (Teller: enrollment secret). */
+    userSecret?: string;
+    /** Passed so worker can delete sessions without DB (EnableBanking: connection_id per institution). */
+    connectionIds?: string[];
   };
 };
 

@@ -22,7 +22,10 @@ export const createMcpServer = ({ userId, scopes }: McpAuthContext) => {
   );
 
   // null = opaque token / decode failure; [] = decoded but no scope. Both get read-only.
-  const effectiveScopes = scopes === null || scopes.length === 0 ? [McpScope.read] : scopes;
+  // Clients that request only OIDC scopes (openid, profile, email) get read-only MCP access.
+  const hasMcpScopes = scopes?.some((s) => s === McpScope.read || s === McpScope.write);
+  const effectiveScopes =
+    scopes === null || scopes.length === 0 || !hasMcpScopes ? [McpScope.read] : scopes;
   const grantedTools = mcpTools.filter((tool) => effectiveScopes.includes(tool.requiredScope));
 
   for (const tool of grantedTools) {

@@ -59,9 +59,22 @@ export class TellerProvider implements IProvider {
     return { success: true, data: { userId: _userId, userSecret: _userId } };
   }
 
-  async deregisterUser(userId: string): Promise<DeregisterUserResult> {
-    const db = createDb();
+  async deregisterUser(
+    userId: string,
+    options?: { userSecret?: string; connectionIds?: string[] },
+  ): Promise<DeregisterUserResult> {
+    const secret = options?.userSecret;
+    if (secret) {
+      try {
+        await client.deleteEnrollment(secret);
+      } catch (error) {
+        console.error("[Teller] Failed to delete enrollment:", error);
+        return { success: false, error: "Failed to delete enrollment" };
+      }
+      return { success: true };
+    }
 
+    const db = createDb();
     const providerRecord = await db.query.provider.findFirst({
       where: { name: this.name },
     });

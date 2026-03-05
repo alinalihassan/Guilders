@@ -26,10 +26,16 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       {
+        hostname: "localhost",
+      },
+      {
         hostname: "db.guilders.app",
       },
       {
         hostname: "bucket.guilders.app",
+      },
+      {
+        hostname: "api.guilders.app",
       },
       {
         hostname: "storage.googleapis.com",
