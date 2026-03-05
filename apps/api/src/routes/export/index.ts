@@ -155,7 +155,11 @@ export const exportRoutes = new Elysia({
       const seenNames = new Map<string, number>();
 
       for (const doc of documents) {
-        if (totalDocumentBytes >= MAX_TOTAL_DOCUMENT_BYTES) {
+        const object = await env.USER_BUCKET.get(doc.path);
+        if (object == null) continue;
+        const body = await object.arrayBuffer();
+        const bytes = new Uint8Array(body);
+        if (totalDocumentBytes + bytes.length >= MAX_TOTAL_DOCUMENT_BYTES) {
           return new Response(
             JSON.stringify({
               error: `Export limit exceeded: total document size exceeds ${MAX_TOTAL_DOCUMENT_BYTES / 1024 / 1024} MB.`,
@@ -163,10 +167,6 @@ export const exportRoutes = new Elysia({
             { status: 413, headers: { "Content-Type": "application/json" } },
           );
         }
-        const object = await env.USER_BUCKET.get(doc.path);
-        if (object == null) continue;
-        const body = await object.arrayBuffer();
-        const bytes = new Uint8Array(body);
         totalDocumentBytes += bytes.length;
 
         const { safe } = sanitizeFilenameForDisposition(doc.name);
