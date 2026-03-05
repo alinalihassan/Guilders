@@ -1,4 +1,5 @@
 import { sql } from "drizzle-orm";
+import type { MaybePromise } from "elysia/types";
 
 import { app } from "../src/app";
 import { createDb } from "../src/lib/db";
@@ -22,12 +23,16 @@ export async function resetTestDb(): Promise<void> {
   `);
 }
 
-export function selfFetch(path: string, init?: RequestInit): Promise<Response> {
+export function selfFetch(path: string, init?: RequestInit): MaybePromise<Response> {
   const request = new Request(`${TEST_ORIGIN}${path}`, init);
   return app.fetch(request);
 }
 
-export function authedFetch(path: string, token: string, init?: RequestInit): Promise<Response> {
+export function authedFetch(
+  path: string,
+  token: string,
+  init?: RequestInit,
+): MaybePromise<Response> {
   const headers = new Headers(init?.headers);
   headers.set("Authorization", `Bearer ${token}`);
   const request = new Request(`${TEST_ORIGIN}${path}`, { ...init, headers });

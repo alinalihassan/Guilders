@@ -2,9 +2,15 @@ import { drizzle } from "drizzle-orm/node-postgres";
 
 import { relations } from "../db/schema/relations";
 
-type NativeDrizzle = ReturnType<typeof drizzle>;
+/** Builds the node-postgres Drizzle instance (used only for typing). */
+function nodeDbWithRelations() {
+  return drizzle(process.env.DATABASE_URL!, { relations });
+}
 
-let pgliteDb: NativeDrizzle | null = null;
+/** Type of a Drizzle instance with our relations (so db.query.* is typed). */
+export type Database = ReturnType<typeof nodeDbWithRelations>;
+
+let pgliteDb: Database | null = null;
 
 /**
  * Initialize PGLite in-memory Postgres for testing.
@@ -30,10 +36,10 @@ export async function initPgliteDb(): Promise<void> {
     }
   }
 
-  pgliteDb = drizzlePglite({ client, relations }) as unknown as NativeDrizzle;
+  pgliteDb = drizzlePglite({ client, relations }) as unknown as Database;
 }
 
-export function createDb(): NativeDrizzle {
+export function createDb(): Database {
   if (process.env.USE_PGLITE === "1") {
     if (!pgliteDb) {
       throw new Error("PGLite not initialized — call initPgliteDb() in test setup first");
@@ -42,5 +48,3 @@ export function createDb(): NativeDrizzle {
   }
   return drizzle(process.env.DATABASE_URL, { relations });
 }
-
-export type Database = NativeDrizzle;
