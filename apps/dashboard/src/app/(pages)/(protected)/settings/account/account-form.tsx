@@ -4,7 +4,7 @@ import type { Currency } from "@guilders/api/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Download, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -100,7 +100,7 @@ export function AccountForm() {
     }
   }, [user, form]);
 
-  const sortedCurrencies = useMemo(() => {
+  const sortedCurrencies = (() => {
     if (!currencies) return [];
 
     const orderedCurrencies = customOrder
@@ -112,7 +112,7 @@ export function AccountForm() {
       .toSorted((a: Currency, b: Currency) => a.code.localeCompare(b.code));
 
     return [...orderedCurrencies, ...remainingCurrencies];
-  }, [currencies]);
+  })();
 
   const handleDeleteAccount = async () => {
     setIsDeletingAccount(true);
