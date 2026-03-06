@@ -72,4 +72,6 @@ export function env() {
     const issues = result.error.issues.map((i) => `  ${i.path.join(".")}: ${i.message}`).join("\n");
     throw new Error(`Environment validation failed:\n${issues}`);
   }
+
+  return false;
 }
