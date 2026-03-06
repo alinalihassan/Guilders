@@ -47,10 +47,12 @@ export async function handleSnapTradeCallback(request: Request, env: Env): Promi
     return Response.json({ error: "Invalid webhook payload" }, { status: 400 });
   }
 
-  const calculatedSignature = await createSnapTradeSignature(
-    body,
-    process.env.SNAPTRADE_CLIENT_SECRET,
-  );
+  const secret = process.env.SNAPTRADE_CLIENT_SECRET;
+  if (!secret) {
+    return Response.json({ error: "SnapTrade is not configured." }, { status: 503 });
+  }
+
+  const calculatedSignature = await createSnapTradeSignature(body, secret);
   if (calculatedSignature !== signature) {
     return Response.json({ error: "Invalid webhook signature" }, { status: 401 });
   }

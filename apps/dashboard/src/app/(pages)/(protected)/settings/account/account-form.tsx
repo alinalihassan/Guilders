@@ -4,7 +4,7 @@ import type { Currency } from "@guilders/api/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Download, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -40,6 +40,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/lib/api";
 import { authClient } from "@/lib/auth-client";
 import { env } from "@/lib/env";
@@ -61,6 +62,7 @@ export function AccountForm() {
   const router = useRouter();
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const { mutateAsync: deleteAccount } = useDeleteAccount();
 
   const { data: user, isLoading: isUserLoading, error: userError } = useUser();
@@ -71,6 +73,10 @@ export function AccountForm() {
     isLoading: isCurrenciesLoading,
     error: currenciesError,
   } = useCurrencies();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const form = useForm<AccountFormValues>({
     resolver: zodResolver(accountFormSchema),
@@ -94,7 +100,7 @@ export function AccountForm() {
     }
   }, [user, form]);
 
-  const sortedCurrencies = useMemo(() => {
+  const sortedCurrencies = (() => {
     if (!currencies) return [];
 
     const orderedCurrencies = customOrder
@@ -106,7 +112,7 @@ export function AccountForm() {
       .toSorted((a: Currency, b: Currency) => a.code.localeCompare(b.code));
 
     return [...orderedCurrencies, ...remainingCurrencies];
-  }, [currencies]);
+  })();
 
   const handleDeleteAccount = async () => {
     setIsDeletingAccount(true);
@@ -121,19 +127,8 @@ export function AccountForm() {
     }
   };
 
-  if (isUserLoading || isCurrenciesLoading) {
-    return <div className="flex items-center justify-center py-6">Loading...</div>;
-  }
-
-  if (userError) {
-    return <div className="text-destructive">Error loading user data. Please try again later.</div>;
-  }
-
-  if (currenciesError) {
-    return (
-      <div className="text-destructive">Error loading currencies. Please try again later.</div>
-    );
-  }
+  const profileError = userError ?? currenciesError;
+  const isProfileLoading = !mounted || isUserLoading || isCurrenciesLoading;
 
   async function onSubmit(data: AccountFormValues) {
     try {
@@ -203,6 +198,13 @@ export function AccountForm() {
         title="Profile"
         description="Email and default currency for your account."
       >
+        {profileError ? (
+          <p className="text-sm text-destructive">
+            {userError
+              ? "Error loading user data. Please try again later."
+              : "Error loading currencies. Please try again later."}
+          </p>
+        ) : null}
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <FormField
@@ -212,7 +214,11 @@ export function AccountForm() {
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input placeholder="Your email" {...field} />
+                    {isProfileLoading ? (
+                      <Skeleton className="h-10 w-full" />
+                    ) : (
+                      <Input placeholder="Your email" {...field} />
+                    )}
                   </FormControl>
                   <FormDescription>
                     This is the email that will be used to login to your account.
@@ -224,35 +230,47 @@ export function AccountForm() {
             <FormField
               control={form.control}
               name="currency"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Currency</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                    value={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select currency">{field.value}</SelectValue>
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {sortedCurrencies.map((currency) => (
-                        <SelectItem key={currency.code} value={currency.code}>
-                          {currency.code} - {currency.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormDescription>
-                    This is the currency that will be used for your account.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
+              render={({ field }) => {
+                // Use user.currency when form state not yet reset (avoids showing placeholder on first paint after load)
+                const currencyValue = field.value || (user?.currency ?? "");
+                return (
+                  <FormItem>
+                    <FormLabel>Currency</FormLabel>
+                    {isProfileLoading ? (
+                      <Skeleton className="h-10 w-full" />
+                    ) : (
+                      <Select onValueChange={field.onChange} value={currencyValue}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select currency" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {sortedCurrencies.map((currency) => (
+                            <SelectItem key={currency.code} value={currency.code}>
+                              {currency.code} - {currency.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                    <FormDescription>
+                      This is the currency that will be used for your account.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                );
+              }}
             />
-            <Button type="submit" disabled={!form.formState.isDirty || form.formState.isSubmitting}>
+            <Button
+              type="submit"
+              disabled={
+                isProfileLoading ||
+                !!profileError ||
+                !form.formState.isDirty ||
+                form.formState.isSubmitting
+              }
+            >
               {form.formState.isSubmitting ? "Updating..." : "Update account"}
             </Button>
           </form>

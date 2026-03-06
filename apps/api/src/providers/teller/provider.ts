@@ -44,6 +44,7 @@ export class TellerProvider implements IProvider {
   readonly enabled = true;
 
   async getInstitutions(): Promise<ProviderInstitution[]> {
+    if (!client.getTellerConfig()) return [];
     const institutions = await client.listInstitutions();
 
     return institutions.map((inst) => ({
@@ -95,8 +96,9 @@ export class TellerProvider implements IProvider {
   }
 
   async connect(params: ConnectionParams): Promise<ConnectResult> {
-    const db = createDb();
     const config = client.getTellerConfig();
+    if (!config) return { success: false, error: "Teller is not configured." };
+    const db = createDb();
 
     try {
       const inst = await db.query.institution.findFirst({
@@ -109,7 +111,11 @@ export class TellerProvider implements IProvider {
       if (!backendUrl) return { success: false, error: "BACKEND_URL not configured" };
 
       const secret = process.env.GUILDERS_SECRET;
-      if (!secret) return { success: false, error: "Server configuration error" };
+      if (!secret)
+        return {
+          success: false,
+          error: "Provider connections are not configured (GUILDERS_SECRET).",
+        };
 
       const state = await signState(
         { userId: params.userId, institutionId: params.institutionId },
@@ -138,6 +144,7 @@ export class TellerProvider implements IProvider {
 
   async reconnect(params: ConnectionParams): Promise<ConnectResult> {
     const config = client.getTellerConfig();
+    if (!config) return { success: false, error: "Teller is not configured." };
 
     try {
       if (!params.connectionId) return { success: false, error: "connectionId required" };
@@ -147,7 +154,11 @@ export class TellerProvider implements IProvider {
       if (!backendUrl) return { success: false, error: "BACKEND_URL not configured" };
 
       const secret = process.env.GUILDERS_SECRET;
-      if (!secret) return { success: false, error: "Missing GUILDERS_SECRET env var" };
+      if (!secret)
+        return {
+          success: false,
+          error: "Provider connections are not configured (GUILDERS_SECRET).",
+        };
 
       const state = await signState(
         { userId: params.userId, institutionId: params.institutionId },
@@ -175,8 +186,9 @@ export class TellerProvider implements IProvider {
   }
 
   async refreshConnection(connectionId: string): Promise<RefreshConnectionResult> {
-    const db = createDb();
     const config = client.getTellerConfig();
+    if (!config) return { success: false, error: "Teller is not configured." };
+    const db = createDb();
 
     try {
       const instConn = await db.query.institutionConnection.findFirst({
@@ -192,7 +204,11 @@ export class TellerProvider implements IProvider {
       if (!backendUrl) return { success: false, error: "BACKEND_URL not configured" };
 
       const secret = process.env.GUILDERS_SECRET;
-      if (!secret) return { success: false, error: "Missing GUILDERS_SECRET env var" };
+      if (!secret)
+        return {
+          success: false,
+          error: "Provider connections are not configured (GUILDERS_SECRET).",
+        };
 
       const state = await signState(
         { userId: instConn.providerConnection.user_id, institutionId: instConn.institution_id },

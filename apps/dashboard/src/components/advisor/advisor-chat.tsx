@@ -24,6 +24,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { api } from "@/lib/api";
 import { env } from "@/lib/env";
+import { useBillingConfig } from "@/lib/queries/useBilling";
 import { conversationsKey } from "@/lib/queries/useConversations";
 import { useUser, useUserToken } from "@/lib/queries/useUser";
 import { useStore } from "@/lib/store";
@@ -90,8 +91,10 @@ interface AdvisorChatProps {
 export function AdvisorChat({ chatId, initialMessages }: AdvisorChatProps) {
   const router = useRouter();
   const { data: user, isLoading } = useUser();
+  const { data: billing, isPending: billingConfigPending } = useBillingConfig();
   const { data: token } = useUserToken();
-  const isSubscribed = isPro(user);
+  const billingEnabled = billing?.billingEnabled ?? true;
+  const isSubscribed = isPro(user, billingEnabled);
   const [inputText, setInputText] = useState("");
 
   const tokenRef = useRef(token);
@@ -301,7 +304,7 @@ export function AdvisorChat({ chatId, initialMessages }: AdvisorChatProps) {
     }
   };
 
-  if (isLoading) {
+  if (isLoading || billingConfigPending) {
     return (
       <div className="flex flex-1 items-center justify-center">
         <Loader2 className="size-8 animate-spin text-muted-foreground" aria-label="Loading" />

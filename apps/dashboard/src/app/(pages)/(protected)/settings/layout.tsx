@@ -8,30 +8,12 @@ export const metadata: Metadata = {
 };
 
 const tabItems = [
-  {
-    title: "Account",
-    href: "/settings/account",
-  },
-  {
-    title: "Security",
-    href: "/settings/security",
-  },
-  {
-    title: "Connections",
-    href: "/settings/connections",
-  },
-  {
-    title: "Categories",
-    href: "/settings/categories",
-  },
-  {
-    title: "Developer",
-    href: "/settings/developer",
-  },
-  {
-    title: "Subscription",
-    href: "/settings/subscription",
-  },
+  { title: "Account", href: "/settings/account" },
+  { title: "Security", href: "/settings/security" },
+  { title: "Connections", href: "/settings/connections" },
+  { title: "Categories", href: "/settings/categories" },
+  { title: "Developer", href: "/settings/developer" },
+  { title: "Subscription", href: "/settings/subscription" },
 ];
 
 interface SettingsLayoutProps {
@@ -40,7 +22,7 @@ interface SettingsLayoutProps {
 
 export default function SettingsLayout({ children }: SettingsLayoutProps) {
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-8">
       <SettingsTabs items={tabItems} />
       <div className="flex-1 lg:max-w-2xl">{children}</div>
     </div>

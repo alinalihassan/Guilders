@@ -4,18 +4,37 @@ import { Check, Loader2 } from "lucide-react";
 
 import { SettingsSubsection } from "@/components/settings/settings-subsection";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useBillingConfig } from "@/lib/queries/useBilling";
 import { usePortalSession, useSubscription } from "@/lib/queries/useSubscription";
 import { useUser } from "@/lib/queries/useUser";
 
 export function SubscriptionForm() {
   const { data: user, isLoading } = useUser();
+  const { data: billing, isPending: billingConfigPending } = useBillingConfig();
   const upgrade = useSubscription();
   const portal = usePortalSession();
 
-  if (isLoading) {
-    return <div className="flex items-center justify-center py-6">Loading...</div>;
+  if (isLoading || billingConfigPending) {
+    return (
+      <SettingsSubsection>
+        <div className="space-y-4">
+          <div className="space-y-2">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <Skeleton className="h-4 w-4 shrink-0 rounded" />
+                <Skeleton className="h-4 flex-1" />
+              </div>
+            ))}
+          </div>
+          <Skeleton className="h-4 w-48" />
+          <Skeleton className="h-10 w-44" />
+        </div>
+      </SettingsSubsection>
+    );
   }
 
+  const billingEnabledResolved = billing?.billingEnabled ?? true;
   const isSubscribed = user?.subscription?.status === "active";
   const isTrialing = user?.subscription?.status === "trialing";
   const periodEnd = user?.subscription?.current_period_end
@@ -33,7 +52,7 @@ export function SubscriptionForm() {
         : "Try Pro free for 14 days, no credit card required";
 
   return (
-    <SettingsSubsection title="Plan" description={description}>
+    <SettingsSubsection description={description}>
       <div className="space-y-4">
         <div className="space-y-2">
           <div className="flex items-center">
@@ -76,7 +95,11 @@ export function SubscriptionForm() {
           </div>
         )}
         {isSubscribed || isTrialing ? (
-          <Button type="button" disabled={portal.isPending} onClick={() => portal.mutate()}>
+          <Button
+            type="button"
+            disabled={!billingEnabledResolved || portal.isPending}
+            onClick={() => portal.mutate()}
+          >
             {portal.isPending ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -87,7 +110,11 @@ export function SubscriptionForm() {
             )}
           </Button>
         ) : (
-          <Button type="button" disabled={upgrade.isPending} onClick={() => upgrade.mutate()}>
+          <Button
+            type="button"
+            disabled={!billingEnabledResolved || upgrade.isPending}
+            onClick={() => upgrade.mutate()}
+          >
             {upgrade.isPending ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -99,6 +126,11 @@ export function SubscriptionForm() {
               "Start free trial"
             )}
           </Button>
+        )}
+        {!billingEnabledResolved && (
+          <p className="text-sm text-muted-foreground">
+            Billing is not configured on this server. All features are included.
+          </p>
         )}
       </div>
     </SettingsSubsection>

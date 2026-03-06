@@ -5,6 +5,7 @@ import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   useAddCategory,
   useCategories,
@@ -84,19 +85,32 @@ export function CategoriesForm() {
       </div>
 
       {isLoading ? (
-        <p className="text-sm text-muted-foreground">Loading categories...</p>
+        <div className="space-y-4">
+          {Array.from({ length: 10 }).map((_, i) => (
+            <div
+              key={i}
+              className="flex items-center justify-between gap-3 rounded-md border px-3 py-2"
+            >
+              <Skeleton className="h-4 w-24" />
+              <div className="flex gap-2">
+                <Skeleton className="h-10 w-10 rounded-md" />
+                <Skeleton className="h-10 w-10 rounded-md" />
+              </div>
+            </div>
+          ))}
+        </div>
       ) : !categories || categories.length === 0 ? (
         <p className="text-sm text-muted-foreground">
           No categories yet. Add your first one above.
         </p>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-4">
           {categories.map((category) => {
             const isEditing = editingCategoryId === category.id;
             return (
               <div
                 key={category.id}
-                className="flex items-center justify-between gap-2 rounded-md border px-3 py-2"
+                className="flex items-center justify-between gap-3 rounded-md border px-3 py-2"
               >
                 {isEditing ? (
                   <Input
@@ -118,7 +132,7 @@ export function CategoriesForm() {
                   <span className="text-sm">{category.name}</span>
                 )}
 
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-2">
                   {isEditing ? (
                     <>
                       <Button

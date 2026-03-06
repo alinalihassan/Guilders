@@ -28,10 +28,6 @@ function rateLimitExceededResponse(): Response {
   );
 }
 
-/**
- * Rate limit middleware: per-API-key (when x-api-key header is present).
- * Uses Cloudflare Workers Rate Limiting API; no-op when RATE_LIMIT binding is missing (e.g. tests).
- */
 export const rateLimitPlugin = new Elysia({ name: "rate-limit" }).onBeforeHandle(
   async ({ request }) => {
     const rateLimit = env.RATE_LIMIT;

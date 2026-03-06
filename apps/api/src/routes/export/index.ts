@@ -69,13 +69,6 @@ export const exportRoutes = new Elysia({
   .get(
     "",
     async ({ user, db }) => {
-      if (env.USER_BUCKET == null) {
-        return new Response(
-          JSON.stringify({ error: "Storage not configured; data export is unavailable." }),
-          { status: 503, headers: { "Content-Type": "application/json" } },
-        );
-      }
-
       const [accounts, transactions, categories, conversations, documents] = await Promise.all([
         db.select().from(account).where(eq(account.user_id, user.id)),
         db

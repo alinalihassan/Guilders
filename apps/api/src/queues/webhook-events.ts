@@ -340,6 +340,10 @@ async function syncSnapTradeHoldings(
   if (!institutionConn) throw new Error("SnapTrade institution connection not found");
 
   const client = getSnapTradeClient();
+  if (!client) {
+    console.warn("[SnapTrade] not configured, skipping holdings sync");
+    return;
+  }
   const response = await client.accountInformation.getUserHoldings({
     userId: payload.userId,
     userSecret: providerConn.secret,

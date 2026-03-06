@@ -275,6 +275,9 @@ async function syncSnapTradeConnection(
   }
 
   const client = getSnapTradeClient();
+  if (!client) {
+    throw new Error("SnapTrade is not configured.");
+  }
 
   const snapTradeAccounts = instConn.accounts.filter((a) => a.provider_account_id && !a.parent);
   if (!snapTradeAccounts.length) {

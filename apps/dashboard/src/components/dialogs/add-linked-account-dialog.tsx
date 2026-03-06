@@ -14,6 +14,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useDialog } from "@/hooks/useDialog";
+import { useBillingConfig } from "@/lib/queries/useBilling";
 import { useCreateConnection } from "@/lib/queries/useConnections";
 import { useProviderById } from "@/lib/queries/useProviders";
 import { useUser } from "@/lib/queries/useUser";
@@ -22,6 +23,7 @@ import { isPro } from "@/lib/utils";
 export function AddLinkedAccountDialog() {
   const router = useRouter();
   const { data: user } = useUser();
+  const { data: billing, isPending: billingConfigPending } = useBillingConfig();
   const { isOpen, data, close } = useDialog("addLinkedAccount");
   const { open: openProviderDialog } = useDialog("provider");
   const provider = useProviderById(data?.institution?.provider_id);
@@ -29,9 +31,18 @@ export function AddLinkedAccountDialog() {
 
   if (!isOpen || !provider || !data?.institution) return null;
   const { institution } = data;
-  const isSubscribed = isPro(user);
+
+  const billingConfigLoaded = !billingConfigPending;
+  const billingReady = billingConfigLoaded && billing !== undefined;
+  const billingEnabled = billingReady ? (billing.billingEnabled ?? true) : undefined;
+  const isSubscribed =
+    billingEnabled !== undefined ? !billingEnabled || isPro(user, billingEnabled) : false;
 
   const onContinue = async () => {
+    if (!billingReady) {
+      toast.error("Subscription status is still loading. Please wait and try again.");
+      return;
+    }
     if (!isSubscribed) {
       router.push("/settings/subscription");
       close();
@@ -93,7 +104,9 @@ export function AddLinkedAccountDialog() {
           </div>
 
           <p className="text-sm text-muted-foreground">
-            {isSubscribed ? (
+            {!billingReady ? (
+              <>Checking subscription status…</>
+            ) : isSubscribed ? (
               <>
                 This connection is provided by {provider.name}. By clicking continue, you authorize{" "}
                 {provider.name} to establish the connection and access your financial data.
@@ -110,6 +123,11 @@ export function AddLinkedAccountDialog() {
           <Button disabled>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             Please wait
+          </Button>
+        ) : !billingReady ? (
+          <Button disabled>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Loading…
           </Button>
         ) : (
           <Button onClick={onContinue}>{isSubscribed ? "Continue" : "Upgrade to Pro"}</Button>

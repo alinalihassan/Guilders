@@ -1,22 +1,18 @@
 import { Snaptrade } from "snaptrade-typescript-sdk";
 
-type SnapTradeConfig = {
+export type SnapTradeConfig = {
   clientId: string;
   consumerKey: string;
 };
 
-function getSnapTradeConfig(): SnapTradeConfig {
+export function getSnapTradeConfig(): SnapTradeConfig | null {
   const clientId = process.env.SNAPTRADE_CLIENT_ID;
   const consumerKey = process.env.SNAPTRADE_CLIENT_SECRET;
-
-  if (!clientId || !consumerKey) {
-    throw new Error("Missing SNAPTRADE_CLIENT_ID or SNAPTRADE_CLIENT_SECRET env vars");
-  }
-
+  if (!clientId || !consumerKey) return null;
   return { clientId, consumerKey };
 }
 
-export function getSnapTradeClient(): Snaptrade {
+export function getSnapTradeClient(): Snaptrade | null {
   const config = getSnapTradeConfig();
-  return new Snaptrade(config);
+  return config ? new Snaptrade(config) : null;
 }

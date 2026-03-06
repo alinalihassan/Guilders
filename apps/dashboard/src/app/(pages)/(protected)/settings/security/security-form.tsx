@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
-import { Pencil, Shield, Trash2, X } from "lucide-react";
+import { Loader2, Pencil, Shield, Trash2, X } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -19,6 +19,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useDialog } from "@/hooks/useDialog";
 import {
   mfaQueryKey,
@@ -184,7 +185,7 @@ export function SecurityForm() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <SettingsSubsection
         title="Two-Factor Authentication"
         description="Add an extra layer of security to your account by requiring both a password and authentication code."
@@ -194,10 +195,14 @@ export function SecurityForm() {
             variant={hasMFA ? "outline" : "default"}
             className="w-full sm:w-auto"
             onClick={() => !hasMFA && openMFADialog()}
-            disabled={isLoadingMFA || hasMFA}
+            disabled={hasMFA || isLoadingMFA}
           >
-            <Shield className="mr-2 h-4 w-4" />
-            {isLoadingMFA ? "Loading..." : hasMFA ? "2FA is Enabled" : "Enable 2FA"}
+            {isLoadingMFA ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Shield className="mr-2 h-4 w-4" />
+            )}
+            {hasMFA ? "2FA is Enabled" : "Enable 2FA"}
           </Button>
 
           {hasMFA && (
@@ -222,15 +227,31 @@ export function SecurityForm() {
           Add passkey
         </Button>
         {isLoadingPasskeys ? (
-          <p className="text-sm text-muted-foreground">Loading passkeys...</p>
+          <div className="space-y-4">
+            {Array.from({ length: 2 }).map((_, i) => (
+              <div
+                key={i}
+                className="flex items-center justify-between gap-3 rounded-md border px-3 py-2"
+              >
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-3 w-48" />
+                </div>
+                <div className="flex gap-2">
+                  <Skeleton className="h-10 w-10 rounded-md" />
+                  <Skeleton className="h-10 w-10 rounded-md" />
+                </div>
+              </div>
+            ))}
+          </div>
         ) : passkeys.length === 0 ? (
           <p className="text-sm text-muted-foreground">No passkeys registered yet.</p>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-4">
             {passkeys.map((passkey) => (
               <div
                 key={passkey.id}
-                className="flex items-center justify-between rounded-md border px-3 py-2"
+                className="flex items-center justify-between gap-3 rounded-md border px-3 py-2"
               >
                 <div className="min-w-0">
                   <p className="truncate text-sm font-medium">
@@ -264,7 +285,7 @@ export function SecurityForm() {
 
       <SettingsSubsection title="Password">
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <FormField
               control={form.control}
               name="newPassword"
