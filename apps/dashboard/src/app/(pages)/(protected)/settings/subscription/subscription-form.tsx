@@ -4,6 +4,7 @@ import { Check, Loader2 } from "lucide-react";
 
 import { SettingsSubsection } from "@/components/settings/settings-subsection";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useBillingConfig } from "@/lib/queries/useBilling";
 import { usePortalSession, useSubscription } from "@/lib/queries/useSubscription";
 import { useUser } from "@/lib/queries/useUser";
@@ -17,7 +18,22 @@ export function SubscriptionForm() {
   const billingEnabled = billing?.billingEnabled ?? true;
 
   if (isLoading) {
-    return <div className="flex items-center justify-center py-6">Loading...</div>;
+    return (
+      <SettingsSubsection title="Plan" description="">
+        <div className="space-y-4">
+          <div className="space-y-2">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <Skeleton className="h-4 w-4 shrink-0 rounded" />
+                <Skeleton className="h-4 flex-1" />
+              </div>
+            ))}
+          </div>
+          <Skeleton className="h-4 w-48" />
+          <Skeleton className="h-10 w-44" />
+        </div>
+      </SettingsSubsection>
+    );
   }
 
   const isSubscribed = user?.subscription?.status === "active";

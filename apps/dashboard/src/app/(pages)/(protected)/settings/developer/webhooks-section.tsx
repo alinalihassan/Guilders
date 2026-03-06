@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   useCreateWebhook,
   useDeleteWebhook,
@@ -97,10 +98,6 @@ export function WebhooksSection() {
     }
   };
 
-  if (isLoading) {
-    return <div className="flex justify-center py-6">Loading...</div>;
-  }
-
   return (
     <div className="space-y-6">
       <form onSubmit={handleCreate} className="space-y-3">
@@ -146,87 +143,105 @@ export function WebhooksSection() {
         </div>
       )}
 
-      {endpoints.length === 0 && !createdSecret && (
+      {isLoading ? (
+        <div className="space-y-2">
+          {Array.from({ length: 2 }).map((_, i) => (
+            <div
+              key={i}
+              className="flex flex-wrap items-center justify-between gap-2 rounded-md border p-3"
+            >
+              <div className="min-w-0 space-y-2 py-1">
+                <Skeleton className="h-4 w-48" />
+                <Skeleton className="h-3 w-16" />
+              </div>
+              <div className="flex items-center gap-1">
+                <Skeleton className="h-10 w-10 shrink-0 rounded-md" />
+                <Skeleton className="h-10 w-10 shrink-0 rounded-md" />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : endpoints.length === 0 && !createdSecret ? (
         <p className="text-sm text-muted-foreground">No webhook endpoints yet.</p>
-      )}
-
-      <ul className="space-y-2">
-        {endpoints.map((ep) => (
-          <li
-            key={ep.id}
-            className="flex flex-wrap items-center justify-between gap-2 rounded-md border p-3"
-          >
-            <div className="min-w-0 flex-1">
-              <p className="break-all text-sm font-medium">{ep.url}</p>
-              <span
-                className={`mt-1 inline-block text-xs ${ep.enabled ? "text-green-600" : "text-muted-foreground"}`}
-              >
-                {ep.enabled ? "Enabled" : "Disabled"}
-              </span>
-            </div>
-            <div className="flex items-center gap-1">
-              <Dialog
-                open={editingId === ep.id}
-                onOpenChange={(open) => !open && setEditingId(null)}
-              >
-                <DialogTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => openEdit(ep)}
-                    aria-label={`Edit webhook endpoint ${ep.url}`}
-                    title="Edit webhook endpoint"
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Edit webhook endpoint</DialogTitle>
-                    <DialogDescription>Enable or disable delivery to this URL.</DialogDescription>
-                  </DialogHeader>
-                  <div className="grid gap-4 py-4">
-                    <div className="flex items-center gap-2">
-                      <Checkbox
-                        id="edit-enabled"
-                        checked={editEnabled}
-                        onCheckedChange={(v) => setEditEnabled(v === true)}
-                      />
-                      <Label htmlFor="edit-enabled">Enabled</Label>
+      ) : (
+        <ul className="space-y-2">
+          {endpoints.map((ep) => (
+            <li
+              key={ep.id}
+              className="flex flex-wrap items-center justify-between gap-2 rounded-md border p-3"
+            >
+              <div className="min-w-0 flex-1">
+                <p className="break-all text-sm font-medium">{ep.url}</p>
+                <span
+                  className={`mt-1 inline-block text-xs ${ep.enabled ? "text-green-600" : "text-muted-foreground"}`}
+                >
+                  {ep.enabled ? "Enabled" : "Disabled"}
+                </span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Dialog
+                  open={editingId === ep.id}
+                  onOpenChange={(open) => !open && setEditingId(null)}
+                >
+                  <DialogTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => openEdit(ep)}
+                      aria-label={`Edit webhook endpoint ${ep.url}`}
+                      title="Edit webhook endpoint"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Edit webhook endpoint</DialogTitle>
+                      <DialogDescription>Enable or disable delivery to this URL.</DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                      <div className="flex items-center gap-2">
+                        <Checkbox
+                          id="edit-enabled"
+                          checked={editEnabled}
+                          onCheckedChange={(v) => setEditEnabled(v === true)}
+                        />
+                        <Label htmlFor="edit-enabled">Enabled</Label>
+                      </div>
                     </div>
-                  </div>
-                  <DialogFooter>
-                    <Button variant="outline" onClick={() => setEditingId(null)}>
-                      Cancel
-                    </Button>
-                    <Button onClick={handleSaveEdit} disabled={updateWebhook.isPending}>
-                      {updateWebhook.isPending ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        "Save"
-                      )}
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-              <Button
-                variant="destructive"
-                size="icon"
-                onClick={() => handleDelete(ep.id)}
-                disabled={deletingId !== null}
-                aria-label={`Delete webhook endpoint ${ep.url}`}
-                title="Delete webhook endpoint"
-              >
-                {deletingId === ep.id ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Trash2 className="h-4 w-4" />
-                )}
-              </Button>
-            </div>
-          </li>
-        ))}
-      </ul>
+                    <DialogFooter>
+                      <Button variant="outline" onClick={() => setEditingId(null)}>
+                        Cancel
+                      </Button>
+                      <Button onClick={handleSaveEdit} disabled={updateWebhook.isPending}>
+                        {updateWebhook.isPending ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          "Save"
+                        )}
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => handleDelete(ep.id)}
+                  disabled={deletingId !== null}
+                  aria-label={`Delete webhook endpoint ${ep.url}`}
+                  title="Delete webhook endpoint"
+                >
+                  {deletingId === ep.id ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Trash2 className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

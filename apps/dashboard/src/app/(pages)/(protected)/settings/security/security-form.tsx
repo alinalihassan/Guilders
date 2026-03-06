@@ -19,6 +19,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useDialog } from "@/hooks/useDialog";
 import {
   mfaQueryKey,
@@ -190,15 +191,19 @@ export function SecurityForm() {
         description="Add an extra layer of security to your account by requiring both a password and authentication code."
       >
         <div className="flex h-10 items-center gap-4">
-          <Button
-            variant={hasMFA ? "outline" : "default"}
-            className="w-full sm:w-auto"
-            onClick={() => !hasMFA && openMFADialog()}
-            disabled={isLoadingMFA || hasMFA}
-          >
-            <Shield className="mr-2 h-4 w-4" />
-            {isLoadingMFA ? "Loading..." : hasMFA ? "2FA is Enabled" : "Enable 2FA"}
-          </Button>
+          {isLoadingMFA ? (
+            <Skeleton className="h-10 w-full sm:w-36" />
+          ) : (
+            <Button
+              variant={hasMFA ? "outline" : "default"}
+              className="w-full sm:w-auto"
+              onClick={() => !hasMFA && openMFADialog()}
+              disabled={hasMFA}
+            >
+              <Shield className="mr-2 h-4 w-4" />
+              {hasMFA ? "2FA is Enabled" : "Enable 2FA"}
+            </Button>
+          )}
 
           {hasMFA && (
             <Button
@@ -222,7 +227,23 @@ export function SecurityForm() {
           Add passkey
         </Button>
         {isLoadingPasskeys ? (
-          <p className="text-sm text-muted-foreground">Loading passkeys...</p>
+          <div className="space-y-2">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div
+                key={i}
+                className="flex items-center justify-between rounded-md border px-3 py-2"
+              >
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-3 w-48" />
+                </div>
+                <div className="flex gap-2">
+                  <Skeleton className="h-9 w-9 rounded-md" />
+                  <Skeleton className="h-9 w-9 rounded-md" />
+                </div>
+              </div>
+            ))}
+          </div>
         ) : passkeys.length === 0 ? (
           <p className="text-sm text-muted-foreground">No passkeys registered yet.</p>
         ) : (
