@@ -22,13 +22,12 @@ import { enqueueUserDeleteCleanupJobs } from "./user-delete-cleanup";
  * Create a per-request Better Auth instance with its own db connection.
  * Required for Cloudflare Workers where I/O can't be shared across requests.
  */
-const stripeSDK = new Stripe(process.env.STRIPE_SECRET_KEY || "sk_placeholder");
-
 function stripePlugin() {
-  if (!process.env.STRIPE_PRO_PRICE_ID) {
-    console.warn("[Stripe] STRIPE_PRO_PRICE_ID is not set — subscription upgrades will fail");
-  }
+  const secret = process.env.STRIPE_SECRET_KEY;
+  const priceId = process.env.STRIPE_PRO_PRICE_ID;
+  if (!secret || !priceId) return null;
 
+  const stripeSDK = new Stripe(secret);
   return stripe({
     stripeClient: stripeSDK,
     stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET ?? "",
@@ -38,7 +37,7 @@ function stripePlugin() {
       plans: [
         {
           name: "pro",
-          priceId: process.env.STRIPE_PRO_PRICE_ID ?? "",
+          priceId,
           freeTrial: {
             days: 14,
           },
@@ -53,6 +52,7 @@ export function createAuth(db?: Database) {
   const baseUrl = process.env.BACKEND_URL;
   const mcpAudience = `${baseUrl}/mcp`;
   const passkeyRpId = new URL(baseUrl).hostname;
+  const stripeAuth = stripePlugin();
 
   return betterAuth({
     baseURL: baseUrl,
@@ -165,7 +165,7 @@ export function createAuth(db?: Database) {
       openAPI({ disableDefaultReference: true }),
       // @ts-ignore TODO: Better Auth 1.5.0 issue, it's not seen as of type plugin
       expo({ disableOriginOverride: true }),
-      stripePlugin(),
+      ...(stripeAuth ? [stripeAuth] : []),
       ...(process.env.VITEST === "true" ? [testUtils()] : []),
     ],
     trustedOrigins: [

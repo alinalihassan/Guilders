@@ -3,11 +3,13 @@ import { openapi } from "@elysiajs/openapi";
 import { Elysia } from "elysia";
 import { CloudflareAdapter } from "elysia/adapter/cloudflare-worker";
 
+import { env } from "./env";
 import { api } from "./routes";
 import { oauthPagesRoutes } from "./routes/oauth-pages";
 import { oauthWellKnownRoutes } from "./routes/oauth-well-known";
 
 export const app = new Elysia({ adapter: CloudflareAdapter })
+  .use(env())
   .use(
     cors({
       credentials: true,

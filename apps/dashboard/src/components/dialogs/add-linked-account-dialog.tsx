@@ -14,6 +14,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useDialog } from "@/hooks/useDialog";
+import { useBillingConfig } from "@/lib/queries/useBilling";
 import { useCreateConnection } from "@/lib/queries/useConnections";
 import { useProviderById } from "@/lib/queries/useProviders";
 import { useUser } from "@/lib/queries/useUser";
@@ -22,6 +23,7 @@ import { isPro } from "@/lib/utils";
 export function AddLinkedAccountDialog() {
   const router = useRouter();
   const { data: user } = useUser();
+  const { data: billing } = useBillingConfig();
   const { isOpen, data, close } = useDialog("addLinkedAccount");
   const { open: openProviderDialog } = useDialog("provider");
   const provider = useProviderById(data?.institution?.provider_id);
@@ -29,7 +31,8 @@ export function AddLinkedAccountDialog() {
 
   if (!isOpen || !provider || !data?.institution) return null;
   const { institution } = data;
-  const isSubscribed = isPro(user);
+  const billingEnabled = billing?.billingEnabled ?? true;
+  const isSubscribed = !billingEnabled || isPro(user, billingEnabled);
 
   const onContinue = async () => {
     if (!isSubscribed) {

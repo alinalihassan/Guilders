@@ -26,7 +26,7 @@ export async function syncInstitutions() {
 
       const institutions = await adapter.getInstitutions();
       if (!institutions.length) {
-        console.log(`No institutions returned for ${adapter.name}`);
+        console.log(`Skipped ${adapter.name} (not configured or no institutions)`);
         continue;
       }
 

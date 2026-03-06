@@ -18,12 +18,10 @@ import type {
 import { EnableBankingClient } from "./client";
 import type { CashAccountType } from "./types";
 
-function getConfig() {
+function getConfig(): { clientId: string; privateKey: string } | null {
   const clientId = process.env.ENABLEBANKING_CLIENT_ID;
   const privateKey = process.env.ENABLEBANKING_CLIENT_PRIVATE_KEY;
-  if (!clientId || !privateKey) {
-    throw new Error("Missing ENABLEBANKING_CLIENT_ID or ENABLEBANKING_CLIENT_PRIVATE_KEY env vars");
-  }
+  if (!clientId || !privateKey) return null;
   return { clientId, privateKey };
 }
 
@@ -86,13 +84,14 @@ export class EnableBankingProvider implements IProvider {
   readonly name: ProviderName = "EnableBanking";
   readonly enabled = true;
 
-  private createClient(): EnableBankingClient {
-    const { clientId, privateKey } = getConfig();
-    return new EnableBankingClient(clientId, privateKey);
+  private createClient(config: { clientId: string; privateKey: string }): EnableBankingClient {
+    return new EnableBankingClient(config.clientId, config.privateKey);
   }
 
   async getInstitutions(): Promise<ProviderInstitution[]> {
-    const client = this.createClient();
+    const config = getConfig();
+    if (!config) return [];
+    const client = this.createClient(config);
     const aspsps = await client.getASPSPs();
 
     return aspsps.map((aspsp) => ({
@@ -116,7 +115,9 @@ export class EnableBankingProvider implements IProvider {
     userId: string,
     options?: { userSecret?: string; connectionIds?: string[] },
   ): Promise<DeregisterUserResult> {
-    const client = this.createClient();
+    const config = getConfig();
+    if (!config) return { success: false, error: "EnableBanking is not configured." };
+    const client = this.createClient(config);
     const connectionIds = options?.connectionIds;
 
     if (connectionIds && connectionIds.length > 0) {
@@ -159,7 +160,9 @@ export class EnableBankingProvider implements IProvider {
   }
 
   async connect(params: ConnectionParams): Promise<ConnectResult> {
-    const client = this.createClient();
+    const config = getConfig();
+    if (!config) return { success: false, error: "EnableBanking is not configured." };
+    const client = this.createClient(config);
     const db = createDb();
 
     try {
@@ -176,7 +179,7 @@ export class EnableBankingProvider implements IProvider {
       if (!backendUrl) return { success: false, error: "BACKEND_URL not configured" };
 
       const secret = process.env.GUILDERS_SECRET;
-      if (!secret) return { success: false, error: "Missing GUILDERS_SECRET env var" };
+      if (!secret) return { success: false, error: "Provider connections are not configured (GUILDERS_SECRET)." };
 
       const state = await signState(
         { userId: params.userId, institutionId: params.institutionId },
@@ -209,7 +212,9 @@ export class EnableBankingProvider implements IProvider {
   }
 
   async refreshConnection(connectionId: string): Promise<RefreshConnectionResult> {
-    const client = this.createClient();
+    const config = getConfig();
+    if (!config) return { success: false, error: "EnableBanking is not configured." };
+    const client = this.createClient(config);
     const db = createDb();
 
     try {
@@ -229,7 +234,7 @@ export class EnableBankingProvider implements IProvider {
       if (!backendUrl) return { success: false, error: "BACKEND_URL not configured" };
 
       const secret = process.env.GUILDERS_SECRET;
-      if (!secret) return { success: false, error: "Missing GUILDERS_SECRET env var" };
+      if (!secret) return { success: false, error: "Provider connections are not configured (GUILDERS_SECRET)." };
 
       const state = await signState(
         { userId: instConn.providerConnection.user_id, institutionId: instConn.institution_id },
@@ -258,7 +263,9 @@ export class EnableBankingProvider implements IProvider {
   }
 
   async getAccounts(params: AccountParams): Promise<ProviderAccount[]> {
-    const client = this.createClient();
+    const config = getConfig();
+    if (!config) return [];
+    const client = this.createClient(config);
     const db = createDb();
 
     const instConn = await db.query.institutionConnection.findFirst({
@@ -299,7 +306,9 @@ export class EnableBankingProvider implements IProvider {
   }
 
   async getTransactions(params: TransactionParams): Promise<InsertTransaction[]> {
-    const client = this.createClient();
+    const config = getConfig();
+    if (!config) return [];
+    const client = this.createClient(config);
     const db = createDb();
 
     const accountRecord = await db.query.account.findFirst({

@@ -27,6 +27,7 @@ import { env } from "@/lib/env";
 import { conversationsKey } from "@/lib/queries/useConversations";
 import { useUser, useUserToken } from "@/lib/queries/useUser";
 import { useStore } from "@/lib/store";
+import { useBillingConfig } from "@/lib/queries/useBilling";
 import { cn, isPro } from "@/lib/utils";
 
 const CHAT_AI_ICONS = [
@@ -90,8 +91,10 @@ interface AdvisorChatProps {
 export function AdvisorChat({ chatId, initialMessages }: AdvisorChatProps) {
   const router = useRouter();
   const { data: user, isLoading } = useUser();
+  const { data: billing } = useBillingConfig();
   const { data: token } = useUserToken();
-  const isSubscribed = isPro(user);
+  const billingEnabled = billing?.billingEnabled ?? true;
+  const isSubscribed = !billingEnabled || isPro(user, billingEnabled);
   const [inputText, setInputText] = useState("");
 
   const tokenRef = useRef(token);

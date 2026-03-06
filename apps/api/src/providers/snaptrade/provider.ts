@@ -58,6 +58,7 @@ export class SnapTradeProvider implements IProvider {
 
   async getInstitutions(): Promise<ProviderInstitution[]> {
     const client = getSnapTradeClient();
+    if (!client) return [];
     const brokerages = await client.referenceData.listAllBrokerages();
 
     return brokerages.data
@@ -88,6 +89,7 @@ export class SnapTradeProvider implements IProvider {
 
   async registerUser(userId: string): Promise<RegisterUserResult> {
     const client = getSnapTradeClient();
+    if (!client) return { success: false, error: "SnapTrade is not configured." };
     try {
       const response = await client.authentication.registerSnapTradeUser({
         userId,
@@ -122,6 +124,7 @@ export class SnapTradeProvider implements IProvider {
     _options?: { userSecret?: string; connectionIds?: string[] },
   ): Promise<DeregisterUserResult> {
     const client = getSnapTradeClient();
+    if (!client) return { success: false, error: "SnapTrade is not configured." };
     try {
       const response = await client.authentication.deleteSnapTradeUser({
         userId,
@@ -137,6 +140,7 @@ export class SnapTradeProvider implements IProvider {
 
   async connect(params: ConnectionParams): Promise<ConnectResult> {
     const client = getSnapTradeClient();
+    if (!client) return { success: false, error: "SnapTrade is not configured." };
     const db = createDb();
     try {
       const providerRecord = await db.query.provider.findFirst({
@@ -225,6 +229,7 @@ export class SnapTradeProvider implements IProvider {
 
   async refreshConnection(connectionId: string): Promise<RefreshConnectionResult> {
     const client = getSnapTradeClient();
+    if (!client) return { success: false, error: "SnapTrade is not configured." };
     const db = createDb();
 
     try {

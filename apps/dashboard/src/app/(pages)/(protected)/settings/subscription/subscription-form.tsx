@@ -4,13 +4,17 @@ import { Check, Loader2 } from "lucide-react";
 
 import { SettingsSubsection } from "@/components/settings/settings-subsection";
 import { Button } from "@/components/ui/button";
+import { useBillingConfig } from "@/lib/queries/useBilling";
 import { usePortalSession, useSubscription } from "@/lib/queries/useSubscription";
 import { useUser } from "@/lib/queries/useUser";
 
 export function SubscriptionForm() {
   const { data: user, isLoading } = useUser();
+  const { data: billing } = useBillingConfig();
   const upgrade = useSubscription();
   const portal = usePortalSession();
+
+  const billingEnabled = billing?.billingEnabled ?? true;
 
   if (isLoading) {
     return <div className="flex items-center justify-center py-6">Loading...</div>;
@@ -76,7 +80,11 @@ export function SubscriptionForm() {
           </div>
         )}
         {isSubscribed || isTrialing ? (
-          <Button type="button" disabled={portal.isPending} onClick={() => portal.mutate()}>
+          <Button
+            type="button"
+            disabled={!billingEnabled || portal.isPending}
+            onClick={() => portal.mutate()}
+          >
             {portal.isPending ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -87,7 +95,11 @@ export function SubscriptionForm() {
             )}
           </Button>
         ) : (
-          <Button type="button" disabled={upgrade.isPending} onClick={() => upgrade.mutate()}>
+          <Button
+            type="button"
+            disabled={!billingEnabled || upgrade.isPending}
+            onClick={() => upgrade.mutate()}
+          >
             {upgrade.isPending ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -99,6 +111,11 @@ export function SubscriptionForm() {
               "Start free trial"
             )}
           </Button>
+        )}
+        {!billingEnabled && (
+          <p className="text-sm text-muted-foreground">
+            Billing is not configured on this server. All features are included.
+          </p>
         )}
       </div>
     </SettingsSubsection>

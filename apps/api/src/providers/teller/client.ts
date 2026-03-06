@@ -2,20 +2,18 @@ import type { TellerAccount, TellerBalance, TellerInstitution, TellerTransaction
 
 const BASE_URL = "https://api.teller.io";
 
-type TellerConfig = {
+export type TellerConfig = {
   applicationId: string;
   environment: string;
 };
 
-function getTellerConfig(): TellerConfig {
+export function getTellerConfig(): TellerConfig | null {
   const applicationId = process.env.TELLER_APPLICATION_ID;
-  const environment = process.env.TELLER_ENVIRONMENT ?? "sandbox";
-
-  if (!applicationId) {
-    throw new Error("Missing TELLER_APPLICATION_ID env var");
-  }
-
-  return { applicationId, environment };
+  if (!applicationId) return null;
+  return {
+    applicationId,
+    environment: process.env.TELLER_ENVIRONMENT ?? "sandbox",
+  };
 }
 
 function authHeaders(accessToken: string): HeadersInit {
@@ -110,4 +108,3 @@ export async function deleteEnrollment(accessToken: string): Promise<void> {
   if (!res.ok) throw new Error(`Teller API error ${res.status}: ${await res.text()}`);
 }
 
-export { getTellerConfig };

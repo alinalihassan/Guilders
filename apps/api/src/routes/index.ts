@@ -3,6 +3,7 @@ import { Elysia } from "elysia";
 import { createAuth } from "../lib/auth";
 import { rateLimitPlugin } from "../middleware/rate-limit";
 import { accountRoutes } from "./account";
+import { billingRoutes } from "./billing";
 import { accountBalanceHistoryRoutes, balanceHistoryRoutes } from "./balance-history";
 import { categoryRoutes } from "./category";
 import { chatRoutes } from "./chat";
@@ -24,6 +25,7 @@ export const api = new Elysia({ prefix: "/api" })
   .use(rateLimitPlugin)
   .all("/auth/*", (context) => createAuth().handler(context.request), { detail: { hide: true } })
   .use(accountRoutes)
+  .use(billingRoutes)
   .use(accountBalanceHistoryRoutes)
   .use(balanceHistoryRoutes)
   .use(categoryRoutes)
