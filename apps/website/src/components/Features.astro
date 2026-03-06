@@ -1,33 +1,40 @@
 ---
 const features = [
-  { id: "01", name: "NET WORTH", desc: "Assets and liabilities. Banks, brokerages, crypto, property, loans." },
-  { id: "02", name: "BANK SYNC", desc: "Open banking via SaltEdge. Brokerage sync via SnapTrade." },
-  { id: "03", name: "MANUAL ACCOUNTS", desc: "Cash, collectibles, real estate — anything without an API." },
-  { id: "04", name: "CATEGORIES", desc: "Hierarchical, customizable. Expense and income classification." },
-  { id: "05", name: "MULTI-CURRENCY", desc: "Any ISO currency. Automatic exchange rate updates." },
-  { id: "06", name: "AI ADVISOR", desc: "Chat with an LLM that sees your full financial picture." },
+  { id: "01", name: "NET WORTH", desc: "Assets minus liabilities. Banks, brokerages, crypto, property, vehicles, credit cards, loans — one number." },
+  { id: "02", name: "BANK SYNC", desc: "Connect banks via EnableBanking (EU). Brokerages via SnapTrade. US banks via Teller. More coming." },
+  { id: "03", name: "MANUAL ACCOUNTS", desc: "Cash, collectibles, real estate, vehicles — anything that doesn't have an API gets tracked too." },
+  { id: "04", name: "TRANSACTIONS", desc: "Every transaction categorized. Income vs expense flow charts. Search, filter, export." },
+  { id: "05", name: "CATEGORIES", desc: "Hierarchical, customizable. Color-coded. Expense and income classification. Nest them however you want." },
+  { id: "06", name: "MULTI-CURRENCY", desc: "Any ISO currency. Automatic exchange rate updates. Net worth converted to your base currency." },
+  { id: "07", name: "AI ADVISOR", desc: "Chat with an LLM that has full context: accounts, transactions, categories. It calls tools to fetch live data." },
+  { id: "08", name: "BALANCE HISTORY", desc: "Net worth over time. Per-account balance charts. 1W, 1M, 3M, 6M, 1Y, ALL time ranges." },
+  { id: "09", name: "DATA EXPORT", desc: "One-click ZIP export: accounts, transactions, categories, conversations, documents. Your data, always." },
+  { id: "10", name: "WEBHOOKS", desc: "Real-time event notifications. Account and transaction CRUD events. Build automations on top." },
 ];
 ---
 <section class="border-b-3 border-line">
   <div class="border-b border-line px-5 py-4 md:px-8">
     <span class="text-[11px] font-bold uppercase tracking-[0.2em] text-dim">
-      Features
+      What you get
     </span>
   </div>
   <div class="divide-y divide-line">
-    {features.map((f) => (
-      <div class="group flex items-baseline gap-6 px-5 py-5 md:px-8 md:gap-10 hover:bg-line/30 transition-colors duration-75">
-        <span class="shrink-0 font-mono text-[11px] font-medium text-dim tabular-nums">
+    {features.map((f, i) => (
+      <div class="group flex items-baseline gap-6 px-5 py-5 md:px-8 md:gap-10 transition-colors duration-75 cursor-default">
+        <span class="shrink-0 font-mono text-[11px] font-medium text-dim tabular-nums transition-colors duration-100 group-hover:text-gold">
           {f.id}
         </span>
-        <div class="flex flex-col gap-1 md:flex-row md:items-baseline md:gap-8 flex-1">
-          <h3 class="shrink-0 font-display text-base font-bold uppercase tracking-wide text-fg md:w-56">
+        <div class="flex flex-col gap-1 md:flex-row md:items-baseline md:gap-8 flex-1 min-w-0">
+          <h3 class="shrink-0 font-display text-base font-bold uppercase tracking-wide text-fg md:w-56 transition-colors duration-100 group-hover:text-gold">
             {f.name}
           </h3>
           <p class="text-dim text-sm leading-relaxed">
             {f.desc}
           </p>
         </div>
+        <span class="hidden md:block shrink-0 w-5 text-right font-mono text-[10px] text-line transition-colors duration-100 group-hover:text-gold">
+          →
+        </span>
       </div>
     ))}
   </div>

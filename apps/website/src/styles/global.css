@@ -34,6 +34,7 @@
     line-height: 1.7;
     -webkit-font-smoothing: auto;
     letter-spacing: 0.01em;
+    overflow-x: hidden;
   }
 
   a {
@@ -56,22 +57,27 @@
     height: 200%;
     z-index: 9999;
     pointer-events: none;
-    opacity: 0.035;
+    opacity: 0.03;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
     background-size: 128px 128px;
     animation: grain-drift 0.8s steps(6) infinite;
   }
 
-  .stagger > * {
-    animation: snap-in 0.15s linear both;
+  .scanlines {
+    position: relative;
   }
 
-  .stagger > *:nth-child(1) { animation-delay: 0.05s; }
-  .stagger > *:nth-child(2) { animation-delay: 0.1s; }
-  .stagger > *:nth-child(3) { animation-delay: 0.15s; }
-  .stagger > *:nth-child(4) { animation-delay: 0.2s; }
-  .stagger > *:nth-child(5) { animation-delay: 0.25s; }
-  .stagger > *:nth-child(6) { animation-delay: 0.3s; }
-  .stagger > *:nth-child(7) { animation-delay: 0.35s; }
-  .stagger > *:nth-child(8) { animation-delay: 0.4s; }
+  .scanlines::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(232, 228, 217, 0.015) 2px,
+      rgba(232, 228, 217, 0.015) 4px
+    );
+  }
 }

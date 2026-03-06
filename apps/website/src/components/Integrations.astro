@@ -1,0 +1,65 @@
+---
+const providers = [
+  { name: "EnableBanking", region: "EU", desc: "Open banking" },
+  { name: "SnapTrade", region: "Global", desc: "Brokerages" },
+  { name: "Teller", region: "US", desc: "US banks" },
+];
+
+const institutions = [
+  { name: "Revolut", logo: "/assets/integrations/revolut.svg" },
+  { name: "HSBC", logo: "/assets/integrations/hsbc.svg" },
+  { name: "ING", logo: "/assets/integrations/ing.svg" },
+  { name: "Bunq", logo: "/assets/integrations/bunq.svg" },
+  { name: "Coinbase", logo: "/assets/integrations/coinbase.svg" },
+];
+---
+<section class="border-b-3 border-line">
+  <div class="border-b border-line px-5 py-4 md:px-8">
+    <span class="text-[11px] font-bold uppercase tracking-[0.2em] text-dim">
+      Connections
+    </span>
+  </div>
+  <div class="px-5 py-16 md:px-8 md:py-20">
+    <h2 class="font-display text-big font-black uppercase leading-[0.95] tracking-tight text-fg">
+      Connect your<br />
+      <span class="text-gold">institutions.</span>
+    </h2>
+    <p class="mt-8 max-w-lg text-dim leading-relaxed">
+      Sync automatically via open banking providers.
+      Or add anything manually — we don't judge.
+    </p>
+
+    <div class="mt-14 grid gap-0 border-3 border-line md:grid-cols-3">
+      {providers.map((p, i) => (
+        <div class={`px-5 py-5 ${i < providers.length - 1 ? "border-b-3 md:border-b-0 md:border-r-3 border-line" : ""}`}>
+          <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-dim">{p.region}</p>
+          <p class="mt-2 font-display text-lg font-bold uppercase text-fg">{p.name}</p>
+          <p class="mt-1 text-sm text-dim">{p.desc}</p>
+        </div>
+      ))}
+    </div>
+
+    <div class="mt-14">
+      <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-dim mb-6">
+        5,000+ institutions including
+      </p>
+      <div class="flex flex-wrap items-center gap-8">
+        {institutions.map((inst) => (
+          <div class="flex items-center gap-3 group" title={inst.name}>
+            <img
+              src={inst.logo}
+              alt={inst.name}
+              width="24"
+              height="24"
+              class="h-6 w-6 opacity-50 grayscale transition-all duration-150 group-hover:opacity-100 group-hover:grayscale-0"
+            />
+            <span class="text-[11px] font-bold uppercase tracking-[0.15em] text-dim transition-colors duration-150 group-hover:text-fg">
+              {inst.name}
+            </span>
+          </div>
+        ))}
+        <span class="text-[11px] text-dim tracking-wide">+ thousands more</span>
+      </div>
+    </div>
+  </div>
+</section>

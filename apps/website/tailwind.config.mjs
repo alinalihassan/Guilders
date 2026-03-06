@@ -11,12 +11,13 @@ export default {
         line: "var(--c-line)",
       },
       fontFamily: {
-        display: ["Syne", "sans-serif"],
+        display: ["Archivo", "sans-serif"],
         mono: ["Azeret Mono", "monospace"],
       },
       fontSize: {
-        massive: "clamp(3rem, 12vw, 10rem)",
-        big: "clamp(2rem, 5vw, 4rem)",
+        massive: "clamp(3.5rem, 11vw, 9rem)",
+        big: "clamp(2rem, 5vw, 3.5rem)",
+        mid: "clamp(1.25rem, 2.5vw, 1.75rem)",
       },
       borderWidth: {
         3: "3px",
@@ -30,14 +31,14 @@ export default {
           "70%": { transform: "translate(2%, -2%)" },
           "90%": { transform: "translate(-3%, 1%)" },
         },
-        "snap-in": {
-          from: { opacity: "0", transform: "translateY(8px)" },
-          to: { opacity: "1", transform: "translateY(0)" },
+        marquee: {
+          from: { transform: "translateX(0)" },
+          to: { transform: "translateX(-50%)" },
         },
       },
       animation: {
         grain: "grain-drift 0.8s steps(6) infinite",
-        "snap-in": "snap-in 0.15s linear both",
+        marquee: "marquee 25s linear infinite",
       },
     },
   },

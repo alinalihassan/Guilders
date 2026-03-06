@@ -1,20 +1,39 @@
 ---
 const githubUrl = "https://github.com/alinalihassan/Guilders";
+
+const stack = [
+  { label: "API", tech: "Elysia + Bun" },
+  { label: "DB", tech: "Postgres + Drizzle" },
+  { label: "Auth", tech: "Better Auth" },
+  { label: "Dashboard", tech: "Next.js 16" },
+  { label: "Mobile", tech: "Expo" },
+  { label: "AI", tech: "Vercel AI SDK" },
+];
 ---
 <section class="border-b-3 border-line px-5 py-20 md:px-8 md:py-28">
   <p class="text-[11px] font-bold uppercase tracking-[0.2em] text-dim mb-8">
     Open source
   </p>
-  <h2 class="font-display text-big font-extrabold uppercase leading-[0.95] tracking-tight text-fg">
+  <h2 class="font-display text-big font-black uppercase leading-[0.95] tracking-tight text-fg">
     Open source.<br/>
     Self-hostable.<br/>
     <span class="text-gold">Yours.</span>
   </h2>
   <p class="mt-10 max-w-lg text-dim leading-relaxed">
     No vendor lock-in. Run the full stack on your own infrastructure.
-    Privacy-first, built for Europe and markets where personal finance
-    tools are limited. MIT-licensed.
+    Privacy-first, built for Europe and everywhere else where personal
+    finance tools are limited.
   </p>
+
+  <div class="mt-14 grid grid-cols-2 gap-0 border-3 border-line md:grid-cols-3 lg:grid-cols-6">
+    {stack.map((s, i) => (
+      <div class={`px-4 py-4 ${i < stack.length - 1 ? "border-b md:border-b-0 md:border-r border-line" : ""} ${i === 2 ? "border-r-0 md:border-r" : ""}`}>
+        <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-dim">{s.label}</p>
+        <p class="mt-1 font-display text-sm font-bold text-fg">{s.tech}</p>
+      </div>
+    ))}
+  </div>
+
   <div class="mt-10 flex items-center gap-6">
     <a
       href={githubUrl}

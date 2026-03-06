@@ -5,24 +5,34 @@ const apiUrl = "https://api.guilders.app/openapi";
 const githubUrl = "https://github.com/alinalihassan/Guilders";
 const currentYear = new Date().getFullYear();
 ---
-<footer class="px-5 pt-16 pb-8 md:px-8 md:pt-20">
-  <h2 class="font-display text-big font-extrabold uppercase leading-[0.95] tracking-tight text-fg">
+<footer class="px-5 pt-20 pb-8 md:px-8 md:pt-28">
+  <h2 class="font-display text-big font-black uppercase leading-[0.95] tracking-tight text-fg">
     Start<br/>
     <span class="text-gold">tracking.</span>
   </h2>
-  <a
-    href={dashboardUrl}
-    target="_blank"
-    rel="noopener noreferrer"
-    class="mt-8 inline-block border-3 border-gold bg-gold px-8 py-3 text-[11px] font-bold uppercase tracking-[0.25em] text-bg hover:bg-transparent hover:text-gold transition-colors duration-100 hover:no-underline"
-  >
-    Open dashboard →
-  </a>
+  <div class="mt-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-6">
+    <a
+      href={dashboardUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      class="inline-block border-3 border-gold bg-gold px-8 py-3 text-[11px] font-bold uppercase tracking-[0.25em] text-bg hover:bg-transparent hover:text-gold transition-colors duration-100 hover:no-underline"
+    >
+      Open dashboard →
+    </a>
+    <a
+      href={githubUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      class="inline-block border-3 border-line px-8 py-3 text-[11px] font-bold uppercase tracking-[0.25em] text-dim hover:border-gold hover:text-gold transition-colors duration-100 hover:no-underline"
+    >
+      Self-host →
+    </a>
+  </div>
   <div class="mt-20 flex flex-wrap items-center gap-x-8 gap-y-3 border-t-3 border-line pt-6">
     <a href={dashboardUrl} target="_blank" rel="noopener noreferrer" class="text-[11px] font-medium uppercase tracking-[0.2em] text-dim hover:text-gold transition-colors duration-100">Dashboard</a>
     <a href={docsUrl} target="_blank" rel="noopener noreferrer" class="text-[11px] font-medium uppercase tracking-[0.2em] text-dim hover:text-gold transition-colors duration-100">Docs</a>
     <a href={apiUrl} target="_blank" rel="noopener noreferrer" class="text-[11px] font-medium uppercase tracking-[0.2em] text-dim hover:text-gold transition-colors duration-100">API</a>
     <a href={githubUrl} target="_blank" rel="noopener noreferrer" class="text-[11px] font-medium uppercase tracking-[0.2em] text-dim hover:text-gold transition-colors duration-100">GitHub</a>
-    <span class="md:ml-auto text-[11px] text-dim tracking-wide">© {currentYear} Guilders</span>
+    <span class="sm:ml-auto text-[11px] text-dim tracking-wide">© {currentYear} Guilders</span>
   </div>
 </footer>
