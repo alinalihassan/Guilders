@@ -1,0 +1,29 @@
+---
+const links = [
+  { label: "DOCS", href: "https://docs.guilders.app" },
+  { label: "DASHBOARD", href: "https://dashboard.guilders.app" },
+  { label: "GITHUB", href: "https://github.com/alinalihassan/Guilders" },
+];
+---
+<header class="border-b-3 border-line">
+  <div class="flex items-center justify-between px-5 py-4 md:px-8">
+    <a href="/" class="flex items-center gap-3 hover:no-underline group">
+      <img src="/assets/logo/logo.svg" alt="" width="28" height="28" />
+      <span class="font-display text-lg font-bold uppercase tracking-wider text-fg group-hover:text-gold transition-colors duration-100">
+        Guilders
+      </span>
+    </a>
+    <nav class="flex items-center gap-6">
+      {links.map((link) => (
+        <a
+          href={link.href}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="text-[11px] font-mono font-medium uppercase tracking-[0.2em] text-dim hover:text-gold transition-colors duration-100"
+        >
+          {link.label}
+        </a>
+      ))}
+    </nav>
+  </div>
+</header>

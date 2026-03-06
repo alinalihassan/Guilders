@@ -1,0 +1,23 @@
+---
+const dashboardUrl = "https://dashboard.guilders.app";
+---
+<section class="border-b-3 border-line px-5 pt-16 pb-20 md:px-8 md:pt-24 md:pb-28">
+  <h1 class="font-display text-massive font-extrabold uppercase leading-[0.9] tracking-tight text-fg">
+    Your<br/>
+    <span class="text-gold">money,</span><br/>
+    tracked.
+  </h1>
+  <div class="mt-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+    <p class="max-w-md text-dim leading-relaxed">
+      Open-source personal finance. Bank accounts, investments, crypto, property — one dashboard. Self-host it or use ours. No tracking, no lock-in.
+    </p>
+    <a
+      href={dashboardUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      class="inline-block border-3 border-gold bg-transparent px-8 py-3 text-[11px] font-bold uppercase tracking-[0.25em] text-gold hover:bg-gold hover:text-bg transition-colors duration-100 hover:no-underline"
+    >
+      Open dashboard →
+    </a>
+  </div>
+</section>

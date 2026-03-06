@@ -1,0 +1,46 @@
+---
+const docsUrl = "https://docs.guilders.app";
+---
+<section class="border-b-3 border-line">
+  <div class="border-b border-line px-5 py-4 md:px-8">
+    <span class="text-[11px] font-bold uppercase tracking-[0.2em] text-dim">
+      Developers
+    </span>
+  </div>
+  <div class="px-5 py-12 md:px-8 md:py-16">
+    <h2 class="font-display text-big font-extrabold uppercase leading-[0.95] tracking-tight text-fg">
+      API-first.<br/>
+      <span class="text-gold">MCP-ready.</span>
+    </h2>
+    <p class="mt-8 max-w-lg text-dim leading-relaxed">
+      Full REST API with OpenAPI docs. API key auth. End-to-end type safety.
+      Let AI agents read and write your financial data via MCP with OAuth consent.
+    </p>
+    <div class="mt-12 grid gap-0 border-3 border-line md:grid-cols-2">
+      <div class="border-b-3 md:border-b-0 md:border-r-3 border-line">
+        <div class="border-b border-line px-4 py-2">
+          <span class="text-[10px] font-bold uppercase tracking-[0.2em] text-dim">REST API</span>
+        </div>
+        <pre class="px-4 py-5 text-sm leading-relaxed text-fg overflow-x-auto"><code><span class="text-dim">$</span> curl https://api.guilders.app/api/account \
+    -H <span class="text-gold">"x-api-key: sk_live_..."</span></code></pre>
+      </div>
+      <div>
+        <div class="border-b border-line px-4 py-2">
+          <span class="text-[10px] font-bold uppercase tracking-[0.2em] text-dim">MCP</span>
+        </div>
+        <pre class="px-4 py-5 text-sm leading-relaxed text-fg overflow-x-auto"><code>{`{
+  "mcpServers": {
+    "guilders": {
+      "url": "https://api.guilders.app/mcp"
+    }
+  }
+}`}</code></pre>
+      </div>
+    </div>
+    <p class="mt-8">
+      <a href={docsUrl} target="_blank" rel="noopener noreferrer" class="text-[11px] font-bold uppercase tracking-[0.25em] text-gold hover:underline">
+        Read the docs →
+      </a>
+    </p>
+  </div>
+</section>
