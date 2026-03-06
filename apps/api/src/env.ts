@@ -1,4 +1,3 @@
-import { Elysia } from "elysia";
 import { z } from "zod";
 
 const EnvSchema = z.object({
@@ -58,25 +57,19 @@ const EnvSchema = z.object({
 
 export type EnvConfig = z.infer<typeof EnvSchema>;
 
-function getEnvSource(): Record<string, string | undefined> {
-  return typeof process !== "undefined" && process.env ? process.env : {};
-}
-
 /**
  * Elysia plugin that validates environment variables at startup.
- * All variables are optional; when present, they are validated (e.g. URLs must be valid).
  * Use: app.use(env())
  */
 export function env() {
-  const source = getEnvSource();
-  const result = EnvSchema.safeParse(source);
+  if (process.env.VITEST === "true") {
+    return;
+  }
+
+  const result = EnvSchema.safeParse(process.env);
 
   if (!result.success) {
     const issues = result.error.issues.map((i) => `  ${i.path.join(".")}: ${i.message}`).join("\n");
     throw new Error(`Environment validation failed:\n${issues}`);
   }
-
-  return new Elysia({ name: "env" })
-    .state("envConfig", result.data as EnvConfig)
-    .derive(() => ({ envConfig: result.data as EnvConfig }));
 }

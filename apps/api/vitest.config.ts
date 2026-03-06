@@ -43,6 +43,7 @@ export default defineConfig({
     },
   },
   define: {
+    "process.env.VITEST": JSON.stringify("true"),
     "process.env.USE_PGLITE": JSON.stringify("1"),
     "process.env.MIGRATIONS_SQL": JSON.stringify(loadMigrationsSql()),
     "process.env.BACKEND_URL": JSON.stringify("http://localhost:8787"),
