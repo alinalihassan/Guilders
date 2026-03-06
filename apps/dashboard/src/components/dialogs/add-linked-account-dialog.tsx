@@ -35,7 +35,7 @@ export function AddLinkedAccountDialog() {
   const billingConfigLoaded = !billingConfigPending;
   const billingEnabled = billingConfigLoaded ? (billing?.billingEnabled ?? true) : undefined;
   const isSubscribed =
-    billingEnabled !== undefined ? (!billingEnabled || isPro(user, billingEnabled)) : undefined;
+    billingEnabled !== undefined ? !billingEnabled || isPro(user, billingEnabled) : undefined;
 
   const onContinue = async () => {
     if (!billingConfigLoaded || billing === undefined) return;
