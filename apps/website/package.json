@@ -6,6 +6,7 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
+    "deploy": "astro build && wrangler deploy",
     "clean": "git clean -xdf dist node_modules",
     "lint": "oxlint .",
     "lint:fix": "oxlint --fix .",
@@ -20,6 +21,7 @@
   "devDependencies": {
     "@guilders/tsconfig": "workspace:*",
     "tailwindcss": "3.4.16",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "wrangler": "catalog:"
   }
 }

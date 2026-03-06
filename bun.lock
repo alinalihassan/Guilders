@@ -199,6 +199,7 @@
         "@guilders/tsconfig": "workspace:*",
         "tailwindcss": "3.4.16",
         "typescript": "^5.9.3",
+        "wrangler": "catalog:",
       },
     },
     "packages/transactional": {
