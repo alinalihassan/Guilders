@@ -19,7 +19,7 @@ export function SubscriptionForm() {
 
   if (isLoading) {
     return (
-      <SettingsSubsection title="Plan" description="">
+      <SettingsSubsection>
         <div className="space-y-4">
           <div className="space-y-2">
             {Array.from({ length: 3 }).map((_, i) => (
@@ -53,7 +53,7 @@ export function SubscriptionForm() {
         : "Try Pro free for 14 days, no credit card required";
 
   return (
-    <SettingsSubsection title="Plan" description={description}>
+    <SettingsSubsection description={description}>
       <div className="space-y-4">
         <div className="space-y-2">
           <div className="flex items-center">
