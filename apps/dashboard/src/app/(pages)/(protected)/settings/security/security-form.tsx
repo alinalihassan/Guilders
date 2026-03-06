@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
-import { Pencil, Shield, Trash2, X } from "lucide-react";
+import { Loader2, Pencil, Shield, Trash2, X } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -191,19 +191,19 @@ export function SecurityForm() {
         description="Add an extra layer of security to your account by requiring both a password and authentication code."
       >
         <div className="flex h-10 items-center gap-4">
-          {isLoadingMFA ? (
-            <Skeleton className="h-10 w-full sm:w-36" />
-          ) : (
-            <Button
-              variant={hasMFA ? "outline" : "default"}
-              className="w-full sm:w-auto"
-              onClick={() => !hasMFA && openMFADialog()}
-              disabled={hasMFA}
-            >
+          <Button
+            variant={hasMFA ? "outline" : "default"}
+            className="w-full sm:w-auto"
+            onClick={() => !hasMFA && openMFADialog()}
+            disabled={hasMFA || isLoadingMFA}
+          >
+            {isLoadingMFA ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
               <Shield className="mr-2 h-4 w-4" />
-              {hasMFA ? "2FA is Enabled" : "Enable 2FA"}
-            </Button>
-          )}
+            )}
+            {hasMFA ? "2FA is Enabled" : "Enable 2FA"}
+          </Button>
 
           {hasMFA && (
             <Button
