@@ -137,6 +137,8 @@ export function WebhooksSection() {
               size="icon"
               onClick={handleCopySecret}
               disabled={copyingSecret}
+              aria-label="Copy webhook secret"
+              title="Copy webhook secret"
             >
               {copyingSecret ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
             </Button>
@@ -168,7 +170,13 @@ export function WebhooksSection() {
                 onOpenChange={(open) => !open && setEditingId(null)}
               >
                 <DialogTrigger asChild>
-                  <Button variant="outline" size="icon" onClick={() => openEdit(ep)}>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => openEdit(ep)}
+                    aria-label={`Edit webhook endpoint ${ep.url}`}
+                    title="Edit webhook endpoint"
+                  >
                     <Pencil className="h-4 w-4" />
                   </Button>
                 </DialogTrigger>
@@ -206,6 +214,8 @@ export function WebhooksSection() {
                 size="icon"
                 onClick={() => handleDelete(ep.id)}
                 disabled={deletingId !== null}
+                aria-label={`Delete webhook endpoint ${ep.url}`}
+                title="Delete webhook endpoint"
               >
                 {deletingId === ep.id ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
