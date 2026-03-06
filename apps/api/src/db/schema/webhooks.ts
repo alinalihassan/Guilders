@@ -15,7 +15,6 @@ export const webhook = pgTable(
       }),
     url: text("url").notNull(),
     secret: text("secret").notNull(),
-    description: text("description"),
     enabled: boolean("enabled").notNull().default(true),
     created_at: timestamp("created_at").notNull().defaultNow(),
     updated_at: timestamp("updated_at").notNull().defaultNow(),

@@ -19,11 +19,7 @@ async function hmacSha256Hex(secret: string, body: string): Promise<string> {
     false,
     ["sign"],
   );
-  const digest = await crypto.subtle.sign(
-    "HMAC",
-    key,
-    new TextEncoder().encode(body),
-  );
+  const digest = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(body));
   return Array.from(new Uint8Array(digest))
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("");

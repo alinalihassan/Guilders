@@ -1,7 +1,8 @@
+import { SettingsSubsection } from "@/components/settings/settings-subsection";
 import { Separator } from "@/components/ui/separator";
 
-import { ApiKeyForm } from "../api-key/api-key-form";
-import { WebhookEndpointsForm } from "./webhook-endpoints-form";
+import { ApiKeysSection } from "./api-keys-section";
+import { WebhooksSection } from "./webhooks-section";
 
 export default function DeveloperPage() {
   return (
@@ -13,8 +14,20 @@ export default function DeveloperPage() {
         </p>
       </div>
       <Separator />
-      <ApiKeyForm />
-      <WebhookEndpointsForm />
+      <div className="space-y-8">
+        <SettingsSubsection
+          title="API keys"
+          description="Use API keys to access your data programmatically. Store generated keys securely because they are shown only once."
+        >
+          <ApiKeysSection />
+        </SettingsSubsection>
+        <SettingsSubsection
+          title="Webhooks"
+          description="Receive events when your accounts, transactions, or categories change. Add a URL to receive POST requests with a signed payload."
+        >
+          <WebhooksSection />
+        </SettingsSubsection>
+      </div>
     </div>
   );
 }

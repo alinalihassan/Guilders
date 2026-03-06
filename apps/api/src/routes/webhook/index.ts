@@ -10,7 +10,7 @@ import {
   webhookIdParamSchema,
   webhookListItemSchema,
 } from "./types";
-import { generateSecret, maskUrl, validateWebhookUrl } from "./utils";
+import { generateSecret, validateWebhookUrl } from "./utils";
 
 export const webhookRoutes = new Elysia({
   prefix: "/webhook",
@@ -32,23 +32,19 @@ export const webhookRoutes = new Elysia({
         columns: {
           id: true,
           url: true,
-          description: true,
           enabled: true,
           created_at: true,
           updated_at: true,
         },
       });
-      return rows.map((row) => ({
-        ...row,
-        url: maskUrl(row.url),
-      }));
+      return rows;
     },
     {
       auth: true,
       response: t.Array(t.Ref("#/components/schemas/WebhookListItem")),
       detail: {
         summary: "List webhooks",
-        description: "List all webhooks for the authenticated user. URLs are masked.",
+        description: "List all webhooks for the authenticated user.",
       },
     },
   )
@@ -72,7 +68,6 @@ export const webhookRoutes = new Elysia({
           user_id: user.id,
           url: body.url,
           secret,
-          description: body.description ?? null,
           enabled: true,
           created_at: now,
           updated_at: now,
@@ -87,7 +82,6 @@ export const webhookRoutes = new Elysia({
       return {
         id: created.id,
         url: created.url,
-        description: created.description,
         enabled: created.enabled,
         created_at: created.created_at,
         updated_at: created.updated_at,
@@ -128,7 +122,6 @@ export const webhookRoutes = new Elysia({
         updated_at: new Date(),
       };
       if (body.url !== undefined) updates.url = body.url;
-      if (body.description !== undefined) updates.description = body.description;
       if (body.enabled !== undefined) updates.enabled = body.enabled;
 
       const [updated] = await db
@@ -138,7 +131,6 @@ export const webhookRoutes = new Elysia({
         .returning({
           id: webhook.id,
           url: webhook.url,
-          description: webhook.description,
           enabled: webhook.enabled,
           created_at: webhook.created_at,
           updated_at: webhook.updated_at,
@@ -149,10 +141,7 @@ export const webhookRoutes = new Elysia({
         return { error: "Failed to update webhook" };
       }
 
-      return {
-        ...updated,
-        url: maskUrl(updated.url),
-      };
+      return updated;
     },
     {
       auth: true,
@@ -160,7 +149,7 @@ export const webhookRoutes = new Elysia({
       body: updateWebhookSchema,
       detail: {
         summary: "Update webhook",
-        description: "Update a webhook's URL, description, or enabled state.",
+        description: "Update a webhook's URL or enabled state.",
       },
     },
   )

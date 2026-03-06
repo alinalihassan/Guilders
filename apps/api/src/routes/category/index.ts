@@ -3,8 +3,8 @@ import { and, asc, eq } from "drizzle-orm";
 import { Elysia, status, t } from "elysia";
 
 import { category, insertCategorySchema, selectCategorySchema } from "../../db/schema/categories";
-import { authPlugin } from "../../middleware/auth";
 import { deliverUserWebhookEvents } from "../../lib/user-webhooks";
+import { authPlugin } from "../../middleware/auth";
 import { errorSchema } from "../../utils/error";
 import { categoryIdParamSchema, createCategorySchema } from "./types";
 
@@ -89,7 +89,9 @@ export const categoryRoutes = new Elysia({
         return status(500, { error: "Failed to create category" });
       }
 
-      waitUntil(deliverUserWebhookEvents(db, user.id, "category.created", { category: newCategory }));
+      waitUntil(
+        deliverUserWebhookEvents(db, user.id, "category.created", { category: newCategory }),
+      );
 
       return newCategory;
     },

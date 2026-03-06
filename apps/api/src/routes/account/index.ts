@@ -6,8 +6,8 @@ import { account, selectAccountSchema } from "../../db/schema/accounts";
 import { AccountTypeEnum } from "../../db/schema/enums";
 import { cleanupAccountDocuments } from "../../lib/cleanup-documents";
 import { filterLockedUpdate } from "../../lib/locked-attributes";
-import { authPlugin } from "../../middleware/auth";
 import { deliverUserWebhookEvents } from "../../lib/user-webhooks";
+import { authPlugin } from "../../middleware/auth";
 import { errorSchema } from "../../utils/error";
 import { createAccountSchema, idParamSchema, subtypeToType, updateAccountSchema } from "./types";
 
@@ -217,7 +217,9 @@ export const accountRoutes = new Elysia({
         return status(500, { error: "Failed to update account" });
       }
 
-      waitUntil(deliverUserWebhookEvents(db, user.id, "account.updated", { account: updatedAccount }));
+      waitUntil(
+        deliverUserWebhookEvents(db, user.id, "account.updated", { account: updatedAccount }),
+      );
 
       return updatedAccount;
     },
@@ -263,7 +265,9 @@ export const accountRoutes = new Elysia({
         return status(404, { error: "Account not found" });
       }
 
-      waitUntil(deliverUserWebhookEvents(db, user.id, "account.deleted", { account: existingAccount }));
+      waitUntil(
+        deliverUserWebhookEvents(db, user.id, "account.deleted", { account: existingAccount }),
+      );
 
       return { success: true };
     },

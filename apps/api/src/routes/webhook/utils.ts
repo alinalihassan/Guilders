@@ -7,15 +7,6 @@ export function generateSecret(): string {
   return `whsec_${hex}`;
 }
 
-export function maskUrl(url: string): string {
-  try {
-    const u = new URL(url);
-    return `${u.protocol}//${u.host}/***`;
-  } catch {
-    return "***";
-  }
-}
-
 export function validateWebhookUrl(url: string): { valid: boolean; error?: string } {
   try {
     const u = new URL(url);

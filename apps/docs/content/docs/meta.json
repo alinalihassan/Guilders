@@ -1,4 +1,12 @@
 {
   "title": "Guilders Documentation",
-  "pages": ["index", "models", "using-the-api", "concepts", "webhooks", "self-hosting", "api-reference"]
+  "pages": [
+    "index",
+    "models",
+    "using-the-api",
+    "concepts",
+    "webhooks",
+    "self-hosting",
+    "api-reference"
+  ]
 }

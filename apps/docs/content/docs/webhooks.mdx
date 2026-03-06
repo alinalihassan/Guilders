@@ -7,17 +7,17 @@ Guilders can send HTTP POST requests to a URL you configure when your data chang
 
 ## Events
 
-| Event | When |
-| ----- | ----- |
-| `account.created` | A new account is created |
-| `account.updated` | An account is updated |
-| `account.deleted` | An account is deleted |
+| Event                 | When                         |
+| --------------------- | ---------------------------- |
+| `account.created`     | A new account is created     |
+| `account.updated`     | An account is updated        |
+| `account.deleted`     | An account is deleted        |
 | `transaction.created` | A new transaction is created |
-| `transaction.updated` | A transaction is updated |
-| `transaction.deleted` | A transaction is deleted |
-| `category.created` | A new category is created |
-| `category.updated` | A category is updated |
-| `category.deleted` | A category is deleted |
+| `transaction.updated` | A transaction is updated     |
+| `transaction.deleted` | A transaction is deleted     |
+| `category.created`    | A new category is created    |
+| `category.updated`    | A category is updated        |
+| `category.deleted`    | A category is deleted        |
 
 ## Payload
 
@@ -41,13 +41,13 @@ Each request is a POST with `Content-Type: application/json`. The body is:
 
 ## Headers
 
-| Header | Description |
-| ------ | ----------- |
-| `Content-Type` | `application/json` |
-| `X-Webhook-Signature` | `sha256=<hex>` — HMAC-SHA256 of the raw body using your webhook secret. |
-| `X-Webhook-Event` | Event type (e.g. `transaction.updated`). |
-| `X-Webhook-Delivery-Id` | Same as `deliveryId` in the body. |
-| `X-Webhook-Timestamp` | Same as `timestamp` in the body. |
+| Header                  | Description                                                             |
+| ----------------------- | ----------------------------------------------------------------------- |
+| `Content-Type`          | `application/json`                                                      |
+| `X-Webhook-Signature`   | `sha256=<hex>` — HMAC-SHA256 of the raw body using your webhook secret. |
+| `X-Webhook-Event`       | Event type (e.g. `transaction.updated`).                                |
+| `X-Webhook-Delivery-Id` | Same as `deliveryId` in the body.                                       |
+| `X-Webhook-Timestamp`   | Same as `timestamp` in the body.                                        |
 
 ## Verifying the signature
 
@@ -101,11 +101,7 @@ async function verifyWebhookSignature(
     false,
     ["sign"],
   );
-  const digest = await crypto.subtle.sign(
-    "HMAC",
-    key,
-    new TextEncoder().encode(rawBody),
-  );
+  const digest = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(rawBody));
   const expected = Array.from(new Uint8Array(digest))
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("");

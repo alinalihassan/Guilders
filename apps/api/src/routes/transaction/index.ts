@@ -10,8 +10,8 @@ import {
 } from "../../db/schema/transactions";
 import { cleanupEntityDocuments } from "../../lib/cleanup-documents";
 import { filterLockedUpdate } from "../../lib/locked-attributes";
-import { authPlugin } from "../../middleware/auth";
 import { deliverUserWebhookEvents } from "../../lib/user-webhooks";
+import { authPlugin } from "../../middleware/auth";
 import { errorSchema } from "../../utils/error";
 import { transactionIdParamSchema, transactionQuerySchema } from "./types";
 

@@ -9,6 +9,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 
+import { SettingsSubsection } from "@/components/settings/settings-subsection";
 import { ThemeSelector } from "@/components/settings/theme-selector";
 import {
   AlertDialog,
@@ -174,56 +175,6 @@ export function AccountForm() {
     }
   }
 
-  const deleteAccountButton = (
-    <div className="mt-6 border-t pt-6">
-      <h2 className="font-semibold text-destructive">Danger Zone</h2>
-      <p className="mt-2 text-sm text-muted-foreground">
-        Once you delete your account, there is no going back. Please be certain.
-      </p>
-      <AlertDialog>
-        <AlertDialogTrigger asChild>
-          <Button variant="destructive" className="mt-4">
-            Delete Account
-          </Button>
-        </AlertDialogTrigger>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will:
-            </AlertDialogDescription>
-            <ul className="mt-2 list-inside list-disc text-sm text-muted-foreground">
-              <li>Permanently delete your account</li>
-              <li>Remove all your connections to financial institutions</li>
-              <li>Delete all your stored data</li>
-              <li>Cancel any active subscriptions</li>
-            </ul>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeletingAccount}>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={(e) => {
-                e.preventDefault();
-                handleDeleteAccount();
-              }}
-              disabled={isDeletingAccount}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              {isDeletingAccount ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Deleting...
-                </>
-              ) : (
-                "Delete Account"
-              )}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </div>
-  );
-
   async function handleDownloadData() {
     setIsExporting(true);
     try {
@@ -247,64 +198,75 @@ export function AccountForm() {
   }
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        <FormField
-          control={form.control}
-          name="email"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Email</FormLabel>
-              <FormControl>
-                <Input placeholder="Your email" {...field} />
-              </FormControl>
-              <FormDescription>
-                This is the email that will be used to login to your account.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="currency"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Currency</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select currency">{field.value}</SelectValue>
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {sortedCurrencies.map((currency) => (
-                    <SelectItem key={currency.code} value={currency.code}>
-                      {currency.code} - {currency.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormDescription>
-                This is the currency that will be used for your account.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+    <div className="space-y-8">
+      <SettingsSubsection
+        title="Profile"
+        description="Email and default currency for your account."
+      >
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Your email" {...field} />
+                  </FormControl>
+                  <FormDescription>
+                    This is the email that will be used to login to your account.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="currency"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Currency</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                    value={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select currency">{field.value}</SelectValue>
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {sortedCurrencies.map((currency) => (
+                        <SelectItem key={currency.code} value={currency.code}>
+                          {currency.code} - {currency.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormDescription>
+                    This is the currency that will be used for your account.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button type="submit" disabled={!form.formState.isDirty || form.formState.isSubmitting}>
+              {form.formState.isSubmitting ? "Updating..." : "Update account"}
+            </Button>
+          </form>
+        </Form>
+      </SettingsSubsection>
 
-        <Button type="submit" disabled={!form.formState.isDirty || form.formState.isSubmitting}>
-          {form.formState.isSubmitting ? "Updating..." : "Update account"}
-        </Button>
-      </form>
-      <div className="border-t pt-6">
+      <SettingsSubsection title="Appearance" description="Choose how the dashboard looks.">
         <ThemeSelector />
-      </div>
-      <div className="space-y-4 border-t pt-6">
-        <h4 className="text-sm font-medium">Data</h4>
-        <p className="text-sm text-muted-foreground">
-          Export all of your data as a ZIP. Useful for backups or moving your data elsewhere.
-        </p>
+      </SettingsSubsection>
+
+      <SettingsSubsection
+        title="Data"
+        description="Export all of your data as a ZIP. Useful for backups or moving your data elsewhere."
+      >
         <Button
           type="button"
           variant="secondary"
@@ -323,8 +285,53 @@ export function AccountForm() {
             </>
           )}
         </Button>
-      </div>
-      {deleteAccountButton}
-    </Form>
+      </SettingsSubsection>
+
+      <SettingsSubsection
+        title="Danger Zone"
+        description="Once you delete your account, there is no going back. Please be certain."
+        variant="danger"
+      >
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button variant="destructive">Delete Account</Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This action cannot be undone. This will:
+              </AlertDialogDescription>
+              <ul className="mt-2 list-inside list-disc text-sm text-muted-foreground">
+                <li>Permanently delete your account</li>
+                <li>Remove all your connections to financial institutions</li>
+                <li>Delete all your stored data</li>
+                <li>Cancel any active subscriptions</li>
+              </ul>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={isDeletingAccount}>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleDeleteAccount();
+                }}
+                disabled={isDeletingAccount}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                {isDeletingAccount ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Deleting...
+                  </>
+                ) : (
+                  "Delete Account"
+                )}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </SettingsSubsection>
+    </div>
   );
 }
