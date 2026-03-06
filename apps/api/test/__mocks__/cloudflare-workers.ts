@@ -28,6 +28,22 @@ export const env = {
     send: async () => undefined,
     sendBatch: async () => undefined,
   },
+  CHAT_RATE_LIMITER: {
+    idFromName: () => ({}),
+    get: () => ({
+      fetch: async () =>
+        new Response(
+          JSON.stringify({
+            allowed: true,
+            remaining: 500,
+            used: 0,
+            limit: 500,
+            resetAt: null,
+          }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        ),
+    }),
+  },
 };
 
 export function waitUntil(promise: Promise<unknown>): void {
