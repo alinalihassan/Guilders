@@ -39,3 +39,13 @@ export function formatBytes(
 export function isPro(user: User | undefined | null) {
   return user?.subscription?.status === "active" || user?.subscription?.status === "trialing";
 }
+
+export function downloadFile(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  // Defer revocation so the browser can start the download before the URL is revoked
+  setTimeout(() => URL.revokeObjectURL(url), 0);
+}

@@ -2,7 +2,7 @@
 
 import type { Currency } from "@guilders/api/types";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
+import { Download, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -39,10 +39,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { api } from "@/lib/api";
 import { authClient } from "@/lib/auth-client";
 import { env } from "@/lib/env";
 import { useCurrencies } from "@/lib/queries/useCurrencies";
 import { useDeleteAccount, useUpdateUserSettings, useUser } from "@/lib/queries/useUser";
+import { downloadFile } from "@/lib/utils";
 
 const accountFormSchema = z.object({
   email: z.string().email(),
@@ -57,6 +59,7 @@ const customOrder = ["EUR", "GBP", "USD"];
 export function AccountForm() {
   const router = useRouter();
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
   const { mutateAsync: deleteAccount } = useDeleteAccount();
 
   const { data: user, isLoading: isUserLoading, error: userError } = useUser();
@@ -221,6 +224,28 @@ export function AccountForm() {
     </div>
   );
 
+  async function handleDownloadData() {
+    setIsExporting(true);
+    try {
+      const { data, error, response } = await api.export.get();
+
+      if (error || data == null || !response) {
+        toast.error("Export failed");
+        return;
+      }
+
+      // Eden parses binary into data (body already consumed); build blob from data, filename from response headers
+      const blob = data instanceof Blob ? data : new Blob([data as unknown as ArrayBuffer]);
+      downloadFile(blob, "guilders-export.zip");
+
+      toast.success("Your data has been downloaded.");
+    } catch {
+      toast.error("Failed to download export.");
+    } finally {
+      setIsExporting(false);
+    }
+  }
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
@@ -274,6 +299,30 @@ export function AccountForm() {
       </form>
       <div className="border-t pt-6">
         <ThemeSelector />
+      </div>
+      <div className="space-y-4 border-t pt-6">
+        <h4 className="text-sm font-medium">Data</h4>
+        <p className="text-sm text-muted-foreground">
+          Export all of your data as a ZIP. Useful for backups or moving your data elsewhere.
+        </p>
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={handleDownloadData}
+          disabled={isExporting}
+        >
+          {isExporting ? (
+            <>
+              <Loader2 className="mr-2 size-4 animate-spin" />
+              Preparing export…
+            </>
+          ) : (
+            <>
+              <Download className="mr-2 size-4" />
+              Download my data
+            </>
+          )}
+        </Button>
       </div>
       {deleteAccountButton}
     </Form>
