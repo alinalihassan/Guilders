@@ -39,7 +39,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { api, edenError } from "@/lib/api";
+import { api } from "@/lib/api";
 import { authClient } from "@/lib/auth-client";
 import { env } from "@/lib/env";
 import { useCurrencies } from "@/lib/queries/useCurrencies";
