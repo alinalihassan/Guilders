@@ -100,7 +100,7 @@ export function WebhooksSection() {
 
   return (
     <div className="space-y-6">
-      <form onSubmit={handleCreate} className="space-y-3">
+      <form onSubmit={handleCreate} className="space-y-4">
         <div className="grid gap-2">
           <Label htmlFor="webhook-url">URL</Label>
           <Input
@@ -144,17 +144,17 @@ export function WebhooksSection() {
       )}
 
       {isLoading ? (
-        <div className="space-y-2">
+        <div className="space-y-4">
           {Array.from({ length: 2 }).map((_, i) => (
             <div
               key={i}
-              className="flex flex-wrap items-center justify-between gap-2 rounded-md border p-3"
+              className="flex flex-wrap items-center justify-between gap-3 rounded-md border p-3"
             >
               <div className="min-w-0 space-y-2 py-1">
                 <Skeleton className="h-4 w-48" />
                 <Skeleton className="h-3 w-16" />
               </div>
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-2">
                 <Skeleton className="h-10 w-10 shrink-0 rounded-md" />
                 <Skeleton className="h-10 w-10 shrink-0 rounded-md" />
               </div>
@@ -164,11 +164,11 @@ export function WebhooksSection() {
       ) : endpoints.length === 0 && !createdSecret ? (
         <p className="text-sm text-muted-foreground">No webhook endpoints yet.</p>
       ) : (
-        <ul className="space-y-2">
+        <ul className="space-y-4">
           {endpoints.map((ep) => (
             <li
               key={ep.id}
-              className="flex flex-wrap items-center justify-between gap-2 rounded-md border p-3"
+              className="flex flex-wrap items-center justify-between gap-3 rounded-md border p-3"
             >
               <div className="min-w-0 flex-1">
                 <p className="break-all text-sm font-medium">{ep.url}</p>
@@ -178,7 +178,7 @@ export function WebhooksSection() {
                   {ep.enabled ? "Enabled" : "Disabled"}
                 </span>
               </div>
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-2">
                 <Dialog
                   open={editingId === ep.id}
                   onOpenChange={(open) => !open && setEditingId(null)}

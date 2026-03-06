@@ -31,11 +31,11 @@ export default function ConnectionsPage() {
         <div className="space-y-4">
           {Array.from({ length: 2 }).map((_, i) => (
             <Card key={i} className="p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
                   <Skeleton className="h-8 w-24" />
-                  <div>
-                    <Skeleton className="mb-2 h-5 w-32" />
+                  <div className="space-y-2">
+                    <Skeleton className="h-5 w-32" />
                     <Skeleton className="h-4 w-48" />
                   </div>
                 </div>
@@ -46,7 +46,7 @@ export default function ConnectionsPage() {
         </div>
       ) : isError ? (
         <Card className="p-6">
-          <div className="flex flex-col items-center justify-center space-y-4 text-center">
+          <div className="flex flex-col items-center justify-center gap-4 text-center">
             <div className="rounded-full bg-destructive/10 p-3">
               <XCircle className="h-6 w-6 text-destructive" />
             </div>
@@ -71,8 +71,8 @@ export default function ConnectionsPage() {
 
               return (
                 <Card key={connection.provider_id} className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
                       <div className="relative h-8 w-24">
                         {providerLogo ? (
                           <Image
@@ -83,7 +83,7 @@ export default function ConnectionsPage() {
                           />
                         ) : null}
                       </div>
-                      <div>
+                      <div className="space-y-2">
                         <div className="font-medium">{providerName}</div>
                         <div className="text-sm text-muted-foreground">
                           Connected {format(new Date(connection.created_at), "PPP")}
