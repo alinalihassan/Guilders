@@ -76,25 +76,28 @@ export function SubscriptionForm() {
           </div>
         )}
         {isSubscribed || isTrialing ? (
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full"
-            disabled={portal.isPending}
-            onClick={() => portal.mutate()}
-          >
-            {portal.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Manage subscription
+          <Button type="button" disabled={portal.isPending} onClick={() => portal.mutate()}>
+            {portal.isPending ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Opening...
+              </>
+            ) : (
+              "Manage subscription"
+            )}
           </Button>
         ) : (
-          <Button
-            type="button"
-            className="w-full"
-            disabled={upgrade.isPending}
-            onClick={() => upgrade.mutate()}
-          >
-            {upgrade.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {hasTrialExpired ? "Upgrade to Pro" : "Start free trial"}
+          <Button type="button" disabled={upgrade.isPending} onClick={() => upgrade.mutate()}>
+            {upgrade.isPending ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Starting...
+              </>
+            ) : hasTrialExpired ? (
+              "Upgrade to Pro"
+            ) : (
+              "Start free trial"
+            )}
           </Button>
         )}
       </div>
