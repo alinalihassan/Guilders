@@ -1,7 +1,9 @@
+import { waitUntil } from "cloudflare:workers";
 import { and, asc, eq } from "drizzle-orm";
 import { Elysia, status, t } from "elysia";
 
 import { category, insertCategorySchema, selectCategorySchema } from "../../db/schema/categories";
+import { deliverUserWebhookEvents } from "../../lib/user-webhooks";
 import { authPlugin } from "../../middleware/auth";
 import { errorSchema } from "../../utils/error";
 import { categoryIdParamSchema, createCategorySchema } from "./types";
@@ -87,6 +89,10 @@ export const categoryRoutes = new Elysia({
         return status(500, { error: "Failed to create category" });
       }
 
+      waitUntil(
+        deliverUserWebhookEvents(db, user.id, "category.created", { category: newCategory }),
+      );
+
       return newCategory;
     },
     {
@@ -143,6 +149,10 @@ export const categoryRoutes = new Elysia({
       if (!updatedCategory) {
         return status(500, { error: "Failed to update category" });
       }
+
+      waitUntil(
+        deliverUserWebhookEvents(db, user.id, "category.updated", { category: updatedCategory }),
+      );
 
       return updatedCategory;
     },
@@ -202,6 +212,10 @@ export const categoryRoutes = new Elysia({
           .delete(category)
           .where(and(eq(category.id, params.id), eq(category.user_id, user.id)));
       });
+
+      waitUntil(
+        deliverUserWebhookEvents(db, user.id, "category.deleted", { category: existingCategory }),
+      );
 
       return { success: true };
     },

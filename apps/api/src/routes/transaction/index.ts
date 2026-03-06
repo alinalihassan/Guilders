@@ -1,3 +1,4 @@
+import { waitUntil } from "cloudflare:workers";
 import { eq } from "drizzle-orm";
 import { Elysia, status, t } from "elysia";
 
@@ -9,6 +10,7 @@ import {
 } from "../../db/schema/transactions";
 import { cleanupEntityDocuments } from "../../lib/cleanup-documents";
 import { filterLockedUpdate } from "../../lib/locked-attributes";
+import { deliverUserWebhookEvents } from "../../lib/user-webhooks";
 import { authPlugin } from "../../middleware/auth";
 import { errorSchema } from "../../utils/error";
 import { transactionIdParamSchema, transactionQuerySchema } from "./types";
@@ -116,6 +118,12 @@ export const transactionRoutes = new Elysia({
       if (!newTransaction) {
         return status(500, { error: "Failed to create transaction" });
       }
+
+      waitUntil(
+        deliverUserWebhookEvents(db, user.id, "transaction.created", {
+          transaction: newTransaction,
+        }),
+      );
 
       return newTransaction;
     },
@@ -279,6 +287,12 @@ export const transactionRoutes = new Elysia({
         return status(500, { error: "Failed to update transaction" });
       }
 
+      waitUntil(
+        deliverUserWebhookEvents(db, user.id, "transaction.updated", {
+          transaction: updatedTransaction,
+        }),
+      );
+
       return updatedTransaction;
     },
     {
@@ -341,6 +355,12 @@ export const transactionRoutes = new Elysia({
 
         await tx.delete(transaction).where(eq(transaction.id, params.id));
       });
+
+      waitUntil(
+        deliverUserWebhookEvents(db, user.id, "transaction.deleted", {
+          transaction: existingTransaction,
+        }),
+      );
 
       return { success: true };
     },

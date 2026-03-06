@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 
+import { SettingsSubsection } from "@/components/settings/settings-subsection";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -184,13 +185,10 @@ export function SecurityForm() {
 
   return (
     <div className="space-y-8">
-      <div className="space-y-4">
-        <h2 className="text-lg font-semibold">Two-Factor Authentication</h2>
-        <p className="text-sm text-muted-foreground">
-          Add an extra layer of security to your account by requiring both a password and
-          authentication code.
-        </p>
-
+      <SettingsSubsection
+        title="Two-Factor Authentication"
+        description="Add an extra layer of security to your account by requiring both a password and authentication code."
+      >
         <div className="flex h-10 items-center gap-4">
           <Button
             variant={hasMFA ? "outline" : "default"}
@@ -214,13 +212,12 @@ export function SecurityForm() {
             </Button>
           )}
         </div>
-      </div>
+      </SettingsSubsection>
 
-      <div className="space-y-4">
-        <h2 className="text-lg font-semibold">Passkeys</h2>
-        <p className="text-sm text-muted-foreground">
-          Manage biometric passkeys for passwordless sign-in.
-        </p>
+      <SettingsSubsection
+        title="Passkeys"
+        description="Manage biometric passkeys for passwordless sign-in."
+      >
         <Button variant="outline" onClick={handleAddPasskey} disabled={isMutatingPasskey}>
           Add passkey
         </Button>
@@ -263,10 +260,9 @@ export function SecurityForm() {
             ))}
           </div>
         )}
-      </div>
+      </SettingsSubsection>
 
-      <div className="space-y-4">
-        <h2 className="text-lg font-semibold">Change Password</h2>
+      <SettingsSubsection title="Password">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <FormField
@@ -320,7 +316,7 @@ export function SecurityForm() {
             </Button>
           </form>
         </Form>
-      </div>
+      </SettingsSubsection>
     </div>
   );
 }

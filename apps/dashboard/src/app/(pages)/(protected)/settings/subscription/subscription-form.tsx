@@ -2,8 +2,8 @@
 
 import { Check, Loader2 } from "lucide-react";
 
+import { SettingsSubsection } from "@/components/settings/settings-subsection";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { usePortalSession, useSubscription } from "@/lib/queries/useSubscription";
 import { useUser } from "@/lib/queries/useUser";
 
@@ -24,23 +24,17 @@ export function SubscriptionForm() {
   const trialEnd = user?.subscription?.trial_end ? new Date(user.subscription?.trial_end) : null;
   const hasTrialExpired = trialEnd && trialEnd < new Date();
 
+  const description = isTrialing
+    ? "You are currently on the Pro trial"
+    : isSubscribed
+      ? "You are currently on the Pro plan"
+      : hasTrialExpired
+        ? "Unlock all features with our Pro plan"
+        : "Try Pro free for 14 days, no credit card required";
+
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle>
-          {isTrialing ? "Pro Trial" : isSubscribed ? "Pro Plan" : "Upgrade to Pro"}
-        </CardTitle>
-        <CardDescription>
-          {isTrialing
-            ? "You are currently on the Pro trial"
-            : isSubscribed
-              ? "You are currently on the Pro plan"
-              : hasTrialExpired
-                ? "Unlock all features with our Pro plan"
-                : "Try Pro free for 14 days, no credit card required"}
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
+    <SettingsSubsection title="Plan" description={description}>
+      <div className="space-y-4">
         <div className="space-y-2">
           <div className="flex items-center">
             <Check className="mr-2 h-4 w-4 text-green-500" />
@@ -81,31 +75,32 @@ export function SubscriptionForm() {
             </p>
           </div>
         )}
-      </CardContent>
-      <CardContent className="pt-0">
         {isSubscribed || isTrialing ? (
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full"
-            disabled={portal.isPending}
-            onClick={() => portal.mutate()}
-          >
-            {portal.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Manage subscription
+          <Button type="button" disabled={portal.isPending} onClick={() => portal.mutate()}>
+            {portal.isPending ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Opening...
+              </>
+            ) : (
+              "Manage subscription"
+            )}
           </Button>
         ) : (
-          <Button
-            type="button"
-            className="w-full"
-            disabled={upgrade.isPending}
-            onClick={() => upgrade.mutate()}
-          >
-            {upgrade.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {hasTrialExpired ? "Upgrade to Pro" : "Start free trial"}
+          <Button type="button" disabled={upgrade.isPending} onClick={() => upgrade.mutate()}>
+            {upgrade.isPending ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Starting...
+              </>
+            ) : hasTrialExpired ? (
+              "Upgrade to Pro"
+            ) : (
+              "Start free trial"
+            )}
           </Button>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </SettingsSubsection>
   );
 }

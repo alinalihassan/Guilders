@@ -12,6 +12,7 @@ export type {
 export type { Institution, Institutions } from "./routes/institution/types";
 export type { ProviderConnection, ProviderConnections } from "./routes/provider-connection/types";
 export type { Provider, Providers } from "./routes/provider/types";
+export type { Webhook, WebhookCreateResponse } from "./routes/webhook/types";
 export type { Rate, Rates } from "./routes/rate/types";
 export type { Transaction, TransactionInsert } from "./routes/transaction/types";
 export type AccountSubtype = import("./routes/account/types").Account["subtype"];

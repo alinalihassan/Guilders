@@ -1,0 +1,130 @@
+---
+title: Webhooks
+description: Receive events when your accounts, transactions, or categories change
+---
+
+Guilders can send HTTP POST requests to a URL you configure when your data changes. Use webhooks to sync to your own backend, run automations, or log activity.
+
+## Events
+
+| Event                 | When                         |
+| --------------------- | ---------------------------- |
+| `account.created`     | A new account is created     |
+| `account.updated`     | An account is updated        |
+| `account.deleted`     | An account is deleted        |
+| `transaction.created` | A new transaction is created |
+| `transaction.updated` | A transaction is updated     |
+| `transaction.deleted` | A transaction is deleted     |
+| `category.created`    | A new category is created    |
+| `category.updated`    | A category is updated        |
+| `category.deleted`    | A category is deleted        |
+
+## Payload
+
+Each request is a POST with `Content-Type: application/json`. The body is:
+
+```json
+{
+  "event": "transaction.updated",
+  "deliveryId": "f87aeede-9bb3-4586-be17-58bb53518a44",
+  "timestamp": "2026-03-06T12:00:00.000Z",
+  "data": {
+    "transaction": { "id": 123, "amount": "-150.00", "description": "Grocery", ... }
+  }
+}
+```
+
+- **event** — One of the event types above.
+- **deliveryId** — Unique per delivery; use for idempotency.
+- **timestamp** — ISO 8601; you can reject requests that are too old (e.g. > 5 minutes).
+- **data** — Event payload: `account`, `transaction`, or `category` with the resource object.
+
+## Headers
+
+| Header                  | Description                                                             |
+| ----------------------- | ----------------------------------------------------------------------- |
+| `Content-Type`          | `application/json`                                                      |
+| `X-Webhook-Signature`   | `sha256=<hex>` — HMAC-SHA256 of the raw body using your webhook secret. |
+| `X-Webhook-Event`       | Event type (e.g. `transaction.updated`).                                |
+| `X-Webhook-Delivery-Id` | Same as `deliveryId` in the body.                                       |
+| `X-Webhook-Timestamp`   | Same as `timestamp` in the body.                                        |
+
+## Verifying the signature
+
+Your webhook is created with a **secret** (shown once in the dashboard). Use it to verify that the request came from Guilders by recomputing the HMAC-SHA256 of the **raw request body** and comparing it to `X-Webhook-Signature`.
+
+### Node.js / Bun
+
+```typescript
+import { createHmac, timingSafeEqual } from "node:crypto";
+
+const WEBHOOK_SECRET = process.env.GUILDERS_WEBHOOK_SECRET!; // e.g. whsec_...
+
+function verifyWebhookSignature(rawBody: string, signatureHeader: string | null): boolean {
+  if (!signatureHeader?.startsWith("sha256=")) return false;
+
+  const expected = createHmac("sha256", WEBHOOK_SECRET).update(rawBody, "utf8").digest();
+  const receivedHex = signatureHeader.slice(7); // "sha256=".length
+  const received = Buffer.from(receivedHex, "hex");
+
+  if (expected.length !== received.length) return false;
+  return timingSafeEqual(expected, received);
+}
+
+// In your handler (e.g. Express):
+app.post("/webhooks/guilders", express.raw({ type: "application/json" }), (req, res) => {
+  const rawBody = (req as unknown as { body: Buffer }).body.toString("utf8");
+  const signature = req.headers["x-webhook-signature"] as string | undefined;
+
+  if (!verifyWebhookSignature(rawBody, signature ?? null)) {
+    return res.status(401).json({ error: "Invalid signature" });
+  }
+
+  const payload = JSON.parse(rawBody);
+  console.log(payload.event, payload.data);
+  res.json({ received: true });
+});
+```
+
+### Python (Flask)
+
+```python
+import hmac
+import hashlib
+import os
+from flask import Flask, request, jsonify
+
+app = Flask(__name__)
+WEBHOOK_SECRET = os.environ["GUILDERS_WEBHOOK_SECRET"].encode("utf-8")
+
+def verify_webhook_signature(raw_body: bytes, signature_header: str | None) -> bool:
+    if not signature_header or not signature_header.startswith("sha256="):
+        return False
+    expected = hmac.new(WEBHOOK_SECRET, raw_body, hashlib.sha256).hexdigest()
+    received = signature_header[7:]
+    return len(received) > 0 and hmac.compare_digest(received, expected)
+
+@app.route("/webhooks/guilders", methods=["POST"])
+def webhook():
+    raw_body = request.get_data()
+    signature = request.headers.get("X-Webhook-Signature")
+    if not verify_webhook_signature(raw_body, signature):
+        return jsonify({"error": "Invalid signature"}), 401
+    payload = request.get_json(force=True)
+    print(payload["event"], payload["data"])
+    return jsonify({"received": True})
+```
+
+## Configuring webhooks
+
+1. In the dashboard go to **Settings → Developer**.
+2. Under **Webhook endpoints**, add a URL (must be HTTPS in production).
+3. Store the **secret** shown once; use it to verify `X-Webhook-Signature`.
+4. Your endpoint should respond with a 2xx status so Guilders treats the delivery as successful.
+
+## Best practices
+
+- **Verify the signature** on every request using the raw body and your secret.
+- **Use deliveryId** to deduplicate (e.g. store processed IDs and skip if already seen).
+- **Optionally reject old requests** using `X-Webhook-Timestamp` (e.g. ignore if older than 5 minutes).
+- **Respond quickly** (e.g. 200 OK) and do heavy work asynchronously if needed.
