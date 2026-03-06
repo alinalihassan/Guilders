@@ -1,6 +1,7 @@
 import { Elysia } from "elysia";
 
 import { createAuth } from "../lib/auth";
+import { rateLimitPlugin } from "../middleware/rate-limit";
 import { accountRoutes } from "./account";
 import { accountBalanceHistoryRoutes, balanceHistoryRoutes } from "./balance-history";
 import { categoryRoutes } from "./category";
@@ -20,6 +21,7 @@ import { transactionRoutes } from "./transaction";
 import { webhookRoutes } from "./webhook";
 
 export const api = new Elysia({ prefix: "/api" })
+  .use(rateLimitPlugin)
   .all("/auth/*", (context) => createAuth().handler(context.request), { detail: { hide: true } })
   .use(accountRoutes)
   .use(accountBalanceHistoryRoutes)

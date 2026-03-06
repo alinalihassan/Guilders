@@ -48,4 +48,11 @@
       "bucket_name": "guilders-user-bucket",
     },
   ],
+  "ratelimits": [
+    {
+      "name": "RATE_LIMIT",
+      "namespace_id": "1001",
+      "simple": { "limit": 600, "period": 60 },
+    },
+  ],
 }
