@@ -60,6 +60,7 @@ export async function deliverUserWebhookEvents(
 
         const response = await fetch(endpoint.url, {
           method: "POST",
+          signal: AbortSignal.timeout(10000),
           headers: {
             "Content-Type": "application/json",
             "X-Webhook-Signature": `sha256=${signature}`,
