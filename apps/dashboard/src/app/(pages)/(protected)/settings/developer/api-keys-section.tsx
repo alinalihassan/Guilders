@@ -6,6 +6,7 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useCreateApiKey, useDeleteApiKey, useApiKeys } from "@/lib/queries/useApiKeys";
 
 export function ApiKeysSection() {
@@ -56,7 +57,22 @@ export function ApiKeysSection() {
   };
 
   if (isLoading) {
-    return <div className="flex justify-center py-6">Loading...</div>;
+    return (
+      <div className="space-y-4">
+        <Skeleton className="h-10 w-36" />
+        <div className="space-y-2">
+          {Array.from({ length: 1 }).map((_, i) => (
+            <div key={i} className="flex items-center justify-between gap-3 rounded-md border p-3">
+              <div className="min-w-0 space-y-2">
+                <Skeleton className="h-4 w-32" />
+                <Skeleton className="h-3 w-24" />
+              </div>
+              <Skeleton className="h-10 w-10 shrink-0 rounded-md" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
   }
 
   return (
