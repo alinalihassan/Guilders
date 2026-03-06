@@ -73,6 +73,12 @@
     animation: grain-drift 0.8s steps(6) infinite;
   }
 
+  @media (prefers-reduced-motion: reduce) {
+    .noise::before {
+      animation: none;
+    }
+  }
+
   .scanlines {
     position: relative;
   }
