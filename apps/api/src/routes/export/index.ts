@@ -171,11 +171,14 @@ export const exportRoutes = new Elysia({
 
         const { safe } = sanitizeFilenameForDisposition(doc.name);
         const base = safe || `document-${doc.id}`;
-        const hasExt = base.includes(".");
-        const ext = hasExt ? "" : getExtensionFromMime(doc.type);
-        const count = seenNames.get(base) ?? 0;
-        seenNames.set(base, count + 1);
-        const name = count === 0 ? base + ext : `${base.replace(/\.[^.]+$/, "")}-${count}${ext}`;
+        const match = base.match(/^(.*?)(\.[^.]+)?$/);
+        const stem = match?.[1] ?? base;
+        const existingExt = match?.[2];
+        const ext = existingExt ?? getExtensionFromMime(doc.type);
+        const key = `${stem}${ext}`;
+        const count = seenNames.get(key) ?? 0;
+        seenNames.set(key, count + 1);
+        const name = count === 0 ? key : `${stem}-${count}${ext}`;
         zippable[`documents/${name}`] = bytes;
       }
 
