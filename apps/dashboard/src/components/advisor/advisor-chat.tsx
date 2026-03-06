@@ -24,10 +24,10 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { api } from "@/lib/api";
 import { env } from "@/lib/env";
+import { useBillingConfig } from "@/lib/queries/useBilling";
 import { conversationsKey } from "@/lib/queries/useConversations";
 import { useUser, useUserToken } from "@/lib/queries/useUser";
 import { useStore } from "@/lib/store";
-import { useBillingConfig } from "@/lib/queries/useBilling";
 import { cn, isPro } from "@/lib/utils";
 
 const CHAT_AI_ICONS = [

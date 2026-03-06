@@ -107,4 +107,3 @@ export async function deleteEnrollment(accessToken: string): Promise<void> {
 
   if (!res.ok) throw new Error(`Teller API error ${res.status}: ${await res.text()}`);
 }
-

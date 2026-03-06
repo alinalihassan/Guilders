@@ -33,7 +33,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
   SelectContent,
@@ -41,6 +40,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/lib/api";
 import { authClient } from "@/lib/auth-client";
 import { env } from "@/lib/env";
@@ -234,34 +234,31 @@ export function AccountForm() {
                 // Use user.currency when form state not yet reset (avoids showing placeholder on first paint after load)
                 const currencyValue = field.value || (user?.currency ?? "");
                 return (
-                <FormItem>
-                  <FormLabel>Currency</FormLabel>
-                  {isProfileLoading ? (
-                    <Skeleton className="h-10 w-full" />
-                  ) : (
-                    <Select
-                      onValueChange={field.onChange}
-                      value={currencyValue}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select currency" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {sortedCurrencies.map((currency) => (
-                          <SelectItem key={currency.code} value={currency.code}>
-                            {currency.code} - {currency.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
-                  <FormDescription>
-                    This is the currency that will be used for your account.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
+                  <FormItem>
+                    <FormLabel>Currency</FormLabel>
+                    {isProfileLoading ? (
+                      <Skeleton className="h-10 w-full" />
+                    ) : (
+                      <Select onValueChange={field.onChange} value={currencyValue}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select currency" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {sortedCurrencies.map((currency) => (
+                            <SelectItem key={currency.code} value={currency.code}>
+                              {currency.code} - {currency.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                    <FormDescription>
+                      This is the currency that will be used for your account.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
                 );
               }}
             />

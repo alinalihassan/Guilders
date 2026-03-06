@@ -36,10 +36,7 @@ export function formatBytes(
   }`;
 }
 
-export function isPro(
-  user: User | undefined | null,
-  billingEnabled?: boolean,
-) {
+export function isPro(user: User | undefined | null, billingEnabled?: boolean) {
   if (billingEnabled === false) return true;
   return user?.subscription?.status === "active" || user?.subscription?.status === "trialing";
 }

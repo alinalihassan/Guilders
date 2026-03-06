@@ -111,7 +111,11 @@ export class TellerProvider implements IProvider {
       if (!backendUrl) return { success: false, error: "BACKEND_URL not configured" };
 
       const secret = process.env.GUILDERS_SECRET;
-      if (!secret) return { success: false, error: "Provider connections are not configured (GUILDERS_SECRET)." };
+      if (!secret)
+        return {
+          success: false,
+          error: "Provider connections are not configured (GUILDERS_SECRET).",
+        };
 
       const state = await signState(
         { userId: params.userId, institutionId: params.institutionId },
@@ -150,7 +154,11 @@ export class TellerProvider implements IProvider {
       if (!backendUrl) return { success: false, error: "BACKEND_URL not configured" };
 
       const secret = process.env.GUILDERS_SECRET;
-      if (!secret) return { success: false, error: "Provider connections are not configured (GUILDERS_SECRET)." };
+      if (!secret)
+        return {
+          success: false,
+          error: "Provider connections are not configured (GUILDERS_SECRET).",
+        };
 
       const state = await signState(
         { userId: params.userId, institutionId: params.institutionId },
@@ -196,7 +204,11 @@ export class TellerProvider implements IProvider {
       if (!backendUrl) return { success: false, error: "BACKEND_URL not configured" };
 
       const secret = process.env.GUILDERS_SECRET;
-      if (!secret) return { success: false, error: "Provider connections are not configured (GUILDERS_SECRET)." };
+      if (!secret)
+        return {
+          success: false,
+          error: "Provider connections are not configured (GUILDERS_SECRET).",
+        };
 
       const state = await signState(
         { userId: instConn.providerConnection.user_id, institutionId: instConn.institution_id },
