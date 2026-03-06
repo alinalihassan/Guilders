@@ -4,20 +4,20 @@
 
 @layer base {
   :root {
-    --c-bg: #f5f2eb;
-    --c-fg: #1a1815;
-    --c-gold: #7a7262;
-    --c-dim: #8a8270;
-    --c-line: #ddd8cc;
+    --c-bg: #ffffff;
+    --c-fg: #0a0a0a;
+    --c-gold: #525252;
+    --c-dim: #737373;
+    --c-line: #e5e5e5;
   }
 
   @media (prefers-color-scheme: dark) {
     :root {
       --c-bg: #0a0a0a;
-      --c-fg: #e8e4d9;
-      --c-gold: #bcb499;
-      --c-dim: #706b5e;
-      --c-line: #2a2825;
+      --c-fg: #fafafa;
+      --c-gold: #a3a3a3;
+      --c-dim: #737373;
+      --c-line: #262626;
     }
   }
 
@@ -28,8 +28,8 @@
   }
 
   ::selection {
-    background-color: var(--c-gold);
-    color: var(--c-bg);
+    background-color: var(--c-line);
+    color: var(--c-fg);
   }
 
   html {
@@ -48,7 +48,7 @@
   }
 
   a {
-    color: var(--c-gold);
+    color: var(--c-fg);
     text-decoration: none;
   }
 
@@ -67,7 +67,7 @@
     height: 200%;
     z-index: 9999;
     pointer-events: none;
-    opacity: 0.03;
+    opacity: 0.015;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
     background-size: 128px 128px;
     animation: grain-drift 0.8s steps(6) infinite;
