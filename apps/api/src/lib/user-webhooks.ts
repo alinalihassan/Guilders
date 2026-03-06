@@ -48,14 +48,14 @@ export async function deliverUserWebhookEvents(
   await Promise.all(
     endpoints.map(async (endpoint) => {
       const deliveryId = crypto.randomUUID();
-      const body = JSON.stringify({
-        event: eventType,
-        deliveryId,
-        timestamp,
-        data,
-      });
 
       try {
+        const body = JSON.stringify({
+          event: eventType,
+          deliveryId,
+          timestamp,
+          data,
+        });
         const signature = await hmacSha256Hex(endpoint.secret, body);
 
         const response = await fetch(endpoint.url, {
