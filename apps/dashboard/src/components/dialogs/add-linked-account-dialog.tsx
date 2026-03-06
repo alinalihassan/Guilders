@@ -33,12 +33,16 @@ export function AddLinkedAccountDialog() {
   const { institution } = data;
 
   const billingConfigLoaded = !billingConfigPending;
-  const billingEnabled = billingConfigLoaded ? (billing?.billingEnabled ?? true) : undefined;
+  const billingReady = billingConfigLoaded && billing !== undefined;
+  const billingEnabled = billingReady ? (billing.billingEnabled ?? true) : undefined;
   const isSubscribed =
-    billingEnabled !== undefined ? !billingEnabled || isPro(user, billingEnabled) : undefined;
+    billingEnabled !== undefined ? !billingEnabled || isPro(user, billingEnabled) : false;
 
   const onContinue = async () => {
-    if (!billingConfigLoaded || billing === undefined) return;
+    if (!billingReady) {
+      toast.error("Subscription status is still loading. Please wait and try again.");
+      return;
+    }
     if (!isSubscribed) {
       router.push("/settings/subscription");
       close();
@@ -100,7 +104,7 @@ export function AddLinkedAccountDialog() {
           </div>
 
           <p className="text-sm text-muted-foreground">
-            {!billingConfigLoaded ? (
+            {!billingReady ? (
               <>Checking subscription status…</>
             ) : isSubscribed ? (
               <>
@@ -120,7 +124,7 @@ export function AddLinkedAccountDialog() {
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             Please wait
           </Button>
-        ) : !billingConfigLoaded ? (
+        ) : !billingReady ? (
           <Button disabled>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             Loading…
