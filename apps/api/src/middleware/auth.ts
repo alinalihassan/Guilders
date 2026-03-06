@@ -1,9 +1,16 @@
+import { env } from "cloudflare:workers";
 import { eq } from "drizzle-orm";
 import { Elysia } from "elysia";
 
 import { session as sessionTable, user as userTable } from "../db/schema/auth";
 import { createAuth } from "../lib/auth";
 import { createDb } from "../lib/db";
+import { RATE_LIMIT_PERIOD_SECONDS } from "./rate-limit";
+
+const rateLimitExceededBody = {
+  error: "rate_limit_exceeded",
+  message: "Too many requests",
+} as const;
 
 /**
  * Elysia plugin that provides auth macro for protecting routes.
@@ -13,16 +20,27 @@ import { createDb } from "../lib/db";
  * - The request is authenticated via Better Auth session/bearer token
  * - `user`, `session`, and `db` are available on the context
  * - Returns 401 if authentication fails
+ * - Per-user rate limit is applied when authenticated without x-api-key (returns 429 if exceeded)
  */
 export const authPlugin = new Elysia({ name: "auth" }).macro({
   auth: {
-    async resolve({ status, request: { headers } }) {
+    async resolve({ status, set, request: { headers } }) {
       const db = createDb();
       const auth = createAuth(db);
       const session = await auth.api.getSession({ headers });
 
       if (session) {
-        return { user: session.user, session: session.session, db };
+        const authResult = { user: session.user, session: session.session, db };
+        if (!headers.get("x-api-key") && env.RATE_LIMIT) {
+          const { success } = await env.RATE_LIMIT.limit({
+            key: "user:" + session.user.id,
+          });
+          if (!success) {
+            set.headers["Retry-After"] = String(RATE_LIMIT_PERIOD_SECONDS);
+            return status(429, rateLimitExceededBody);
+          }
+        }
+        return authResult;
       }
 
       const authHeader = headers.get("authorization");
@@ -42,6 +60,15 @@ export const authPlugin = new Elysia({ name: "auth" }).macro({
           const { session: sess, user } = result[0];
 
           if (new Date(sess.expiresAt) > new Date()) {
+            if (!headers.get("x-api-key") && env.RATE_LIMIT) {
+              const { success } = await env.RATE_LIMIT.limit({
+                key: "user:" + user.id,
+              });
+              if (!success) {
+                set.headers["Retry-After"] = String(RATE_LIMIT_PERIOD_SECONDS);
+                return status(429, rateLimitExceededBody);
+              }
+            }
             return { user, session: sess, db };
           }
         }
