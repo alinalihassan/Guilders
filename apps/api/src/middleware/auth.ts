@@ -5,6 +5,7 @@ import { Elysia } from "elysia";
 import { session as sessionTable, user as userTable } from "../db/schema/auth";
 import { createAuth } from "../lib/auth";
 import { createDb } from "../lib/db";
+import { RATE_LIMIT_PERIOD_SECONDS } from "./rate-limit";
 
 const rateLimitExceededBody = {
   error: "rate_limit_exceeded",
@@ -23,7 +24,7 @@ const rateLimitExceededBody = {
  */
 export const authPlugin = new Elysia({ name: "auth" }).macro({
   auth: {
-    async resolve({ status, request: { headers } }) {
+    async resolve({ status, set, request: { headers } }) {
       const db = createDb();
       const auth = createAuth(db);
       const session = await auth.api.getSession({ headers });
@@ -34,7 +35,10 @@ export const authPlugin = new Elysia({ name: "auth" }).macro({
           const { success } = await env.RATE_LIMIT.limit({
             key: "user:" + session.user.id,
           });
-          if (!success) return status(429, rateLimitExceededBody);
+          if (!success) {
+            set.headers["Retry-After"] = String(RATE_LIMIT_PERIOD_SECONDS);
+            return status(429, rateLimitExceededBody);
+          }
         }
         return authResult;
       }
@@ -60,7 +64,10 @@ export const authPlugin = new Elysia({ name: "auth" }).macro({
               const { success } = await env.RATE_LIMIT.limit({
                 key: "user:" + user.id,
               });
-              if (!success) return status(429, rateLimitExceededBody);
+              if (!success) {
+                set.headers["Retry-After"] = String(RATE_LIMIT_PERIOD_SECONDS);
+                return status(429, rateLimitExceededBody);
+              }
             }
             return { user, session: sess, db };
           }

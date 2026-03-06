@@ -1,7 +1,7 @@
 import { env } from "cloudflare:workers";
 import { Elysia } from "elysia";
 
-const RATE_LIMIT_PERIOD_SECONDS = 60;
+export const RATE_LIMIT_PERIOD_SECONDS = 60;
 
 async function hashApiKey(apiKey: string): Promise<string> {
   const data = new TextEncoder().encode(apiKey);
