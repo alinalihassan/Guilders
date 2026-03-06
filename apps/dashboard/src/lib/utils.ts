@@ -46,5 +46,6 @@ export function downloadFile(blob: Blob, filename: string) {
   a.href = url;
   a.download = filename;
   a.click();
-  URL.revokeObjectURL(url);
+  // Defer revocation so the browser can start the download before the URL is revoked
+  setTimeout(() => URL.revokeObjectURL(url), 0);
 }
