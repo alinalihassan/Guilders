@@ -91,10 +91,10 @@ interface AdvisorChatProps {
 export function AdvisorChat({ chatId, initialMessages }: AdvisorChatProps) {
   const router = useRouter();
   const { data: user, isLoading } = useUser();
-  const { data: billing } = useBillingConfig();
+  const { data: billing, isPending: billingConfigPending } = useBillingConfig();
   const { data: token } = useUserToken();
   const billingEnabled = billing?.billingEnabled ?? true;
-  const isSubscribed = !billingEnabled || isPro(user, billingEnabled);
+  const isSubscribed = isPro(user, billingEnabled);
   const [inputText, setInputText] = useState("");
 
   const tokenRef = useRef(token);
@@ -304,7 +304,7 @@ export function AdvisorChat({ chatId, initialMessages }: AdvisorChatProps) {
     }
   };
 
-  if (isLoading) {
+  if (isLoading || billingConfigPending) {
     return (
       <div className="flex flex-1 items-center justify-center">
         <Loader2 className="size-8 animate-spin text-muted-foreground" aria-label="Loading" />
