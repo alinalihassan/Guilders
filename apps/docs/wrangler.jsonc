@@ -6,10 +6,12 @@
     "directory": "./out",
     "not_found_handling": "404-page",
   },
-  "route": {
-    "custom_domain": true,
-    "pattern": "docs.guilders.app",
-  },
+  "routes": [
+    {
+      "custom_domain": true,
+      "pattern": "docs.guilders.app",
+    },
+  ],
   "workers_dev": false,
   "preview_urls": false,
   "observability": {
