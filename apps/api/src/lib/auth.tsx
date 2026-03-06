@@ -25,12 +25,13 @@ import { enqueueUserDeleteCleanupJobs } from "./user-delete-cleanup";
 function stripePlugin() {
   const secret = process.env.STRIPE_SECRET_KEY;
   const priceId = process.env.STRIPE_PRO_PRICE_ID;
-  if (!secret || !priceId) return null;
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  if (!secret || !priceId || !webhookSecret) return null;
 
   const stripeSDK = new Stripe(secret);
   return stripe({
     stripeClient: stripeSDK,
-    stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET ?? "",
+    stripeWebhookSecret: webhookSecret,
     createCustomerOnSignUp: true,
     subscription: {
       enabled: true,
