@@ -11,13 +11,11 @@ import { useUser } from "@/lib/queries/useUser";
 
 export function SubscriptionForm() {
   const { data: user, isLoading } = useUser();
-  const { data: billing } = useBillingConfig();
+  const { data: billing, isPending: billingConfigPending } = useBillingConfig();
   const upgrade = useSubscription();
   const portal = usePortalSession();
 
-  const billingEnabled = billing?.billingEnabled ?? true;
-
-  if (isLoading) {
+  if (isLoading || billingConfigPending) {
     return (
       <SettingsSubsection>
         <div className="space-y-4">
@@ -36,6 +34,7 @@ export function SubscriptionForm() {
     );
   }
 
+  const billingEnabledResolved = billing?.billingEnabled ?? true;
   const isSubscribed = user?.subscription?.status === "active";
   const isTrialing = user?.subscription?.status === "trialing";
   const periodEnd = user?.subscription?.current_period_end
@@ -98,7 +97,7 @@ export function SubscriptionForm() {
         {isSubscribed || isTrialing ? (
           <Button
             type="button"
-            disabled={!billingEnabled || portal.isPending}
+            disabled={!billingEnabledResolved || portal.isPending}
             onClick={() => portal.mutate()}
           >
             {portal.isPending ? (
@@ -113,7 +112,7 @@ export function SubscriptionForm() {
         ) : (
           <Button
             type="button"
-            disabled={!billingEnabled || upgrade.isPending}
+            disabled={!billingEnabledResolved || upgrade.isPending}
             onClick={() => upgrade.mutate()}
           >
             {upgrade.isPending ? (
@@ -128,7 +127,7 @@ export function SubscriptionForm() {
             )}
           </Button>
         )}
-        {!billingEnabled && (
+        {!billingEnabledResolved && (
           <p className="text-sm text-muted-foreground">
             Billing is not configured on this server. All features are included.
           </p>
