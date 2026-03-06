@@ -56,17 +56,19 @@ Your webhook is created with a **secret** (shown once in the dashboard). Use it 
 ### Node.js / Bun
 
 ```typescript
-import { createHmac } from "node:crypto";
+import { createHmac, timingSafeEqual } from "node:crypto";
 
 const WEBHOOK_SECRET = process.env.GUILDERS_WEBHOOK_SECRET!; // e.g. whsec_...
 
 function verifyWebhookSignature(rawBody: string, signatureHeader: string | null): boolean {
   if (!signatureHeader?.startsWith("sha256=")) return false;
 
-  const expected = createHmac("sha256", WEBHOOK_SECRET).update(rawBody, "utf8").digest("hex");
-  const received = signatureHeader.slice(7); // "sha256=".length
+  const expected = createHmac("sha256", WEBHOOK_SECRET).update(rawBody, "utf8").digest();
+  const receivedHex = signatureHeader.slice(7); // "sha256=".length
+  const received = Buffer.from(receivedHex, "hex");
 
-  return received.length > 0 && received === expected;
+  if (expected.length !== received.length) return false;
+  return timingSafeEqual(expected, received);
 }
 
 // In your handler (e.g. Express):
@@ -82,49 +84,6 @@ app.post("/webhooks/guilders", express.raw({ type: "application/json" }), (req, 
   console.log(payload.event, payload.data);
   res.json({ received: true });
 });
-```
-
-### Web Crypto (Cloudflare Workers, browser, Node 19+)
-
-```typescript
-async function verifyWebhookSignature(
-  rawBody: string,
-  signatureHeader: string | null,
-  secret: string,
-): Promise<boolean> {
-  if (!signatureHeader?.startsWith("sha256=")) return false;
-
-  const key = await crypto.subtle.importKey(
-    "raw",
-    new TextEncoder().encode(secret),
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["sign"],
-  );
-  const digest = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(rawBody));
-  const expected = Array.from(new Uint8Array(digest))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-
-  const received = signatureHeader.slice(7);
-  return received.length > 0 && received === expected;
-}
-
-// In your handler:
-export default {
-  async fetch(request: Request, env: Env) {
-    const rawBody = await request.text();
-    const signature = request.headers.get("X-Webhook-Signature");
-
-    if (!(await verifyWebhookSignature(rawBody, signature, env.GUILDERS_WEBHOOK_SECRET))) {
-      return Response.json({ error: "Invalid signature" }, { status: 401 });
-    }
-
-    const payload = JSON.parse(rawBody);
-    console.log(payload.event, payload.data);
-    return Response.json({ received: true });
-  },
-};
 ```
 
 ### Python (Flask)
