@@ -1,6 +1,6 @@
 ---
 const providers = [
-  { name: "EnableBanking", region: "EU", desc: "Open banking" },
+  { name: "EnableBanking", region: "EU", desc: "EU banks" },
   { name: "SnapTrade", region: "Global", desc: "Brokerages" },
   { name: "Teller", region: "US", desc: "US banks" },
 ];
@@ -25,7 +25,7 @@ const institutions = [
       <span class="text-gold">institutions.</span>
     </h2>
     <p class="mt-8 max-w-lg text-dim leading-relaxed">
-      Sync automatically via open banking providers.
+      Sync automatically via open banking providers.<br/>
       Or add anything manually — we don't judge.
     </p>
 
@@ -41,7 +41,7 @@ const institutions = [
 
     <div class="mt-14">
       <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-dim mb-6">
-        5,000+ institutions including
+        7,800+ institutions including
       </p>
       <div class="flex flex-wrap items-center gap-8">
         {institutions.map((inst) => (

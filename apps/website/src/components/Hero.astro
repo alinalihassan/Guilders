@@ -1,5 +1,5 @@
 ---
-const dashboardUrl = "https://dashboard.guilders.app";
+import { DASHBOARD_URL } from "../config";
 ---
 <section class="border-b-3 border-line px-5 pt-20 pb-20 md:px-8 md:pt-28 md:pb-28">
   <h1 class="font-display text-massive font-black uppercase leading-[0.9] tracking-tight text-fg">
@@ -17,7 +17,7 @@ const dashboardUrl = "https://dashboard.guilders.app";
       </p>
     </div>
     <a
-      href={dashboardUrl}
+      href={DASHBOARD_URL}
       target="_blank"
       rel="noopener noreferrer"
       class="inline-block border-3 border-gold bg-transparent px-8 py-3 text-[11px] font-bold uppercase tracking-[0.25em] text-gold hover:bg-gold hover:text-bg transition-colors duration-100 hover:no-underline shrink-0"

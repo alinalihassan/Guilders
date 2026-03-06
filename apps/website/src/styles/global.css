@@ -4,11 +4,21 @@
 
 @layer base {
   :root {
-    --c-bg: #0a0a0a;
-    --c-fg: #e8e4d9;
-    --c-gold: #bcb499;
-    --c-dim: #706b5e;
-    --c-line: #2a2825;
+    --c-bg: #f5f2eb;
+    --c-fg: #1a1815;
+    --c-gold: #7a7262;
+    --c-dim: #8a8270;
+    --c-line: #ddd8cc;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --c-bg: #0a0a0a;
+      --c-fg: #e8e4d9;
+      --c-gold: #bcb499;
+      --c-dim: #706b5e;
+      --c-line: #2a2825;
+    }
   }
 
   *,
@@ -76,8 +86,14 @@
       0deg,
       transparent,
       transparent 2px,
-      rgba(232, 228, 217, 0.015) 2px,
-      rgba(232, 228, 217, 0.015) 4px
+      var(--c-fg-scanline, rgba(0, 0, 0, 0.015)) 2px,
+      var(--c-fg-scanline, rgba(0, 0, 0, 0.015)) 4px
     );
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .scanlines::after {
+      --c-fg-scanline: rgba(232, 228, 217, 0.015);
+    }
   }
 }
