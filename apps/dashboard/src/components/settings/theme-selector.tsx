@@ -2,6 +2,7 @@
 
 import { Check, Minus } from "lucide-react";
 import Image from "next/image";
+import { useEffect, useState } from "react";
 
 import UiDark from "@/../public/assets/ui-dark.png";
 import UiLight from "@/../public/assets/ui-light.png";
@@ -16,12 +17,20 @@ const items = [
 ] as const;
 
 export function ThemeSelector() {
+  const [mounted, setMounted] = useState(false);
   const { theme, setTheme } = useThemeTransition();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Use a fixed value until after mount so server and client render the same (avoids hydration mismatch with next-themes)
+  const value = mounted ? theme : "system";
 
   return (
     <fieldset className="space-y-4">
       <legend className="text-sm font-medium leading-none text-foreground">Theme Preference</legend>
-      <RadioGroup className="flex gap-3" value={theme} onValueChange={(value) => setTheme(value)}>
+      <RadioGroup className="flex gap-3" value={value} onValueChange={(v) => setTheme(v)}>
         {items.map((item) => (
           <label key={item.id} htmlFor={item.id}>
             <RadioGroupItem

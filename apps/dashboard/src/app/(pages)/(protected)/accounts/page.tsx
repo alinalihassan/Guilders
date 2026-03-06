@@ -1,11 +1,12 @@
 "use client";
 
-import { Plus } from "lucide-react";
+import { Plus, XCircle } from "lucide-react";
 
 import { AccountsCard } from "@/components/dashboard/accounts/account-card";
 import { AccountsEmptyPlaceholder } from "@/components/dashboard/accounts/accounts-placeholder";
 import { CompactBalanceCard } from "@/components/dashboard/compact-balance-card";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDialog } from "@/hooks/useDialog";
 import { useAccounts } from "@/lib/queries/useAccounts";
@@ -31,13 +32,50 @@ export default function AccountsPage() {
 
       {isLoading ? (
         <div className="space-y-4">
-          <Skeleton className="h-[400px] w-full" />
-          <Skeleton className="h-[400px] w-full" />
+          <div className="grid grid-cols-2 gap-4">
+            {Array.from({ length: 2 }).map((_, i) => (
+              <Card key={i}>
+                <CardContent className="flex gap-4 p-6">
+                  <div className="flex-1 space-y-2">
+                    <Skeleton className="h-4 w-16" />
+                    <Skeleton className="h-8 w-32" />
+                    <Skeleton className="h-4 w-24" />
+                  </div>
+                  <Skeleton className="h-[80px] w-32 shrink-0 rounded" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            {Array.from({ length: 2 }).map((_, i) => (
+              <Card key={i} className="flex flex-col">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+                  <Skeleton className="h-6 w-20" />
+                  <Skeleton className="h-9 w-24 rounded-md" />
+                </CardHeader>
+                <CardContent className="min-h-0 flex-1 space-y-2">
+                  {Array.from({ length: 5 }).map((_row, j) => (
+                    <Skeleton key={j} className="h-10 w-full" />
+                  ))}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </div>
       ) : error ? (
-        <div className="py-8 text-center">
-          <p className="mb-4">Error loading accounts. Please try again later.</p>
-        </div>
+        <Card className="p-6">
+          <div className="flex flex-col items-center justify-center gap-4 text-center">
+            <div className="rounded-full bg-destructive/10 p-3">
+              <XCircle className="h-6 w-6 text-destructive" />
+            </div>
+            <div className="space-y-2">
+              <h4 className="font-medium">Failed to load accounts</h4>
+              <p className="text-sm text-muted-foreground">
+                There was an error loading your accounts. Please try again later.
+              </p>
+            </div>
+          </div>
+        </Card>
       ) : !accounts || accounts.length === 0 ? (
         <AccountsEmptyPlaceholder />
       ) : (

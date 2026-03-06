@@ -62,6 +62,7 @@ export function AccountForm() {
   const router = useRouter();
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const { mutateAsync: deleteAccount } = useDeleteAccount();
 
   const { data: user, isLoading: isUserLoading, error: userError } = useUser();
@@ -72,6 +73,10 @@ export function AccountForm() {
     isLoading: isCurrenciesLoading,
     error: currenciesError,
   } = useCurrencies();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const form = useForm<AccountFormValues>({
     resolver: zodResolver(accountFormSchema),
@@ -122,39 +127,8 @@ export function AccountForm() {
     }
   };
 
-  if (isUserLoading || isCurrenciesLoading) {
-    return (
-      <div className="space-y-8">
-        <div className="space-y-6">
-          <div className="space-y-2">
-            <Skeleton className="h-4 w-12" />
-            <Skeleton className="h-10 w-full" />
-          </div>
-          <div className="space-y-2">
-            <Skeleton className="h-4 w-16" />
-            <Skeleton className="h-10 w-full" />
-          </div>
-          <Skeleton className="h-10 w-32" />
-        </div>
-        <div className="space-y-4">
-          <Skeleton className="h-4 w-24" />
-          <div className="flex gap-2">
-            <Skeleton className="h-10 w-full" />
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (userError) {
-    return <div className="text-destructive">Error loading user data. Please try again later.</div>;
-  }
-
-  if (currenciesError) {
-    return (
-      <div className="text-destructive">Error loading currencies. Please try again later.</div>
-    );
-  }
+  const profileError = userError ?? currenciesError;
+  const isProfileLoading = !mounted || isUserLoading || isCurrenciesLoading;
 
   async function onSubmit(data: AccountFormValues) {
     try {
@@ -224,6 +198,13 @@ export function AccountForm() {
         title="Profile"
         description="Email and default currency for your account."
       >
+        {profileError ? (
+          <p className="text-sm text-destructive">
+            {userError
+              ? "Error loading user data. Please try again later."
+              : "Error loading currencies. Please try again later."}
+          </p>
+        ) : null}
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <FormField
@@ -233,7 +214,11 @@ export function AccountForm() {
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input placeholder="Your email" {...field} />
+                    {isProfileLoading ? (
+                      <Skeleton className="h-10 w-full" />
+                    ) : (
+                      <Input placeholder="Your email" {...field} />
+                    )}
                   </FormControl>
                   <FormDescription>
                     This is the email that will be used to login to your account.
@@ -245,35 +230,50 @@ export function AccountForm() {
             <FormField
               control={form.control}
               name="currency"
-              render={({ field }) => (
+              render={({ field }) => {
+                // Use user.currency when form state not yet reset (avoids showing placeholder on first paint after load)
+                const currencyValue = field.value || (user?.currency ?? "");
+                return (
                 <FormItem>
                   <FormLabel>Currency</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                    value={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select currency">{field.value}</SelectValue>
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {sortedCurrencies.map((currency) => (
-                        <SelectItem key={currency.code} value={currency.code}>
-                          {currency.code} - {currency.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  {isProfileLoading ? (
+                    <Skeleton className="h-10 w-full" />
+                  ) : (
+                    <Select
+                      onValueChange={field.onChange}
+                      value={currencyValue}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select currency" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {sortedCurrencies.map((currency) => (
+                          <SelectItem key={currency.code} value={currency.code}>
+                            {currency.code} - {currency.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
                   <FormDescription>
                     This is the currency that will be used for your account.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
-              )}
+                );
+              }}
             />
-            <Button type="submit" disabled={!form.formState.isDirty || form.formState.isSubmitting}>
+            <Button
+              type="submit"
+              disabled={
+                isProfileLoading ||
+                !!profileError ||
+                !form.formState.isDirty ||
+                form.formState.isSubmitting
+              }
+            >
               {form.formState.isSubmitting ? "Updating..." : "Update account"}
             </Button>
           </form>
