@@ -1,3 +1,4 @@
+import { waitUntil } from "cloudflare:workers";
 import { and, eq } from "drizzle-orm";
 import { Elysia, status, t } from "elysia";
 
@@ -6,6 +7,7 @@ import { AccountTypeEnum } from "../../db/schema/enums";
 import { cleanupAccountDocuments } from "../../lib/cleanup-documents";
 import { filterLockedUpdate } from "../../lib/locked-attributes";
 import { authPlugin } from "../../middleware/auth";
+import { deliverUserWebhookEvents } from "../../lib/user-webhooks";
 import { errorSchema } from "../../utils/error";
 import { createAccountSchema, idParamSchema, subtypeToType, updateAccountSchema } from "./types";
 
@@ -79,6 +81,8 @@ export const accountRoutes = new Elysia({
       if (!newAccount) {
         return status(500, { error: "Failed to create account" });
       }
+
+      waitUntil(deliverUserWebhookEvents(db, user.id, "account.created", { account: newAccount }));
 
       return newAccount;
     },
@@ -213,6 +217,8 @@ export const accountRoutes = new Elysia({
         return status(500, { error: "Failed to update account" });
       }
 
+      waitUntil(deliverUserWebhookEvents(db, user.id, "account.updated", { account: updatedAccount }));
+
       return updatedAccount;
     },
     {
@@ -256,6 +262,8 @@ export const accountRoutes = new Elysia({
       if (deleted.length === 0) {
         return status(404, { error: "Account not found" });
       }
+
+      waitUntil(deliverUserWebhookEvents(db, user.id, "account.deleted", { account: existingAccount }));
 
       return { success: true };
     },

@@ -266,7 +266,7 @@ export function SecurityForm() {
       </div>
 
       <div className="space-y-4">
-        <h2 className="text-lg font-semibold">Change Password</h2>
+        <h2 className="text-lg font-semibold">Password</h2>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <FormField

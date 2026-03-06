@@ -27,6 +27,7 @@ import { providerConnection } from "./provider-connections";
 import { provider } from "./providers";
 import { rate } from "./rates";
 import { transaction } from "./transactions";
+import { webhook } from "./webhooks";
 
 const schema = {
   user_account,
@@ -54,6 +55,7 @@ const schema = {
   rate,
   transaction,
   verification,
+  webhook,
 };
 
 export const relations = defineRelations(schema, (r) => ({
@@ -109,6 +111,10 @@ export const relations = defineRelations(schema, (r) => ({
     documents: r.many.document({
       from: r.user.id,
       to: r.document.user_id,
+    }),
+    webhooks: r.many.webhook({
+      from: r.user.id,
+      to: r.webhook.user_id,
     }),
   },
   subscription: {
@@ -357,6 +363,12 @@ export const relations = defineRelations(schema, (r) => ({
   document: {
     user: r.one.user({
       from: r.document.user_id,
+      to: r.user.id,
+    }),
+  },
+  webhooks: {
+    user: r.one.user({
+      from: r.webhook.user_id,
       to: r.user.id,
     }),
   },

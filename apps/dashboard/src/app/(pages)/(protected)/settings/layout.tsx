@@ -25,8 +25,8 @@ const tabItems = [
     href: "/settings/categories",
   },
   {
-    title: "API Key",
-    href: "/settings/api-key",
+    title: "Developer",
+    href: "/settings/developer",
   },
   {
     title: "Subscription",

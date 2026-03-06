@@ -23,7 +23,7 @@ const getIcon = (title: string): React.ReactNode => {
       return <Shield className="-ms-0.5 me-1.5 opacity-60" size={16} strokeWidth={2} />;
     case "Connections":
       return <Satellite className="-ms-0.5 me-1.5 opacity-60" size={16} strokeWidth={2} />;
-    case "API Key":
+    case "Developer":
       return <Key className="-ms-0.5 me-1.5 opacity-60" size={16} strokeWidth={2} />;
     case "Categories":
       return <Tag className="-ms-0.5 me-1.5 opacity-60" size={16} strokeWidth={2} />;

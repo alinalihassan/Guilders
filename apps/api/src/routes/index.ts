@@ -17,6 +17,7 @@ import { providerRoutes } from "./provider";
 import { providerConnectionRoutes } from "./provider-connection";
 import { rateRoutes } from "./rate";
 import { transactionRoutes } from "./transaction";
+import { webhookRoutes } from "./webhook";
 
 export const api = new Elysia({ prefix: "/api" })
   .all("/auth/*", (context) => createAuth().handler(context.request), { detail: { hide: true } })
@@ -36,4 +37,5 @@ export const api = new Elysia({ prefix: "/api" })
   .use(institutionRoutes)
   .use(providerConnectionRoutes)
   .use(institutionConnectionRoutes)
-  .use(transactionRoutes);
+  .use(transactionRoutes)
+  .use(webhookRoutes);
