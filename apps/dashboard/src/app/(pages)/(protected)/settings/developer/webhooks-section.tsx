@@ -60,8 +60,12 @@ export function WebhooksSection() {
   const handleCopySecret = async () => {
     if (!createdSecret) return;
     setCopyingSecret(true);
-    await navigator.clipboard.writeText(createdSecret);
-    toast.success("Secret copied to clipboard");
+    try {
+      await navigator.clipboard.writeText(createdSecret);
+      toast.success("Secret copied to clipboard");
+    } catch {
+      toast.error("Failed to copy to clipboard");
+    }
     setTimeout(() => setCopyingSecret(false), 1000);
   };
 
