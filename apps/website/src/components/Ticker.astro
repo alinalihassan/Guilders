@@ -1,0 +1,25 @@
+---
+const items = [
+  "DEPOSITORY",
+  "BROKERAGE",
+  "CRYPTO",
+  "PROPERTY",
+  "VEHICLE",
+  "CREDIT CARD",
+  "LOAN",
+  "STOCK",
+];
+const doubled = [...items, ...items];
+---
+<div class="border-b-3 border-line overflow-hidden bg-gold/[0.04] py-3" aria-hidden="true">
+  <div class="flex animate-marquee motion-reduce:animate-none whitespace-nowrap">
+    {doubled.map((item) => (
+      <span class="inline-flex items-center gap-6 px-6">
+        <span class="font-display text-sm font-bold uppercase tracking-[0.15em] text-gold">
+          {item}
+        </span>
+        <span class="text-line text-lg">◆</span>
+      </span>
+    ))}
+  </div>
+</div>

@@ -1,0 +1,78 @@
+---
+import { DOCS_URL, API_URL } from "../config";
+---
+<section class="border-b-3 border-line">
+  <div class="border-b border-line px-5 py-4 md:px-8">
+    <span class="text-[11px] font-bold uppercase tracking-[0.2em] text-dim">
+      Developers
+    </span>
+  </div>
+  <div class="px-5 py-16 md:px-8 md:py-20">
+    <h2 class="font-display text-big font-black uppercase leading-[0.95] tracking-tight text-fg">
+      API-first.<br />
+      <span class="text-gold">MCP-ready.</span>
+    </h2>
+    <p class="mt-8 max-w-lg text-dim leading-relaxed">
+      Full REST API with OpenAPI docs. API key auth. End-to-end type safety via
+      Eden Treaty. Let AI agents read and write your financial data via MCP with
+      OAuth consent.
+    </p>
+
+    <div class="mt-14 grid gap-0 border-3 border-line lg:grid-cols-3">
+      <div class="border-b-3 lg:border-b-0 lg:border-r-3 border-line">
+        <div class="border-b border-line px-4 py-2">
+          <span class="text-[10px] font-bold uppercase tracking-[0.2em] text-dim">REST API</span>
+        </div>
+        <div class="scanlines relative">
+          <pre class="px-4 py-5 text-[13px] leading-relaxed text-fg overflow-x-auto"><code><span class="text-dim">$</span> curl {API_URL}/api/account \
+    -H <span class="text-gold">"x-api-key: YOUR_API_KEY"</span>
+
+<span class="text-dim">[</span>
+  <span class="text-dim">{`{`}</span>
+    <span class="text-gold">"name"</span>: "Revolut",
+    <span class="text-gold">"type"</span>: "asset",
+    <span class="text-gold">"value"</span>: 12450.00,
+    <span class="text-gold">"currency"</span>: "EUR"
+  <span class="text-dim">{`}`}</span>
+<span class="text-dim">]</span></code></pre>
+        </div>
+      </div>
+      <div class="border-b-3 lg:border-b-0 lg:border-r-3 border-line">
+        <div class="border-b border-line px-4 py-2">
+          <span class="text-[10px] font-bold uppercase tracking-[0.2em] text-dim">MCP Config</span>
+        </div>
+        <div class="scanlines relative">
+          <pre class="px-4 py-5 text-[13px] leading-relaxed text-fg overflow-x-auto"><code>{`{
+  "mcpServers": {
+    "guilders": {
+      "url": "${API_URL}/mcp"
+    }
+  }
+}`}</code></pre>
+        </div>
+      </div>
+      <div>
+        <div class="border-b border-line px-4 py-2">
+          <span class="text-[10px] font-bold uppercase tracking-[0.2em] text-dim">Webhooks</span>
+        </div>
+        <div class="scanlines relative">
+          <pre class="px-4 py-5 text-[13px] leading-relaxed text-fg overflow-x-auto"><code>POST https://your-app.com/hook
+
+<span class="text-dim">event:</span> <span class="text-gold">transaction.created</span>
+<span class="text-dim">account:</span> "Revolut"
+<span class="text-dim">amount:</span> -42.50
+<span class="text-dim">category:</span> "Food"</code></pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-10 flex flex-wrap items-center gap-6">
+      <a href={DOCS_URL} target="_blank" rel="noopener noreferrer" class="inline-block border-3 border-gold px-6 py-2.5 text-[11px] font-bold uppercase tracking-[0.25em] text-gold hover:bg-gold hover:text-bg transition-colors duration-100 hover:no-underline">
+        Read the docs →
+      </a>
+      <a href={`${API_URL}/openapi`} target="_blank" rel="noopener noreferrer" class="text-[11px] font-medium uppercase tracking-[0.2em] text-dim hover:text-gold transition-colors duration-100">
+        OpenAPI spec
+      </a>
+    </div>
+  </div>
+</section>

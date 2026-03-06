@@ -18,3 +18,7 @@ next-env.d.ts
 
 # Fumadocs
 .source
+
+# Astro
+.astro/
+dist/

@@ -1,15 +1,15 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "guilders-docs",
+  "name": "guilders-website",
   "compatibility_date": "2026-02-27",
   "assets": {
-    "directory": "./out",
+    "directory": "./dist",
     "not_found_handling": "404-page",
   },
   "routes": [
     {
       "custom_domain": true,
-      "pattern": "docs.guilders.app",
+      "pattern": "guilders.app",
     },
   ],
   "workers_dev": false,

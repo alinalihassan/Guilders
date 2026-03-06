@@ -1,0 +1,38 @@
+---
+const features = [
+  { id: "01", name: "NET WORTH TRACKING", desc: "Assets minus liabilities. Banks, brokerages, crypto, property, vehicles, credit cards, loans — one number." },
+  { id: "02", name: "BANK SYNC", desc: "Connect EU banks via EnableBanking. US banks via Teller. Brokerages via SnapTrade. More coming soon." },
+  { id: "03", name: "MANUAL ACCOUNTS", desc: "Cash, collectibles, real estate, vehicles — anything that doesn't have an API gets tracked too." },
+  { id: "04", name: "BUDGETING", desc: "Every transaction categorized. Income vs expense flow charts. Search, filter, export." },
+  { id: "05", name: "AI ADVISOR", desc: "Chat with an LLM that has full context: accounts, transactions, categories. It calls tools to fetch live data." },
+  { id: "06", name: "DATA PRIVACY", desc: "Don't believe us? Check our source code, or export your data and self host it yourself." },
+  { id: "07", name: "DEVELOPER FRIENDLY", desc: "Open source, webhooks, OpenAPI reference, MCP server, API keys, documentation, you name it, we got you covered." },
+];
+---
+<section class="border-b-3 border-line">
+  <div class="border-b border-line px-5 py-4 md:px-8">
+    <span class="text-[11px] font-bold uppercase tracking-[0.2em] text-dim">
+      What you get
+    </span>
+  </div>
+  <div class="divide-y divide-line">
+    {features.map((f, i) => (
+      <div class="group flex items-baseline gap-6 px-5 py-5 md:px-8 md:gap-10 transition-colors duration-75 cursor-default">
+        <span class="shrink-0 font-mono text-[11px] font-medium text-dim tabular-nums transition-colors duration-100 group-hover:text-gold">
+          {f.id}
+        </span>
+        <div class="flex flex-col gap-1 md:flex-row md:items-baseline md:gap-8 flex-1 min-w-0">
+          <h3 class="shrink-0 font-display text-base font-bold uppercase tracking-wide text-fg md:w-56 transition-colors duration-100 group-hover:text-gold">
+            {f.name}
+          </h3>
+          <p class="text-dim text-sm leading-relaxed">
+            {f.desc}
+          </p>
+        </div>
+        <span class="hidden md:block shrink-0 w-5 text-right font-mono text-[10px] text-line transition-colors duration-100 group-hover:text-gold">
+          →
+        </span>
+      </div>
+    ))}
+  </div>
+</section>

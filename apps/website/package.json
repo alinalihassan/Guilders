@@ -1,0 +1,27 @@
+{
+  "name": "@guilders/website",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "deploy": "astro build && wrangler deploy",
+    "clean": "git clean -xdf dist node_modules",
+    "lint": "oxlint .",
+    "lint:fix": "oxlint --fix .",
+    "format": "oxfmt --write .",
+    "format:check": "oxfmt --check .",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@astrojs/tailwind": "^5.1.0",
+    "astro": "^5.0.0"
+  },
+  "devDependencies": {
+    "@guilders/tsconfig": "workspace:*",
+    "tailwindcss": "3.4.16",
+    "typescript": "^5.9.3",
+    "wrangler": "catalog:"
+  }
+}

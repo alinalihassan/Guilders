@@ -1,0 +1,70 @@
+---
+const messages = [
+  { role: "user", text: "What's my net worth trend this month?" },
+  { role: "tool", text: "get_balance_history({ period: \"1M\" })" },
+  { role: "assistant", text: "Your net worth increased by €2,340 this month (+4.2%). The main driver was your Revolut checking account receiving a salary deposit of €3,100 on the 1st, partially offset by €760 in expenses across food, transport, and subscriptions." },
+];
+---
+<section class="border-b-3 border-line">
+  <div class="border-b border-line px-5 py-4 md:px-8">
+    <span class="text-[11px] font-bold uppercase tracking-[0.2em] text-dim">
+      AI advisor
+    </span>
+  </div>
+  <div class="px-5 py-16 md:px-8 md:py-20">
+    <h2 class="font-display text-big font-black uppercase leading-[0.95] tracking-tight text-fg">
+      Ask your<br />
+      <span class="text-gold">money.</span>
+    </h2>
+    <p class="mt-8 max-w-lg text-dim leading-relaxed">
+      Chat with an AI that has full context on your accounts, transactions, and
+      categories. It calls tools to fetch live data before answering, so
+      responses stay grounded in your data.
+    </p>
+
+    <div class="mt-14 border-3 border-line">
+      <div class="border-b border-line px-4 py-2 flex items-center gap-2">
+        <span class="inline-block h-2 w-2 bg-gold"></span>
+        <span class="text-[10px] font-bold uppercase tracking-[0.2em] text-dim">Advisor</span>
+      </div>
+      <div class="divide-y divide-line">
+        {messages.map((msg) => (
+          <div class={`px-5 py-4 ${msg.role === "tool" ? "bg-line/20" : ""}`}>
+            <span class={`inline-block text-[10px] font-bold uppercase tracking-[0.2em] mb-2 ${
+              msg.role === "user" ? "text-fg" :
+              msg.role === "tool" ? "text-gold" :
+              "text-dim"
+            }`}>
+              {msg.role === "user" ? "You" : msg.role === "tool" ? "→ Tool call" : "Advisor"}
+            </span>
+            <p class={`text-sm leading-relaxed ${
+              msg.role === "tool" ? "font-mono text-gold/80 text-[13px]" : "text-fg/90"
+            }`}>
+              {msg.text}
+            </p>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <div class="mt-10">
+      <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-dim mb-4">
+        Available tools
+      </p>
+      <div class="flex flex-wrap gap-2">
+        {[
+          "get_accounts", "get_transactions", "get_categories",
+          "get_balance_history", "get_documents", "get_exchange_rates",
+          "create_account", "create_transaction", "update_account",
+        ].map((tool) => (
+          <span class="inline-block border border-line px-3 py-1 font-mono text-[11px] text-dim hover:border-gold hover:text-gold transition-colors duration-100 cursor-default">
+            {tool}
+          </span>
+        ))}
+        <span class="inline-block px-3 py-1 font-mono text-[11px] text-dim">
+          +7 more
+        </span>
+      </div>
+    </div>
+  </div>
+</section>
