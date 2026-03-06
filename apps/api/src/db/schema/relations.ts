@@ -366,7 +366,7 @@ export const relations = defineRelations(schema, (r) => ({
       to: r.user.id,
     }),
   },
-  webhooks: {
+  webhook: {
     user: r.one.user({
       from: r.webhook.user_id,
       to: r.user.id,
