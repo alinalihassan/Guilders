@@ -86,6 +86,7 @@ Schema files live in `apps/api/src/db/schema/`:
 | `currencies.ts`   | currency, rate                                                        |
 | `countries.ts`    | country                                                               |
 | `documents.ts`    | documents                                                             |
+| `webhooks.ts`     | webhook                                                               |
 | `relations.ts`    | Drizzle relation definitions                                          |
 
 Migrations: `apps/api/drizzle/`
