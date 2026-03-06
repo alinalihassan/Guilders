@@ -23,7 +23,7 @@ import { isPro } from "@/lib/utils";
 export function AddLinkedAccountDialog() {
   const router = useRouter();
   const { data: user } = useUser();
-  const { data: billing } = useBillingConfig();
+  const { data: billing, isPending: billingConfigPending } = useBillingConfig();
   const { isOpen, data, close } = useDialog("addLinkedAccount");
   const { open: openProviderDialog } = useDialog("provider");
   const provider = useProviderById(data?.institution?.provider_id);
@@ -31,10 +31,14 @@ export function AddLinkedAccountDialog() {
 
   if (!isOpen || !provider || !data?.institution) return null;
   const { institution } = data;
-  const billingEnabled = billing?.billingEnabled ?? true;
-  const isSubscribed = !billingEnabled || isPro(user, billingEnabled);
+
+  const billingConfigLoaded = !billingConfigPending;
+  const billingEnabled = billingConfigLoaded ? (billing?.billingEnabled ?? true) : undefined;
+  const isSubscribed =
+    billingEnabled !== undefined ? (!billingEnabled || isPro(user, billingEnabled)) : undefined;
 
   const onContinue = async () => {
+    if (!billingConfigLoaded || billing === undefined) return;
     if (!isSubscribed) {
       router.push("/settings/subscription");
       close();
@@ -96,7 +100,9 @@ export function AddLinkedAccountDialog() {
           </div>
 
           <p className="text-sm text-muted-foreground">
-            {isSubscribed ? (
+            {!billingConfigLoaded ? (
+              <>Checking subscription status…</>
+            ) : isSubscribed ? (
               <>
                 This connection is provided by {provider.name}. By clicking continue, you authorize{" "}
                 {provider.name} to establish the connection and access your financial data.
@@ -113,6 +119,11 @@ export function AddLinkedAccountDialog() {
           <Button disabled>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             Please wait
+          </Button>
+        ) : !billingConfigLoaded ? (
+          <Button disabled>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Loading…
           </Button>
         ) : (
           <Button onClick={onContinue}>{isSubscribed ? "Continue" : "Upgrade to Pro"}</Button>
