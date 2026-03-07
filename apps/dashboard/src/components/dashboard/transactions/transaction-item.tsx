@@ -2,6 +2,7 @@ import type { Transaction } from "@guilders/api/types";
 import NumberFlow from "@number-flow/react";
 
 import { useDialog } from "@/hooks/useDialog";
+import { useFormattedTime } from "@/lib/format-time";
 
 interface TransactionItemProps {
   transaction: Transaction;
@@ -10,6 +11,7 @@ interface TransactionItemProps {
 export function TransactionItem({ transaction }: TransactionItemProps) {
   const { open } = useDialog("editTransaction");
   const amount = Number(transaction.amount);
+  const timeStr = useFormattedTime(new Date(transaction.timestamp));
 
   return (
     <div
@@ -63,9 +65,9 @@ export function TransactionItem({ transaction }: TransactionItemProps) {
       </div>
       <div className="text-right">
         <p className="text-sm text-gray-700 dark:text-gray-300">
-          {new Date(transaction.date).toLocaleDateString()}
+          {new Date(transaction.timestamp).toLocaleDateString()}
         </p>
-        <p className="text-xs text-gray-500">{new Date(transaction.date).toLocaleTimeString()}</p>
+        <p className="text-xs text-gray-500">{timeStr}</p>
       </div>
     </div>
   );

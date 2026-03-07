@@ -53,6 +53,7 @@ const accountFormSchema = z.object({
   currency: z.string({
     required_error: "Please select a currency.",
   }),
+  timeFormat: z.enum(["12", "24"]),
 });
 
 type AccountFormValues = z.infer<typeof accountFormSchema>;
@@ -83,6 +84,7 @@ export function AccountForm() {
     defaultValues: {
       email: user?.email ?? "",
       currency: user?.currency ?? "",
+      timeFormat: (user?.timeFormat ?? "24") as "12" | "24",
     },
   });
 
@@ -92,6 +94,7 @@ export function AccountForm() {
         {
           email: user.email,
           currency: user.currency,
+          timeFormat: (user.timeFormat ?? "24") as "12" | "24",
         },
         {
           keepDirtyValues: true,
@@ -134,10 +137,12 @@ export function AccountForm() {
     try {
       const isEmailChanged = data.email !== user?.email;
       const isCurrencyChanged = data.currency !== user?.currency;
+      const isTimeFormatChanged = data.timeFormat !== (user?.timeFormat ?? "24");
 
-      if (isCurrencyChanged) {
+      if (isCurrencyChanged || isTimeFormatChanged) {
         await updateUserSettings({
-          currency: data.currency,
+          ...(isCurrencyChanged && { currency: data.currency }),
+          ...(isTimeFormatChanged && { timeFormat: data.timeFormat }),
         });
       }
 
@@ -194,92 +199,123 @@ export function AccountForm() {
 
   return (
     <div className="space-y-8">
-      <SettingsSubsection
-        title="Profile"
-        description="Email and default currency for your account."
-      >
-        {profileError ? (
-          <p className="text-sm text-destructive">
-            {userError
-              ? "Error loading user data. Please try again later."
-              : "Error loading currencies. Please try again later."}
-          </p>
-        ) : null}
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    {isProfileLoading ? (
-                      <Skeleton className="h-10 w-full" />
-                    ) : (
-                      <Input placeholder="Your email" {...field} />
-                    )}
-                  </FormControl>
-                  <FormDescription>
-                    This is the email that will be used to login to your account.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="currency"
-              render={({ field }) => {
-                // Use user.currency when form state not yet reset (avoids showing placeholder on first paint after load)
-                const currencyValue = field.value || (user?.currency ?? "");
-                return (
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          <SettingsSubsection
+            title="Profile"
+            description="Email and default currency for your account."
+          >
+            {profileError ? (
+              <p className="text-sm text-destructive">
+                {userError
+                  ? "Error loading user data. Please try again later."
+                  : "Error loading currencies. Please try again later."}
+              </p>
+            ) : null}
+            <div className="space-y-6">
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Currency</FormLabel>
-                    {isProfileLoading ? (
-                      <Skeleton className="h-10 w-full" />
-                    ) : (
-                      <Select onValueChange={field.onChange} value={currencyValue}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select currency" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {sortedCurrencies.map((currency) => (
-                            <SelectItem key={currency.code} value={currency.code}>
-                              {currency.code} - {currency.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    )}
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      {isProfileLoading ? (
+                        <Skeleton className="h-10 w-full" />
+                      ) : (
+                        <Input placeholder="Your email" {...field} />
+                      )}
+                    </FormControl>
                     <FormDescription>
-                      This is the currency that will be used for your account.
+                      This is the email that will be used to login to your account.
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
-                );
-              }}
-            />
-            <Button
-              type="submit"
-              disabled={
-                isProfileLoading ||
-                !!profileError ||
-                !form.formState.isDirty ||
-                form.formState.isSubmitting
-              }
-            >
-              {form.formState.isSubmitting ? "Updating..." : "Update account"}
-            </Button>
-          </form>
-        </Form>
-      </SettingsSubsection>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="currency"
+                render={({ field }) => {
+                  // Use user.currency when form state not yet reset (avoids showing placeholder on first paint after load)
+                  const currencyValue = field.value || (user?.currency ?? "");
+                  return (
+                    <FormItem>
+                      <FormLabel>Currency</FormLabel>
+                      {isProfileLoading ? (
+                        <Skeleton className="h-10 w-full" />
+                      ) : (
+                        <Select onValueChange={field.onChange} value={currencyValue}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select currency" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {sortedCurrencies.map((currency) => (
+                              <SelectItem key={currency.code} value={currency.code}>
+                                {currency.code} - {currency.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                      <FormDescription>
+                        This is the currency that will be used for your account.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  );
+                }}
+              />
+              <FormField
+                control={form.control}
+                name="timeFormat"
+                render={({ field }) => {
+                  const value = field.value || (user?.timeFormat ?? "24");
+                  return (
+                    <FormItem>
+                      <FormLabel>Time format</FormLabel>
+                      {isProfileLoading ? (
+                        <Skeleton className="h-10 w-48" />
+                      ) : (
+                        <Select onValueChange={field.onChange} value={value}>
+                          <FormControl>
+                            <SelectTrigger className="w-48">
+                              <SelectValue />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="12">12-hour (AM/PM)</SelectItem>
+                            <SelectItem value="24">24-hour</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      )}
+                      <FormDescription>How times are shown across the dashboard.</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  );
+                }}
+              />
+              <Button
+                type="submit"
+                disabled={
+                  isProfileLoading ||
+                  !!profileError ||
+                  !form.formState.isDirty ||
+                  form.formState.isSubmitting
+                }
+              >
+                {form.formState.isSubmitting ? "Updating..." : "Update account"}
+              </Button>
+            </div>
+          </SettingsSubsection>
 
-      <SettingsSubsection title="Appearance" description="Choose how the dashboard looks.">
-        <ThemeSelector />
-      </SettingsSubsection>
+          <SettingsSubsection title="Appearance" description="Choose how the dashboard looks.">
+            <ThemeSelector />
+          </SettingsSubsection>
+        </form>
+      </Form>
 
       <SettingsSubsection
         title="Data"

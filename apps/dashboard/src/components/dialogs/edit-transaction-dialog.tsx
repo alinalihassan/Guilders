@@ -22,13 +22,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useDialog } from "@/hooks/useDialog";
@@ -36,9 +29,11 @@ import { useAccounts } from "@/lib/queries/useAccounts";
 import { useFiles } from "@/lib/queries/useFiles";
 import { useRemoveTransaction, useUpdateTransaction } from "@/lib/queries/useTransactions";
 
+import { AccountSelector } from "../common/account-selector";
 import { CategorySelector } from "../common/category-selector";
-import { DateTimePicker } from "../common/datetime-picker";
+import { DatePicker } from "../common/date-picker";
 import { FileUploader } from "../common/file-uploader";
+import { TimePicker } from "../common/time-picker";
 import { AccountIcon } from "../dashboard/accounts/account-icon";
 
 const formSchema = z.object({
@@ -53,20 +48,11 @@ const formSchema = z.object({
   categoryId: z.number({
     required_error: "Category is required.",
   }),
-  date: z.string().min(1, "Date is required."),
+  timestamp: z.date(),
   documents: z.array(z.custom<File>()).optional(),
 });
 
 type FormSchema = z.infer<typeof formSchema>;
-
-function formatDateForInput(dateString: string) {
-  const date = new Date(dateString);
-  return date.toISOString().slice(0, 16);
-}
-
-function formatDateForSubmit(dateString: string) {
-  return new Date(dateString).toISOString().split("T")[0]!;
-}
 
 export function EditTransactionDialog() {
   const { isOpen, data, close } = useDialog("editTransaction");
@@ -83,24 +69,28 @@ export function EditTransactionDialog() {
 
   const form = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      accountId: data?.transaction?.account_id ?? undefined,
-      amount: data?.transaction?.amount.toString() ?? "",
-      description: data?.transaction?.description ?? "",
-      categoryId: data?.transaction?.category_id ?? undefined,
-      date: data?.transaction?.date ? formatDateForInput(data.transaction.date) : "",
-      documents: [],
-    },
+    defaultValues: (() => {
+      return {
+        accountId: data?.transaction?.account_id ?? undefined,
+        amount: data?.transaction?.amount != null ? Number(data.transaction.amount).toString() : "",
+        description: data?.transaction?.description ?? "",
+        categoryId: data?.transaction?.category_id ?? undefined,
+        timestamp:
+          data?.transaction?.timestamp != null ? new Date(data.transaction.timestamp) : new Date(),
+        documents: [],
+      };
+    })(),
   });
 
   useEffect(() => {
     if (data?.transaction) {
       form.reset({
         accountId: data.transaction.account_id,
-        amount: data.transaction.amount.toString(),
+        amount: Number(data.transaction.amount).toString(),
         description: data.transaction.description,
         categoryId: data.transaction.category_id ?? undefined,
-        date: formatDateForInput(data.transaction.date),
+        timestamp:
+          data.transaction.timestamp != null ? new Date(data.transaction.timestamp) : new Date(),
         documents: [],
       });
     }
@@ -154,7 +144,7 @@ export function EditTransactionDialog() {
       amount: formData.amount,
       description: formData.description,
       category_id: formData.categoryId,
-      date: formatDateForSubmit(formData.date),
+      timestamp: formData.timestamp,
       currency: transaction.currency,
       documents: transaction.documents,
       provider_transaction_id: transaction.provider_transaction_id,
@@ -229,32 +219,14 @@ export function EditTransactionDialog() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Account</FormLabel>
-                        <Select
-                          onValueChange={(value) => field.onChange(Number.parseInt(value))}
-                          defaultValue={field.value?.toString()}
-                          disabled={isSyncedTransaction}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue>{currentAccount?.name ?? "Select account"}</SelectValue>
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {accounts?.map((account) => {
-                              const isConnected = !!account.institution_connection_id;
-                              return (
-                                <SelectItem
-                                  key={account.id}
-                                  value={account.id.toString()}
-                                  disabled={isConnected && account.id !== currentAccount?.id}
-                                >
-                                  {account.name}
-                                  {isConnected && " (Connected)"}
-                                </SelectItem>
-                              );
-                            })}
-                          </SelectContent>
-                        </Select>
+                        <FormControl>
+                          <AccountSelector
+                            value={field.value}
+                            onChange={field.onChange}
+                            placeholder="Select account"
+                            disabled={isSyncedTransaction}
+                          />
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -320,30 +292,29 @@ export function EditTransactionDialog() {
 
                 <FormField
                   control={form.control}
-                  name="date"
+                  name="timestamp"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Date & Time</FormLabel>
                       <FormControl>
-                        <DateTimePicker
-                          date={field.value ? new Date(field.value) : undefined}
-                          onDateChange={(date) => {
-                            if (date) {
-                              field.onChange(date.toISOString());
-                            }
-                          }}
-                          onTimeChange={(time) => {
-                            if (field.value) {
-                              const currentDate = new Date(field.value);
-                              const [hours, minutes] = time.split(":");
-                              currentDate.setHours(
-                                Number.parseInt(hours || "0"),
-                                Number.parseInt(minutes || "0"),
-                              );
-                              field.onChange(currentDate.toISOString());
-                            }
-                          }}
-                        />
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <FormLabel>Date</FormLabel>
+                            <DatePicker
+                              date={field.value}
+                              onDateChange={field.onChange}
+                              disabled={isSyncedTransaction}
+                              preserveTime={true}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <FormLabel>Time</FormLabel>
+                            <TimePicker
+                              date={field.value}
+                              onDateChange={field.onChange}
+                              disabled={isSyncedTransaction}
+                            />
+                          </div>
+                        </div>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -430,7 +401,7 @@ export function EditTransactionDialog() {
                 </Accordion>
               </div>
 
-              <div className="absolute bottom-0 left-0 right-0 flex justify-end border-t bg-background p-4">
+              <div className="absolute bottom-0 left-0 right-0 flex justify-end border-t bg-card p-4">
                 <Button type="submit" disabled={isUpdating || isDeleting || isSyncedTransaction}>
                   {isUpdating ? (
                     <>

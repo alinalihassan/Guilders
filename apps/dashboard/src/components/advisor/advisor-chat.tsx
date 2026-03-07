@@ -3,7 +3,7 @@
 import { useChat } from "@ai-sdk/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { DefaultChatTransport, type UIMessage } from "ai";
-import { ArrowUp, LayoutDashboard, Loader2, Lock, RefreshCcw, Square } from "lucide-react";
+import { ArrowUp, LayoutDashboard, Loader2, RefreshCcw, Square } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -22,6 +22,8 @@ import { useUser, useUserToken } from "@/lib/queries/useUser";
 import { useStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
+import { AnimatedLockIcon, AnimatedUnlockIcon } from "../common/animated-lock-icons";
+
 const CHAT_AI_ICONS = [{ icon: RefreshCcw, label: "Refresh" }];
 
 const EMPTY_STATE_POINTS = [
@@ -30,7 +32,7 @@ const EMPTY_STATE_POINTS = [
     text: "View and update your accounts, transactions, categories and more.",
   },
   {
-    icon: Lock,
+    icon: AnimatedLockIcon,
     text: "Secure and private by design — your data stays yours. We don't share your messages with anyone.",
   },
 ] as const;
@@ -85,6 +87,7 @@ export function AdvisorChat({ chatId, initialMessages }: AdvisorChatProps) {
   const invalidateChatLimits = useInvalidateChatLimits();
   const { data: token } = useUserToken();
   const [inputText, setInputText] = useState("");
+  const [readOnly, setReadOnly] = useState(true);
   const atLimit = limits != null && limits.remaining <= 0;
 
   const tokenRef = useRef(token);
@@ -92,6 +95,9 @@ export function AdvisorChat({ chatId, initialMessages }: AdvisorChatProps) {
 
   const chatIdRef = useRef(chatId);
   chatIdRef.current = chatId;
+
+  const readOnlyRef = useRef(readOnly);
+  readOnlyRef.current = readOnly;
 
   const [transport] = useState(
     () =>
@@ -103,8 +109,10 @@ export function AdvisorChat({ chatId, initialMessages }: AdvisorChatProps) {
         },
         prepareSendMessagesRequest: ({ messages }) => {
           const cid = chatIdRef.current;
-          if (!cid) return { body: { messages } };
-          return { body: { id: cid, message: messages[messages.length - 1] } };
+          const ro = readOnlyRef.current;
+          const base = { readOnly: ro };
+          if (!cid) return { body: { ...base, messages } };
+          return { body: { ...base, id: cid, message: messages[messages.length - 1] } };
         },
       }),
   );
@@ -280,7 +288,7 @@ export function AdvisorChat({ chatId, initialMessages }: AdvisorChatProps) {
           )}
         </Card>
       ) : (
-        <div className="flex items-end gap-2 rounded-xl border border-border/70 bg-muted/40 p-2 transition-colors focus-within:border-border focus-within:bg-muted/60">
+        <div className="flex flex-col gap-2 rounded-xl border border-border/70 bg-muted/40 p-2 transition-colors focus-within:border-border focus-within:bg-muted/60">
           <textarea
             value={inputText}
             onKeyDown={onKeyDown}
@@ -288,20 +296,48 @@ export function AdvisorChat({ chatId, initialMessages }: AdvisorChatProps) {
             placeholder="Ask anything..."
             className="max-h-64 min-h-20 w-full resize-none bg-transparent px-3 py-2 text-sm outline-none placeholder:text-muted-foreground"
           />
-          <Button
-            type={isGenerating ? "button" : "submit"}
-            onClick={isGenerating ? () => stop() : undefined}
-            disabled={isGenerating ? false : !token || !inputText.trim() || atLimit}
-            size="icon"
-            className="h-9 w-9 shrink-0 rounded-full"
-          >
-            {isGenerating ? (
-              <Square className="size-3 fill-current" />
-            ) : (
-              <ArrowUp className="size-4" />
-            )}
-            <span className="sr-only">{isGenerating ? "Stop generating" : "Send message"}</span>
-          </Button>
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-1">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-9 gap-1.5 rounded-full px-2.5 text-xs"
+                onClick={() => setReadOnly((prev) => !prev)}
+                title={
+                  readOnly
+                    ? "Advisor can only read your data. Click for full access."
+                    : "Advisor can create, update, and delete. Click for read only."
+                }
+              >
+                {readOnly ? (
+                  <div className="flex items-center gap-1.5">
+                    <AnimatedLockIcon className="size-3.5" />
+                    <span className="hidden sm:inline">Read only</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-1.5 text-orange-500">
+                    <AnimatedUnlockIcon className="size-3.5" />
+                    <span className="hidden sm:inline">Full access</span>
+                  </div>
+                )}
+              </Button>
+            </div>
+            <Button
+              type={isGenerating ? "button" : "submit"}
+              onClick={isGenerating ? () => stop() : undefined}
+              disabled={isGenerating ? false : !token || !inputText.trim() || atLimit}
+              size="icon"
+              className="h-9 w-9 shrink-0 rounded-full"
+            >
+              {isGenerating ? (
+                <Square className="size-3 fill-current" />
+              ) : (
+                <ArrowUp className="size-4" />
+              )}
+              <span className="sr-only">{isGenerating ? "Stop generating" : "Send message"}</span>
+            </Button>
+          </div>
         </div>
       )}
     </form>

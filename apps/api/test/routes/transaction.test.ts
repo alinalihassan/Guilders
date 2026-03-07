@@ -48,7 +48,7 @@ describe("Transaction routes", () => {
         account_id: accountId,
         amount: "-50.00",
         currency: "EUR",
-        date: "2026-03-01",
+        timestamp: "2026-03-01T00:00:00.000Z",
         description: "Grocery shopping",
       }),
     });
@@ -101,7 +101,7 @@ describe("Transaction routes", () => {
         account_id: accountId,
         amount: "-25.00",
         currency: "USD",
-        date: "2026-03-01",
+        timestamp: "2026-03-01T00:00:00.000Z",
         description: "Wrong currency",
       }),
     });

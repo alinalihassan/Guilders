@@ -19,8 +19,7 @@ const links = [
       {links.map((link) => (
         <a
           href={link.href}
-          target="_blank"
-          rel="noopener noreferrer"
+          {...(link.href !== DASHBOARD_URL ? { target: "_blank", rel: "noopener noreferrer" } : {})}
           class="text-[11px] font-mono font-medium uppercase tracking-[0.2em] text-dim hover:text-gold transition-colors duration-100"
         >
           {link.label}

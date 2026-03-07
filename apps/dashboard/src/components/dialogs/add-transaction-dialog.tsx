@@ -7,8 +7,10 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
+import { AccountSelector } from "@/components/common/account-selector";
 import { CategorySelector } from "@/components/common/category-selector";
-import { DateTimePicker } from "@/components/common/datetime-picker";
+import { DatePicker } from "@/components/common/date-picker";
+import { TimePicker } from "@/components/common/time-picker";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -53,7 +55,7 @@ const formSchema = z.object({
   categoryId: z.number({
     required_error: "Category is required.",
   }),
-  date: z.string().min(1, "Date is required."),
+  timestamp: z.date(),
 });
 
 type FormSchema = z.infer<typeof formSchema>;
@@ -66,8 +68,6 @@ export function AddTransactionDialog() {
   const { data: user } = useUser();
   const currencyOptions = (currencies ?? []) as Currency[];
 
-  const manualAccounts = accounts?.filter((account) => !account.institution_connection_id);
-
   const form = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -76,12 +76,13 @@ export function AddTransactionDialog() {
       currency: user?.currency ?? "",
       description: "",
       categoryId: undefined,
-      date: new Date().toISOString(),
+      timestamp: new Date(),
     },
   });
 
   useEffect(() => {
     if (isOpen) {
+      form.setValue("timestamp", new Date());
       if (transactionData?.accountId) {
         // Set the Account ID
         form.setValue("accountId", transactionData.accountId);
@@ -122,9 +123,8 @@ export function AddTransactionDialog() {
       currency: data.currency,
       description: data.description,
       category_id: data.categoryId,
-      date: new Date(data.date).toISOString().split("T")[0]!,
+      timestamp: data.timestamp,
     });
-
     close();
   });
 
@@ -143,23 +143,14 @@ export function AddTransactionDialog() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Account</FormLabel>
-                  <Select
-                    onValueChange={(value) => field.onChange(Number.parseInt(value))}
-                    defaultValue={field.value?.toString()}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select account" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {manualAccounts?.map((account) => (
-                        <SelectItem key={account.id} value={account.id.toString()}>
-                          {account.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <FormControl>
+                    <AccountSelector
+                      value={field.value}
+                      onChange={field.onChange}
+                      placeholder="Select account"
+                      hideTrackedAccounts
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
@@ -238,30 +229,24 @@ export function AddTransactionDialog() {
 
             <FormField
               control={form.control}
-              name="date"
+              name="timestamp"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Date & Time</FormLabel>
                   <FormControl>
-                    <DateTimePicker
-                      date={field.value ? new Date(field.value) : undefined}
-                      onDateChange={(date) => {
-                        if (date) {
-                          field.onChange(date.toISOString());
-                        }
-                      }}
-                      onTimeChange={(time) => {
-                        if (field.value) {
-                          const currentDate = new Date(field.value);
-                          const [hours, minutes] = time.split(":");
-                          currentDate.setHours(
-                            Number.parseInt(hours || "0"),
-                            Number.parseInt(minutes || "0"),
-                          );
-                          field.onChange(currentDate.toISOString());
-                        }
-                      }}
-                    />
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <FormLabel>Date</FormLabel>
+                        <DatePicker
+                          date={field.value}
+                          onDateChange={field.onChange}
+                          preserveTime={true}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <FormLabel>Time</FormLabel>
+                        <TimePicker date={field.value} onDateChange={field.onChange} />
+                      </div>
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>

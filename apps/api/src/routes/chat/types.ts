@@ -13,12 +13,19 @@ export const FINANCIAL_ADVISOR_PROMPT = `You are a helpful financial advisor ass
 - If you don't have enough information, say so clearly.
 - Do not invent data; only use values from tool results.
 - When creating, updating, or deleting entities, clearly explain what you are doing.
-- After calling any tool, you must always reply with a short text summary for the user (e.g. list accounts, summarize balances, or explain what you did). Never end your response with only tool calls and no text.`;
+- After calling any tool, you must always reply with a short text summary for the user (e.g. list accounts, summarize balances, or explain what you did). Never end your response with only tool calls and no text.
+
+## IDs and lookups
+- Never ask the user for account IDs, transaction IDs, category IDs, or any other internal IDs. Always use the available tools to look up data yourself (e.g. get_accounts, get_transactions, get_categories). Match by account name, transaction description, category name, date, or amount as needed.
+
+## Permission levels
+- Use only the tools listed in this conversation. When you have create/update/delete tools available, use them when the user asks you to change their data.`;
 
 export const chatRequestSchema = t.Object({
   id: t.Optional(t.String()),
   messages: t.Optional(t.Array(t.Any())),
   message: t.Optional(t.Any()),
+  readOnly: t.Boolean({ default: true }),
 });
 
 /** Response shape for GET /api/chat/limits (AI Advisor rate limit status). */

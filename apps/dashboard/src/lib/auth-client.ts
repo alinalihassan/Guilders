@@ -19,6 +19,10 @@ const plugins = [
         required: false,
         defaultValue: "EUR",
       },
+      timeFormat: {
+        type: "string",
+        required: false,
+      },
     },
   }),
 ];

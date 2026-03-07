@@ -300,7 +300,7 @@ export class TellerProvider implements IProvider {
       account_id: accountRecord.id,
       amount: t.amount,
       currency: accountRecord.currency,
-      date: t.date,
+      timestamp: new Date(t.date),
       description: t.description,
       provider_transaction_id: t.id,
     }));

@@ -76,7 +76,7 @@ export const exportRoutes = new Elysia({
           .from(transaction)
           .innerJoin(account, eq(transaction.account_id, account.id))
           .where(eq(account.user_id, user.id))
-          .orderBy(desc(transaction.date))
+          .orderBy(desc(transaction.timestamp))
           .then((rows) => rows.map((r) => r.transaction)),
         db.select().from(category).where(eq(category.user_id, user.id)),
         db.select().from(conversation).where(eq(conversation.user_id, user.id)),
