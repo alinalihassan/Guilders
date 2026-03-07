@@ -9,10 +9,10 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  lint-format-typecheck:
-    name: Test, lint, format & typecheck
+  lint-format:
+    name: Lint & format
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 10
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -31,40 +31,18 @@ jobs:
       - name: Format check
         run: bun run format:check
 
-      - name: Typecheck API
-        run: bun run typecheck
-        working-directory: apps/api
-
-      - name: Test API
-        run: bun run test
-        working-directory: apps/api
-
-      # TODO: Uncomment this when we figured out a way to restrict typechecking to the dashboard package only
-      # - name: Typecheck Dashboard
-      #   run: bun run typecheck
-      #   working-directory: apps/dashboard
-
-      - name: Typecheck Docs
-        run: bun run types:check
-        working-directory: apps/docs
-
-      - name: Typecheck Website
-        run: bun run typecheck
-        working-directory: apps/website
-
-      # TODO: Uncomment when resuming work on the mobile app
-      # - name: Typecheck Mobile
-      #   run: bun run typecheck
-      #   working-directory: apps/mobile
-
-      - name: Typecheck Transactional
-        run: bun run typecheck
-        working-directory: packages/transactional
-
-  build:
-    name: Build
+  typecheck:
+    name: Typecheck ${{ matrix.path }}
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        path:
+          - apps/api
+          - apps/docs
+          - apps/website
+          - packages/transactional
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -77,18 +55,58 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
-      # - name: Build Dashboard
-      #   run: bun run build
-      #   working-directory: apps/dashboard
+      - name: Typecheck
+        working-directory: ${{ matrix.path }}
+        run: bun run typecheck
 
-      - name: Build Docs
-        run: bun run build
-        working-directory: apps/docs
+  test:
+    name: Test ${{ matrix.path }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        path:
+          - apps/api
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Build Website
-        run: bun run build
-        working-directory: apps/website
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
 
-      - name: Build Emails
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Test
+        working-directory: ${{ matrix.path }}
+        run: bun run test
+
+  build:
+    name: Build ${{ matrix.path }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        path:
+          - apps/docs
+          - apps/website
+          - packages/transactional
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build
+        working-directory: ${{ matrix.path }}
         run: bun run build
-        working-directory: packages/transactional
