@@ -10,9 +10,7 @@ import type { McpContentBlock, McpToolContext } from "../../mcp/tools/types";
  * When readOnly is true, only tools with requiredScope "read" are listed.
  */
 export function getMcpToolsOverview(readOnly: boolean): string {
-  const tools = readOnly
-    ? mcpTools.filter((t) => t.requiredScope === McpScope.read)
-    : mcpTools;
+  const tools = readOnly ? mcpTools.filter((t) => t.requiredScope === McpScope.read) : mcpTools;
   return tools.map((t) => `- **${t.name}**: ${t.description}`).join("\n");
 }
 

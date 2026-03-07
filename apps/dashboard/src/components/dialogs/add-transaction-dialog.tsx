@@ -254,10 +254,7 @@ export function AddTransactionDialog() {
                       </div>
                       <div className="space-y-2">
                         <FormLabel>Time</FormLabel>
-                        <TimePicker
-                          date={field.value}
-                          onDateChange={field.onChange}
-                        />
+                        <TimePicker date={field.value} onDateChange={field.onChange} />
                       </div>
                     </div>
                   </FormControl>
