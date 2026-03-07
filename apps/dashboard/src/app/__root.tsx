@@ -57,7 +57,7 @@ export const Route = createRootRoute({
 
 function RootLayout() {
   return (
-    <html lang="en" className="font-mono font-sans" suppressHydrationWarning>
+    <html lang="en" className="font-sans" suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>
