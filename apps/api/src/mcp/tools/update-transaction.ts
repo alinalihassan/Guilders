@@ -90,6 +90,18 @@ export const updateTransactionTool: McpToolDefinition<UpdateTransactionInput> = 
         };
       }
 
+      if (effectiveCurrency !== targetAccount.currency) {
+        return {
+          isError: true,
+          content: [
+            {
+              type: "text",
+              text: "Transaction currency must match the target account currency. Cannot move a transaction to an account with a different currency.",
+            },
+          ],
+        };
+      }
+
       if (effectiveCategoryId) {
         const cat = await db.query.category.findFirst({
           where: { id: effectiveCategoryId, user_id: userId },
@@ -102,11 +114,32 @@ export const updateTransactionTool: McpToolDefinition<UpdateTransactionInput> = 
         }
       }
 
-      const oldAmount = existing.amount;
       const newAmount = String(effectiveAmount);
 
       const updated = await db.transaction(async (tx) => {
-        if (existing.account_id === effectiveAccountId) {
+        const [locked] = await tx
+          .select()
+          .from(transaction)
+          .where(eq(transaction.id, id))
+          .for("update");
+
+        if (!locked) {
+          throw new Error("Transaction not found.");
+        }
+
+        const [ownerAccount] = await tx
+          .select()
+          .from(account)
+          .where(and(eq(account.id, locked.account_id), eq(account.user_id, userId)));
+
+        if (!ownerAccount) {
+          throw new Error("Transaction does not belong to user.");
+        }
+
+        const oldAmount = locked.amount;
+        const oldAccountId = locked.account_id;
+
+        if (oldAccountId === effectiveAccountId) {
           await tx
             .update(account)
             .set({
@@ -121,7 +154,7 @@ export const updateTransactionTool: McpToolDefinition<UpdateTransactionInput> = 
               value: sql`${account.value} - ${oldAmount}::numeric`,
               updated_at: new Date(),
             })
-            .where(and(eq(account.id, existing.account_id), eq(account.user_id, userId)));
+            .where(and(eq(account.id, oldAccountId), eq(account.user_id, userId)));
 
           await tx
             .update(account)

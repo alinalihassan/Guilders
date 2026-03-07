@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import * as z from "zod/v4";
 
 import { account } from "../../db/schema/accounts";
@@ -77,13 +77,13 @@ export const createTransactionTool: McpToolDefinition<CreateTransactionInput> = 
         }
       }
 
-      const currentValue = parseFloat(accountResult.value.toString());
-      const newValue = currentValue + amount;
-
       const newTransaction = await db.transaction(async (tx) => {
         await tx
           .update(account)
-          .set({ value: newValue.toString(), updated_at: new Date() })
+          .set({
+            value: sql`${account.value} + (${amount})::numeric`,
+            updated_at: new Date(),
+          })
           .where(eq(account.id, account_id));
 
         const [transactionResult] = await tx
