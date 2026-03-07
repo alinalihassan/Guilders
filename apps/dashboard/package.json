@@ -9,7 +9,7 @@
     "preview": "vite preview --port 3002",
     "deploy": "bun run build && wrangler deploy",
     "cf-typegen": "wrangler types",
-    "clean": "git clean -xdf .next .turbo node_modules .output",
+    "clean": "git clean -xdf .turbo node_modules .output dist",
     "lint": "oxlint .",
     "lint:fix": "oxlint --fix .",
     "format": "oxfmt --write .",
