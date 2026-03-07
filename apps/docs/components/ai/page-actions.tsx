@@ -1,3 +1,5 @@
+"use client";
+
 import { buttonVariants } from "fumadocs-ui/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "fumadocs-ui/components/ui/popover";
 import { useCopyButton } from "fumadocs-ui/utils/use-copy-button";
