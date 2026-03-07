@@ -28,9 +28,9 @@
 </p>
 
 > [!WARNING]
-> This project is very early in the development phase. Each update might not be compatible with previous versions, and you might not be able to migrate your data.
+> This project is very early in the development phase. Updates may not be backward compatible with previous versions, and you may not be able to migrate your data.
 >
-> **Focus and polish:** The most polished parts are the **API** and **Dashboard**, followed by **Docs**. The **mobile app** is not currently in focus and may be rebuilt from scratch. A separate **landing-page website** will be done later.
+> **Focus and polish:** The most polished parts are the **API** and **Dashboard**, followed by **Websute** and **Docs**. The **mobile app** is not currently in focus and may be rebuilt from scratch.
 
 ## About
 
@@ -89,12 +89,12 @@ bun db:migrate && bun db:init
 
 ## API
 
-The API is fully documented via OpenAPI and supports three authentication methods:
+The API is fully documented via OpenAPI and supports two authentication methods:
 
-| Method         | Header                          | Use case                                 |
-| -------------- | ------------------------------- | ---------------------------------------- |
-| Session cookie | `Authorization: Bearer <token>` | Dashboard and mobile app                 |
-| API key        | `x-api-key: <key>`              | Scripts, integrations, third-party tools |
+| Method       | Header                          | Use case                                 |
+| ------------ | ------------------------------- | ---------------------------------------- |
+| Bearer token | `Authorization: Bearer <token>` | Dashboard and mobile app                 |
+| API key      | `x-api-key: <key>`              | Scripts, integrations, third-party tools |
 
 Generate an API key from the dashboard settings and start making requests:
 
@@ -125,7 +125,7 @@ If your bank or broker isn't supported, build a connector that calls the Guilder
 
 ## Contributing
 
-Contributions are welcome — bug fixes, provider integrations, features, or docs.
+Contributions are welcome: bug fixes, provider integrations, features, and docs.
 
 ## License
 
