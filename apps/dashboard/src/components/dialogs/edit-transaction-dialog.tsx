@@ -54,12 +54,6 @@ const formSchema = z.object({
 
 type FormSchema = z.infer<typeof formSchema>;
 
-function toFormTimestamp(value: string | Date | null | undefined): Date {
-  if (value == null) return new Date();
-  const d = typeof value === "string" ? new Date(value) : value;
-  return Number.isNaN(d.getTime()) ? new Date() : d;
-}
-
 export function EditTransactionDialog() {
   const { isOpen, data, close } = useDialog("editTransaction");
   const { mutate: updateTransaction, isPending: isUpdating } = useUpdateTransaction();
@@ -81,7 +75,8 @@ export function EditTransactionDialog() {
         amount: data?.transaction?.amount != null ? Number(data.transaction.amount).toString() : "",
         description: data?.transaction?.description ?? "",
         categoryId: data?.transaction?.category_id ?? undefined,
-        timestamp: toFormTimestamp(data?.transaction?.timestamp),
+        timestamp:
+          data?.transaction?.timestamp != null ? new Date(data.transaction.timestamp) : new Date(),
         documents: [],
       };
     })(),
@@ -94,7 +89,8 @@ export function EditTransactionDialog() {
         amount: Number(data.transaction.amount).toString(),
         description: data.transaction.description,
         categoryId: data.transaction.category_id ?? undefined,
-        timestamp: toFormTimestamp(data.transaction.timestamp),
+        timestamp:
+          data.transaction.timestamp != null ? new Date(data.transaction.timestamp) : new Date(),
         documents: [],
       });
     }
@@ -148,7 +144,7 @@ export function EditTransactionDialog() {
       amount: formData.amount,
       description: formData.description,
       category_id: formData.categoryId,
-      timestamp: formData.timestamp.toISOString() as unknown as Date,
+      timestamp: formData.timestamp,
       currency: transaction.currency,
       documents: transaction.documents,
       provider_transaction_id: transaction.provider_transaction_id,

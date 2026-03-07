@@ -123,7 +123,7 @@ export function AddTransactionDialog() {
       currency: data.currency,
       description: data.description,
       category_id: data.categoryId,
-      timestamp: data.timestamp.toISOString() as unknown as Date,
+      timestamp: data.timestamp,
     });
     close();
   });
