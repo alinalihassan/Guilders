@@ -67,9 +67,7 @@ function toFormDateAndTime(apiDate: string): { date: string; time: string } {
 }
 
 /** Get "YYYY-MM-DD" from API transaction.date (string or Date from JSON). */
-function getTransactionDateString(
-  value: string | Date | null | undefined,
-): string {
+function getTransactionDateString(value: string | Date | null | undefined): string {
   if (value == null) return "";
   if (typeof value === "string") return value.slice(0, 10);
   if (value instanceof Date && !Number.isNaN(value.getTime())) {
@@ -98,7 +96,7 @@ export function EditTransactionDialog() {
       const { date, time } = apiDate ? toFormDateAndTime(apiDate) : { date: "", time: "00:00:00" };
       return {
         accountId: data?.transaction?.account_id ?? undefined,
-        amount: data?.transaction?.amount.toString() ?? "",
+        amount: data?.transaction?.amount != null ? Number(data.transaction.amount).toString() : "",
         description: data?.transaction?.description ?? "",
         categoryId: data?.transaction?.category_id ?? undefined,
         date,
@@ -114,7 +112,7 @@ export function EditTransactionDialog() {
       const { date, time } = apiDate ? toFormDateAndTime(apiDate) : { date: "", time: "00:00:00" };
       form.reset({
         accountId: data.transaction.account_id,
-        amount: data.transaction.amount.toString(),
+        amount: Number(data.transaction.amount).toString(),
         description: data.transaction.description,
         categoryId: data.transaction.category_id ?? undefined,
         date,

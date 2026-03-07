@@ -105,11 +105,11 @@ export function EditAccountDialog() {
     defaultValues: {
       accountType: (data?.account?.subtype as AccountSubtype) ?? accountSubtypes[0],
       accountName: data?.account?.name ?? "",
-      value: data?.account?.value.toString() ?? "",
+      value: data?.account?.value != null ? Number(data.account.value).toString() : "",
       currency: data?.account?.currency ?? "",
       investable: data?.account?.investable ?? "non_investable",
       taxability: data?.account?.taxability ?? "taxable",
-      taxRate: data?.account?.tax_rate?.toString() ?? "",
+      taxRate: data?.account?.tax_rate != null ? Number(data.account.tax_rate).toString() : "",
       notes: data?.account?.notes ?? "",
       documents: [],
     },
@@ -120,11 +120,11 @@ export function EditAccountDialog() {
       form.reset({
         accountType: data.account.subtype as AccountSubtype,
         accountName: data.account.name,
-        value: data.account.value.toString(),
+        value: Number(data.account.value).toString(),
         currency: data.account.currency,
         investable: data.account.investable,
         taxability: data.account.taxability,
-        taxRate: data.account.tax_rate?.toString() ?? "",
+        taxRate: data.account.tax_rate != null ? Number(data.account.tax_rate).toString() : "",
         notes: data.account.notes,
         documents: [],
       });
