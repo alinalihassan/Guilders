@@ -11,8 +11,6 @@ const currentYear = new Date().getFullYear();
   <div class="mt-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-6">
     <a
       href={DASHBOARD_URL}
-      target="_blank"
-      rel="noopener noreferrer"
       class="inline-block border-3 border-gold bg-gold px-8 py-3 text-[11px] font-bold uppercase tracking-[0.25em] text-bg hover:bg-transparent hover:text-gold transition-colors duration-100 hover:no-underline"
     >
       Open dashboard →
@@ -27,7 +25,7 @@ const currentYear = new Date().getFullYear();
     </a>
   </div>
   <div class="mt-20 flex flex-wrap items-center gap-x-8 gap-y-3 border-t-3 border-line pt-6">
-    <a href={DASHBOARD_URL} target="_blank" rel="noopener noreferrer" class="text-[11px] font-medium uppercase tracking-[0.2em] text-dim hover:text-gold transition-colors duration-100">Dashboard</a>
+    <a href={DASHBOARD_URL} class="text-[11px] font-medium uppercase tracking-[0.2em] text-dim hover:text-gold transition-colors duration-100">Dashboard</a>
     <a href={DOCS_URL} target="_blank" rel="noopener noreferrer" class="text-[11px] font-medium uppercase tracking-[0.2em] text-dim hover:text-gold transition-colors duration-100">Docs</a>
     <a href={`${API_URL}/openapi`} target="_blank" rel="noopener noreferrer" class="text-[11px] font-medium uppercase tracking-[0.2em] text-dim hover:text-gold transition-colors duration-100">API</a>
     <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer" class="text-[11px] font-medium uppercase tracking-[0.2em] text-dim hover:text-gold transition-colors duration-100">GitHub</a>
