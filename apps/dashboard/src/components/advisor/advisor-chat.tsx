@@ -3,7 +3,7 @@
 import { useChat } from "@ai-sdk/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { DefaultChatTransport, type UIMessage } from "ai";
-import { ArrowUp, LayoutDashboard, Loader2, Lock, RefreshCcw, Square, Unlock } from "lucide-react";
+import { ArrowUp, LayoutDashboard, Loader2, RefreshCcw, Square } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -22,6 +22,8 @@ import { useUser, useUserToken } from "@/lib/queries/useUser";
 import { useStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
+import { AnimatedLockIcon, AnimatedUnlockIcon } from "../common/animated-lock-icons";
+
 const CHAT_AI_ICONS = [{ icon: RefreshCcw, label: "Refresh" }];
 
 const EMPTY_STATE_POINTS = [
@@ -30,7 +32,7 @@ const EMPTY_STATE_POINTS = [
     text: "View and update your accounts, transactions, categories and more.",
   },
   {
-    icon: Lock,
+    icon: AnimatedLockIcon,
     text: "Secure and private by design — your data stays yours. We don't share your messages with anyone.",
   },
 ] as const;
@@ -310,12 +312,12 @@ export function AdvisorChat({ chatId, initialMessages }: AdvisorChatProps) {
               >
                 {readOnly ? (
                   <div className="flex items-center gap-1.5">
-                    <Lock className="size-3.5" />
+                    <AnimatedLockIcon className="size-3.5" />
                     <span className="hidden sm:inline">Read only</span>
                   </div>
                 ) : (
                   <div className="flex items-center gap-1.5 text-orange-500">
-                    <Unlock className="size-3.5" />
+                    <AnimatedUnlockIcon className="size-3.5" />
                     <span className="hidden sm:inline">Full access</span>
                   </div>
                 )}
