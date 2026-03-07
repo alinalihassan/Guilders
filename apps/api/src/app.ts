@@ -14,7 +14,7 @@ export const app = new Elysia({ adapter: CloudflareAdapter })
   .use(
     cors({
       credentials: true,
-      origin: [process.env.BACKEND_URL, process.env.DASHBOARD_URL],
+      origin: [process.env.DASHBOARD_URL],
     }),
   )
   .use(
