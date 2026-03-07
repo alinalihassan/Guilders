@@ -5,8 +5,8 @@
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",
-    "start": "node .output/server/index.mjs",
-    "preview": "vite preview",
+    "start": "vite preview --port 3002",
+    "preview": "vite preview --port 3002",
     "deploy": "bun run build && wrangler deploy",
     "cf-typegen": "wrangler types",
     "clean": "git clean -xdf .next .turbo node_modules .output",

@@ -8,6 +8,9 @@ export default defineConfig({
   server: {
     port: 3002,
   },
+  preview: {
+    port: 3002,
+  },
   plugins: [
     cloudflare({ viteEnvironment: { name: "ssr" } }),
     tsconfigPaths(),
