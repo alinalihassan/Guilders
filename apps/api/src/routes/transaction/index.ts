@@ -97,7 +97,7 @@ export const transactionRoutes = new Elysia({
           .set({ value: newValue.toString(), updated_at: new Date() })
           .where(eq(account.id, body.account_id));
 
-        // Create transaction (TypeBox validates string; Drizzle expects Date)
+        // Create transaction
         const [transactionResult] = await tx
           .insert(transaction)
           .values({

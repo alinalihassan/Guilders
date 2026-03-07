@@ -3,8 +3,7 @@
   "include": [
     "**/*.ts",
     "**/*.tsx",
-    "next-env.d.ts",
-    ".next/types/**/*.ts",
+    "src/vite-env.d.ts",
     "../../packages/ui/src/submit-button.tsx"
   ],
   "exclude": ["node_modules"],

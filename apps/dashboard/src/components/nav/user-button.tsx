@@ -1,7 +1,7 @@
 "use client";
 
+import { useRouter } from "@tanstack/react-router";
 import { UserRound } from "lucide-react";
-import { useRouter } from "next/navigation";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -31,7 +31,9 @@ export function UserButton() {
       <DropdownMenuContent align="end" className="w-48">
         <DropdownMenuLabel>Account</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => router.push("/settings")}>Settings</DropdownMenuItem>
+        <DropdownMenuItem onClick={() => router.navigate({ to: "/settings" })}>
+          Settings
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={async () => {
@@ -40,7 +42,7 @@ export function UserButton() {
             } catch {
               // Session may already be invalid; still redirect
             }
-            router.push("/login");
+            router.navigate({ to: "/login" });
           }}
         >
           Log out

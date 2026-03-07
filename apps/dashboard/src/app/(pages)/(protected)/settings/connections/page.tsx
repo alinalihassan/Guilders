@@ -1,8 +1,8 @@
 "use client";
 
+import { createFileRoute } from "@tanstack/react-router";
 import { format } from "date-fns";
 import { Loader2, XCircle } from "lucide-react";
-import Image from "next/image";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,11 @@ import { useDeregisterConnection } from "@/lib/queries/useConnections";
 import { useProviderConnections } from "@/lib/queries/useProviderConnections";
 import { useProviders } from "@/lib/queries/useProviders";
 
-export default function ConnectionsPage() {
+export const Route = createFileRoute("/(pages)/(protected)/settings/connections/")({
+  component: ConnectionsPage,
+});
+
+function ConnectionsPage() {
   const { data: connections, isLoading, isError, refetch } = useProviderConnections();
   const { mutate: deregisterConnection } = useDeregisterConnection();
   const { data: providers, isLoading: isProvidersLoading } = useProviders();
@@ -75,11 +79,10 @@ export default function ConnectionsPage() {
                     <div className="flex items-center gap-3">
                       <div className="relative h-8 w-24">
                         {providerLogo ? (
-                          <Image
+                          <img
                             src={providerLogo}
                             alt={`${providerName} logo`}
-                            fill
-                            className="object-contain"
+                            className="h-full w-full object-contain"
                           />
                         ) : null}
                       </div>

@@ -1,8 +1,14 @@
+import { createFileRoute } from "@tanstack/react-router";
+
 import { Separator } from "@/components/ui/separator";
 
 import { SecurityForm } from "./security-form";
 
-export default function SecurityPage() {
+export const Route = createFileRoute("/(pages)/(protected)/settings/security/")({
+  component: SecurityPage,
+});
+
+function SecurityPage() {
   return (
     <div className="space-y-6">
       <div>

@@ -1,7 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { Link, useRouter, useLocation } from "@tanstack/react-router";
 
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { authClient } from "@/lib/auth-client";
@@ -27,7 +26,7 @@ const NavItem = ({ item, pathname }: NavItemProps) => {
         <TooltipTrigger asChild>
           {href ? (
             <Link
-              href={href}
+              to={href}
               className={cn(
                 "flex items-center justify-center rounded-md text-sm transition-colors relative",
                 "hover:text-accent-foreground",
@@ -73,7 +72,7 @@ const NavItem = ({ item, pathname }: NavItemProps) => {
 };
 
 export function MainMenu() {
-  const pathname = usePathname();
+  const { pathname } = useLocation();
   const router = useRouter();
   const bottomItems = bottomNavigation.map((item) =>
     item.name === "Log Out"
@@ -85,7 +84,7 @@ export function MainMenu() {
             } catch {
               // Session may already be invalid; still redirect
             }
-            router.push("/login");
+            router.navigate({ to: "/login" });
           },
         }
       : item,

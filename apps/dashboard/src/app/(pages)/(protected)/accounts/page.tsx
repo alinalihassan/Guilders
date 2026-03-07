@@ -1,5 +1,6 @@
 "use client";
 
+import { createFileRoute } from "@tanstack/react-router";
 import { Plus, XCircle } from "lucide-react";
 
 import { AccountsCard } from "@/components/dashboard/accounts/account-card";
@@ -11,7 +12,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useDialog } from "@/hooks/useDialog";
 import { useAccounts } from "@/lib/queries/useAccounts";
 
-export default function AccountsPage() {
+export const Route = createFileRoute("/(pages)/(protected)/accounts/")({
+  component: AccountsPage,
+});
+
+function AccountsPage() {
   const { data: accounts, isLoading, error } = useAccounts();
   const { open: openAddAccount } = useDialog("addManualAccount");
 

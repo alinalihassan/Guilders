@@ -1,7 +1,6 @@
 "use client";
 
-import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -10,7 +9,11 @@ import { SubmitButton } from "@/components/common/submit-button";
 import { Label } from "@/components/ui/label";
 import { authClient } from "@/lib/auth-client";
 
-export default function RecoveryPage() {
+export const Route = createFileRoute("/(pages)/(auth-flows)/recovery/")({
+  component: RecoveryPage,
+});
+
+function RecoveryPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -54,7 +57,7 @@ export default function RecoveryPage() {
       toast.success("Password updated", {
         description: "You can now sign in with your new password.",
       });
-      router.push("/login");
+      router.navigate({ to: "/login" });
     } catch {
       toast.error("Failed to update password", {
         description: "Please try again.",
@@ -68,13 +71,7 @@ export default function RecoveryPage() {
     <div className="w-full max-w-sm">
       <div className="rounded-lg border bg-card px-6 py-6 text-card-foreground shadow-sm">
         <div className="mb-4 flex flex-col items-center">
-          <Image
-            src="/assets/logo/logo_filled_rounded.svg"
-            alt="logo"
-            width={64}
-            height={64}
-            priority
-          />
+          <img src="/assets/logo/logo_filled_rounded.svg" alt="logo" width={64} height={64} />
         </div>
 
         <h1 className="text-center text-2xl font-bold">Reset Password</h1>

@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { useCallback, useState } from "react";
 
 import { AdvisorSidebar } from "@/components/advisor/advisor-sidebar";
@@ -8,12 +8,26 @@ import { Dialogs } from "@/components/dialogs/dialogs";
 import { AppSidebar } from "@/components/nav/app-sidebar";
 import { AppTopBar } from "@/components/nav/app-top-bar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { getSession } from "@/lib/session.functions";
 import { useStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
 const ADVISOR_SIDEBAR_WIDTH = 400;
 
-export default function ProtectedLayout({ children }: { children: ReactNode }) {
+export const Route = createFileRoute("/(pages)/(protected)")({
+  beforeLoad: async ({ location }) => {
+    const session = await getSession();
+    if (!session) {
+      throw redirect({
+        to: "/login",
+        search: { redirect: location.href },
+      });
+    }
+  },
+  component: ProtectedLayout,
+});
+
+function ProtectedLayout() {
   const advisorOpen = useStore((state) => state.advisorOpen);
   const [isScrolled, setIsScrolled] = useState(false);
 
@@ -36,7 +50,7 @@ export default function ProtectedLayout({ children }: { children: ReactNode }) {
             className="flex flex-1 flex-col overflow-auto px-4 md:px-6"
             onScroll={handleMainScroll}
           >
-            {children}
+            <Outlet />
           </main>
         </div>
         <aside

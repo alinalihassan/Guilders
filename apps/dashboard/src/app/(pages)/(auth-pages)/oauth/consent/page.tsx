@@ -1,20 +1,19 @@
 "use client";
 
+import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { BookOpen, Eye, Info, Pencil, ShieldCheck } from "lucide-react";
-import Image from "next/image";
-import { useSearchParams } from "next/navigation";
 import { Suspense, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { AnimatedCheckbox } from "@/components/ui/animated-checkbox";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { env } from "@/lib/env";
+import { clientEnv } from "@/lib/env";
 
 const DISPLAY_ONLY_QUERY_KEYS = new Set(["client_name", "client_uri"]);
 
-const toOAuthQuery = (searchParams: ReturnType<typeof useSearchParams>) => {
-  const params = new URLSearchParams(searchParams.toString());
+const toOAuthQuery = (searchString: string) => {
+  const params = new URLSearchParams(searchString);
   for (const key of DISPLAY_ONLY_QUERY_KEYS) {
     params.delete(key);
   }
@@ -45,11 +44,13 @@ const SCOPE_GROUPS = {
 type ToggleableScope = keyof typeof SCOPE_GROUPS;
 
 function OAuthConsentForm() {
-  const searchParams = useSearchParams();
+  const router = useRouter();
+  const searchString = router.state.location.search ?? "";
+  const searchParams = useMemo(() => new URLSearchParams(searchString), [searchString]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const authApiBase = env.NEXT_PUBLIC_API_URL;
+  const authApiBase = clientEnv.VITE_API_URL;
 
-  const oauthQuery = useMemo(() => toOAuthQuery(searchParams), [searchParams]);
+  const oauthQuery = useMemo(() => toOAuthQuery(searchString), [searchString]);
   const clientId = searchParams.get("client_id") ?? "Unknown client";
   const clientName = searchParams.get("client_name");
   const clientUri = searchParams.get("client_uri");
@@ -168,13 +169,7 @@ function OAuthConsentForm() {
       <Card className="border bg-card shadow-md">
         <CardHeader className="space-y-3">
           <div className="flex flex-col items-center">
-            <Image
-              src="/assets/logo/logo_filled_rounded.svg"
-              alt="logo"
-              width={64}
-              height={64}
-              priority
-            />
+            <img src="/assets/logo/logo_filled_rounded.svg" alt="logo" width={64} height={64} />
           </div>
           <div className="space-y-1 text-center">
             <CardTitle className="text-2xl">Authorize Access</CardTitle>
@@ -249,12 +244,11 @@ function OAuthConsentSkeleton() {
     <div className="w-full max-w-xl">
       <Card className="animate-pulse border bg-card shadow-md">
         <CardHeader>
-          <Image
+          <img
             src="/assets/logo/logo_filled_rounded.svg"
             alt="logo"
             width={64}
             height={64}
-            priority
             className="mx-auto opacity-30"
           />
           <div className="mx-auto h-6 w-64 rounded bg-muted" />
@@ -271,7 +265,11 @@ function OAuthConsentSkeleton() {
   );
 }
 
-export default function OAuthConsentPage() {
+export const Route = createFileRoute("/(pages)/(auth-pages)/oauth/consent/")({
+  component: OAuthConsentPage,
+});
+
+function OAuthConsentPage() {
   return (
     <Suspense fallback={<OAuthConsentSkeleton />}>
       <OAuthConsentForm />

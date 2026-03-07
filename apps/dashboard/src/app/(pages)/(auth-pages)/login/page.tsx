@@ -1,8 +1,6 @@
 "use client";
 
-import Image from "next/image";
-import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { Suspense, useState } from "react";
 import { toast } from "sonner";
 
@@ -15,8 +13,11 @@ import { Label } from "@/components/ui/label";
 import { authClient } from "@/lib/auth-client";
 import { useAuthStore } from "@/lib/store/authStore";
 
-function LoginForm() {
-  const searchParams = useSearchParams();
+function LoginForm({
+  search,
+}: {
+  search: { redirect?: string; message?: string; error?: string; success?: string };
+}) {
   const router = useRouter();
   const {
     isLoading,
@@ -36,9 +37,9 @@ function LoginForm() {
   const [password, setPassword] = useState("");
 
   const message: Message = {
-    message: searchParams.has("message") ? (searchParams.get("message") ?? "") : "",
-    error: searchParams.has("error") ? (searchParams.get("error") ?? "") : "",
-    success: searchParams.has("success") ? (searchParams.get("success") ?? "") : "",
+    message: search?.message ?? "",
+    error: search?.error ?? "",
+    success: search?.success ?? "",
   };
 
   const handleSubmit = async (formData: FormData) => {
@@ -74,8 +75,8 @@ function LoginForm() {
         return;
       }
 
-      const redirectUrl = searchParams.get("redirect") || "/";
-      router.push(redirectUrl);
+      const redirectUrl = search?.redirect || "/";
+      router.navigate({ to: redirectUrl });
     } catch {
       toast.error("Failed to sign in", {
         description: "Please try again.",
@@ -114,8 +115,8 @@ function LoginForm() {
         );
         return;
       }
-      const redirectUrl = searchParams.get("redirect") || "/";
-      router.push(redirectUrl);
+      const redirectUrl = search?.redirect || "/";
+      router.navigate({ to: redirectUrl });
     } catch {
       toast.error("Failed to verify code", {
         description: "Please try again.",
@@ -136,8 +137,8 @@ function LoginForm() {
         return;
       }
       if (data) {
-        const redirectUrl = searchParams.get("redirect") || "/";
-        router.push(redirectUrl);
+        const redirectUrl = search?.redirect || "/";
+        router.navigate({ to: redirectUrl });
       }
     } catch (error) {
       toast.error("Passkey sign-in failed", {
@@ -152,13 +153,7 @@ function LoginForm() {
     <div className="w-full max-w-sm">
       <div className="rounded-lg border bg-card px-6 py-6 text-card-foreground shadow-sm">
         <div className="mb-4 flex flex-col items-center">
-          <Image
-            src="/assets/logo/logo_filled_rounded.svg"
-            alt="logo"
-            width={64}
-            height={64}
-            priority
-          />
+          <img src="/assets/logo/logo_filled_rounded.svg" alt="logo" width={64} height={64} />
         </div>
 
         <h1 className="text-center text-2xl font-bold">Sign In</h1>
@@ -257,7 +252,7 @@ function LoginForm() {
                     <Label htmlFor="password">Password</Label>
                     <Link
                       className="text-xs leading-[14px] text-muted-foreground hover:text-foreground"
-                      href="/forgot-password"
+                      to="/forgot-password"
                     >
                       Forgot Password?
                     </Link>
@@ -297,7 +292,7 @@ function LoginForm() {
 
           <div className="flex justify-center gap-1 text-sm text-muted-foreground">
             <p>Don't have an account?</p>
-            <Link href="/sign-up" className="font-medium text-primary hover:underline">
+            <Link to="/sign-up" className="font-medium text-primary hover:underline">
               Sign up
             </Link>
           </div>
@@ -326,10 +321,21 @@ function LoginSkeleton() {
   );
 }
 
-export default function Login() {
+export const Route = createFileRoute("/(pages)/(auth-pages)/login/")({
+  component: Login,
+  validateSearch: (search: Record<string, unknown>) => ({
+    redirect: (search.redirect as string) ?? undefined,
+    message: (search.message as string) ?? undefined,
+    error: (search.error as string) ?? undefined,
+    success: (search.success as string) ?? undefined,
+  }),
+});
+
+function Login() {
+  const search = Route.useSearch();
   return (
     <Suspense fallback={<LoginSkeleton />}>
-      <LoginForm />
+      <LoginForm search={search} />
     </Suspense>
   );
 }

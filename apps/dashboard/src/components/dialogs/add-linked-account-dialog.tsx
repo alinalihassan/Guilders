@@ -1,8 +1,7 @@
 "use client";
 
+import { useRouter } from "@tanstack/react-router";
 import { Loader2 } from "lucide-react";
-import Image from "next/image";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -44,7 +43,7 @@ export function AddLinkedAccountDialog() {
       return;
     }
     if (!isSubscribed) {
-      router.push("/settings/subscription");
+      router.navigate({ to: "/settings/subscription" });
       close();
       return;
     }
@@ -80,7 +79,7 @@ export function AddLinkedAccountDialog() {
         </DialogDescription>
         <DialogHeader>
           <div className="flex items-center gap-3">
-            <Image
+            <img
               src={institution.logo_url}
               alt={`${institution.name} logo`}
               width={40}
@@ -94,7 +93,7 @@ export function AddLinkedAccountDialog() {
         <div className="space-y-2">
           <div className="flex items-center gap-2">
             <span>Powered by</span>
-            <Image
+            <img
               src={provider.logo_url}
               alt={`${provider.name} logo`}
               width={96}

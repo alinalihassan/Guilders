@@ -1,15 +1,13 @@
-import type { Metadata } from "next";
+import { createFileRoute, Outlet } from "@tanstack/react-router";
 
-import { defaultMetadata } from "../metadata";
+export const Route = createFileRoute("/(pages)/(auth-flows)")({
+  component: AuthFlowsLayout,
+});
 
-export const metadata: Metadata = {
-  ...defaultMetadata,
-  robots: {
-    index: false,
-    follow: false,
-  },
-};
-
-export default async function Layout({ children }: { children: React.ReactNode }) {
-  return <div className="flex min-h-screen items-center justify-center">{children}</div>;
+function AuthFlowsLayout() {
+  return (
+    <div className="flex min-h-screen items-center justify-center">
+      <Outlet />
+    </div>
+  );
 }

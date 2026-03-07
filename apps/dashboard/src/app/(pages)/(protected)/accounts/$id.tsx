@@ -1,8 +1,8 @@
 "use client";
 
+import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { Link2, MoreHorizontal, Pencil, RefreshCw, Trash2 } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { use, useState } from "react";
+import { useState } from "react";
 
 import { AccountHoldingsDonutCard } from "@/components/dashboard/account-holdings-donut-card";
 import { AccountsCard } from "@/components/dashboard/accounts/account-card";
@@ -21,8 +21,13 @@ import { useDialog } from "@/hooks/useDialog";
 import { useAccount, useRemoveAccount } from "@/lib/queries/useAccounts";
 import { useRefreshConnection, useSyncAccount } from "@/lib/queries/useConnections";
 
-export default function AccountPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params);
+export const Route = createFileRoute("/(pages)/(protected)/accounts/$id")({
+  component: AccountPage,
+});
+
+function AccountPage() {
+  const { id } = Route.useParams();
+  const router = useRouter();
   const { data: account, isLoading } = useAccount(Number.parseInt(id, 10));
   const [imageError, setImageError] = useState(false);
   const { open: openEdit } = useDialog("editAccount");
@@ -31,7 +36,6 @@ export default function AccountPage({ params }: { params: Promise<{ id: string }
   const { mutate: syncAccount, isPending: isSyncing } = useSyncAccount();
   const { mutateAsync: refreshConnection, isPending: isReconnecting } = useRefreshConnection();
   const { open: openProviderDialog } = useDialog("provider");
-  const router = useRouter();
   const accountValue = Number(account?.value ?? 0);
   const accountCost = Number(account?.cost ?? 0);
 
@@ -58,7 +62,7 @@ export default function AccountPage({ params }: { params: Promise<{ id: string }
       onConfirm: () => {
         removeAccount(account.id, {
           onSuccess: () => {
-            router.push("/accounts");
+            router.navigate({ to: "/accounts" });
           },
         });
       },

@@ -1,6 +1,6 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { useLocation } from "@tanstack/react-router";
 import React from "react";
 
 import {
@@ -63,7 +63,7 @@ export function getBreadcrumbs(pathname: string): Breadcrumb[] {
 }
 
 export function DynamicBreadcrumbs({ className }: { className?: string }) {
-  const pathname = usePathname();
+  const { pathname } = useLocation();
   const accountId = pathname.startsWith("/accounts/")
     ? Number.parseInt(pathname.split("/").pop() ?? "0")
     : undefined;

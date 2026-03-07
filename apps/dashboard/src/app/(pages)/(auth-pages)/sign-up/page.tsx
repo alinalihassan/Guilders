@@ -1,8 +1,6 @@
 "use client";
 
-import Image from "next/image";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { toast } from "sonner";
 
 import { PasswordInput } from "@/components/common/password-input";
@@ -11,7 +9,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { authClient } from "@/lib/auth-client";
 
-export default function Signup() {
+export const Route = createFileRoute("/(pages)/(auth-pages)/sign-up/")({
+  component: Signup,
+});
+
+function Signup() {
   const router = useRouter();
 
   const handleSubmit = async (formData: FormData) => {
@@ -38,20 +40,14 @@ export default function Signup() {
     }
 
     toast.success("Account created successfully");
-    router.push("/");
+    router.navigate({ to: "/" });
   };
 
   return (
     <div className="w-full max-w-sm">
       <div className="rounded-lg border bg-card px-6 py-6 text-card-foreground shadow-sm">
         <div className="mb-4 flex flex-col items-center">
-          <Image
-            src="/assets/logo/logo_filled_rounded.svg"
-            alt="logo"
-            width={64}
-            height={64}
-            priority
-          />
+          <img src="/assets/logo/logo_filled_rounded.svg" alt="logo" width={64} height={64} />
         </div>
 
         <h1 className="text-center text-2xl font-bold">Create Account</h1>
@@ -83,18 +79,18 @@ export default function Signup() {
           <p className="text-center text-xs text-muted-foreground">
             By continuing to sign up, you agree to our
             <br />
-            <Link href="/terms-of-service" className="font-medium text-primary hover:underline">
+            <Link to="/terms-of-service" className="font-medium text-primary hover:underline">
               Terms of Service
             </Link>{" "}
             and{" "}
-            <Link href="/privacy-policy" className="font-medium text-primary hover:underline">
+            <Link to="/privacy-policy" className="font-medium text-primary hover:underline">
               Privacy Policy
             </Link>
           </p>
 
           <div className="flex justify-center gap-1 text-xs text-muted-foreground">
             <p>Already have an account?</p>
-            <Link href="/login" className="font-medium text-primary hover:underline">
+            <Link to="/login" className="font-medium text-primary hover:underline">
               Sign in
             </Link>
           </div>

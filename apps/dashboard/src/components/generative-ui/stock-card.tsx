@@ -1,7 +1,6 @@
 "use client";
 
-import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@tanstack/react-router";
 
 import { AccountFallbackIcon } from "@/components/dashboard/accounts/account-fallback-icon";
 import { cn } from "@/lib/utils";
@@ -109,14 +108,14 @@ export function StockCard({
   return (
     <button
       type="button"
-      onClick={() => router.push(`/accounts/${accountId}`)}
+      onClick={() => router.navigate({ to: "/accounts/$id", params: { id: String(accountId) } })}
       className="w-full rounded-2xl border border-border/70 bg-card text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
       <div className="space-y-4 p-4">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             {image ? (
-              <Image
+              <img
                 src={image}
                 alt={accountName}
                 width={36}

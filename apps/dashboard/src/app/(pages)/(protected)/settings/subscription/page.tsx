@@ -1,8 +1,14 @@
+import { createFileRoute } from "@tanstack/react-router";
+
 import { Separator } from "@/components/ui/separator";
 
 import { SubscriptionForm } from "./subscription-form";
 
-export default function SubscriptionPage() {
+export const Route = createFileRoute("/(pages)/(protected)/settings/subscription/")({
+  component: SubscriptionPage,
+});
+
+function SubscriptionPage() {
   return (
     <div className="space-y-6">
       <div>

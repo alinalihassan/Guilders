@@ -1,8 +1,7 @@
 "use client";
 
+import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { KeyRound, ShieldCheck } from "lucide-react";
-import Image from "next/image";
-import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
@@ -13,7 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { authClient } from "@/lib/auth-client";
-import { env } from "@/lib/env";
+import { clientEnv } from "@/lib/env";
 
 const DISPLAY_ONLY_QUERY_KEYS = new Set(["client_name", "client_uri"]);
 
@@ -23,8 +22,8 @@ const SCOPE_LABELS: Record<string, string> = {
   write: "Create accounts and transactions",
 };
 
-const toOAuthQuery = (searchParams: ReturnType<typeof useSearchParams>) => {
-  const params = new URLSearchParams(searchParams.toString());
+const toOAuthQuery = (searchString: string) => {
+  const params = new URLSearchParams(searchString);
   for (const key of DISPLAY_ONLY_QUERY_KEYS) {
     params.delete(key);
   }
@@ -32,16 +31,18 @@ const toOAuthQuery = (searchParams: ReturnType<typeof useSearchParams>) => {
 };
 
 function OAuthSignInForm() {
-  const searchParams = useSearchParams();
+  const router = useRouter();
+  const searchString = router.state.location.search ?? "";
+  const searchParams = useMemo(() => new URLSearchParams(searchString), [searchString]);
   const [isLoading, setIsLoading] = useState(false);
 
-  const oauthQuery = useMemo(() => toOAuthQuery(searchParams), [searchParams]);
+  const oauthQuery = useMemo(() => toOAuthQuery(searchString), [searchString]);
   const clientId = searchParams.get("client_id");
   const clientName = searchParams.get("client_name");
   const clientUri = searchParams.get("client_uri");
   const scope = searchParams.get("scope");
   const scopeList = useMemo(() => scope?.split(/\s+/).filter(Boolean).slice(0, 6) ?? [], [scope]);
-  const authorizeUrl = `${env.NEXT_PUBLIC_API_URL}/api/auth/oauth2/authorize${oauthQuery ? `?${oauthQuery}` : ""}`;
+  const authorizeUrl = `${clientEnv.VITE_API_URL}/api/auth/oauth2/authorize${oauthQuery ? `?${oauthQuery}` : ""}`;
 
   const handleSubmit = async (formData: FormData) => {
     try {
@@ -81,13 +82,7 @@ function OAuthSignInForm() {
       <Card className="border bg-card shadow-md">
         <CardHeader className="space-y-3 pb-3">
           <div className="flex flex-col items-center">
-            <Image
-              src="/assets/logo/logo_filled_rounded.svg"
-              alt="logo"
-              width={64}
-              height={64}
-              priority
-            />
+            <img src="/assets/logo/logo_filled_rounded.svg" alt="logo" width={64} height={64} />
           </div>
           <div className="space-y-1 text-center">
             <CardTitle className="text-2xl">MCP Sign In</CardTitle>
@@ -174,16 +169,16 @@ function OAuthSignInForm() {
 }
 
 function OAuthSignInPage() {
-  const searchParams = useSearchParams();
-
-  const query = useMemo(() => toOAuthQuery(searchParams), [searchParams]);
-  const authorizeUrl = `${env.NEXT_PUBLIC_API_URL}/api/auth/oauth2/authorize${query ? `?${query}` : ""}`;
+  const router = useRouter();
+  const searchString = router.state.location.search ?? "";
+  const query = useMemo(() => toOAuthQuery(searchString), [searchString]);
+  const authorizeUrl = `${clientEnv.VITE_API_URL}/api/auth/oauth2/authorize${query ? `?${query}` : ""}`;
 
   useEffect(() => {
     // If user already has a session cookie, Better Auth will immediately continue OAuth.
     void (async () => {
       try {
-        const response = await fetch(`${env.NEXT_PUBLIC_API_URL}/api/auth/get-session`, {
+        const response = await fetch(`${clientEnv.VITE_API_URL}/api/auth/get-session`, {
           credentials: "include",
           cache: "no-store",
         });
@@ -206,12 +201,11 @@ function OAuthSignInSkeleton() {
     <div className="w-full max-w-sm">
       <Card className="animate-pulse border bg-card shadow-md">
         <CardHeader className="pb-3">
-          <Image
+          <img
             src="/assets/logo/logo_filled_rounded.svg"
             alt="logo"
             width={64}
             height={64}
-            priority
             className="mx-auto opacity-30"
           />
           <div className="mx-auto h-6 w-36 rounded bg-muted" />
@@ -228,7 +222,11 @@ function OAuthSignInSkeleton() {
   );
 }
 
-export default function OAuthSignIn() {
+export const Route = createFileRoute("/(pages)/(auth-pages)/oauth/sign-in/")({
+  component: OAuthSignIn,
+});
+
+function OAuthSignIn() {
   return (
     <Suspense fallback={<OAuthSignInSkeleton />}>
       <OAuthSignInPage />

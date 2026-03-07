@@ -1,19 +1,16 @@
 "use client";
 
 import { Check, Minus } from "lucide-react";
-import Image from "next/image";
 import { useEffect, useState } from "react";
 
-import UiDark from "@/../public/assets/ui-dark.png";
-import UiLight from "@/../public/assets/ui-light.png";
-import UiSystem from "@/../public/assets/ui-system.png";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useThemeTransition } from "@/hooks/useThemeTransition";
 
+// Public assets are served at root in Vite; do not import from public/
 const items = [
-  { id: "theme-light", value: "light", label: "Light", image: UiLight },
-  { id: "theme-dark", value: "dark", label: "Dark", image: UiDark },
-  { id: "theme-system", value: "system", label: "System", image: UiSystem },
+  { id: "theme-light", value: "light", label: "Light", image: "/assets/ui-light.png" },
+  { id: "theme-dark", value: "dark", label: "Dark", image: "/assets/ui-dark.png" },
+  { id: "theme-system", value: "system", label: "System", image: "/assets/ui-system.png" },
 ] as const;
 
 export function ThemeSelector() {
@@ -38,7 +35,7 @@ export function ThemeSelector() {
               value={item.value}
               className="peer sr-only after:absolute after:inset-0"
             />
-            <Image
+            <img
               src={item.image}
               alt={item.label}
               width={88}

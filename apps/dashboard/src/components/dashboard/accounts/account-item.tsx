@@ -1,7 +1,7 @@
 import type { Account } from "@guilders/api/types";
 import NumberFlow from "@number-flow/react";
+import { useRouter } from "@tanstack/react-router";
 import { TriangleAlert } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { ChangeBadge } from "@/components/common/change-badge";
@@ -20,7 +20,7 @@ export function AccountItem({ account }: AccountItemProps) {
 
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    router.push(`/accounts/${account.id}`);
+    router.navigate({ to: "/accounts/$id", params: { id: String(account.id) } });
   };
 
   const changePercentage =
