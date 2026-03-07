@@ -24,11 +24,9 @@ export default function ProtectedLayout({ children }: { children: ReactNode }) {
           advisorOpen && "gap-3",
         )}
       >
-        <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-xl border border-border bg-background shadow-sm">
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm">
           <AppTopBar />
-          <main className="flex flex-1 flex-col overflow-auto bg-muted/40 px-4 md:px-8">
-            {children}
-          </main>
+          <main className="flex flex-1 flex-col overflow-auto px-4 md:px-8">{children}</main>
         </div>
         <aside
           className={cn(
@@ -40,7 +38,7 @@ export default function ProtectedLayout({ children }: { children: ReactNode }) {
         >
           <div
             hidden={!advisorOpen}
-            className="flex h-full min-h-0 min-w-[400px] flex-col overflow-hidden rounded-xl border border-border bg-background shadow-sm"
+            className="flex h-full min-h-0 min-w-[400px] flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm"
             style={{ width: ADVISOR_SIDEBAR_WIDTH }}
           >
             <AdvisorSidebar />

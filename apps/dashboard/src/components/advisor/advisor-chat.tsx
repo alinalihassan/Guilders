@@ -442,7 +442,7 @@ export function AdvisorChat({ chatId, initialMessages }: AdvisorChatProps) {
           </div>
         )}
       </div>
-      <div className="shrink-0 space-y-1 bg-background px-3 py-3">
+      <div className="shrink-0 space-y-1 bg-card px-3 py-3">
         {limits != null && (
           <p className="text-center text-xs text-muted-foreground">
             {limits.remaining} of {limits.limit} messages left this week
