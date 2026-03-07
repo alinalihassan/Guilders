@@ -34,7 +34,7 @@ export function AppTopBar() {
     <header
       className={cn(
         "sticky z-20 top-0 flex h-16 shrink-0 items-center gap-2 transition-all duration-200",
-        "px-4 md:px-8",
+        "px-4 md:px-6",
         isScrolled
           ? "bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/75 shadow-sm"
           : "bg-card",

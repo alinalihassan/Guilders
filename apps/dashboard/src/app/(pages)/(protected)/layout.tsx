@@ -26,7 +26,7 @@ export default function ProtectedLayout({ children }: { children: ReactNode }) {
       >
         <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm">
           <AppTopBar />
-          <main className="flex flex-1 flex-col overflow-auto px-4 md:px-8">{children}</main>
+          <main className="flex flex-1 flex-col overflow-auto px-4 md:px-6">{children}</main>
         </div>
         <aside
           className={cn(
