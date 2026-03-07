@@ -32,7 +32,7 @@ export function useChatLimits() {
     queryFn: async (): Promise<ChatLimits> => {
       const { data, error } = await api.chat.limits.get();
       if (error) throw new Error(edenError(error));
-      return data as ChatLimits;
+      return data;
     },
     enabled: !!viewerId,
   });
