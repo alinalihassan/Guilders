@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { useCallback, useState } from "react";
 
 import { AdvisorSidebar } from "@/components/advisor/advisor-sidebar";
 import { Dialogs } from "@/components/dialogs/dialogs";
@@ -14,6 +15,11 @@ const ADVISOR_SIDEBAR_WIDTH = 400;
 
 export default function ProtectedLayout({ children }: { children: ReactNode }) {
   const advisorOpen = useStore((state) => state.advisorOpen);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  const handleMainScroll = useCallback((e: React.UIEvent<HTMLElement>) => {
+    setIsScrolled((e.target as HTMLElement).scrollTop > 0);
+  }, []);
 
   return (
     <SidebarProvider defaultOpen={false}>
@@ -25,8 +31,13 @@ export default function ProtectedLayout({ children }: { children: ReactNode }) {
         )}
       >
         <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm">
-          <AppTopBar />
-          <main className="flex flex-1 flex-col overflow-auto px-4 md:px-6">{children}</main>
+          <AppTopBar scrolled={isScrolled} />
+          <main
+            className="flex flex-1 flex-col overflow-auto px-4 md:px-6"
+            onScroll={handleMainScroll}
+          >
+            {children}
+          </main>
         </div>
         <aside
           className={cn(
