@@ -45,5 +45,4 @@ coverage/
 **/*.tar.gz
 **/*.tgz
 **/*.log
-package-lock.json
 **/*.bun
