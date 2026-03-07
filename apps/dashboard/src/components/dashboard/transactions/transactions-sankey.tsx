@@ -1,4 +1,3 @@
-
 import type { Transaction } from "@guilders/api/types";
 import { useMemo } from "react";
 import { Layer, Rectangle, Sankey } from "recharts";

@@ -1,4 +1,3 @@
-
 import type { UpdateUser, User } from "@guilders/api/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 

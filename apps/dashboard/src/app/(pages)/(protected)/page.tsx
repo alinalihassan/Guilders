@@ -1,4 +1,3 @@
-
 import { createFileRoute } from "@tanstack/react-router";
 
 import { AccountsCard } from "@/components/dashboard/accounts/account-card";

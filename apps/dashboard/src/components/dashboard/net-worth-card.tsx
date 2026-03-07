@@ -1,4 +1,3 @@
-
 import { BalanceCard } from "@/components/dashboard/balance-card";
 import { useAccounts } from "@/lib/queries/useAccounts";
 import { useRates } from "@/lib/queries/useRates";

@@ -1,4 +1,3 @@
-
 import { MessageCircle, X } from "lucide-react";
 import type React from "react";
 import { useRef, useState } from "react";

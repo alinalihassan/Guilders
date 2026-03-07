@@ -1,4 +1,3 @@
-
 import { defineRegistry } from "@json-render/react";
 
 import { StockCard, type StockCardProps } from "@/components/generative-ui/stock-card";

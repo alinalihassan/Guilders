@@ -1,4 +1,3 @@
-
 import NumberFlow from "@number-flow/react";
 import { createFileRoute } from "@tanstack/react-router";
 import { Filter, Plus, Search } from "lucide-react";

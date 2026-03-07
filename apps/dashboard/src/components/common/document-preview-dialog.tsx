@@ -1,4 +1,3 @@
-
 import { Download, Loader2, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Document, Page, pdfjs } from "react-pdf";

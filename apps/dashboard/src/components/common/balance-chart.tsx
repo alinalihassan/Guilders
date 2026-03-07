@@ -1,4 +1,3 @@
-
 import { useCallback, useId, useMemo, useState } from "react";
 import { Area, AreaChart, Tooltip, XAxis, YAxis } from "recharts";
 

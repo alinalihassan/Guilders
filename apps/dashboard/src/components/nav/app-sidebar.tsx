@@ -1,4 +1,3 @@
-
 import { Link } from "@tanstack/react-router";
 
 import { Sidebar, SidebarContent, SidebarHeader } from "@/components/ui/sidebar";

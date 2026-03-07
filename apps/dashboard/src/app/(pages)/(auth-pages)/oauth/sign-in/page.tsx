@@ -1,4 +1,3 @@
-
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { KeyRound, ShieldCheck } from "lucide-react";
 import { Suspense, useEffect, useMemo, useState } from "react";

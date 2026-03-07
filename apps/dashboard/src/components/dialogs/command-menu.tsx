@@ -1,4 +1,3 @@
-
 import type { Institution } from "@guilders/api/types";
 import { useRouter } from "@tanstack/react-router";
 import { useVirtualizer } from "@tanstack/react-virtual";

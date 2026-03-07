@@ -1,4 +1,3 @@
-
 import { type VariantProps, cva } from "class-variance-authority";
 import { Label as LabelPrimitive } from "radix-ui";
 import * as React from "react";

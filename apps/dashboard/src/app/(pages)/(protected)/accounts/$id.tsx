@@ -1,4 +1,3 @@
-
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { Link2, MoreHorizontal, Pencil, RefreshCw, Trash2 } from "lucide-react";
 import { useState } from "react";
@@ -8,6 +7,7 @@ import { AccountsCard } from "@/components/dashboard/accounts/account-card";
 import { AccountIcon } from "@/components/dashboard/accounts/account-icon";
 import { BalanceCard } from "@/components/dashboard/balance-card";
 import { TransactionsCard } from "@/components/dashboard/transactions/transactions-card";
+import { NotFoundPage } from "@/components/not-found-page";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -15,7 +15,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { NotFoundPage } from "@/components/not-found-page";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDialog } from "@/hooks/useDialog";
 import { useAccount, useRemoveAccount } from "@/lib/queries/useAccounts";
