@@ -37,15 +37,6 @@ export function TimePicker({
     }
   }, [date, showSeconds]);
 
-  // When no date, initialize to now and notify parent
-  useEffect(() => {
-    if (!date) {
-      const initial = new Date();
-      setTime(toTimeString(initial, showSeconds));
-      onDateChange(initial);
-    }
-  }, [date, showSeconds, onDateChange]);
-
   const handleTimeChange = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     if (!value) return;
