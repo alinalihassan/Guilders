@@ -1,7 +1,7 @@
 import { createRootRoute, HeadContent, Outlet, Scripts } from "@tanstack/react-router";
 
-import { NotFoundPage } from "@/components/not-found-page";
 import { Providers } from "@/components/common/providers";
+import { NotFoundPage } from "@/components/not-found-page";
 import { Toaster } from "@/components/ui/sonner";
 
 import appCss from "@/styles/globals.css?url";
