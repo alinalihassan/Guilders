@@ -92,6 +92,7 @@ jobs:
       fail-fast: false
       matrix:
         path:
+          - apps/dashboard
           - apps/docs
           - apps/website
           - packages/transactional
