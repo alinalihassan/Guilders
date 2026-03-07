@@ -58,7 +58,10 @@ export function AccountSelector({
     return accountOptions.filter((a) => a.name.toLowerCase().includes(q));
   }, [accountOptions, search]);
 
-  const selectedAccount = accountOptions.find((a) => a.id === value);
+  const selectedAccount = useMemo(() => {
+    if (accounts == null || value == null) return undefined;
+    return accounts.find((a) => a.id === value);
+  }, [accounts, value]);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
