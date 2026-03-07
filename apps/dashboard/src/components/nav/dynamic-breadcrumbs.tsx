@@ -1,10 +1,9 @@
-import { useLocation } from "@tanstack/react-router";
+import { Link, useLocation } from "@tanstack/react-router";
 import React from "react";
 
 import {
   Breadcrumb as BreadcrumbComponent,
   BreadcrumbItem,
-  BreadcrumbLink,
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
@@ -88,9 +87,12 @@ export function DynamicBreadcrumbs({ className }: { className?: string }) {
                   {breadcrumb.name}
                 </BreadcrumbPage>
               ) : (
-                <BreadcrumbLink href={breadcrumb.href} className="text-[15px] font-medium">
+                <Link
+                  to={breadcrumb.href!}
+                  className="text-[16px] font-medium transition-colors hover:text-foreground"
+                >
                   {breadcrumb.name}
-                </BreadcrumbLink>
+                </Link>
               )}
             </BreadcrumbItem>
             {index < breadcrumbs.length - 1 && <BreadcrumbSeparator className="hidden md:block" />}
