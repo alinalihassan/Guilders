@@ -1,4 +1,3 @@
-"use client";
 
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { KeyRound, ShieldCheck } from "lucide-react";

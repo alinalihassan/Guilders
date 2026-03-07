@@ -1,4 +1,3 @@
-"use client";
 
 import { ChevronDown } from "lucide-react";
 import { Accordion as AccordionPrimitive } from "radix-ui";

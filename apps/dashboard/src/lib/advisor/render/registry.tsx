@@ -1,4 +1,3 @@
-"use client";
 
 import { defineRegistry } from "@json-render/react";
 

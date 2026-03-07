@@ -1,4 +1,3 @@
-"use client";
 
 import type { Currency } from "@guilders/api/types";
 import { zodResolver } from "@hookform/resolvers/zod";

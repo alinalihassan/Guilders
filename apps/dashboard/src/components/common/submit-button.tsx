@@ -1,4 +1,3 @@
-"use client";
 
 import { LoaderCircle } from "lucide-react";
 import type { ComponentProps } from "react";

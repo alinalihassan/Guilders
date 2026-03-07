@@ -1,6 +1,4 @@
-"use client";
-
-import { useRouter } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 
 import { AccountFallbackIcon } from "@/components/dashboard/accounts/account-fallback-icon";
 import { cn } from "@/lib/utils";
@@ -100,16 +98,15 @@ export function StockCard({
   currentValue,
   totalChange,
 }: StockCardProps) {
-  const router = useRouter();
   const formattedCurrentValue = formatCurrencyValue(value, currency);
   const formattedPercentChange = formatPercentChange({ value, cost, currentValue, totalChange });
   const isNegative = (formattedPercentChange ?? "").startsWith("-");
 
   return (
-    <button
-      type="button"
-      onClick={() => router.navigate({ to: "/accounts/$id", params: { id: String(accountId) } })}
-      className="w-full rounded-2xl border border-border/70 bg-card text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+    <Link
+      to="/accounts/$id"
+      params={{ id: String(accountId) }}
+      className="block w-full rounded-2xl border border-border/70 bg-card text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
       <div className="space-y-4 p-4">
         <div className="flex items-center justify-between gap-3">
@@ -154,6 +151,6 @@ export function StockCard({
           ) : null}
         </div>
       </div>
-    </button>
+    </Link>
   );
 }

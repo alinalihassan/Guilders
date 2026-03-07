@@ -1,4 +1,3 @@
-"use client";
 
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { useCallback, useState } from "react";

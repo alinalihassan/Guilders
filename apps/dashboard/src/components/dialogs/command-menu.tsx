@@ -1,4 +1,3 @@
-"use client";
 
 import type { Institution } from "@guilders/api/types";
 import { useRouter } from "@tanstack/react-router";

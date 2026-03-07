@@ -1,4 +1,3 @@
-"use client";
 
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { Suspense, useState } from "react";

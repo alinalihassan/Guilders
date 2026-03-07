@@ -1,4 +1,3 @@
-"use client";
 
 import { useChat } from "@ai-sdk/react";
 import { useQueryClient } from "@tanstack/react-query";

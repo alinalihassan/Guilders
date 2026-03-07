@@ -1,4 +1,3 @@
-"use client";
 
 import type { UpdateAccount } from "@guilders/api/types";
 import { zodResolver } from "@hookform/resolvers/zod";

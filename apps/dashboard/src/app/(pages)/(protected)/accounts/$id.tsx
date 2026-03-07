@@ -1,4 +1,3 @@
-"use client";
 
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { Link2, MoreHorizontal, Pencil, RefreshCw, Trash2 } from "lucide-react";

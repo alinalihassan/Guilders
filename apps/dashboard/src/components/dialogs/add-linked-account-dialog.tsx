@@ -1,4 +1,3 @@
-"use client";
 
 import { useRouter } from "@tanstack/react-router";
 import { Loader2 } from "lucide-react";
