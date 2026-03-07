@@ -226,7 +226,6 @@ export function BalanceChart({
   const mutedLineColor = "#d1d5db";
 
   return (
-    // @ts-ignore
     <ChartContainer className={className ?? "max-h-[216px] w-full"} config={chartConfig}>
       <AreaChart
         data={effectiveData}
