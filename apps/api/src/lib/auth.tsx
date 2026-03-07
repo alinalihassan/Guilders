@@ -57,15 +57,6 @@ export function createAuth(db?: Database) {
 
   return betterAuth({
     baseURL: baseUrl,
-    advanced:
-      process.env.NODE_ENV === "production"
-        ? {
-            crossSubDomainCookies: {
-              enabled: true,
-              domain: "guilders.app",
-            },
-          }
-        : undefined,
     database: drizzleAdapter(authDb, {
       provider: "pg",
       schema: authSchema,
