@@ -14,13 +14,7 @@ export const app = new Elysia({ adapter: CloudflareAdapter })
   .use(
     cors({
       credentials: true,
-      origin: [
-        // Guilders local development
-        "http://localhost:3000",
-        "http://localhost:3001",
-        "http://localhost:3002",
-        "http://localhost:3003",
-      ],
+      origin: [process.env.BACKEND_URL, process.env.DASHBOARD_URL],
     }),
   )
   .use(
