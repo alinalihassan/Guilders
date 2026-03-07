@@ -4,6 +4,7 @@ import { Menu, PanelRight } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { useSidebar } from "@/components/ui/sidebar";
 import { useStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
@@ -12,7 +13,7 @@ import { DynamicBreadcrumbs } from "./dynamic-breadcrumbs";
 
 export function AppTopBar() {
   const [isScrolled, setIsScrolled] = useState(false);
-  const toggleMenu = useStore((state) => state.toggleMenu);
+  const { toggleSidebar } = useSidebar();
   const advisorOpen = useStore((state) => state.advisorOpen);
   const openAdvisorSidebar = useStore((state) => state.openAdvisorSidebar);
   const closeAdvisorSidebar = useStore((state) => state.closeAdvisorSidebar);
@@ -40,7 +41,7 @@ export function AppTopBar() {
       )}
     >
       <div className="flex flex-1 items-center gap-4">
-        <Button variant="ghost" size="icon" className="h-9 w-9 md:hidden" onClick={toggleMenu}>
+        <Button variant="ghost" size="icon" className="h-9 w-9 md:hidden" onClick={toggleSidebar}>
           <Menu className="h-5 w-5" />
         </Button>
         <DynamicBreadcrumbs />
