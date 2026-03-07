@@ -22,13 +22,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useDialog } from "@/hooks/useDialog";
@@ -36,6 +29,7 @@ import { useAccounts } from "@/lib/queries/useAccounts";
 import { useFiles } from "@/lib/queries/useFiles";
 import { useRemoveTransaction, useUpdateTransaction } from "@/lib/queries/useTransactions";
 
+import { AccountSelector } from "../common/account-selector";
 import { CategorySelector } from "../common/category-selector";
 import { DatePicker } from "../common/date-picker";
 import { FileUploader } from "../common/file-uploader";
@@ -229,32 +223,14 @@ export function EditTransactionDialog() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Account</FormLabel>
-                        <Select
-                          onValueChange={(value) => field.onChange(Number.parseInt(value))}
-                          defaultValue={field.value?.toString()}
-                          disabled={isSyncedTransaction}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue>{currentAccount?.name ?? "Select account"}</SelectValue>
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {accounts?.map((account) => {
-                              const isConnected = !!account.institution_connection_id;
-                              return (
-                                <SelectItem
-                                  key={account.id}
-                                  value={account.id.toString()}
-                                  disabled={isConnected && account.id !== currentAccount?.id}
-                                >
-                                  {account.name}
-                                  {isConnected && " (Connected)"}
-                                </SelectItem>
-                              );
-                            })}
-                          </SelectContent>
-                        </Select>
+                        <FormControl>
+                          <AccountSelector
+                            value={field.value}
+                            onChange={field.onChange}
+                            placeholder="Select account"
+                            disabled={isSyncedTransaction}
+                          />
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}

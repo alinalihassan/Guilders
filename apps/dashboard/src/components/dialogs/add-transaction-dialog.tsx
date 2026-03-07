@@ -7,6 +7,7 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
+import { AccountSelector } from "@/components/common/account-selector";
 import { CategorySelector } from "@/components/common/category-selector";
 import { DatePicker } from "@/components/common/date-picker";
 import { TimePicker } from "@/components/common/time-picker";
@@ -66,8 +67,6 @@ export function AddTransactionDialog() {
   const { data: currencies } = useCurrencies();
   const { data: user } = useUser();
   const currencyOptions = (currencies ?? []) as Currency[];
-
-  const manualAccounts = accounts?.filter((account) => !account.institution_connection_id);
 
   const form = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
@@ -144,23 +143,14 @@ export function AddTransactionDialog() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Account</FormLabel>
-                  <Select
-                    onValueChange={(value) => field.onChange(Number.parseInt(value))}
-                    defaultValue={field.value?.toString()}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select account" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {manualAccounts?.map((account) => (
-                        <SelectItem key={account.id} value={account.id.toString()}>
-                          {account.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <FormControl>
+                    <AccountSelector
+                      value={field.value}
+                      onChange={field.onChange}
+                      placeholder="Select account"
+                      hideTrackedAccounts
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
