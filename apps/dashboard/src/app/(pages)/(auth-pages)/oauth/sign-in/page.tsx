@@ -1,6 +1,6 @@
-import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { createFileRoute, useRouterState } from "@tanstack/react-router";
 import { KeyRound, ShieldCheck } from "lucide-react";
-import { Suspense, useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { PasswordInput } from "@/components/common/password-input";
@@ -29,17 +29,16 @@ const toOAuthQuery = (searchString: string) => {
 };
 
 function OAuthSignInForm() {
-  const router = useRouter();
-  const searchString = router.state.location.search ?? "";
-  const searchParams = useMemo(() => new URLSearchParams(searchString), [searchString]);
+  const searchString = useRouterState({ select: (s) => s.location.searchStr }) ?? "";
+  const searchParams = new URLSearchParams(searchString);
   const [isLoading, setIsLoading] = useState(false);
 
-  const oauthQuery = useMemo(() => toOAuthQuery(searchString), [searchString]);
+  const oauthQuery = toOAuthQuery(searchString);
   const clientId = searchParams.get("client_id");
   const clientName = searchParams.get("client_name");
   const clientUri = searchParams.get("client_uri");
   const scope = searchParams.get("scope");
-  const scopeList = useMemo(() => scope?.split(/\s+/).filter(Boolean).slice(0, 6) ?? [], [scope]);
+  const scopeList = scope?.split(/\s+/).filter(Boolean).slice(0, 6) ?? [];
   const authorizeUrl = `${clientEnv.VITE_API_URL}/api/auth/oauth2/authorize${oauthQuery ? `?${oauthQuery}` : ""}`;
 
   const handleSubmit = async (formData: FormData) => {
@@ -167,9 +166,8 @@ function OAuthSignInForm() {
 }
 
 function OAuthSignInPage() {
-  const router = useRouter();
-  const searchString = router.state.location.search ?? "";
-  const query = useMemo(() => toOAuthQuery(searchString), [searchString]);
+  const searchString = useRouterState({ select: (s) => s.location.searchStr }) ?? "";
+  const query = toOAuthQuery(searchString);
   const authorizeUrl = `${clientEnv.VITE_API_URL}/api/auth/oauth2/authorize${query ? `?${query}` : ""}`;
 
   useEffect(() => {

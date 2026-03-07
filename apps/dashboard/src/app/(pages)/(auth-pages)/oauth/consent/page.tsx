@@ -1,6 +1,6 @@
-import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { createFileRoute, useRouterState } from "@tanstack/react-router";
 import { BookOpen, Eye, Info, Pencil, ShieldCheck } from "lucide-react";
-import { Suspense, useMemo, useState } from "react";
+import { Suspense, useState } from "react";
 import { toast } from "sonner";
 
 import { AnimatedCheckbox } from "@/components/ui/animated-checkbox";
@@ -42,18 +42,17 @@ const SCOPE_GROUPS = {
 type ToggleableScope = keyof typeof SCOPE_GROUPS;
 
 function OAuthConsentForm() {
-  const router = useRouter();
-  const searchString = router.state.location.search ?? "";
-  const searchParams = useMemo(() => new URLSearchParams(searchString), [searchString]);
+  const searchString = useRouterState({ select: (s) => s.location.searchStr }) ?? "";
+  const searchParams = new URLSearchParams(searchString);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const authApiBase = clientEnv.VITE_API_URL;
 
-  const oauthQuery = useMemo(() => toOAuthQuery(searchString), [searchString]);
+  const oauthQuery = toOAuthQuery(searchString);
   const clientId = searchParams.get("client_id") ?? "Unknown client";
   const clientName = searchParams.get("client_name");
   const clientUri = searchParams.get("client_uri");
   const scope = searchParams.get("scope") ?? "";
-  const requestedScopes = useMemo(() => scope.split(/\s+/).filter(Boolean), [scope]);
+  const requestedScopes = scope.split(/\s+/).filter(Boolean);
 
   const hasExplicitScopes = requestedScopes.includes("read") || requestedScopes.includes("write");
 
