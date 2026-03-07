@@ -82,7 +82,7 @@ function OAuthSignInForm() {
       <Card className="border bg-card shadow-md">
         <CardHeader className="space-y-3 pb-3">
           <div className="flex flex-col items-center">
-            <img src="/assets/logo/logo_filled_rounded.svg" alt="logo" width={64} height={64} />
+            <img src="/assets/logo/logo_filled_rounded.svg" alt="" width={64} height={64} />
           </div>
           <div className="space-y-1 text-center">
             <CardTitle className="text-2xl">MCP Sign In</CardTitle>
