@@ -16,10 +16,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { NotFoundPage } from "@/components/not-found-page";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDialog } from "@/hooks/useDialog";
 import { useAccount, useRemoveAccount } from "@/lib/queries/useAccounts";
 import { useRefreshConnection, useSyncAccount } from "@/lib/queries/useConnections";
+
+const ID_REGEX = /^\d+$/;
 
 export const Route = createFileRoute("/(pages)/(protected)/accounts/$id")({
   component: AccountPage,
@@ -27,8 +30,10 @@ export const Route = createFileRoute("/(pages)/(protected)/accounts/$id")({
 
 function AccountPage() {
   const { id } = Route.useParams();
+  const isValidId = ID_REGEX.test(id);
+  const accountId = isValidId ? Number.parseInt(id, 10) : -1;
   const router = useRouter();
-  const { data: account, isLoading } = useAccount(Number.parseInt(id, 10));
+  const { data: account, isLoading } = useAccount(accountId);
   const [imageError, setImageError] = useState(false);
   const { open: openEdit } = useDialog("editAccount");
   const { open: openConfirmation } = useDialog("confirmation");
@@ -36,6 +41,11 @@ function AccountPage() {
   const { mutate: syncAccount, isPending: isSyncing } = useSyncAccount();
   const { mutateAsync: refreshConnection, isPending: isReconnecting } = useRefreshConnection();
   const { open: openProviderDialog } = useDialog("provider");
+
+  if (!isValidId) {
+    return <NotFoundPage />;
+  }
+
   const accountValue = Number(account?.value ?? 0);
   const accountCost = Number(account?.cost ?? 0);
 
