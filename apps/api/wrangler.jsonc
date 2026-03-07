@@ -57,4 +57,18 @@
       "simple": { "limit": 600, "period": 60 },
     },
   ],
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "CHAT_RATE_LIMITER",
+        "class_name": "ChatRateLimiter",
+      },
+    ],
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["ChatRateLimiter"],
+    },
+  ],
 }

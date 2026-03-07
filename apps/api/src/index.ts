@@ -1,11 +1,14 @@
 import { app } from "./app";
 import { handleCallback } from "./callbacks";
 import { handleScheduled } from "./cron";
+import { ChatRateLimiter } from "./durable-objects/chat-rate-limiter";
 import { handleMcp } from "./mcp/handler";
 import type { WebhookEvent } from "./queues/types";
 import { handleWebhookQueue } from "./queues/webhook-events";
 export type { App } from "./app";
 export type * from "./types";
+
+export { ChatRateLimiter };
 
 export default {
   async fetch(request: Request, env: Env, executionCtx: ExecutionContext): Promise<Response> {

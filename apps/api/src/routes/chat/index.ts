@@ -11,10 +11,12 @@ import {
 } from "ai";
 import { createAiGateway } from "ai-gateway-provider";
 import { unified } from "ai-gateway-provider/providers/unified";
+import { env } from "cloudflare:workers";
 import { and, eq } from "drizzle-orm";
 import { Elysia, status, t } from "elysia";
 
 import { conversation } from "../../db/schema/conversations";
+import { getChatLimitConfig } from "../../lib/chat-limits";
 import { createDb } from "../../lib/db";
 import { authPlugin } from "../../middleware/auth";
 import { errorSchema } from "../../utils/error";
@@ -40,6 +42,14 @@ ${uiSection}
 Current date (use when the user says "today", "now", or similar): ${today}.`;
 }
 
+const chatLimitsResponseSchema = t.Object({
+  limit: t.Number(),
+  used: t.Number(),
+  remaining: t.Number(),
+  resetAt: t.Union([t.Number(), t.Null()]),
+  tier: t.Union([t.Literal("free"), t.Literal("pro")]),
+});
+
 export const chatRoutes = new Elysia({
   prefix: "/chat",
   detail: {
@@ -49,9 +59,61 @@ export const chatRoutes = new Elysia({
   },
 })
   .use(authPlugin)
+  .get(
+    "/limits",
+    async ({ user }) => {
+      const config = await getChatLimitConfig(user.id);
+      if (!env.CHAT_RATE_LIMITER) {
+        return {
+          limit: config.limit,
+          used: 0,
+          remaining: config.limit,
+          resetAt: null,
+          tier: config.tier,
+        };
+      }
+      const id = env.CHAT_RATE_LIMITER.idFromName("chat:" + user.id);
+      const stub = env.CHAT_RATE_LIMITER.get(id);
+      const url = `https://do/status?limit=${config.limit}&periodSeconds=${config.periodSeconds}`;
+      const res = await stub.fetch(url);
+      if (!res.ok) {
+        return {
+          limit: config.limit,
+          used: 0,
+          remaining: config.limit,
+          resetAt: null,
+          tier: config.tier,
+        };
+      }
+      const data = (await res.json()) as {
+        used: number;
+        remaining: number;
+        limit: number;
+        resetAt: number | null;
+      };
+      return {
+        limit: data.limit,
+        used: data.used,
+        remaining: data.remaining,
+        resetAt: data.resetAt,
+        tier: config.tier,
+      };
+    },
+    {
+      auth: true,
+      response: {
+        200: chatLimitsResponseSchema,
+        401: errorSchema,
+      },
+      detail: {
+        summary: "Get chat rate limit status",
+        description: "Returns remaining message count and tier for the AI Advisor chat.",
+      },
+    },
+  )
   .post(
     "/",
-    async ({ body, user }) => {
+    async ({ body, user, set }) => {
       try {
         const persistenceMode = !!(body.id && body.message);
         let inputMessages: UIMessage[];
@@ -79,6 +141,42 @@ export const chatRoutes = new Elysia({
           return status(400, {
             error: "No chat messages were provided.",
           });
+        }
+
+        if (env.CHAT_RATE_LIMITER) {
+          const config = await getChatLimitConfig(user.id);
+          const id = env.CHAT_RATE_LIMITER.idFromName("chat:" + user.id);
+          const stub = env.CHAT_RATE_LIMITER.get(id);
+          const res = await stub.fetch("https://do/consume", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              limit: config.limit,
+              periodSeconds: config.periodSeconds,
+            }),
+          });
+          if (!res.ok) {
+            return status(500, { error: "Rate limit check failed" });
+          }
+          const data = (await res.json()) as {
+            allowed: boolean;
+            remaining: number;
+            resetAt: number | null;
+          };
+          if (!data.allowed) {
+            if (data.resetAt != null) {
+              set.headers["Retry-After"] = String(
+                Math.max(1, data.resetAt - Math.floor(Date.now() / 1000)),
+              );
+            }
+            return status(429, {
+              error: "chat_rate_limit_exceeded",
+              message:
+                "You have used all your AI Advisor messages for this week. Upgrade to Pro for more.",
+              remaining: 0,
+              resetAt: data.resetAt,
+            });
+          }
         }
 
         const chatTools = buildChatTools(user.id);
@@ -210,6 +308,12 @@ export const chatRoutes = new Elysia({
         400: errorSchema,
         401: errorSchema,
         404: errorSchema,
+        429: t.Object({
+          error: t.String(),
+          message: t.Optional(t.String()),
+          remaining: t.Optional(t.Number()),
+          resetAt: t.Optional(t.Union([t.Number(), t.Null()])),
+        }),
         500: errorSchema,
       },
       detail: {

@@ -5,13 +5,11 @@ import { useQueryClient } from "@tanstack/react-query";
 import { DefaultChatTransport, type UIMessage } from "ai";
 import {
   ArrowUp,
-  Check,
   CopyIcon,
   LayoutDashboard,
   Loader2,
   Lock,
   RefreshCcw,
-  Sparkles,
   Square,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -25,10 +23,11 @@ import { Card } from "@/components/ui/card";
 import { api } from "@/lib/api";
 import { env } from "@/lib/env";
 import { useBillingConfig } from "@/lib/queries/useBilling";
+import { useChatLimits, useInvalidateChatLimits } from "@/lib/queries/useChatLimits";
 import { conversationsKey } from "@/lib/queries/useConversations";
 import { useUser, useUserToken } from "@/lib/queries/useUser";
 import { useStore } from "@/lib/store";
-import { cn, isPro } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 
 const CHAT_AI_ICONS = [
   { icon: CopyIcon, label: "Copy" },
@@ -90,12 +89,13 @@ interface AdvisorChatProps {
 
 export function AdvisorChat({ chatId, initialMessages }: AdvisorChatProps) {
   const router = useRouter();
-  const { data: user, isLoading } = useUser();
-  const { data: billing, isPending: billingConfigPending } = useBillingConfig();
+  const { isLoading } = useUser();
+  const { isPending: billingConfigPending } = useBillingConfig();
+  const { data: limits, refetch: refetchLimits } = useChatLimits();
+  const invalidateChatLimits = useInvalidateChatLimits();
   const { data: token } = useUserToken();
-  const billingEnabled = billing?.billingEnabled ?? true;
-  const isSubscribed = isPro(user, billingEnabled);
   const [inputText, setInputText] = useState("");
+  const atLimit = limits != null && limits.remaining <= 0;
 
   const tokenRef = useRef(token);
   tokenRef.current = token;
@@ -124,7 +124,13 @@ export function AdvisorChat({ chatId, initialMessages }: AdvisorChatProps) {
     messages: initialMessages,
     transport,
     onError(error) {
-      toast.error(error.message || "An error occurred. Please try again.");
+      const msg = error.message || "An error occurred. Please try again.";
+      if (msg.includes("rate_limit") || msg.includes("all your AI Advisor messages")) {
+        toast.error(msg);
+        void refetchLimits();
+      } else {
+        toast.error(msg);
+      }
     },
   });
 
@@ -164,12 +170,14 @@ export function AdvisorChat({ chatId, initialMessages }: AdvisorChatProps) {
   const sendUserMessage = async (text: string) => {
     const trimmedText = text.trim();
     if (!trimmedText || isGenerating) return;
+    if (atLimit) return;
     if (!token) {
       toast.error("Authentication is not ready yet. Please try again.");
       return;
     }
     setInputText("");
     await sendMessage({ text: trimmedText });
+    invalidateChatLimits();
   };
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -180,7 +188,7 @@ export function AdvisorChat({ chatId, initialMessages }: AdvisorChatProps) {
   const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      if (isGenerating || !inputText.trim()) return;
+      if (isGenerating || !inputText.trim() || atLimit) return;
       void sendUserMessage(inputText);
     }
   };
@@ -254,29 +262,58 @@ export function AdvisorChat({ chatId, initialMessages }: AdvisorChatProps) {
 
   const renderComposer = (className?: string) => (
     <form onSubmit={onSubmit} className={className}>
-      <div className="flex items-end gap-2 rounded-xl border border-border/70 bg-muted/40 p-2 transition-colors focus-within:border-border focus-within:bg-muted/60">
-        <textarea
-          value={inputText}
-          onKeyDown={onKeyDown}
-          onChange={(e) => setInputText(e.target.value)}
-          placeholder="Ask anything..."
-          className="max-h-64 min-h-20 w-full resize-none bg-transparent px-3 py-2 text-sm outline-none placeholder:text-muted-foreground"
-        />
-        <Button
-          type={isGenerating ? "button" : "submit"}
-          onClick={isGenerating ? () => stop() : undefined}
-          disabled={isGenerating ? false : !token || !inputText.trim()}
-          size="icon"
-          className="h-9 w-9 shrink-0 rounded-full"
-        >
-          {isGenerating ? (
-            <Square className="size-3 fill-current" />
+      {atLimit ? (
+        <Card className="space-y-3 border-2 p-4">
+          {limits?.tier === "pro" ? (
+            <>
+              <p className="text-sm text-muted-foreground">
+                You&apos;ve used all your Pro AI Advisor messages for this week.
+              </p>
+              <Button
+                className="w-full"
+                variant="outline"
+                onClick={() => router.push("/settings/subscription")}
+              >
+                Manage subscription
+              </Button>
+            </>
           ) : (
-            <ArrowUp className="size-4" />
+            <>
+              <p className="text-sm text-muted-foreground">
+                You&apos;ve used all your AI Advisor messages for this week. Upgrade to Pro for
+                more.
+              </p>
+              <Button className="w-full" onClick={() => router.push("/settings/subscription")}>
+                Upgrade to Pro
+              </Button>
+            </>
           )}
-          <span className="sr-only">{isGenerating ? "Stop generating" : "Send message"}</span>
-        </Button>
-      </div>
+        </Card>
+      ) : (
+        <div className="flex items-end gap-2 rounded-xl border border-border/70 bg-muted/40 p-2 transition-colors focus-within:border-border focus-within:bg-muted/60">
+          <textarea
+            value={inputText}
+            onKeyDown={onKeyDown}
+            onChange={(e) => setInputText(e.target.value)}
+            placeholder="Ask anything..."
+            className="max-h-64 min-h-20 w-full resize-none bg-transparent px-3 py-2 text-sm outline-none placeholder:text-muted-foreground"
+          />
+          <Button
+            type={isGenerating ? "button" : "submit"}
+            onClick={isGenerating ? () => stop() : undefined}
+            disabled={isGenerating ? false : !token || !inputText.trim() || atLimit}
+            size="icon"
+            className="h-9 w-9 shrink-0 rounded-full"
+          >
+            {isGenerating ? (
+              <Square className="size-3 fill-current" />
+            ) : (
+              <ArrowUp className="size-4" />
+            )}
+            <span className="sr-only">{isGenerating ? "Stop generating" : "Send message"}</span>
+          </Button>
+        </div>
+      )}
     </form>
   );
 
@@ -288,6 +325,7 @@ export function AdvisorChat({ chatId, initialMessages }: AdvisorChatProps) {
       }
       try {
         await regenerate();
+        invalidateChatLimits();
       } catch {
         toast.error("Couldn't regenerate the response. Please try again.");
       }
@@ -314,39 +352,6 @@ export function AdvisorChat({ chatId, initialMessages }: AdvisorChatProps) {
 
   return (
     <div className="relative flex h-full min-h-0 flex-col">
-      {!isSubscribed && (
-        <div className="absolute inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
-          <Card className="max-w-md space-y-4 border-2 p-6 shadow-lg">
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-primary" />
-                <h2 className="text-xl font-semibold">Unlock Your AI Advisor</h2>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Get personalized financial insights and advice with your Pro subscription.
-              </p>
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <Check className="h-4 w-4 text-primary" />
-                <span className="text-sm">Analyze your spending patterns</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Check className="h-4 w-4 text-primary" />
-                <span className="text-sm">Get investment recommendations</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Check className="h-4 w-4 text-primary" />
-                <span className="text-sm">Track your financial goals</span>
-              </div>
-            </div>
-            <Button className="w-full" onClick={() => router.push("/settings/subscription")}>
-              Upgrade to Pro
-            </Button>
-          </Card>
-        </div>
-      )}
-
       <div className="flex min-h-0 flex-1 flex-col">
         {hasMessages ? (
           <div ref={messagesRef} className="min-h-0 flex-1 overflow-y-auto">
@@ -438,6 +443,11 @@ export function AdvisorChat({ chatId, initialMessages }: AdvisorChatProps) {
         )}
       </div>
       <div className="shrink-0 space-y-1 bg-background px-3 py-3">
+        {limits != null && (
+          <p className="text-center text-xs text-muted-foreground">
+            {limits.remaining} of {limits.limit} messages left this week
+          </p>
+        )}
         {renderComposer()}
         <p className="text-center text-xs text-muted-foreground">
           AI responses are informational only and are not financial advice.

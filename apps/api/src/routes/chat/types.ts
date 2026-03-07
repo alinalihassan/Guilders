@@ -20,3 +20,12 @@ export const chatRequestSchema = t.Object({
   messages: t.Optional(t.Array(t.Any())),
   message: t.Optional(t.Any()),
 });
+
+/** Response shape for GET /api/chat/limits (AI Advisor rate limit status). */
+export type ChatLimits = {
+  limit: number;
+  used: number;
+  remaining: number;
+  resetAt: number | null;
+  tier: "free" | "pro";
+};
