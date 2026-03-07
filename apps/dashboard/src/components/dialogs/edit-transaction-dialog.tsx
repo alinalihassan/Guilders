@@ -37,7 +37,8 @@ import { useFiles } from "@/lib/queries/useFiles";
 import { useRemoveTransaction, useUpdateTransaction } from "@/lib/queries/useTransactions";
 
 import { CategorySelector } from "../common/category-selector";
-import { DateTimePicker } from "../common/datetime-picker";
+import { DatePicker } from "../common/date-picker";
+import { TimePicker } from "../common/time-picker";
 import { FileUploader } from "../common/file-uploader";
 import { AccountIcon } from "../dashboard/accounts/account-icon";
 
@@ -322,13 +323,26 @@ export function EditTransactionDialog() {
                   name="timestamp"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Date & time</FormLabel>
                       <FormControl>
-                        <DateTimePicker
-                          date={field.value}
-                          onDateChange={field.onChange}
-                          disabled={isSyncedTransaction}
-                        />
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <FormLabel>Date</FormLabel>
+                            <DatePicker
+                              date={field.value}
+                              onDateChange={field.onChange}
+                              disabled={isSyncedTransaction}
+                              preserveTime={true}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <FormLabel>Time</FormLabel>
+                            <TimePicker
+                              date={field.value}
+                              onDateChange={field.onChange}
+                              disabled={isSyncedTransaction}
+                            />
+                          </div>
+                        </div>
                       </FormControl>
                       <FormMessage />
                     </FormItem>

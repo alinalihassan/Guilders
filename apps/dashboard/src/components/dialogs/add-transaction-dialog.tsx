@@ -8,7 +8,8 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { CategorySelector } from "@/components/common/category-selector";
-import { DateTimePicker } from "@/components/common/datetime-picker";
+import { DatePicker } from "@/components/common/date-picker";
+import { TimePicker } from "@/components/common/time-picker";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -241,9 +242,24 @@ export function AddTransactionDialog() {
               name="timestamp"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Date & time</FormLabel>
                   <FormControl>
-                    <DateTimePicker date={field.value} onDateChange={field.onChange} />
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <FormLabel>Date</FormLabel>
+                        <DatePicker
+                          date={field.value}
+                          onDateChange={field.onChange}
+                          preserveTime={true}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <FormLabel>Time</FormLabel>
+                        <TimePicker
+                          date={field.value}
+                          onDateChange={field.onChange}
+                        />
+                      </div>
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>

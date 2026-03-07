@@ -9,30 +9,55 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 
-interface DatePickerProps {
-  value: string; // YYYY-MM-DD
-  onChange: (value: string) => void;
+export interface DatePickerProps {
+  date: Date | undefined;
+  onDateChange: (date: Date | undefined) => void;
   disabled?: boolean;
+  /** When true, preserves the time from the current date when selecting a new date. Default true. */
+  preserveTime?: boolean;
 }
 
-export function DatePicker({ value, onChange, disabled }: DatePickerProps) {
+export function DatePicker({
+  date,
+  onDateChange,
+  disabled = false,
+  preserveTime = true,
+}: DatePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const date = value ? new Date(value + "T12:00:00") : undefined;
-  const isValidDate = date && !Number.isNaN(date.getTime());
+
+  const handleSelect = (selectedDate: Date | undefined) => {
+    if (!selectedDate) {
+      onDateChange(undefined);
+      setIsOpen(false);
+      return;
+    }
+    if (preserveTime && date) {
+      const result = new Date(selectedDate);
+      result.setHours(
+        date.getHours(),
+        date.getMinutes(),
+        date.getSeconds(),
+        date.getMilliseconds(),
+      );
+      onDateChange(result);
+    } else {
+      onDateChange(selectedDate);
+    }
+    setIsOpen(false);
+  };
 
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
         <Button
-          type="button"
           variant="outline"
           disabled={disabled}
           className={cn(
             "w-full justify-between bg-card font-normal",
-            !isValidDate && "text-muted-foreground",
+            !date && "text-muted-foreground",
           )}
         >
-          {isValidDate ? format(date, "PPP") : "Select date"}
+          {date ? format(date, "PPP") : "Select date"}
           <ChevronDownIcon className="h-4 w-4 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -40,17 +65,10 @@ export function DatePicker({ value, onChange, disabled }: DatePickerProps) {
         <Calendar
           mode="single"
           captionLayout="dropdown"
-          selected={isValidDate ? date : undefined}
-          defaultMonth={isValidDate ? date : undefined}
-          onSelect={(selectedDate) => {
-            if (selectedDate) {
-              onChange(format(selectedDate, "yyyy-MM-dd"));
-              setIsOpen(false);
-            }
-          }}
-          fromYear={2000}
-          toYear={new Date().getFullYear() + 1}
-          initialFocus
+          selected={date}
+          defaultMonth={date}
+          onSelect={handleSelect}
+          autoFocus={true}
         />
       </PopoverContent>
     </Popover>
