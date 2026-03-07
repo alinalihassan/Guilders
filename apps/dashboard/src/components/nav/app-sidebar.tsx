@@ -3,38 +3,15 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import { useStore } from "@/lib/store";
-import { cn } from "@/lib/utils";
+import { Sidebar, SidebarContent, SidebarHeader } from "@/components/ui/sidebar";
 
 import { MainMenu } from "./mainmenu";
 
 export function AppSidebar() {
-  const isOpen = useStore((state) => state.isOpen);
-  const closeMenu = useStore((state) => state.closeMenu);
-
   return (
-    <>
-      {/* Backdrop - only on mobile when menu is open */}
-      {isOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-background/80 backdrop-blur-sm md:hidden"
-          onClick={closeMenu}
-        />
-      )}
-
-      {/* Sidebar */}
-      <aside
-        className={cn(
-          "h-screen w-16 flex-shrink-0 flex flex-col fixed top-0 left-0 z-50",
-          // Different background based on screen size
-          "bg-background border-r border-border",
-          // Only apply transform on mobile
-          "md:transform-none",
-          "transition-transform duration-200",
-          !isOpen && "-translate-x-full md:translate-x-0",
-        )}
-      >
-        <div className="mt-4 flex h-8 items-center justify-center">
+    <Sidebar variant="inset" collapsible="icon">
+      <SidebarHeader>
+        <div className="flex h-8 items-center justify-center">
           <Link href="/" className="flex items-center">
             <Image
               src="/assets/logo/logo.svg"
@@ -45,9 +22,10 @@ export function AppSidebar() {
             />
           </Link>
         </div>
-
+      </SidebarHeader>
+      <SidebarContent>
         <MainMenu />
-      </aside>
-    </>
+      </SidebarContent>
+    </Sidebar>
   );
 }

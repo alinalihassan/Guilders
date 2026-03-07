@@ -4,8 +4,8 @@ import { Check, Copy, Loader2, Pencil, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
+import { AnimatedCheckbox } from "@/components/ui/animated-checkbox";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -201,12 +201,12 @@ export function WebhooksSection() {
                     </DialogHeader>
                     <div className="grid gap-4 py-4">
                       <div className="flex items-center gap-2">
-                        <Checkbox
+                        <AnimatedCheckbox
                           id="edit-enabled"
+                          title="Enabled"
                           checked={editEnabled}
-                          onCheckedChange={(v) => setEditEnabled(v === true)}
+                          onCheckedChange={(v) => setEditEnabled(v)}
                         />
-                        <Label htmlFor="edit-enabled">Enabled</Label>
                       </div>
                     </div>
                     <DialogFooter>

@@ -66,7 +66,7 @@ export default function RecoveryPage() {
 
   return (
     <div className="w-full max-w-sm">
-      <div className="rounded-md bg-background px-6 py-6 shadow">
+      <div className="rounded-lg border bg-card px-6 py-6 text-card-foreground shadow-sm">
         <div className="mb-4 flex flex-col items-center">
           <Image
             src="/assets/logo/logo_filled_rounded.svg"

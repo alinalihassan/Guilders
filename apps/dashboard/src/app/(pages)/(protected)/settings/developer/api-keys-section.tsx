@@ -112,7 +112,7 @@ export function ApiKeysSection() {
                 variant="ghost"
                 size="icon"
                 onClick={() => handleDelete(key.id)}
-                disabled={deletingId !== key.id}
+                disabled={deletingId === key.id}
               >
                 {deletingId === key.id ? (
                   <Loader2 className="h-4 w-4 animate-spin" />

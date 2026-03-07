@@ -6,9 +6,9 @@ import { useSearchParams } from "next/navigation";
 import { Suspense, useMemo, useState } from "react";
 import { toast } from "sonner";
 
+import { AnimatedCheckbox } from "@/components/ui/animated-checkbox";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
 import { env } from "@/lib/env";
 
 const DISPLAY_ONLY_QUERY_KEYS = new Set(["client_name", "client_uri"]);
@@ -144,9 +144,9 @@ function OAuthConsentForm() {
           {opts.alwaysOn ? (
             <span className="shrink-0 text-xs text-muted-foreground">Required</span>
           ) : (
-            <Checkbox
+            <AnimatedCheckbox
               checked={opts.checked}
-              onCheckedChange={(v) => opts.onToggle?.(v === true)}
+              onCheckedChange={(v) => opts.onToggle?.(v)}
               aria-label={`Toggle ${group.label}`}
             />
           )}
@@ -165,7 +165,7 @@ function OAuthConsentForm() {
 
   return (
     <div className="w-full max-w-xl">
-      <Card className="border bg-background shadow-md">
+      <Card className="border bg-card shadow-md">
         <CardHeader className="space-y-3">
           <div className="flex flex-col items-center">
             <Image
@@ -247,7 +247,7 @@ function OAuthConsentForm() {
 function OAuthConsentSkeleton() {
   return (
     <div className="w-full max-w-xl">
-      <Card className="animate-pulse border bg-background shadow-md">
+      <Card className="animate-pulse border bg-card shadow-md">
         <CardHeader>
           <Image
             src="/assets/logo/logo_filled_rounded.svg"

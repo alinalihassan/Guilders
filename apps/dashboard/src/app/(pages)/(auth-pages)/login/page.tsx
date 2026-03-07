@@ -150,7 +150,7 @@ function LoginForm() {
 
   return (
     <div className="w-full max-w-sm">
-      <div className="rounded-md bg-background px-6 py-6 shadow">
+      <div className="rounded-lg border bg-card px-6 py-6 text-card-foreground shadow-sm">
         <div className="mb-4 flex flex-col items-center">
           <Image
             src="/assets/logo/logo_filled_rounded.svg"
@@ -310,7 +310,7 @@ function LoginForm() {
 function LoginSkeleton() {
   return (
     <div className="w-full max-w-sm">
-      <div className="animate-pulse rounded-md bg-background px-6 py-6 shadow">
+      <div className="animate-pulse rounded-lg border bg-card px-6 py-6 shadow-sm">
         <div className="mb-4 flex flex-col items-center">
           <div className="h-16 w-16 rounded-full bg-muted" />
         </div>

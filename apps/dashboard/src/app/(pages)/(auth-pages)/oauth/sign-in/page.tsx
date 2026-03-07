@@ -78,7 +78,7 @@ function OAuthSignInForm() {
 
   return (
     <div className="w-full max-w-sm">
-      <Card className="border bg-background shadow-md">
+      <Card className="border bg-card shadow-md">
         <CardHeader className="space-y-3 pb-3">
           <div className="flex flex-col items-center">
             <Image
@@ -204,7 +204,7 @@ function OAuthSignInPage() {
 function OAuthSignInSkeleton() {
   return (
     <div className="w-full max-w-sm">
-      <Card className="animate-pulse border bg-background shadow-md">
+      <Card className="animate-pulse border bg-card shadow-md">
         <CardHeader className="pb-3">
           <Image
             src="/assets/logo/logo_filled_rounded.svg"

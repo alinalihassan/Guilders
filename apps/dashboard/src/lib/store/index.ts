@@ -1,5 +1,6 @@
 // oxlint-disable typescript/no-explicit-any
 import { create, type StateCreator } from "zustand";
+import { persist } from "zustand/middleware";
 
 import { createAdvisorStore } from "./advisorStore";
 import { createDialogStore } from "./dialogStore";
@@ -17,8 +18,18 @@ type State = StateFromFunctions<
   [typeof createDialogStore, typeof createMenuStore, typeof createAdvisorStore]
 >;
 
-export const useStore = create<State>((...a) => ({
-  ...createDialogStore(...a),
-  ...createMenuStore(...a),
-  ...createAdvisorStore(...a),
-}));
+const STORAGE_KEY = "guilders-dashboard-ui";
+
+export const useStore = create<State>()(
+  persist(
+    (...a) => ({
+      ...createDialogStore(...a),
+      ...createMenuStore(...a),
+      ...createAdvisorStore(...a),
+    }),
+    {
+      name: STORAGE_KEY,
+      partialize: (state) => ({ advisorOpen: state.advisorOpen }),
+    },
+  ),
+);
