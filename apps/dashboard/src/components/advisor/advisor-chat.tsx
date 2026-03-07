@@ -27,7 +27,7 @@ import { useChatLimits, useInvalidateChatLimits } from "@/lib/queries/useChatLim
 import { conversationsKey } from "@/lib/queries/useConversations";
 import { useUser, useUserToken } from "@/lib/queries/useUser";
 import { useStore } from "@/lib/store";
-import { cn, isPro } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 
 const CHAT_AI_ICONS = [
   { icon: CopyIcon, label: "Copy" },
@@ -89,15 +89,13 @@ interface AdvisorChatProps {
 
 export function AdvisorChat({ chatId, initialMessages }: AdvisorChatProps) {
   const router = useRouter();
-  const { data: user, isLoading } = useUser();
-  const { data: billing, isPending: billingConfigPending } = useBillingConfig();
+  const { isLoading } = useUser();
+  const { isPending: billingConfigPending } = useBillingConfig();
   const { data: limits, refetch: refetchLimits } = useChatLimits();
   const invalidateChatLimits = useInvalidateChatLimits();
   const { data: token } = useUserToken();
-  const billingEnabled = billing?.billingEnabled ?? true;
-  const isSubscribed = isPro(user, billingEnabled);
   const [inputText, setInputText] = useState("");
-  const freeTierAtLimit = !isSubscribed && limits != null && limits.remaining <= 0;
+  const atLimit = limits != null && limits.remaining <= 0;
 
   const tokenRef = useRef(token);
   tokenRef.current = token;
@@ -172,7 +170,7 @@ export function AdvisorChat({ chatId, initialMessages }: AdvisorChatProps) {
   const sendUserMessage = async (text: string) => {
     const trimmedText = text.trim();
     if (!trimmedText || isGenerating) return;
-    if (freeTierAtLimit) return;
+    if (atLimit) return;
     if (!token) {
       toast.error("Authentication is not ready yet. Please try again.");
       return;
@@ -190,7 +188,7 @@ export function AdvisorChat({ chatId, initialMessages }: AdvisorChatProps) {
   const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      if (isGenerating || !inputText.trim() || freeTierAtLimit) return;
+      if (isGenerating || !inputText.trim() || atLimit) return;
       void sendUserMessage(inputText);
     }
   };
@@ -264,14 +262,32 @@ export function AdvisorChat({ chatId, initialMessages }: AdvisorChatProps) {
 
   const renderComposer = (className?: string) => (
     <form onSubmit={onSubmit} className={className}>
-      {freeTierAtLimit ? (
+      {atLimit ? (
         <Card className="space-y-3 border-2 p-4">
-          <p className="text-sm text-muted-foreground">
-            You&apos;ve used all your AI Advisor messages for this week. Upgrade to Pro for more.
-          </p>
-          <Button className="w-full" onClick={() => router.push("/settings/subscription")}>
-            Upgrade to Pro
-          </Button>
+          {limits?.tier === "pro" ? (
+            <>
+              <p className="text-sm text-muted-foreground">
+                You&apos;ve used all your Pro AI Advisor messages for this week.
+              </p>
+              <Button
+                className="w-full"
+                variant="outline"
+                onClick={() => router.push("/settings/subscription")}
+              >
+                Manage subscription
+              </Button>
+            </>
+          ) : (
+            <>
+              <p className="text-sm text-muted-foreground">
+                You&apos;ve used all your AI Advisor messages for this week. Upgrade to Pro for
+                more.
+              </p>
+              <Button className="w-full" onClick={() => router.push("/settings/subscription")}>
+                Upgrade to Pro
+              </Button>
+            </>
+          )}
         </Card>
       ) : (
         <div className="flex items-end gap-2 rounded-xl border border-border/70 bg-muted/40 p-2 transition-colors focus-within:border-border focus-within:bg-muted/60">
@@ -285,7 +301,7 @@ export function AdvisorChat({ chatId, initialMessages }: AdvisorChatProps) {
           <Button
             type={isGenerating ? "button" : "submit"}
             onClick={isGenerating ? () => stop() : undefined}
-            disabled={isGenerating ? false : !token || !inputText.trim() || freeTierAtLimit}
+            disabled={isGenerating ? false : !token || !inputText.trim() || atLimit}
             size="icon"
             className="h-9 w-9 shrink-0 rounded-full"
           >
@@ -429,7 +445,6 @@ export function AdvisorChat({ chatId, initialMessages }: AdvisorChatProps) {
         {limits != null && (
           <p className="text-center text-xs text-muted-foreground">
             {limits.remaining} of {limits.limit} messages left this week
-            {limits.tier === "pro" && " (Pro)"}
           </p>
         )}
         {renderComposer()}
