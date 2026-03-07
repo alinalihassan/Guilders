@@ -54,7 +54,7 @@
 
   .dark {
     /* Page/inset: dark grey. Content surfaces use --card for contrast. */
-    --background: 0 0% 14.9%;
+    --background: 0 0% 11.9%;
     --foreground: 0 0% 98%;
 
     --card: 0 0% 3.9%;
@@ -89,7 +89,7 @@
     --chart-5: 340 75% 55%;
 
     /* Left nav and outer area: dark grey to match page/inset. */
-    --sidebar-background: 0 0% 14.9%;
+    --sidebar-background: 0 0% 11.9%;
     --sidebar-foreground: 0 0% 98%;
     --sidebar-primary: 224.3 76.3% 48%;
     --sidebar-primary-foreground: 0 0% 100%;
