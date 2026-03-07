@@ -167,7 +167,7 @@ export function createAuth(db?: Database) {
         },
       }),
       openAPI({ disableDefaultReference: true }),
-      expo({ disableOriginOverride: true }),
+      expo(),
       ...(stripeAuth ? [stripeAuth] : []),
       ...(process.env.VITEST === "true" ? [testUtils()] : []),
     ],
