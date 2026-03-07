@@ -61,5 +61,5 @@ export type InsertTransaction = typeof transaction.$inferInsert;
 
 export const selectTransactionSchema = createSelectSchema(transaction);
 export const insertTransactionSchema = createInsertSchema(transaction, {
-  timestamp: Type.String(),
+  timestamp: Type.String({ format: "date-time" }),
 });
