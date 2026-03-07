@@ -1,11 +1,13 @@
 import { createRootRoute, HeadContent, Outlet, Scripts } from "@tanstack/react-router";
 
+import { NotFoundPage } from "@/components/not-found-page";
 import { Providers } from "@/components/common/providers";
 import { Toaster } from "@/components/ui/sonner";
 
 import appCss from "@/styles/globals.css?url";
 
 export const Route = createRootRoute({
+  notFoundComponent: NotFoundPage,
   head: () => ({
     meta: [
       { charSet: "utf-8" },
