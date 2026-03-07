@@ -89,9 +89,7 @@ export function DateTimePicker({
                 !date && "text-muted-foreground",
               )}
             >
-              {date
-                ? `${format(date, "PPP")}, ${formatTime(date, timeFormat, { showSeconds })}`
-                : "Select date"}
+              {date ? `${format(date, "PPP")}` : "Select date"}
               <ChevronDownIcon className="h-4 w-4 opacity-50" />
             </Button>
           </PopoverTrigger>
