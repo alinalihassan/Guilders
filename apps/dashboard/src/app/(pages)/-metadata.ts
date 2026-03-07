@@ -28,7 +28,7 @@ export const defaultMetadata = {
     telephone: false,
   },
   icons: {
-    icon: "/src/app/favicon.ico",
+    icon: "/favicon.ico",
   },
   openGraph: {
     title: "Guilders - AI-Powered Personal Finance Management",
