@@ -172,7 +172,7 @@ export function createAuth(db?: Database) {
       ...(process.env.VITEST === "true" ? [testUtils()] : []),
     ],
     trustedOrigins: [
-      process.env.DASHBOARD_URL,
+      new URL(process.env.DASHBOARD_URL).origin,
       // "guilders-mobile://",
       // ...(process.env.NODE_ENV === "development"
       //   ? [
