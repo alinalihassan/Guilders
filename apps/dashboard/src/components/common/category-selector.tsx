@@ -72,7 +72,7 @@ export function CategorySelector({
           role="combobox"
           aria-expanded={open}
           disabled={disabled}
-          className={cn("w-full justify-between", className)}
+          className={cn("w-full justify-between bg-card", className)}
         >
           <span className="truncate">{selectedCategory?.name || placeholder}</span>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />

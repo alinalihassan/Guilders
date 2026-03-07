@@ -63,7 +63,7 @@ export function DateTimePicker({ date, onDateChange, onTimeChange }: DateTimePic
             <Button
               variant="outline"
               className={cn(
-                "w-full font-normal justify-start text-left",
+                "w-full font-normal justify-start text-left bg-card",
                 !date && "text-muted-foreground",
               )}
             >

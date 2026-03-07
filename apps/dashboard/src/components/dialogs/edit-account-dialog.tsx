@@ -571,7 +571,7 @@ export function EditAccountDialog() {
                   </AccordionItem>
                 </Accordion>
 
-                <div className="absolute bottom-0 left-0 right-0 flex justify-end border-t bg-background p-4">
+                <div className="absolute bottom-0 left-0 right-0 flex justify-end border-t bg-card p-4">
                   <Button type="submit" disabled={isUpdating}>
                     {isUpdating ? (
                       <>
