@@ -7,11 +7,15 @@ export const getSession = createServerFn().handler(async () => {
   const apiUrl = clientEnv.VITE_API_URL;
   const request = getRequest();
   const cookie = request?.headers?.get?.("cookie") ?? "";
-  const res = await fetch(`${apiUrl}/api/auth/get-session`, {
-    headers: { cookie },
-    credentials: "include",
-  });
-  if (!res.ok) return null;
-  const data = (await res.json()) as { user?: { id: string } | null } | null;
-  return data?.user ?? null;
+  try {
+    const res = await fetch(`${apiUrl}/api/auth/get-session`, {
+      headers: { cookie },
+      credentials: "include",
+    });
+    if (!res.ok) return null;
+    const data = (await res.json()) as { user?: { id: string } | null } | null;
+    return data?.user ?? null;
+  } catch {
+    return null;
+  }
 });
