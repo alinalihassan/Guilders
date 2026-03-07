@@ -29,7 +29,7 @@ export const Route = createFileRoute("/(pages)/(protected)/accounts/$id")({
 function AccountPage() {
   const { id } = Route.useParams();
   const isValidId = ID_REGEX.test(id);
-  const accountId = isValidId ? Number.parseInt(id, 10) : -1;
+  const accountId = isValidId ? Number.parseInt(id, 10) : NaN;
   const router = useRouter();
   const { data: account, isLoading } = useAccount(accountId);
   const [imageError, setImageError] = useState(false);
