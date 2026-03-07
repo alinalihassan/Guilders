@@ -165,7 +165,7 @@ function OAuthConsentForm() {
 
   return (
     <div className="w-full max-w-xl">
-      <Card className="border bg-background shadow-md">
+      <Card className="border bg-card shadow-md">
         <CardHeader className="space-y-3">
           <div className="flex flex-col items-center">
             <Image
@@ -247,7 +247,7 @@ function OAuthConsentForm() {
 function OAuthConsentSkeleton() {
   return (
     <div className="w-full max-w-xl">
-      <Card className="animate-pulse border bg-background shadow-md">
+      <Card className="animate-pulse border bg-card shadow-md">
         <CardHeader>
           <Image
             src="/assets/logo/logo_filled_rounded.svg"
