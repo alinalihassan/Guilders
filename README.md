@@ -30,7 +30,7 @@
 > [!WARNING]
 > This project is very early in the development phase. Updates may not be backward compatible with previous versions, and you may not be able to migrate your data.
 >
-> **Focus and polish:** The most polished parts are the **API** and **Dashboard**, followed by **Websute** and **Docs**. The **mobile app** is not currently in focus and may be rebuilt from scratch.
+> **Focus and polish:** The most polished parts are the **API** and **Dashboard**, followed by **Website** and **Docs**. The **mobile app** is not currently in focus and may be rebuilt from scratch.
 
 ## About
 
