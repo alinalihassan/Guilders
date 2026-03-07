@@ -28,6 +28,15 @@ export type ChatLimitConfig = {
  */
 export async function getChatLimitConfig(userId: string): Promise<ChatLimitConfig> {
   const billingEnabled = isStripeConfigured();
+  if (!billingEnabled) {
+    return {
+      isPro: true,
+      limit: CHAT_RATE_LIMIT_PRO,
+      periodSeconds: CHAT_RATE_LIMIT_PERIOD_DAYS * 24 * 60 * 60,
+      tier: "pro",
+    };
+  }
+
   const db = createDb();
   const rows = await db
     .select()
@@ -41,7 +50,7 @@ export async function getChatLimitConfig(userId: string): Promise<ChatLimitConfi
     .limit(1);
   const sub = rows[0];
 
-  const isPro = !!sub || !billingEnabled;
+  const isPro = !!sub;
   return {
     isPro,
     limit: isPro ? CHAT_RATE_LIMIT_PRO : CHAT_RATE_LIMIT_FREE,
