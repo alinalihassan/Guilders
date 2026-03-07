@@ -103,7 +103,6 @@ export function DocumentPreviewDialog({
 
         <div className="relative min-h-[60vh] flex-1 overflow-auto bg-muted/30 p-4">
           {isImage && (
-            // oxlint-disable-next-line nextjs/no-img-element
             <img
               src={fileUrl}
               alt={name}

@@ -119,9 +119,7 @@ export function ProviderDialog() {
             close();
           }
         }
-      } else if (
-        e.origin === new URL(clientEnv.VITE_NGROK_URL ?? clientEnv.VITE_API_URL).origin
-      ) {
+      } else if (e.origin === new URL(clientEnv.VITE_NGROK_URL ?? clientEnv.VITE_API_URL).origin) {
         const { stage } = e.data;
         if (!stage) return;
 
