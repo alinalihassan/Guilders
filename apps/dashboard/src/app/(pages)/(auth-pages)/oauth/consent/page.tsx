@@ -8,7 +8,7 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
+import { AnimatedCheckbox } from "@/components/ui/animated-checkbox";
 import { env } from "@/lib/env";
 
 const DISPLAY_ONLY_QUERY_KEYS = new Set(["client_name", "client_uri"]);
@@ -144,9 +144,9 @@ function OAuthConsentForm() {
           {opts.alwaysOn ? (
             <span className="shrink-0 text-xs text-muted-foreground">Required</span>
           ) : (
-            <Checkbox
+            <AnimatedCheckbox
               checked={opts.checked}
-              onCheckedChange={(v) => opts.onToggle?.(v === true)}
+              onCheckedChange={(v) => opts.onToggle?.(v)}
               aria-label={`Toggle ${group.label}`}
             />
           )}

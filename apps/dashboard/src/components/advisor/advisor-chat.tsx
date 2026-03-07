@@ -5,7 +5,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { DefaultChatTransport, type UIMessage } from "ai";
 import {
   ArrowUp,
-  CopyIcon,
   LayoutDashboard,
   Loader2,
   Lock,
@@ -20,6 +19,7 @@ import { Markdown } from "@/components/common/markdown-component";
 import { StockCard } from "@/components/generative-ui/stock-card";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { CopyButton } from "@/components/ui/copy-button";
 import { api } from "@/lib/api";
 import { env } from "@/lib/env";
 import { useBillingConfig } from "@/lib/queries/useBilling";
@@ -29,10 +29,7 @@ import { useUser, useUserToken } from "@/lib/queries/useUser";
 import { useStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
-const CHAT_AI_ICONS = [
-  { icon: CopyIcon, label: "Copy" },
-  { icon: RefreshCcw, label: "Refresh" },
-];
+const CHAT_AI_ICONS = [{ icon: RefreshCcw, label: "Refresh" }];
 
 const EMPTY_STATE_POINTS = [
   {
@@ -317,7 +314,7 @@ export function AdvisorChat({ chatId, initialMessages }: AdvisorChatProps) {
     </form>
   );
 
-  const handleActionClick = async (action: string, messageIndex: number) => {
+  const handleActionClick = async (action: string, _messageIndex: number) => {
     if (action === "Refresh") {
       if (!token) {
         toast.error("Authentication is not ready yet. Please try again.");
@@ -328,16 +325,6 @@ export function AdvisorChat({ chatId, initialMessages }: AdvisorChatProps) {
         invalidateChatLimits();
       } catch {
         toast.error("Couldn't regenerate the response. Please try again.");
-      }
-    } else if (action === "Copy") {
-      const message = messages[messageIndex];
-      if (message && message.role === "assistant") {
-        const content = getMessageText(message);
-        try {
-          await navigator.clipboard.writeText(content);
-        } catch {
-          toast.error("Couldn't copy the response. Please try again.");
-        }
       }
     }
   };
@@ -384,6 +371,11 @@ export function AdvisorChat({ chatId, initialMessages }: AdvisorChatProps) {
                       ) : null}
                       {!isUser && messages.length - 1 === index && !isGenerating ? (
                         <div className="mt-1.5 flex items-center gap-1">
+                          <CopyButton
+                            value={getMessageText(message)}
+                            size="sm"
+                            className="h-7 w-7 text-muted-foreground"
+                          />
                           {CHAT_AI_ICONS.map((icon) => {
                             const Icon = icon.icon;
                             return (
