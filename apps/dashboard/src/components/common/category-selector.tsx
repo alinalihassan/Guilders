@@ -83,7 +83,10 @@ export function CategorySelector({
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-(--radix-popover-trigger-width) p-0" align="start">
+      <PopoverContent
+        className="w-(--radix-popover-trigger-width) max-h-[min(400px,80vh)] p-0"
+        align="start"
+      >
         <Command shouldFilter>
           <CommandInput
             value={search}
@@ -91,7 +94,7 @@ export function CategorySelector({
             placeholder="Search categories..."
             disabled={disabled || isCreating}
           />
-          <CommandList>
+          <CommandList className="max-h-[300px] overflow-y-auto overflow-x-hidden">
             <CommandEmpty className="p-2">
               {canCreate ? (
                 <Button
