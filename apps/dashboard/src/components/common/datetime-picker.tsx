@@ -10,8 +10,14 @@ import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 
-function toTimeString(date: Date): string {
-  return `${date.getHours().toString().padStart(2, "0")}:${date.getMinutes().toString().padStart(2, "0")}:${date.getSeconds().toString().padStart(2, "0")}`;
+function toTimeString(date: Date, includeSeconds: boolean): string {
+  const h = date.getHours().toString().padStart(2, "0");
+  const m = date.getMinutes().toString().padStart(2, "0");
+  if (includeSeconds) {
+    const s = date.getSeconds().toString().padStart(2, "0");
+    return `${h}:${m}:${s}`;
+  }
+  return `${h}:${m}`;
 }
 
 interface DateTimePickerProps {
@@ -19,6 +25,8 @@ interface DateTimePickerProps {
   onDateChange: (date: Date | undefined) => void;
   /** Optional; when omitted, time changes still update the date via onDateChange. */
   onTimeChange?: (time: string) => void;
+  /** When true, time input shows seconds. Default false. */
+  showSeconds?: boolean;
   disabled?: boolean;
 }
 
@@ -26,30 +34,31 @@ export function DateTimePicker({
   date,
   onDateChange,
   onTimeChange,
+  showSeconds = false,
   disabled = false,
 }: DateTimePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [time, setTime] = useState(() => toTimeString(new Date()));
+  const [time, setTime] = useState(() => toTimeString(new Date(), showSeconds));
 
   // Sync time display when date changes from parent
   useEffect(() => {
     if (date) {
-      setTime(toTimeString(date));
+      setTime(toTimeString(date, showSeconds));
     }
-  }, [date]);
+  }, [date, showSeconds]);
 
   // Set initial date and time when no date provided
   useEffect(() => {
     if (!date) {
       const initialDate = new Date();
-      const ts = toTimeString(initialDate);
+      const ts = toTimeString(initialDate, showSeconds);
       setTime(ts);
       onDateChange(initialDate);
       onTimeChange?.(ts);
     }
-  }, [date, onDateChange, onTimeChange]);
+  }, [date, showSeconds, onDateChange, onTimeChange]);
 
-  // Notify when time changes
+  // Notify when time changes; parse HH:mm or HH:mm:ss depending on showSeconds
   const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     if (!value) return;
@@ -58,7 +67,7 @@ export function DateTimePicker({
     if (date) {
       const parts = value.split(":").map((x) => Number.parseInt(x || "0", 10));
       const newDate = new Date(date);
-      newDate.setHours(parts[0] ?? 0, parts[1] ?? 0, parts[2] ?? 0);
+      newDate.setHours(parts[0] ?? 0, parts[1] ?? 0, showSeconds ? (parts[2] ?? 0) : 0);
       onDateChange(newDate);
     }
   };
@@ -89,7 +98,7 @@ export function DateTimePicker({
               onSelect={(selectedDate) => {
                 if (selectedDate) {
                   const parts = time.split(":").map((x) => Number.parseInt(x || "0", 10));
-                  selectedDate.setHours(parts[0] ?? 0, parts[1] ?? 0, parts[2] ?? 0);
+                  selectedDate.setHours(parts[0] ?? 0, parts[1] ?? 0, showSeconds ? (parts[2] ?? 0) : 0);
                   onDateChange(selectedDate);
                 }
                 setIsOpen(false);
@@ -102,7 +111,7 @@ export function DateTimePicker({
       <div className="w-32 shrink-0">
         <Input
           type="time"
-          step="1"
+          step={showSeconds ? "1" : "60"}
           value={time}
           onChange={handleTimeChange}
           disabled={disabled}

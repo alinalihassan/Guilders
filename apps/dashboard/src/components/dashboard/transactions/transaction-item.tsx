@@ -66,7 +66,10 @@ export function TransactionItem({ transaction }: TransactionItemProps) {
           {new Date(transaction.timestamp).toLocaleDateString()}
         </p>
         <p className="text-xs text-gray-500">
-          {new Date(transaction.timestamp).toLocaleTimeString()}
+          {new Date(transaction.timestamp).toLocaleTimeString(undefined, {
+          hour: "2-digit",
+          minute: "2-digit",
+        })}
         </p>
       </div>
     </div>
