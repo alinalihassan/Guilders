@@ -28,6 +28,12 @@ export function AnimatedLockIcon({ className }: { className?: string }) {
               stroke-dashoffset: 0;
             }
           }
+          @media (prefers-reduced-motion: reduce) {
+            .lock-shackle {
+              animation: none !important;
+              stroke-dashoffset: 0 !important;
+            }
+          }
         `}</style>
       </defs>
       <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
@@ -60,6 +66,12 @@ export function AnimatedUnlockIcon({ className }: { className?: string }) {
             }
             100% {
               stroke-dashoffset: 11.3;
+            }
+          }
+          @media (prefers-reduced-motion: reduce) {
+            .unlock-shackle {
+              animation: none !important;
+              stroke-dashoffset: 11.3 !important;
             }
           }
         `}</style>
