@@ -24,6 +24,10 @@ export default defineConfig({
           "\\.(metadata|actions)\\.ts$|/route\\.ts$|-form\\.tsx$|-section\\.tsx$",
       },
     }),
-    viteReact(),
+    viteReact({
+      babel: {
+        plugins: ["babel-plugin-react-compiler"],
+      },
+    }),
   ],
 });
