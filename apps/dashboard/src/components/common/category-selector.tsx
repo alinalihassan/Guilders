@@ -12,6 +12,7 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
+import { inputTriggerStyles } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useAddCategory, useCategories } from "@/lib/queries/useCategories";
 import { cn } from "@/lib/utils";
@@ -72,7 +73,11 @@ export function CategorySelector({
           role="combobox"
           aria-expanded={open}
           disabled={disabled}
-          className={cn("w-full justify-between bg-card", className)}
+          className={cn(
+            inputTriggerStyles,
+            "font-normal hover:bg-card hover:text-foreground",
+            className,
+          )}
         >
           <span className="truncate">{selectedCategory?.name || placeholder}</span>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />

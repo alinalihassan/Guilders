@@ -6,6 +6,7 @@ import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
+import { inputTriggerStyles } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 
@@ -50,10 +51,12 @@ export function DatePicker({
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
         <Button
+          type="button"
           variant="outline"
           disabled={disabled}
           className={cn(
-            "w-full justify-between bg-card font-normal",
+            inputTriggerStyles,
+            "font-normal hover:bg-card hover:text-foreground",
             !date && "text-muted-foreground",
           )}
         >
