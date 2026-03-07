@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 
 import { Input } from "@/components/ui/input";
 
@@ -46,7 +46,7 @@ export function TimePicker({
     }
   }, [date, showSeconds, onDateChange]);
 
-  const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleTimeChange = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     if (!value) return;
     setTime(value);
