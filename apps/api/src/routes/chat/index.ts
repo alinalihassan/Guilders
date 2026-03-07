@@ -115,6 +115,34 @@ export const chatRoutes = new Elysia({
     "/",
     async ({ body, user, set }) => {
       try {
+        const persistenceMode = !!(body.id && body.message);
+        let inputMessages: UIMessage[];
+
+        if (persistenceMode) {
+          const db = createDb();
+          const chat = await db.query.conversation.findFirst({
+            where: { id: body.id!, user_id: user.id },
+          });
+          if (!chat) {
+            return status(404, { error: "Conversation not found" });
+          }
+          const previousMessages = (chat.messages ?? []) as UIMessage[];
+          inputMessages = [...previousMessages, body.message as UIMessage];
+        } else {
+          inputMessages =
+            Array.isArray(body.messages) && body.messages.length > 0
+              ? body.messages
+              : body.message
+                ? [body.message]
+                : [];
+        }
+
+        if (inputMessages.length === 0) {
+          return status(400, {
+            error: "No chat messages were provided.",
+          });
+        }
+
         if (env.CHAT_RATE_LIMITER) {
           const config = await getChatLimitConfig(user.id);
           const id = env.CHAT_RATE_LIMITER.idFromName("chat:" + user.id);
@@ -149,34 +177,6 @@ export const chatRoutes = new Elysia({
               resetAt: data.resetAt,
             });
           }
-        }
-
-        const persistenceMode = !!(body.id && body.message);
-        let inputMessages: UIMessage[];
-
-        if (persistenceMode) {
-          const db = createDb();
-          const chat = await db.query.conversation.findFirst({
-            where: { id: body.id!, user_id: user.id },
-          });
-          if (!chat) {
-            return status(404, { error: "Conversation not found" });
-          }
-          const previousMessages = (chat.messages ?? []) as UIMessage[];
-          inputMessages = [...previousMessages, body.message as UIMessage];
-        } else {
-          inputMessages =
-            Array.isArray(body.messages) && body.messages.length > 0
-              ? body.messages
-              : body.message
-                ? [body.message]
-                : [];
-        }
-
-        if (inputMessages.length === 0) {
-          return status(400, {
-            error: "No chat messages were provided.",
-          });
         }
 
         const chatTools = buildChatTools(user.id);
