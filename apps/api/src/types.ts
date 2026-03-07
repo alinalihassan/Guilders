@@ -21,6 +21,7 @@ export type AccountSubtype = import("./routes/account/types").Account["subtype"]
 export type User = {
   email: string;
   currency: string;
+  timeFormat?: "12" | "24";
   subscription: {
     status: string | null;
     current_period_end: string | null;
@@ -31,6 +32,7 @@ export type User = {
 
 export type UpdateUser = {
   currency?: string;
+  timeFormat?: "12" | "24";
   subscription?: Partial<User["subscription"]>;
   email?: string;
   password?: string;

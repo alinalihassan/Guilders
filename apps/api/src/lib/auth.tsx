@@ -71,6 +71,11 @@ export function createAuth(db?: Database) {
           required: false,
           defaultValue: "EUR",
         },
+        timeFormat: {
+          type: "string",
+          required: false,
+          defaultValue: "24",
+        },
       },
       changeEmail: {
         enabled: true,

@@ -14,6 +14,7 @@ export const user = pgTable("user", {
   twoFactorEnabled: boolean("two_factor_enabled").default(false),
   stripeCustomerId: text("stripe_customer_id"),
   currency: text("currency").default("EUR"),
+  timeFormat: text("time_format").default("24"),
 });
 
 export const session = pgTable(

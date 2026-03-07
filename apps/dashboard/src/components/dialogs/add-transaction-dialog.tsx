@@ -243,10 +243,7 @@ export function AddTransactionDialog() {
                 <FormItem>
                   <FormLabel>Date & time</FormLabel>
                   <FormControl>
-                    <DateTimePicker
-                      date={field.value}
-                      onDateChange={field.onChange}
-                    />
+                    <DateTimePicker date={field.value} onDateChange={field.onChange} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

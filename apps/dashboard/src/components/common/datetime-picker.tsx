@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { formatTime } from "@/lib/format-time";
+import { useUser } from "@/lib/queries/useUser";
 import { cn } from "@/lib/utils";
 
 function toTimeString(date: Date, includeSeconds: boolean): string {
@@ -37,6 +39,8 @@ export function DateTimePicker({
   showSeconds = false,
   disabled = false,
 }: DateTimePickerProps) {
+  const { data: user } = useUser();
+  const timeFormat = user?.timeFormat ?? "24";
   const [isOpen, setIsOpen] = useState(false);
   const [time, setTime] = useState(() => toTimeString(new Date(), showSeconds));
 
@@ -85,7 +89,9 @@ export function DateTimePicker({
                 !date && "text-muted-foreground",
               )}
             >
-              {date ? format(date, "PPP") : "Select date"}
+              {date
+                ? `${format(date, "PPP")}, ${formatTime(date, timeFormat, { showSeconds })}`
+                : "Select date"}
               <ChevronDownIcon className="h-4 w-4 opacity-50" />
             </Button>
           </PopoverTrigger>
@@ -98,7 +104,11 @@ export function DateTimePicker({
               onSelect={(selectedDate) => {
                 if (selectedDate) {
                   const parts = time.split(":").map((x) => Number.parseInt(x || "0", 10));
-                  selectedDate.setHours(parts[0] ?? 0, parts[1] ?? 0, showSeconds ? (parts[2] ?? 0) : 0);
+                  selectedDate.setHours(
+                    parts[0] ?? 0,
+                    parts[1] ?? 0,
+                    showSeconds ? (parts[2] ?? 0) : 0,
+                  );
                   onDateChange(selectedDate);
                 }
                 setIsOpen(false);
