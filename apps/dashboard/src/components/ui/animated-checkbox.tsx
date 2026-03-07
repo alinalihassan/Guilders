@@ -85,7 +85,10 @@ export function AnimatedCheckbox({
             strokeLinecap="round"
             strokeLinejoin="round"
             transform="translate(5 6)"
-            initial={{ pathLength: (isControlled ? controlledChecked : defaultChecked) ? 1 : 0, opacity: (isControlled ? controlledChecked : defaultChecked) ? 1 : 0 }}
+            initial={{
+              pathLength: (isControlled ? controlledChecked : defaultChecked) ? 1 : 0,
+              opacity: (isControlled ? controlledChecked : defaultChecked) ? 1 : 0,
+            }}
             animate={{
               pathLength: checked ? 1 : 0,
               opacity: checked ? 1 : 0,

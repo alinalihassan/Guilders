@@ -4,8 +4,8 @@ import { Check, Copy, Loader2, Pencil, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
-import { Button } from "@/components/ui/button";
 import { AnimatedCheckbox } from "@/components/ui/animated-checkbox";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,

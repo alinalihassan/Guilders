@@ -3,14 +3,7 @@
 import { useChat } from "@ai-sdk/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { DefaultChatTransport, type UIMessage } from "ai";
-import {
-  ArrowUp,
-  LayoutDashboard,
-  Loader2,
-  Lock,
-  RefreshCcw,
-  Square,
-} from "lucide-react";
+import { ArrowUp, LayoutDashboard, Loader2, Lock, RefreshCcw, Square } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
