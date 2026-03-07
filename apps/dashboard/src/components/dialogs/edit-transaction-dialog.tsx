@@ -37,7 +37,7 @@ import { useFiles } from "@/lib/queries/useFiles";
 import { useRemoveTransaction, useUpdateTransaction } from "@/lib/queries/useTransactions";
 
 import { CategorySelector } from "../common/category-selector";
-import { DatePicker } from "../common/date-picker";
+import { DateTimePicker } from "../common/datetime-picker";
 import { FileUploader } from "../common/file-uploader";
 import { AccountIcon } from "../dashboard/accounts/account-icon";
 
@@ -53,27 +53,16 @@ const formSchema = z.object({
   categoryId: z.number({
     required_error: "Category is required.",
   }),
-  date: z.string().min(1, "Date is required."),
-  time: z.string().min(1, "Time is required."),
+  timestamp: z.date(),
   documents: z.array(z.custom<File>()).optional(),
 });
 
 type FormSchema = z.infer<typeof formSchema>;
 
-/** API sends transaction.date as "YYYY-MM-DD". Form needs date + time. */
-function toFormDateAndTime(apiDate: string): { date: string; time: string } {
-  const date = apiDate.slice(0, 10);
-  return { date: /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : "", time: "00:00:00" };
-}
-
-/** Get "YYYY-MM-DD" from API transaction.date (string or Date from JSON). */
-function getTransactionDateString(value: string | Date | null | undefined): string {
-  if (value == null) return "";
-  if (typeof value === "string") return value.slice(0, 10);
-  if (value instanceof Date && !Number.isNaN(value.getTime())) {
-    return value.toISOString().slice(0, 10);
-  }
-  return "";
+function toFormTimestamp(value: string | Date | null | undefined): Date {
+  if (value == null) return new Date();
+  const d = typeof value === "string" ? new Date(value) : value;
+  return Number.isNaN(d.getTime()) ? new Date() : d;
 }
 
 export function EditTransactionDialog() {
@@ -92,15 +81,12 @@ export function EditTransactionDialog() {
   const form = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
     defaultValues: (() => {
-      const apiDate = getTransactionDateString(data?.transaction?.date);
-      const { date, time } = apiDate ? toFormDateAndTime(apiDate) : { date: "", time: "00:00:00" };
       return {
         accountId: data?.transaction?.account_id ?? undefined,
         amount: data?.transaction?.amount != null ? Number(data.transaction.amount).toString() : "",
         description: data?.transaction?.description ?? "",
         categoryId: data?.transaction?.category_id ?? undefined,
-        date,
-        time,
+        timestamp: toFormTimestamp(data?.transaction?.timestamp),
         documents: [],
       };
     })(),
@@ -108,15 +94,12 @@ export function EditTransactionDialog() {
 
   useEffect(() => {
     if (data?.transaction) {
-      const apiDate = getTransactionDateString(data.transaction.date);
-      const { date, time } = apiDate ? toFormDateAndTime(apiDate) : { date: "", time: "00:00:00" };
       form.reset({
         accountId: data.transaction.account_id,
         amount: Number(data.transaction.amount).toString(),
         description: data.transaction.description,
         categoryId: data.transaction.category_id ?? undefined,
-        date,
-        time,
+        timestamp: toFormTimestamp(data.transaction.timestamp),
         documents: [],
       });
     }
@@ -170,7 +153,7 @@ export function EditTransactionDialog() {
       amount: formData.amount,
       description: formData.description,
       category_id: formData.categoryId,
-      date: formData.date,
+      timestamp: formData.timestamp.toISOString() as unknown as Date,
       currency: transaction.currency,
       documents: transaction.documents,
       provider_transaction_id: transaction.provider_transaction_id,
@@ -334,44 +317,23 @@ export function EditTransactionDialog() {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="date"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Date</FormLabel>
-                        <FormControl>
-                          <DatePicker
-                            value={field.value}
-                            onChange={field.onChange}
-                            disabled={isSyncedTransaction}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="time"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Time</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="time"
-                            step="1"
-                            {...field}
-                            disabled={isSyncedTransaction}
-                            className="appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
+                <FormField
+                  control={form.control}
+                  name="timestamp"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Date & time</FormLabel>
+                      <FormControl>
+                        <DateTimePicker
+                          date={field.value}
+                          onDateChange={field.onChange}
+                          disabled={isSyncedTransaction}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
                 <Accordion type="single" collapsible className="w-full">
                   <AccordionItem value="documents">

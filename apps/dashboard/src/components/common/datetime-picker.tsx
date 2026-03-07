@@ -17,10 +17,17 @@ function toTimeString(date: Date): string {
 interface DateTimePickerProps {
   date: Date | undefined;
   onDateChange: (date: Date | undefined) => void;
-  onTimeChange: (time: string) => void;
+  /** Optional; when omitted, time changes still update the date via onDateChange. */
+  onTimeChange?: (time: string) => void;
+  disabled?: boolean;
 }
 
-export function DateTimePicker({ date, onDateChange, onTimeChange }: DateTimePickerProps) {
+export function DateTimePicker({
+  date,
+  onDateChange,
+  onTimeChange,
+  disabled = false,
+}: DateTimePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [time, setTime] = useState(() => toTimeString(new Date()));
 
@@ -38,7 +45,7 @@ export function DateTimePicker({ date, onDateChange, onTimeChange }: DateTimePic
       const ts = toTimeString(initialDate);
       setTime(ts);
       onDateChange(initialDate);
-      onTimeChange(ts);
+      onTimeChange?.(ts);
     }
   }, [date, onDateChange, onTimeChange]);
 
@@ -47,7 +54,7 @@ export function DateTimePicker({ date, onDateChange, onTimeChange }: DateTimePic
     const value = e.target.value;
     if (!value) return;
     setTime(value);
-    onTimeChange(value);
+    onTimeChange?.(value);
     if (date) {
       const parts = value.split(":").map((x) => Number.parseInt(x || "0", 10));
       const newDate = new Date(date);
@@ -63,6 +70,7 @@ export function DateTimePicker({ date, onDateChange, onTimeChange }: DateTimePic
           <PopoverTrigger asChild>
             <Button
               variant="outline"
+              disabled={disabled}
               className={cn(
                 "w-full justify-between bg-card font-normal",
                 !date && "text-muted-foreground",
@@ -97,6 +105,7 @@ export function DateTimePicker({ date, onDateChange, onTimeChange }: DateTimePic
           step="1"
           value={time}
           onChange={handleTimeChange}
+          disabled={disabled}
           className="appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
         />
       </div>

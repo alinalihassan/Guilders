@@ -8,7 +8,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { CategorySelector } from "@/components/common/category-selector";
-import { DatePicker } from "@/components/common/date-picker";
+import { DateTimePicker } from "@/components/common/datetime-picker";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -53,25 +53,10 @@ const formSchema = z.object({
   categoryId: z.number({
     required_error: "Category is required.",
   }),
-  date: z.string().min(1, "Date is required."),
-  time: z.string().min(1, "Time is required."),
+  timestamp: z.date(),
 });
 
 type FormSchema = z.infer<typeof formSchema>;
-
-function toTimeString(date: Date): string {
-  return `${date.getHours().toString().padStart(2, "0")}:${date.getMinutes().toString().padStart(2, "0")}:${date.getSeconds().toString().padStart(2, "0")}`;
-}
-
-function toDateString(date: Date): string {
-  return (
-    date.getFullYear() +
-    "-" +
-    (date.getMonth() + 1).toString().padStart(2, "0") +
-    "-" +
-    date.getDate().toString().padStart(2, "0")
-  );
-}
 
 export function AddTransactionDialog() {
   const { isOpen, close, data: transactionData } = useDialog("addTransaction");
@@ -91,15 +76,13 @@ export function AddTransactionDialog() {
       currency: user?.currency ?? "",
       description: "",
       categoryId: undefined,
-      date: toDateString(new Date()),
-      time: toTimeString(new Date()),
+      timestamp: new Date(),
     },
   });
 
   useEffect(() => {
     if (isOpen) {
-      form.setValue("date", toDateString(new Date()));
-      form.setValue("time", toTimeString(new Date()));
+      form.setValue("timestamp", new Date());
       if (transactionData?.accountId) {
         // Set the Account ID
         form.setValue("accountId", transactionData.accountId);
@@ -140,9 +123,8 @@ export function AddTransactionDialog() {
       currency: data.currency,
       description: data.description,
       category_id: data.categoryId,
-      date: data.date,
+      timestamp: data.timestamp.toISOString() as unknown as Date,
     });
-
     close();
   });
 
@@ -254,39 +236,22 @@ export function AddTransactionDialog() {
               )}
             />
 
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="date"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Date</FormLabel>
-                    <FormControl>
-                      <DatePicker value={field.value} onChange={field.onChange} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="time"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Time</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="time"
-                        step="1"
-                        {...field}
-                        className="appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+            <FormField
+              control={form.control}
+              name="timestamp"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Date & time</FormLabel>
+                  <FormControl>
+                    <DateTimePicker
+                      date={field.value}
+                      onDateChange={field.onChange}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <DialogFooter>
               <Button type="submit" disabled={isPending} className="w-full">
