@@ -1,8 +1,5 @@
-"use client";
-
 import { zodResolver } from "@hookform/resolvers/zod";
-import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -23,7 +20,11 @@ const passwordSchema = z
 
 type PasswordForm = z.infer<typeof passwordSchema>;
 
-export default function OnboardingPage() {
+export const Route = createFileRoute("/(pages)/(auth-flows)/onboarding/")({
+  component: OnboardingPage,
+});
+
+function OnboardingPage() {
   const router = useRouter();
   const { mutateAsync: updateUser, isPending } = useUpdateUserSettings();
 
@@ -40,7 +41,7 @@ export default function OnboardingPage() {
       await updateUser({
         password: data.password,
       });
-      router.push("/");
+      router.navigate({ to: "/" });
     } catch (error) {
       console.error("Error setting password:", error);
     }
@@ -50,13 +51,7 @@ export default function OnboardingPage() {
     <div className="w-full max-w-sm">
       <div className="rounded-lg border bg-card px-6 py-6 text-card-foreground shadow-sm">
         <div className="mb-4 flex flex-col items-center">
-          <Image
-            src="/assets/logo/logo_filled_rounded.svg"
-            alt="logo"
-            width={64}
-            height={64}
-            priority
-          />
+          <img src="/assets/logo/logo_filled_rounded.svg" alt="" width={64} height={64} />
         </div>
 
         <h1 className="text-center text-2xl font-bold">Welcome to Guilders!</h1>

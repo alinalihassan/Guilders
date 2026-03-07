@@ -1,14 +1,13 @@
-"use client";
-
+import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { Link2, MoreHorizontal, Pencil, RefreshCw, Trash2 } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { use, useState } from "react";
+import { useState } from "react";
 
 import { AccountHoldingsDonutCard } from "@/components/dashboard/account-holdings-donut-card";
 import { AccountsCard } from "@/components/dashboard/accounts/account-card";
 import { AccountIcon } from "@/components/dashboard/accounts/account-icon";
 import { BalanceCard } from "@/components/dashboard/balance-card";
 import { TransactionsCard } from "@/components/dashboard/transactions/transactions-card";
+import { NotFoundPage } from "@/components/not-found-page";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -21,9 +20,18 @@ import { useDialog } from "@/hooks/useDialog";
 import { useAccount, useRemoveAccount } from "@/lib/queries/useAccounts";
 import { useRefreshConnection, useSyncAccount } from "@/lib/queries/useConnections";
 
-export default function AccountPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params);
-  const { data: account, isLoading } = useAccount(Number.parseInt(id, 10));
+const ID_REGEX = /^\d+$/;
+
+export const Route = createFileRoute("/(pages)/(protected)/accounts/$id")({
+  component: AccountPage,
+});
+
+function AccountPage() {
+  const { id } = Route.useParams();
+  const isValidId = ID_REGEX.test(id);
+  const accountId = isValidId ? Number.parseInt(id, 10) : NaN;
+  const router = useRouter();
+  const { data: account, isLoading } = useAccount(accountId);
   const [imageError, setImageError] = useState(false);
   const { open: openEdit } = useDialog("editAccount");
   const { open: openConfirmation } = useDialog("confirmation");
@@ -31,7 +39,11 @@ export default function AccountPage({ params }: { params: Promise<{ id: string }
   const { mutate: syncAccount, isPending: isSyncing } = useSyncAccount();
   const { mutateAsync: refreshConnection, isPending: isReconnecting } = useRefreshConnection();
   const { open: openProviderDialog } = useDialog("provider");
-  const router = useRouter();
+
+  if (!isValidId) {
+    return <NotFoundPage />;
+  }
+
   const accountValue = Number(account?.value ?? 0);
   const accountCost = Number(account?.cost ?? 0);
 
@@ -58,7 +70,7 @@ export default function AccountPage({ params }: { params: Promise<{ id: string }
       onConfirm: () => {
         removeAccount(account.id, {
           onSuccess: () => {
-            router.push("/accounts");
+            router.navigate({ to: "/accounts" });
           },
         });
       },

@@ -1,10 +1,16 @@
+import { createFileRoute } from "@tanstack/react-router";
+
 import { SettingsSubsection } from "@/components/settings/settings-subsection";
 import { Separator } from "@/components/ui/separator";
 
 import { ApiKeysSection } from "./api-keys-section";
 import { WebhooksSection } from "./webhooks-section";
 
-export default function DeveloperPage() {
+export const Route = createFileRoute("/(pages)/(protected)/settings/developer/")({
+  component: DeveloperPage,
+});
+
+function DeveloperPage() {
   return (
     <div className="space-y-6">
       <div>

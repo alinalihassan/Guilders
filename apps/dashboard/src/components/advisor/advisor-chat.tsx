@@ -1,10 +1,8 @@
-"use client";
-
 import { useChat } from "@ai-sdk/react";
 import { useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "@tanstack/react-router";
 import { DefaultChatTransport, type UIMessage } from "ai";
 import { ArrowUp, LayoutDashboard, Loader2, RefreshCcw, Square } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -14,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { CopyButton } from "@/components/ui/copy-button";
 import { api } from "@/lib/api";
-import { env } from "@/lib/env";
+import { clientEnv } from "@/lib/env";
 import { useBillingConfig } from "@/lib/queries/useBilling";
 import { useChatLimits, useInvalidateChatLimits } from "@/lib/queries/useChatLimits";
 import { conversationsKey } from "@/lib/queries/useConversations";
@@ -102,7 +100,7 @@ export function AdvisorChat({ chatId, initialMessages }: AdvisorChatProps) {
   const [transport] = useState(
     () =>
       new DefaultChatTransport({
-        api: `${env.NEXT_PUBLIC_API_URL}/api/chat`,
+        api: `${clientEnv.VITE_API_URL}/api/chat`,
         headers: (): Record<string, string> => {
           const t = tokenRef.current;
           return t ? { Authorization: `Bearer ${t}` } : {};
@@ -270,7 +268,7 @@ export function AdvisorChat({ chatId, initialMessages }: AdvisorChatProps) {
               <Button
                 className="w-full"
                 variant="outline"
-                onClick={() => router.push("/settings/subscription")}
+                onClick={() => router.navigate({ to: "/settings/subscription" })}
               >
                 Manage subscription
               </Button>
@@ -281,7 +279,10 @@ export function AdvisorChat({ chatId, initialMessages }: AdvisorChatProps) {
                 You&apos;ve used all your AI Advisor messages for this week. Upgrade to Pro for
                 more.
               </p>
-              <Button className="w-full" onClick={() => router.push("/settings/subscription")}>
+              <Button
+                className="w-full"
+                onClick={() => router.navigate({ to: "/settings/subscription" })}
+              >
                 Upgrade to Pro
               </Button>
             </>
@@ -294,7 +295,7 @@ export function AdvisorChat({ chatId, initialMessages }: AdvisorChatProps) {
             onKeyDown={onKeyDown}
             onChange={(e) => setInputText(e.target.value)}
             placeholder="Ask anything..."
-            className="max-h-64 min-h-20 w-full resize-none bg-transparent px-3 py-2 text-sm outline-none placeholder:text-muted-foreground"
+            className="max-h-64 min-h-16 w-full resize-none bg-transparent px-3 py-2 text-sm outline-none placeholder:text-muted-foreground"
           />
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-1">

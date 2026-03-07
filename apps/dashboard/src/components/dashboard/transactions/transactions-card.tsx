@@ -1,5 +1,5 @@
+import { Link } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
-import Link from "next/link";
 import type { ReactNode } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -25,7 +25,7 @@ export function TransactionsCard({
   children,
 }: TransactionsCardProps) {
   const transactionsMenu = (
-    <Link href="/transactions">
+    <Link to="/transactions">
       <Button variant="secondary">
         View All
         <ArrowRight className="ml-2 h-4 w-4" />

@@ -1,5 +1,3 @@
-"use client";
-
 import type { UpdateUser, User } from "@guilders/api/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -7,20 +5,9 @@ import { authClient } from "../auth-client";
 
 const queryKey = ["user"] as const;
 
-// @ts-ignore TODO: Better Auth 1.5.0 issue, subscription type not inferred from stripeClient plugin
-const subscriptionClient = authClient.subscription as {
-  list: () => Promise<{
-    data: Array<{
-      status: string;
-      periodEnd?: string | Date | null;
-      trialEnd?: string | Date | null;
-    }> | null;
-  }>;
-};
-
 async function fetchSubscription(): Promise<User["subscription"]> {
   try {
-    const { data: subscriptions } = await subscriptionClient.list();
+    const { data: subscriptions } = await authClient.subscription.list();
     const active = subscriptions?.find(
       (sub) => sub.status === "active" || sub.status === "trialing",
     );

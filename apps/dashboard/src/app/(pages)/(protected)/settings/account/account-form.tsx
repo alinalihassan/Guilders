@@ -1,9 +1,7 @@
-"use client";
-
 import type { Currency } from "@guilders/api/types";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "@tanstack/react-router";
 import { Download, Loader2 } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -43,7 +41,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/lib/api";
 import { authClient } from "@/lib/auth-client";
-import { env } from "@/lib/env";
+import { clientEnv } from "@/lib/env";
 import { useCurrencies } from "@/lib/queries/useCurrencies";
 import { useDeleteAccount, useUpdateUserSettings, useUser } from "@/lib/queries/useUser";
 import { downloadFile } from "@/lib/utils";
@@ -121,7 +119,7 @@ export function AccountForm() {
     setIsDeletingAccount(true);
     try {
       await deleteAccount();
-      router.push("/");
+      router.navigate({ to: "/" });
     } catch {
       toast.error("Error deleting account", {
         description: "Something went wrong. Please contact us for support.",
@@ -149,7 +147,7 @@ export function AccountForm() {
       if (isEmailChanged) {
         const { error } = await authClient.changeEmail({
           newEmail: data.email,
-          callbackURL: `${env.NEXT_PUBLIC_DASHBOARD_URL}/settings/account`,
+          callbackURL: `${clientEnv.VITE_DASHBOARD_URL}/settings/account`,
         });
 
         if (error) throw new Error(error.message || "Failed to request email change");

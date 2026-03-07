@@ -1,5 +1,3 @@
-"use client";
-
 import type { ChatLimits } from "@guilders/api/types";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 

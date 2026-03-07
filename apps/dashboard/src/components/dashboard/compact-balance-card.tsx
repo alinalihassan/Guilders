@@ -1,5 +1,3 @@
-"use client";
-
 import type { Account } from "@guilders/api/types";
 import NumberFlow from "@number-flow/react";
 import { useQueries } from "@tanstack/react-query";

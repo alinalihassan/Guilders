@@ -1,8 +1,14 @@
+import { createFileRoute } from "@tanstack/react-router";
+
 import { Separator } from "@/components/ui/separator";
 
 import { CategoriesForm } from "./categories-form";
 
-export default function CategoriesPage() {
+export const Route = createFileRoute("/(pages)/(protected)/settings/categories/")({
+  component: CategoriesPage,
+});
+
+function CategoriesPage() {
   return (
     <div className="space-y-6">
       <div>

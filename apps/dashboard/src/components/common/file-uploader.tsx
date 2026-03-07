@@ -1,28 +1,26 @@
-"use client";
-
 import type { CreateDocumentResponse } from "@guilders/api/types";
 import { FileText, Loader2, Upload, X } from "lucide-react";
-import dynamic from "next/dynamic";
 import * as React from "react";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Dropzone, { type DropEvent, type DropzoneProps, type FileRejection } from "react-dropzone";
 import { toast } from "sonner";
 
-import { DocumentPreviewDialog } from "@/components/common/document-preview-dialog";
 import { Button } from "@/components/ui/button";
 import { useControllableState } from "@/hooks/useControllableState";
 import { cn, formatBytes } from "@/lib/utils";
 
-const PdfThumbnail = dynamic(
-  () => import("./pdf-thumbnail").then((mod) => ({ default: mod.PdfThumbnail })),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="flex size-full items-center justify-center">
-        <Loader2 className="size-5 animate-spin text-muted-foreground" />
-      </div>
-    ),
-  },
+const PdfThumbnailLazy = React.lazy(() =>
+  import("./pdf-thumbnail").then((mod) => ({ default: mod.PdfThumbnail })),
+);
+
+const PdfThumbnailFallback = () => (
+  <div className="flex size-full items-center justify-center">
+    <Loader2 className="size-5 animate-spin text-muted-foreground" />
+  </div>
+);
+
+const DocumentPreviewDialogLazy = React.lazy(() =>
+  import("./document-preview-dialog").then((mod) => ({ default: mod.DocumentPreviewDialog })),
 );
 
 export interface DocumentRecord {
@@ -236,13 +234,21 @@ export function FileUploader({
       </Dropzone>
 
       {previewDocument && getFileUrl && (
-        <DocumentPreviewDialog
-          open={!!previewDocument}
-          onOpenChange={(open) => !open && setPreviewDocument(null)}
-          name={previewDocument.name}
-          type={previewDocument.type}
-          fileUrl={getFileUrl(previewDocument.id)}
-        />
+        <Suspense
+          fallback={
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80">
+              <Loader2 className="size-8 animate-spin text-muted-foreground" />
+            </div>
+          }
+        >
+          <DocumentPreviewDialogLazy
+            open={!!previewDocument}
+            onOpenChange={(open) => !open && setPreviewDocument(null)}
+            name={previewDocument.name}
+            type={previewDocument.type}
+            fileUrl={getFileUrl(previewDocument.id)}
+          />
+        </Suspense>
       )}
     </div>
   );
@@ -347,11 +353,12 @@ function ExistingDocumentTile({
     >
       <div className="relative aspect-square w-full overflow-hidden">
         {isImage && fileUrl ? (
-          // oxlint-disable-next-line nextjs/no-img-element
           <img src={fileUrl} alt={document.name} className="size-full object-cover" />
         ) : isPdf && fileUrl ? (
           <div className="flex size-full items-center justify-center overflow-hidden bg-muted">
-            <PdfThumbnail file={fileUrl} width={200} className="relative" />
+            <Suspense fallback={<PdfThumbnailFallback />}>
+              <PdfThumbnailLazy file={fileUrl} width={200} className="relative" />
+            </Suspense>
           </div>
         ) : (
           <div className="flex size-full items-center justify-center bg-muted">
@@ -412,7 +419,6 @@ function UploadingFileTile({ file, isUploading, onRemove }: UploadingFileTilePro
     <div className="group relative flex flex-col overflow-hidden rounded-lg border bg-muted/30">
       <div className="relative aspect-square w-full overflow-hidden">
         {isImage && previewUrl ? (
-          // oxlint-disable-next-line nextjs/no-img-element
           <img
             src={previewUrl}
             alt={file.name}
@@ -425,7 +431,9 @@ function UploadingFileTile({ file, isUploading, onRemove }: UploadingFileTilePro
               isUploading && "opacity-50",
             )}
           >
-            <PdfThumbnail file={file} width={200} className="relative" />
+            <Suspense fallback={<PdfThumbnailFallback />}>
+              <PdfThumbnailLazy file={file} width={200} className="relative" />
+            </Suspense>
           </div>
         ) : (
           <div

@@ -1,12 +1,9 @@
-"use client";
-
-import { usePathname } from "next/navigation";
+import { Link, useLocation } from "@tanstack/react-router";
 import React from "react";
 
 import {
   Breadcrumb as BreadcrumbComponent,
   BreadcrumbItem,
-  BreadcrumbLink,
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
@@ -63,7 +60,7 @@ export function getBreadcrumbs(pathname: string): Breadcrumb[] {
 }
 
 export function DynamicBreadcrumbs({ className }: { className?: string }) {
-  const pathname = usePathname();
+  const { pathname } = useLocation();
   const accountId = pathname.startsWith("/accounts/")
     ? Number.parseInt(pathname.split("/").pop() ?? "0")
     : undefined;
@@ -90,9 +87,12 @@ export function DynamicBreadcrumbs({ className }: { className?: string }) {
                   {breadcrumb.name}
                 </BreadcrumbPage>
               ) : (
-                <BreadcrumbLink href={breadcrumb.href} className="text-[15px] font-medium">
+                <Link
+                  to={breadcrumb.href!}
+                  className="text-[16px] font-medium transition-colors hover:text-foreground"
+                >
                   {breadcrumb.name}
-                </BreadcrumbLink>
+                </Link>
               )}
             </BreadcrumbItem>
             {index < breadcrumbs.length - 1 && <BreadcrumbSeparator className="hidden md:block" />}

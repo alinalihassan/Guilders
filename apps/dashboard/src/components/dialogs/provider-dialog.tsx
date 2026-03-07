@@ -1,12 +1,10 @@
-"use client";
-
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef } from "react";
 import { toast } from "sonner";
 
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { useDialog } from "@/hooks/useDialog";
-import { env } from "@/lib/env";
+import { clientEnv } from "@/lib/env";
 import { queryKey as accountsQueryKey } from "@/lib/queries/useAccounts";
 import { queryKey as transactionsQueryKey } from "@/lib/queries/useTransactions";
 
@@ -119,9 +117,12 @@ export function ProviderDialog() {
             close();
           }
         }
-      } else if (
-        e.origin === new URL(env.NEXT_PUBLIC_NGROK_URL ?? env.NEXT_PUBLIC_API_URL).origin
-      ) {
+      } else {
+        const allowedOrigins = [clientEnv.VITE_API_URL, clientEnv.VITE_NGROK_URL]
+          .filter((url): url is string => Boolean(url))
+          .map((url) => new URL(url).origin);
+
+        if (!allowedOrigins.includes(e.origin)) return;
         const { stage } = e.data;
         if (!stage) return;
 

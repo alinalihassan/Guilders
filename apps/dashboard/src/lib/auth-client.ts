@@ -5,7 +5,7 @@ import type { BetterAuthClientOptions } from "better-auth/client";
 import { createAuthClient } from "better-auth/client";
 import { inferAdditionalFields, twoFactorClient } from "better-auth/client/plugins";
 
-import { env } from "./env";
+import { clientEnv } from "./env";
 
 const plugins = [
   twoFactorClient(),
@@ -28,7 +28,7 @@ const plugins = [
 ];
 
 export const authClient = createAuthClient({
-  baseURL: env.NEXT_PUBLIC_API_URL,
+  baseURL: clientEnv.VITE_API_URL,
   plugins,
   fetchOptions: {
     credentials: "include",

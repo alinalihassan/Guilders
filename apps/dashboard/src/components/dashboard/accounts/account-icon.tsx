@@ -1,5 +1,4 @@
 import type { Account } from "@guilders/api/types";
-import Image from "next/image";
 
 import { AccountFallbackIcon } from "./account-fallback-icon";
 
@@ -20,7 +19,7 @@ export function AccountIcon({
 }: AccountIconProps) {
   if (account.image && !hasImageError) {
     return (
-      <Image
+      <img
         src={account.image}
         alt={account.name}
         width={width}

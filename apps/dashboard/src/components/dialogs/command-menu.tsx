@@ -1,11 +1,8 @@
-"use client";
-
 import type { Institution } from "@guilders/api/types";
+import { useRouter } from "@tanstack/react-router";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { CommandLoading } from "cmdk";
 import { Banknote, Landmark, Link2, SquarePen } from "lucide-react";
-import Image from "next/image";
-import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 import {
@@ -63,7 +60,7 @@ export function CommandMenu() {
   const handleNavigate = (path: string) => {
     close();
     setSearch("");
-    router.push(path);
+    router.navigate({ to: path });
   };
 
   const changePage = (newPage: string) => {
@@ -218,7 +215,7 @@ export function CommandMenu() {
                     }}
                   >
                     <div className="flex items-center gap-2">
-                      <Image
+                      <img
                         src={institution.logo_url}
                         alt={`${institution.name} logo`}
                         width={24}

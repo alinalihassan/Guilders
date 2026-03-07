@@ -1,5 +1,3 @@
-"use client";
-
 import { Check, ChevronsUpDown, Loader2, Plus } from "lucide-react";
 import { useMemo, useState } from "react";
 

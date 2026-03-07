@@ -1,6 +1,5 @@
-"use client";
-
 import NumberFlow from "@number-flow/react";
+import { createFileRoute } from "@tanstack/react-router";
 import { Filter, Plus, Search } from "lucide-react";
 import { useRef, useState } from "react";
 
@@ -29,7 +28,11 @@ function convertAmountSafely(amount: unknown, fromCurrency: string, userCurrency
   return Number.isFinite(convertedAmount) ? convertedAmount : 0;
 }
 
-export default function TransactionsPage() {
+export const Route = createFileRoute("/(pages)/(protected)/transactions/")({
+  component: TransactionsPage,
+});
+
+function TransactionsPage() {
   const { data: transactions, isLoading } = useTransactions();
   const { data: categories } = useCategories();
   const { data: user, isLoading: isLoadingUser } = useUser();

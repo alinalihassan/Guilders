@@ -1,9 +1,6 @@
-"use client";
-
+import { Link, useLocation } from "@tanstack/react-router";
 import { CodeXml, CreditCard, Satellite, Shield, Tag, UserCircle } from "lucide-react";
 import { motion } from "motion/react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
 
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
@@ -35,7 +32,7 @@ const getIcon = (title: string): React.ReactNode => {
 };
 
 export function SettingsTabs({ className, items, ...props }: SettingsTabsProps) {
-  const pathname = usePathname();
+  const { pathname } = useLocation();
 
   return (
     <ScrollArea>
@@ -49,7 +46,7 @@ export function SettingsTabs({ className, items, ...props }: SettingsTabsProps) 
         {items.map((item) => (
           <Link
             key={item.href}
-            href={item.href}
+            to={item.href}
             className={cn(
               "flex items-center px-3 py-2 text-sm font-medium relative transition-colors rounded-md",
               "hover:bg-accent hover:text-foreground",

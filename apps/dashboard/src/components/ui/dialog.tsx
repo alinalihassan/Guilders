@@ -1,5 +1,3 @@
-"use client";
-
 import { X } from "lucide-react";
 import { Dialog as DialogPrimitive } from "radix-ui";
 import * as React from "react";

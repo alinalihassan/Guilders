@@ -8,7 +8,8 @@
     "**/coverage/**",
     "**/dist/**",
     "**/build/**",
-    "apps/api/drizzle/**"
+    "apps/api/drizzle/**",
+    "**/routeTree.gen.ts"
   ],
   "sortImports": {},
   "sortTailwindcss": {},

@@ -1,9 +1,9 @@
 import { treaty } from "@elysiajs/eden";
 import type { App } from "@guilders/api/src";
 
-import { env } from "./env";
+import { clientEnv } from "./env";
 
-export const api = treaty<App>(env.NEXT_PUBLIC_API_URL, {
+export const api = treaty<App>(clientEnv.VITE_API_URL, {
   fetch: {
     credentials: "include",
   },

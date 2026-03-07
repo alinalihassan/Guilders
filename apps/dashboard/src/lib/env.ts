@@ -1,19 +1,11 @@
-import { createEnv } from "@t3-oss/env-nextjs";
 import { z } from "zod";
 
-export const env = createEnv({
-  client: {
-    NEXT_PUBLIC_WEBSITE_URL: z.string().url(),
-    NEXT_PUBLIC_DASHBOARD_URL: z.string().url(),
-    NEXT_PUBLIC_API_URL: z.string().url(),
-    NEXT_PUBLIC_NGROK_URL: z.string().url().optional(),
-  },
-  runtimeEnv: {
-    NEXT_PUBLIC_WEBSITE_URL: process.env.NEXT_PUBLIC_WEBSITE_URL,
-    NEXT_PUBLIC_DASHBOARD_URL: process.env.NEXT_PUBLIC_DASHBOARD_URL,
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
-    NEXT_PUBLIC_NGROK_URL: process.env.NEXT_PUBLIC_NGROK_URL,
-  },
-  emptyStringAsUndefined: true,
-  skipValidation: process.env.CI === "true",
+const clientEnvSchema = z.object({
+  VITE_WEBSITE_URL: z.string().url(),
+  VITE_DASHBOARD_URL: z.string().url(),
+  VITE_API_URL: z.string().url(),
+  VITE_NGROK_URL: z.string().url().optional(),
 });
+
+// Validate client environment
+export const clientEnv = clientEnvSchema.parse(import.meta.env);

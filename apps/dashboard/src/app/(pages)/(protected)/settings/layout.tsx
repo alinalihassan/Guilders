@@ -1,11 +1,6 @@
-import type { Metadata } from "next";
+import { createFileRoute, Outlet } from "@tanstack/react-router";
 
 import { SettingsTabs } from "@/components/settings/settings-tabs";
-
-export const metadata: Metadata = {
-  title: "Settings",
-  description: "Manage your account settings and preferences.",
-};
 
 const tabItems = [
   { title: "Account", href: "/settings/account" },
@@ -16,15 +11,17 @@ const tabItems = [
   { title: "Subscription", href: "/settings/subscription" },
 ];
 
-interface SettingsLayoutProps {
-  children: React.ReactNode;
-}
+export const Route = createFileRoute("/(pages)/(protected)/settings")({
+  component: SettingsLayout,
+});
 
-export default function SettingsLayout({ children }: SettingsLayoutProps) {
+function SettingsLayout() {
   return (
     <div className="space-y-6 pb-8">
       <SettingsTabs items={tabItems} />
-      <div className="flex-1 lg:max-w-2xl">{children}</div>
+      <div className="flex-1 lg:max-w-2xl">
+        <Outlet />
+      </div>
     </div>
   );
 }

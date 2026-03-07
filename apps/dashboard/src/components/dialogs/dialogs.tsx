@@ -1,37 +1,32 @@
-"use client";
-
-import dynamic from "next/dynamic";
-import { useEffect } from "react";
+import { lazy, Suspense, useEffect } from "react";
 
 import { useDialog } from "@/hooks/useDialog";
 import { useStore } from "@/lib/store";
 
-const CommandMenu = dynamic(() =>
-  import("./command-menu").then((m) => ({ default: m.CommandMenu })),
-);
-const AddAccountDialog = dynamic(() =>
+const CommandMenu = lazy(() => import("./command-menu").then((m) => ({ default: m.CommandMenu })));
+const AddAccountDialog = lazy(() =>
   import("./add-account-dialog").then((m) => ({ default: m.AddAccountDialog })),
 );
-const AddLinkedAccountDialog = dynamic(() =>
+const AddLinkedAccountDialog = lazy(() =>
   import("./add-linked-account-dialog").then((m) => ({ default: m.AddLinkedAccountDialog })),
 );
-const AddTransactionDialog = dynamic(() =>
+const AddTransactionDialog = lazy(() =>
   import("./add-transaction-dialog").then((m) => ({ default: m.AddTransactionDialog })),
 );
-const EditAccountDialog = dynamic(() =>
+const EditAccountDialog = lazy(() =>
   import("./edit-account-dialog").then((m) => ({ default: m.EditAccountDialog })),
 );
-const EditTransactionDialog = dynamic(() =>
+const EditTransactionDialog = lazy(() =>
   import("./edit-transaction-dialog").then((m) => ({ default: m.EditTransactionDialog })),
 );
-const ProviderDialog = dynamic(() =>
+const ProviderDialog = lazy(() =>
   import("./provider-dialog").then((m) => ({ default: m.ProviderDialog })),
 );
-const ConfirmationDialog = dynamic(() =>
+const ConfirmationDialog = lazy(() =>
   import("./confirmation-dialog").then((m) => ({ default: m.ConfirmationDialog })),
 );
-const MFADialog = dynamic(() => import("./mfa-dialog").then((m) => ({ default: m.MFADialog })));
-const InputPromptDialog = dynamic(() =>
+const MFADialog = lazy(() => import("./mfa-dialog").then((m) => ({ default: m.MFADialog })));
+const InputPromptDialog = lazy(() =>
   import("./input-prompt-dialog").then((m) => ({ default: m.InputPromptDialog })),
 );
 
@@ -59,16 +54,56 @@ export const Dialogs = () => {
 
   return (
     <>
-      {openTypes.has("command") && <CommandMenu />}
-      {openTypes.has("addManualAccount") && <AddAccountDialog />}
-      {openTypes.has("addLinkedAccount") && <AddLinkedAccountDialog />}
-      {openTypes.has("addTransaction") && <AddTransactionDialog />}
-      {openTypes.has("editAccount") && <EditAccountDialog />}
-      {openTypes.has("editTransaction") && <EditTransactionDialog />}
-      {openTypes.has("provider") && <ProviderDialog />}
-      {openTypes.has("confirmation") && <ConfirmationDialog />}
-      {openTypes.has("mfa") && <MFADialog />}
-      {openTypes.has("inputPrompt") && <InputPromptDialog />}
+      {openTypes.has("command") && (
+        <Suspense fallback={null}>
+          <CommandMenu />
+        </Suspense>
+      )}
+      {openTypes.has("addManualAccount") && (
+        <Suspense fallback={null}>
+          <AddAccountDialog />
+        </Suspense>
+      )}
+      {openTypes.has("addLinkedAccount") && (
+        <Suspense fallback={null}>
+          <AddLinkedAccountDialog />
+        </Suspense>
+      )}
+      {openTypes.has("addTransaction") && (
+        <Suspense fallback={null}>
+          <AddTransactionDialog />
+        </Suspense>
+      )}
+      {openTypes.has("editAccount") && (
+        <Suspense fallback={null}>
+          <EditAccountDialog />
+        </Suspense>
+      )}
+      {openTypes.has("editTransaction") && (
+        <Suspense fallback={null}>
+          <EditTransactionDialog />
+        </Suspense>
+      )}
+      {openTypes.has("provider") && (
+        <Suspense fallback={null}>
+          <ProviderDialog />
+        </Suspense>
+      )}
+      {openTypes.has("confirmation") && (
+        <Suspense fallback={null}>
+          <ConfirmationDialog />
+        </Suspense>
+      )}
+      {openTypes.has("mfa") && (
+        <Suspense fallback={null}>
+          <MFADialog />
+        </Suspense>
+      )}
+      {openTypes.has("inputPrompt") && (
+        <Suspense fallback={null}>
+          <InputPromptDialog />
+        </Suspense>
+      )}
     </>
   );
 };

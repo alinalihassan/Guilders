@@ -1,5 +1,3 @@
-"use client";
-
 import { useCallback, useId, useMemo, useState } from "react";
 import { Area, AreaChart, Tooltip, XAxis, YAxis } from "recharts";
 
@@ -226,7 +224,6 @@ export function BalanceChart({
   const mutedLineColor = "#d1d5db";
 
   return (
-    // @ts-ignore
     <ChartContainer className={className ?? "max-h-[216px] w-full"} config={chartConfig}>
       <AreaChart
         data={effectiveData}

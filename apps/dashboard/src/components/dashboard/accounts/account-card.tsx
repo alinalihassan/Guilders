@@ -1,6 +1,6 @@
 import type { Account } from "@guilders/api/types";
+import { Link } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
-import Link from "next/link";
 import type { ReactNode } from "react";
 
 import { AccountsTable } from "@/components/dashboard/accounts/accounts-table";
@@ -23,7 +23,7 @@ export function AccountsCard({
   accounts,
 }: AccountsCardProps) {
   const accountsMenu = (
-    <Link href="/accounts">
+    <Link to="/accounts">
       <Button variant="secondary">
         View All
         <ArrowRight className="ml-2 h-4 w-4" />

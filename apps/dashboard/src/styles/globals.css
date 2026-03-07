@@ -1,9 +1,17 @@
+@import "@fontsource-variable/geist";
+@import "@fontsource-variable/geist-mono";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
+    --font-geist-sans:
+      "Geist Variable", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+      "Segoe UI Symbol";
+    --font-geist-mono:
+      "Geist Mono Variable", ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
     /* Page/inset: grey tone. Content surfaces use --card (white) for contrast. */
     --background: 0 0% 96.1%;
     --foreground: 0 0% 3.9%;

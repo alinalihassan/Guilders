@@ -1,10 +1,8 @@
-import type { Metadata } from "next/types";
+import { clientEnv } from "@/lib/env";
 
-import { env } from "@/lib/env";
+const dashboardUrl = clientEnv.VITE_DASHBOARD_URL;
 
-const dashboardUrl = env.NEXT_PUBLIC_DASHBOARD_URL ?? "https://dashboard.guilders.app";
-
-export const defaultMetadata: Metadata = {
+export const defaultMetadata = {
   metadataBase: new URL(dashboardUrl),
   title: {
     default: "Guilders - AI-Powered Personal Finance Management",
@@ -30,7 +28,7 @@ export const defaultMetadata: Metadata = {
     telephone: false,
   },
   icons: {
-    icon: "/src/app/favicon.ico",
+    icon: "/favicon.ico",
   },
   openGraph: {
     title: "Guilders - AI-Powered Personal Finance Management",

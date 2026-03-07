@@ -1,8 +1,14 @@
+import { createFileRoute } from "@tanstack/react-router";
+
 import { Separator } from "@/components/ui/separator";
 
 import { AccountForm } from "./account-form";
 
-export default function AccountPage() {
+export const Route = createFileRoute("/(pages)/(protected)/settings/account/")({
+  component: AccountPage,
+});
+
+function AccountPage() {
   return (
     <div className="space-y-6">
       <div>

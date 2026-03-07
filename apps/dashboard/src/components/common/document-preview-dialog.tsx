@@ -1,5 +1,3 @@
-"use client";
-
 import { Download, Loader2, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
@@ -103,7 +101,6 @@ export function DocumentPreviewDialog({
 
         <div className="relative min-h-[60vh] flex-1 overflow-auto bg-muted/30 p-4">
           {isImage && (
-            // oxlint-disable-next-line nextjs/no-img-element
             <img
               src={fileUrl}
               alt={name}

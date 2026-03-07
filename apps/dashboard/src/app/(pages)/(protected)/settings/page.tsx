@@ -1,5 +1,8 @@
-import { redirect } from "next/navigation";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
-export default function ProtectedPage() {
-  redirect("/settings/account");
-}
+export const Route = createFileRoute("/(pages)/(protected)/settings/")({
+  beforeLoad: () => {
+    throw redirect({ to: "/settings/account" });
+  },
+  component: () => null,
+});

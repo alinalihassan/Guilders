@@ -1,5 +1,3 @@
-"use client";
-
 import { FileText, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Document, Page, pdfjs } from "react-pdf";

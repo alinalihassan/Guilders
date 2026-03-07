@@ -2,7 +2,7 @@ import type { CreateDocumentResponse, DocumentEntityType } from "@guilders/api/t
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { api, edenError } from "@/lib/api";
-import { env } from "@/lib/env";
+import { clientEnv } from "@/lib/env";
 
 interface UseFilesOptions {
   entityType: DocumentEntityType;
@@ -72,7 +72,7 @@ export function useFiles({ entityType, entityId, onSuccess }: UseFilesOptions) {
   });
 
   function getFileUrl(id: number): string {
-    return `${env.NEXT_PUBLIC_API_URL}/api/document/${id}/file`;
+    return `${clientEnv.VITE_API_URL}/api/document/${id}/file`;
   }
 
   return {

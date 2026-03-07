@@ -3,6 +3,7 @@ import { openapi } from "@elysiajs/openapi";
 import { Elysia } from "elysia";
 import { CloudflareAdapter } from "elysia/adapter/cloudflare-worker";
 
+import packageJson from "../../../package.json";
 import { env } from "./env";
 import { api } from "./routes";
 import { oauthPagesRoutes } from "./routes/oauth-pages";
@@ -25,6 +26,10 @@ export const app = new Elysia({ adapter: CloudflareAdapter })
   .use(
     openapi({
       documentation: {
+        info: {
+          title: "Guilders API Reference",
+          version: packageJson.version,
+        },
         components: {
           securitySchemes: {
             apiKeyAuth: {

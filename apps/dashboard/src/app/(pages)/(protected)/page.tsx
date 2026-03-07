@@ -1,11 +1,15 @@
-"use client";
+import { createFileRoute } from "@tanstack/react-router";
 
 import { AccountsCard } from "@/components/dashboard/accounts/account-card";
 import { CategoriesCard } from "@/components/dashboard/categories/categories-card";
 import { NetWorthCard } from "@/components/dashboard/net-worth-card";
 import { TransactionsCard } from "@/components/dashboard/transactions/transactions-card";
 
-export default function DashboardPage() {
+export const Route = createFileRoute("/(pages)/(protected)/")({
+  component: DashboardPage,
+});
+
+function DashboardPage() {
   return (
     <div className="grid gap-6 py-4">
       <div className="grid grid-cols-1 gap-6 md:grid-cols-9">

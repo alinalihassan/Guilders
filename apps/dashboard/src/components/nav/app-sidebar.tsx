@@ -1,7 +1,4 @@
-"use client";
-
-import Image from "next/image";
-import Link from "next/link";
+import { Link } from "@tanstack/react-router";
 
 import { Sidebar, SidebarContent, SidebarHeader } from "@/components/ui/sidebar";
 
@@ -12,14 +9,8 @@ export function AppSidebar() {
     <Sidebar variant="inset" collapsible="icon">
       <SidebarHeader>
         <div className="flex h-8 items-center justify-center">
-          <Link href="/" className="flex items-center">
-            <Image
-              src="/assets/logo/logo.svg"
-              alt="Guilders Logo"
-              height={32}
-              width={32}
-              priority
-            />
+          <Link to="/" className="flex items-center">
+            <img src="/assets/logo/logo.svg" alt="Guilders Logo" height={32} width={32} />
           </Link>
         </div>
       </SidebarHeader>
