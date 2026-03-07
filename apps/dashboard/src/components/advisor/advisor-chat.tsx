@@ -295,7 +295,7 @@ export function AdvisorChat({ chatId, initialMessages }: AdvisorChatProps) {
             onKeyDown={onKeyDown}
             onChange={(e) => setInputText(e.target.value)}
             placeholder="Ask anything..."
-            className="max-h-64 min-h-20 w-full resize-none bg-transparent px-3 py-2 text-sm outline-none placeholder:text-muted-foreground"
+            className="max-h-64 min-h-16 w-full resize-none bg-transparent px-3 py-2 text-sm outline-none placeholder:text-muted-foreground"
           />
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-1">
