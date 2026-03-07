@@ -42,7 +42,11 @@ export function UserButton() {
             } catch {
               // Session may already be invalid; still redirect
             }
-            router.navigate({ to: "/login" });
+            router.navigate({
+              to: "/login",
+              search: { redirect: "", message: "", error: "", success: "" },
+              replace: true,
+            });
           }}
         >
           Log out

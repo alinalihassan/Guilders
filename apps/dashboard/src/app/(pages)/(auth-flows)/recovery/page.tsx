@@ -57,7 +57,11 @@ function RecoveryPage() {
       toast.success("Password updated", {
         description: "You can now sign in with your new password.",
       });
-      router.navigate({ to: "/login" });
+      router.navigate({
+        to: "/login",
+        search: { redirect: "", message: "", error: "", success: "" },
+        replace: true,
+      });
     } catch {
       toast.error("Failed to update password", {
         description: "Please try again.",
