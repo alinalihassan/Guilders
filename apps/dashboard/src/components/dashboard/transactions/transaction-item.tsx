@@ -63,9 +63,11 @@ export function TransactionItem({ transaction }: TransactionItemProps) {
       </div>
       <div className="text-right">
         <p className="text-sm text-gray-700 dark:text-gray-300">
-          {new Date(transaction.date).toLocaleDateString()}
+          {new Date(transaction.timestamp).toLocaleDateString()}
         </p>
-        <p className="text-xs text-gray-500">{new Date(transaction.date).toLocaleTimeString()}</p>
+        <p className="text-xs text-gray-500">
+          {new Date(transaction.timestamp).toLocaleTimeString()}
+        </p>
       </div>
     </div>
   );

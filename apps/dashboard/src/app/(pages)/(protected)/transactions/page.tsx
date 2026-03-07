@@ -189,7 +189,7 @@ export default function TransactionsPage() {
             )
           ) : (
             filteredTransactions
-              .toSorted((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+              .toSorted((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
               .map((transaction) => (
                 <TransactionItem key={transaction.id} transaction={transaction} />
               ))

@@ -37,7 +37,7 @@ export const transactionRoutes = new Elysia({
             user_id: user.id,
           },
         },
-        orderBy: (transactions, { desc }) => desc(transactions.date),
+        orderBy: (transactions, { desc }) => desc(transactions.timestamp),
       });
     },
     {
@@ -97,14 +97,14 @@ export const transactionRoutes = new Elysia({
           .set({ value: newValue.toString(), updated_at: new Date() })
           .where(eq(account.id, body.account_id));
 
-        // Create transaction
+        // Create transaction (TypeBox validates string; Drizzle expects Date)
         const [transactionResult] = await tx
           .insert(transaction)
           .values({
             account_id: body.account_id,
             amount: body.amount,
             currency: body.currency,
-            date: body.date,
+            timestamp: new Date(body.timestamp),
             description: body.description,
             category_id: body.category_id,
             provider_transaction_id: body.provider_transaction_id || null,
@@ -212,7 +212,9 @@ export const transactionRoutes = new Elysia({
         "category_id" in unlockedBody ? unlockedBody.category_id : existingTransaction.category_id;
       const effectiveAmount = unlockedBody.amount ?? existingTransaction.amount;
       const effectiveCurrency = unlockedBody.currency ?? existingTransaction.currency;
-      const effectiveDate = unlockedBody.date ?? existingTransaction.date;
+      const rawTimestamp = unlockedBody.timestamp ?? existingTransaction.timestamp;
+      const effectiveTimestamp =
+        typeof rawTimestamp === "string" ? new Date(rawTimestamp) : rawTimestamp;
       const effectiveDescription = unlockedBody.description ?? existingTransaction.description;
       const effectiveDocuments = unlockedBody.documents ?? existingTransaction.documents;
       const effectiveProviderTransactionId =
@@ -270,7 +272,7 @@ export const transactionRoutes = new Elysia({
             account_id: effectiveAccountId,
             amount: effectiveAmount,
             currency: effectiveCurrency,
-            date: effectiveDate,
+            timestamp: effectiveTimestamp,
             description: effectiveDescription,
             category_id: effectiveCategoryId,
             provider_transaction_id: effectiveProviderTransactionId,

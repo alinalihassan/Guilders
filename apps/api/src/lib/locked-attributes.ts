@@ -24,7 +24,7 @@ export type TransactionLockableField =
   | "amount"
   | "category_id"
   | "currency"
-  | "date"
+  | "timestamp"
   | "description"
   | "provider_transaction_id"
   | "documents";
@@ -89,7 +89,7 @@ const SYNCED_TRANSACTION_LOCKED_FIELDS: readonly TransactionLockableField[] = [
   "amount",
   "category_id",
   "currency",
-  "date",
+  "timestamp",
   "description",
   "provider_transaction_id",
 ] as const;

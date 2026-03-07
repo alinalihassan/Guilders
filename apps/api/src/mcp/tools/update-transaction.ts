@@ -12,7 +12,7 @@ type UpdateTransactionInput = {
   account_id?: number;
   amount?: number;
   currency?: string;
-  date?: string;
+  timestamp?: string;
   description?: string;
   category_id?: number | null;
 };
@@ -26,7 +26,7 @@ export const updateTransactionTool: McpToolDefinition<UpdateTransactionInput> = 
     account_id: z.number().int().optional(),
     amount: z.number().optional(),
     currency: z.string().length(3).optional(),
-    date: z.string().date().optional(),
+    timestamp: z.string().min(1).optional(),
     description: z.string().min(1).optional(),
     category_id: z.number().int().nullable().optional(),
   },
@@ -52,7 +52,7 @@ export const updateTransactionTool: McpToolDefinition<UpdateTransactionInput> = 
       if (updates.account_id !== undefined) body.account_id = updates.account_id;
       if (updates.amount !== undefined) body.amount = updates.amount;
       if (updates.currency !== undefined) body.currency = updates.currency;
-      if (updates.date !== undefined) body.date = updates.date;
+      if (updates.timestamp !== undefined) body.timestamp = updates.timestamp;
       if (updates.description !== undefined) body.description = updates.description;
       if (updates.category_id !== undefined) body.category_id = updates.category_id;
 
@@ -72,7 +72,9 @@ export const updateTransactionTool: McpToolDefinition<UpdateTransactionInput> = 
       const effectiveAccountId = (allowed.account_id as number) ?? existing.account_id;
       const effectiveAmount = allowed.amount !== undefined ? allowed.amount : existing.amount;
       const effectiveCurrency = (allowed.currency as string) ?? existing.currency;
-      const effectiveDate = (allowed.date as string) ?? existing.date;
+      const rawTimestamp = (allowed.timestamp as string | undefined) ?? existing.timestamp;
+      const effectiveTimestamp =
+        typeof rawTimestamp === "string" ? new Date(rawTimestamp) : rawTimestamp;
       const effectiveDescription = (allowed.description as string) ?? existing.description;
       const effectiveCategoryId =
         "category_id" in allowed ? (allowed.category_id as number | null) : existing.category_id;
@@ -136,7 +138,7 @@ export const updateTransactionTool: McpToolDefinition<UpdateTransactionInput> = 
             account_id: effectiveAccountId,
             amount: String(effectiveAmount),
             currency: effectiveCurrency,
-            date: effectiveDate,
+            timestamp: effectiveTimestamp,
             description: effectiveDescription,
             category_id: effectiveCategoryId,
             updated_at: new Date(),

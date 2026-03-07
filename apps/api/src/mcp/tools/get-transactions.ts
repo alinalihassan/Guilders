@@ -36,11 +36,13 @@ export const getTransactionsTool: McpToolDefinition<GetTransactionsInput> = {
       }
 
       const db = createDb();
+      const fromDate = from ? (typeof from === "string" ? new Date(from) : from) : null;
+      const toDate = to ? (typeof to === "string" ? new Date(to) : to) : null;
       const conditions = [
         eq(account.user_id, userId),
         ...(accountId !== undefined ? [eq(transaction.account_id, accountId)] : []),
-        ...(from ? [gte(transaction.date, from)] : []),
-        ...(to ? [lte(transaction.date, to)] : []),
+        ...(fromDate ? [gte(transaction.timestamp, fromDate)] : []),
+        ...(toDate ? [lte(transaction.timestamp, toDate)] : []),
       ];
 
       const userTransactions = await db
@@ -48,7 +50,7 @@ export const getTransactionsTool: McpToolDefinition<GetTransactionsInput> = {
         .from(transaction)
         .innerJoin(account, eq(transaction.account_id, account.id))
         .where(and(...conditions))
-        .orderBy(desc(transaction.date))
+        .orderBy(desc(transaction.timestamp))
         .limit(limit);
 
       const rawTransactions = userTransactions.map((row) => row.transaction);

@@ -335,7 +335,9 @@ export class EnableBankingProvider implements IProvider {
         Number(t.transaction_amount.amount) * (t.credit_debit_indicator === "DBIT" ? -1 : 1),
       ),
       currency: t.transaction_amount.currency,
-      date: t.booking_date ?? t.value_date ?? t.transaction_date ?? new Date().toISOString(),
+      timestamp: new Date(
+        t.booking_date ?? t.value_date ?? t.transaction_date ?? new Date().toISOString(),
+      ),
       description: t.remittance_information?.join(", ") ?? "",
       provider_transaction_id: t.transaction_id ?? t.entry_reference ?? null,
     }));

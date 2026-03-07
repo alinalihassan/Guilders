@@ -10,7 +10,7 @@ type CreateTransactionInput = {
   account_id: number;
   amount: number;
   currency: string;
-  date: string;
+  timestamp: string;
   description: string;
   category_id?: number;
 };
@@ -23,11 +23,14 @@ export const createTransactionTool: McpToolDefinition<CreateTransactionInput> = 
     account_id: z.number().int(),
     amount: z.number(),
     currency: z.string().length(3),
-    date: z.string().date(),
+    timestamp: z.string().min(1),
     description: z.string().min(1),
     category_id: z.number().int().optional(),
   },
-  handler: async ({ account_id, amount, currency, date, description, category_id }, { userId }) => {
+  handler: async (
+    { account_id, amount, currency, timestamp, description, category_id },
+    { userId },
+  ) => {
     try {
       const db = createDb();
 
@@ -89,7 +92,7 @@ export const createTransactionTool: McpToolDefinition<CreateTransactionInput> = 
             account_id,
             amount: amount.toString(),
             currency,
-            date,
+            timestamp: new Date(timestamp),
             description,
             category_id: category_id ?? null,
           })

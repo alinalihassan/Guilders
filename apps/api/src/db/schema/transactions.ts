@@ -1,5 +1,5 @@
+import { Type } from "@sinclair/typebox";
 import {
-  date,
   index,
   integer,
   jsonb,
@@ -34,7 +34,6 @@ export const transaction = pgTable(
     currency: varchar("currency", { length: 3 })
       .notNull()
       .references(() => currency.code),
-    date: date("date").notNull(),
     description: text("description").notNull(),
     documents: varchar("documents", { length: 255 }).array(),
     id: serial("id").primaryKey(),
@@ -45,6 +44,7 @@ export const transaction = pgTable(
     provider_transaction_id: varchar("provider_transaction_id", {
       length: 255,
     }),
+    timestamp: timestamp("timestamp", { withTimezone: true }).notNull(),
     updated_at: timestamp("updated_at").notNull().defaultNow(),
   },
   (table) => [
@@ -52,7 +52,7 @@ export const transaction = pgTable(
     index("transaction_account_idx").on(table.account_id),
     index("transaction_category_idx").on(table.category_id),
     index("transaction_currency_idx").on(table.currency),
-    index("transaction_date_idx").on(table.date),
+    index("transaction_timestamp_idx").on(table.timestamp),
   ],
 );
 
@@ -60,4 +60,6 @@ export type Transaction = typeof transaction.$inferSelect;
 export type InsertTransaction = typeof transaction.$inferInsert;
 
 export const selectTransactionSchema = createSelectSchema(transaction);
-export const insertTransactionSchema = createInsertSchema(transaction);
+export const insertTransactionSchema = createInsertSchema(transaction, {
+  timestamp: Type.String(),
+});
