@@ -23,7 +23,7 @@ export const createTransactionTool: McpToolDefinition<CreateTransactionInput> = 
     account_id: z.number().int(),
     amount: z.number(),
     currency: z.string().length(3),
-    timestamp: z.string().min(1),
+    timestamp: z.iso.datetime(),
     description: z.string().min(1),
     category_id: z.number().int().optional(),
   },

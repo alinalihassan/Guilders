@@ -26,7 +26,7 @@ export const updateTransactionTool: McpToolDefinition<UpdateTransactionInput> = 
     account_id: z.number().int().optional(),
     amount: z.number().optional(),
     currency: z.string().length(3).optional(),
-    timestamp: z.string().min(1).optional(),
+    timestamp: z.iso.datetime().optional(),
     description: z.string().min(1).optional(),
     category_id: z.number().int().nullable().optional(),
   },
