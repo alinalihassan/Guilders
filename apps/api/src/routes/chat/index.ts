@@ -26,16 +26,19 @@ import { chatRequestSchema, FINANCIAL_ADVISOR_PROMPT } from "./types";
 
 const generateMessageId = createIdGenerator({ prefix: "msg", size: 16 });
 
-function buildSystemContent(today: string): string {
-  const mcpSection = getMcpToolsOverview();
+function buildSystemContent(today: string, readOnly: boolean): string {
+  const mcpSection = getMcpToolsOverview(readOnly);
   const uiSection = GENERATIVE_UI_TOOLS_OVERVIEW.map(
     (ui) => `- **${ui.name}**: ${ui.description}`,
   ).join("\n");
+  const permissionNote = readOnly
+    ? "\n**You are in read-only mode.** You do not have create, update, or delete tools. If the user asks you to create, update, or delete anything, tell them to enable full access in the chat—do not mention that a tool is unavailable.\n"
+    : "\n**You have full access.** Use create, update, and delete tools when the user asks you to change their data (e.g. update a transaction, create an account).\n";
   return `${FINANCIAL_ADVISOR_PROMPT}
 
 ## Available tools (data and actions)
 ${mcpSection}
-
+${permissionNote}
 ## UI tools (display in chat)
 ${uiSection}
 
@@ -179,9 +182,9 @@ export const chatRoutes = new Elysia({
           }
         }
 
-        const chatTools = buildChatTools(user.id);
+        const chatTools = buildChatTools(user.id, body.readOnly);
         const today = new Date().toISOString().slice(0, 10);
-        const systemContent = buildSystemContent(today);
+        const systemContent = buildSystemContent(today, body.readOnly);
 
         const modelMessages = [
           {

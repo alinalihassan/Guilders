@@ -1,14 +1,19 @@
 import { tool } from "ai";
 import * as z from "zod/v4";
 
+import { McpScope } from "../../mcp/scopes";
 import { mcpTools } from "../../mcp/tools";
 import type { McpContentBlock, McpToolContext } from "../../mcp/tools/types";
 
 /**
  * Returns a markdown list of MCP tool names and descriptions for use in the system prompt.
+ * When readOnly is true, only tools with requiredScope "read" are listed.
  */
-export function getMcpToolsOverview(): string {
-  return mcpTools.map((t) => `- **${t.name}**: ${t.description}`).join("\n");
+export function getMcpToolsOverview(readOnly: boolean): string {
+  const tools = readOnly
+    ? mcpTools.filter((t) => t.requiredScope === McpScope.read)
+    : mcpTools;
+  return tools.map((t) => `- **${t.name}**: ${t.description}`).join("\n");
 }
 
 /** AI SDK content block for tool result: text, media (image), or file-data (blob required). */
@@ -56,13 +61,17 @@ function mcpContentToModelOutput(
 
 /**
  * Converts MCP tool definitions into AI SDK `tool()` objects for use with `streamText`.
+ * When readOnly is true, only tools with requiredScope "read" are included.
  */
-export function buildChatTools(userId: string) {
+export function buildChatTools(userId: string, readOnly: boolean) {
   const context: McpToolContext = { userId };
+  const toolsToUse = readOnly
+    ? mcpTools.filter((t) => t.requiredScope === McpScope.read)
+    : mcpTools;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const tools: Record<string, any> = {};
 
-  for (const mcpTool of mcpTools) {
+  for (const mcpTool of toolsToUse) {
     const schema = z.object(mcpTool.inputSchema);
 
     tools[mcpTool.name] = tool({
