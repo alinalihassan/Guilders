@@ -325,6 +325,7 @@ export function AdvisorChat({ chatId, initialMessages }: AdvisorChatProps) {
       }
       try {
         await regenerate();
+        invalidateChatLimits();
       } catch {
         toast.error("Couldn't regenerate the response. Please try again.");
       }

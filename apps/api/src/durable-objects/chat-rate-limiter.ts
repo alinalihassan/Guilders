@@ -66,46 +66,34 @@ export class ChatRateLimiter extends DurableObject {
       });
     }
 
-    const timestamps = await this.getTimestampsInWindow(periodSeconds);
-    const used = timestamps.length;
-    const resetAt = this.computeResetAt(timestamps, periodSeconds);
-
-    if (used >= limit) {
-      return new Response(
-        JSON.stringify({
-          allowed: false,
-          remaining: 0,
-          used,
-          limit,
-          resetAt,
-        }),
-        {
-          status: 200,
-          headers: { "Content-Type": "application/json" },
-        },
-      );
-    }
-
     const nowSec = Math.floor(Date.now() / 1000);
-    const updated = [...timestamps, nowSec];
-    await this.ctx.storage.put(STORAGE_KEY, updated);
+    const result = await this.ctx.storage.transaction(async (txn) => {
+      const raw = (await txn.get<number[]>(STORAGE_KEY)) ?? [];
+      const cutoff = nowSec - periodSeconds;
+      const timestamps = raw.filter((t) => t >= cutoff);
+      const used = timestamps.length;
+      const resetAt = this.computeResetAt(timestamps, periodSeconds);
 
-    const remaining = limit - updated.length;
-    const newResetAt = this.computeResetAt(updated, periodSeconds);
+      if (used >= limit) {
+        return { allowed: false, remaining: 0, used, limit, resetAt };
+      }
 
-    return new Response(
-      JSON.stringify({
+      const updated = [...timestamps, nowSec];
+      await txn.put(STORAGE_KEY, updated);
+      const newResetAt = this.computeResetAt(updated, periodSeconds);
+      return {
         allowed: true,
-        remaining,
+        remaining: limit - updated.length,
         used: updated.length,
         limit,
         resetAt: newResetAt,
-      }),
-      {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-      },
-    );
+      };
+    });
+
+    return new Response(JSON.stringify(result), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 
   private async status(request: Request): Promise<Response> {
