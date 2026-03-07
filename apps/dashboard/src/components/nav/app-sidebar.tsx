@@ -3,11 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarHeader,
-} from "@/components/ui/sidebar";
+import { Sidebar, SidebarContent, SidebarHeader } from "@/components/ui/sidebar";
 
 import { MainMenu } from "./mainmenu";
 

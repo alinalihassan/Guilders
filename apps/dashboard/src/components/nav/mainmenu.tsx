@@ -92,7 +92,7 @@ export function MainMenu() {
   );
 
   return (
-    <nav className="mt-4 flex flex-1 flex-col py-4">
+    <nav className="flex flex-1 flex-col py-4">
       <div className="flex-1">
         <TooltipProvider delayDuration={0}>
           <ul className="flex flex-col items-center gap-1.5">
