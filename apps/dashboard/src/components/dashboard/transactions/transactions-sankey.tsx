@@ -235,87 +235,97 @@ export function TransactionsSankey({
 
     const normalizedTransactions = transactions.map((transaction) => {
       const amount = toFiniteNumber(transaction.amount);
-      const category =
+      const categoryKey =
+        transaction.category_id != null
+          ? `category:${transaction.category_id}`
+          : "__uncategorized__";
+      const categoryLabel =
         (transaction.category_id != null
           ? categoryLookup.get(transaction.category_id)?.name
-          : undefined) ?? "uncategorized";
+          : undefined) ?? "Uncategorized";
       const convertedAmount = convertAmountSafely(amount, transaction.currency, userCurrency);
 
       return {
         amount,
-        category,
+        categoryKey,
+        categoryLabel,
         convertedAmount,
       };
     });
 
-    // Separate income and expense transactions
+    const keyToLabel = new Map<string, string>();
+    for (const t of normalizedTransactions) {
+      keyToLabel.set(t.categoryKey, t.categoryLabel);
+    }
+
+    // Separate income and expense transactions (by internal key)
     const incomeCategories = new Set<string>();
     const expenseCategories = new Set<string>();
 
     for (const t of normalizedTransactions) {
-      if (t.amount > 0) incomeCategories.add(t.category);
-      if (t.amount < 0) expenseCategories.add(t.category);
+      if (t.amount > 0) incomeCategories.add(t.categoryKey);
+      if (t.amount < 0) expenseCategories.add(t.categoryKey);
     }
 
     // Convert sets to arrays for mapping
     const incomeArray = Array.from(incomeCategories);
     const expenseArray = Array.from(expenseCategories);
 
-    // Calculate total values for each category
+    // Calculate total values for each category (keyed by categoryKey)
     const categoryTotals = new Map<string, number>();
 
     for (const t of normalizedTransactions) {
       if (t.amount === 0) continue;
       const amount = Math.abs(t.convertedAmount);
-      const key = `${t.category} (${t.amount > 0 ? "Income" : "Expense"})`;
+      const key = `${t.categoryKey} (${t.amount > 0 ? "Income" : "Expense"})`;
       categoryTotals.set(key, (categoryTotals.get(key) || 0) + amount);
     }
 
-    // Create nodes array: income categories -> Income node -> expense categories
+    // Create nodes array: use categoryLabel for display names, categoryKey for aggregation
     const nodes: SankeyNode[] = [
       ...incomeArray.map(
-        (cat): SankeyNode => ({
-          name: `${cat} (Income)`,
-          value: categoryTotals.get(`${cat} (Income)`) || 0,
+        (catKey): SankeyNode => ({
+          name: `${keyToLabel.get(catKey) ?? catKey} (Income)`,
+          value: categoryTotals.get(`${catKey} (Income)`) || 0,
         }),
       ),
       { name: "Income", value: 0 }, // Central income node
       ...expenseArray.map(
-        (cat): SankeyNode => ({
-          name: `${cat} (Expense)`,
-          value: categoryTotals.get(`${cat} (Expense)`) || 0,
+        (catKey): SankeyNode => ({
+          name: `${keyToLabel.get(catKey) ?? catKey} (Expense)`,
+          value: categoryTotals.get(`${catKey} (Expense)`) || 0,
         }),
       ),
     ];
 
-    // Create indices maps
-    const incomeIndices = new Map(incomeArray.map((cat, index) => [cat, index]));
+    // Create indices maps (by categoryKey)
+    const incomeIndices = new Map(incomeArray.map((catKey, index) => [catKey, index]));
     const incomeNodeIndex = incomeArray.length; // Index of the central "Income" node
     const expenseIndices = new Map(
-      expenseArray.map((cat, index) => [cat, index + incomeArray.length + 1]),
+      expenseArray.map((catKey, index) => [catKey, index + incomeArray.length + 1]),
     );
 
-    const categoryNameToColor = new Map<string, string>();
+    const categoryKeyToColor = new Map<string, string>();
     for (const c of categoryLookup.values()) {
-      if (c.color) categoryNameToColor.set(c.name, c.color);
+      if (c.color) categoryKeyToColor.set(`category:${c.id}`, c.color);
     }
 
     const links: SankeyLink[] = [];
     let colorIndex = 0;
 
     // First set of links: from income categories to central Income node
-    for (const incomeCat of incomeArray) {
+    for (const incomeCatKey of incomeArray) {
       const incomeForCategory = normalizedTransactions
-        .filter((t) => t.amount > 0 && t.category === incomeCat)
+        .filter((t) => t.amount > 0 && t.categoryKey === incomeCatKey)
         .reduce((sum, t) => sum + t.convertedAmount, 0);
 
       if (incomeForCategory > 0) {
         links.push({
-          source: incomeIndices.get(incomeCat) ?? 0,
+          source: incomeIndices.get(incomeCatKey) ?? 0,
           target: incomeNodeIndex,
           value: incomeForCategory,
           flowIndex: (colorIndex % 12) + 1,
-          color: categoryNameToColor.get(incomeCat),
+          color: categoryKeyToColor.get(incomeCatKey),
         });
         colorIndex++;
       }
@@ -325,20 +335,20 @@ export function TransactionsSankey({
     colorIndex = 0;
 
     // Second set of links: from central Income node to expense categories
-    for (const expenseCat of expenseArray) {
+    for (const expenseCatKey of expenseArray) {
       const expenseForCategory = Math.abs(
         normalizedTransactions
-          .filter((t) => t.amount < 0 && t.category === expenseCat)
+          .filter((t) => t.amount < 0 && t.categoryKey === expenseCatKey)
           .reduce((sum, t) => sum + t.convertedAmount, 0),
       );
 
       if (expenseForCategory > 0) {
         links.push({
           source: incomeNodeIndex,
-          target: expenseIndices.get(expenseCat) ?? 0,
+          target: expenseIndices.get(expenseCatKey) ?? 0,
           value: expenseForCategory,
           flowIndex: (colorIndex % 12) + 1,
-          color: categoryNameToColor.get(expenseCat),
+          color: categoryKeyToColor.get(expenseCatKey),
         });
         colorIndex++;
       }
