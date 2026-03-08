@@ -1,4 +1,3 @@
-import NumberFlow from "@/components/ui/number-flow";
 import { createFileRoute } from "@tanstack/react-router";
 import { Filter, Plus, Search } from "lucide-react";
 import { useRef, useState } from "react";
@@ -9,6 +8,7 @@ import { TransactionsEmptyPlaceholder } from "@/components/dashboard/transaction
 import { TransactionsSankey } from "@/components/dashboard/transactions/transactions-sankey";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import NumberFlow from "@/components/ui/number-flow";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDialog } from "@/hooks/useDialog";
 import { useCategories } from "@/lib/queries/useCategories";

@@ -33,7 +33,6 @@ import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useDialog } from "@/hooks/useDialog";
-import { CLOSE_DELAY_MS } from "@/lib/store/dialogStore";
 import { type AccountSubtype, accountSubtypeLabels, accountSubtypes } from "@/lib/account-types";
 import { useRemoveAccount, useUpdateAccount } from "@/lib/queries/useAccounts";
 import { useReconnectConnection } from "@/lib/queries/useConnections";
@@ -42,6 +41,7 @@ import { useFiles } from "@/lib/queries/useFiles";
 import { useInstitutionConnection } from "@/lib/queries/useInstitutionConnection";
 import { useInstitutionByAccountId } from "@/lib/queries/useInstitutions";
 import { useProviderConnections } from "@/lib/queries/useProviderConnections";
+import { CLOSE_DELAY_MS } from "@/lib/store/dialogStore";
 
 import { FileUploader } from "../common/file-uploader";
 import { AccountIcon } from "../dashboard/accounts/account-icon";

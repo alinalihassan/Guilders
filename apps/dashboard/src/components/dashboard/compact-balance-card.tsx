@@ -1,10 +1,10 @@
 import type { Account } from "@guilders/api/types";
-import NumberFlow from "@/components/ui/number-flow";
 import { useMemo } from "react";
 
 import { BalanceChart } from "@/components/common/balance-chart";
 import { ChangeIndicator } from "@/components/common/change-indicator";
 import { Card, CardContent } from "@/components/ui/card";
+import NumberFlow from "@/components/ui/number-flow";
 import { useBalanceHistories } from "@/lib/queries/useBalanceHistory";
 import { useRates } from "@/lib/queries/useRates";
 import { useUser } from "@/lib/queries/useUser";
