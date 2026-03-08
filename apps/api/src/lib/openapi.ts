@@ -52,7 +52,7 @@ const countryText = `
 Countries are a reference list with ISO 3166 codes and names. They are used for addresses, region or locale selection, and provider or institution metadata (e.g. which country a bank or connection belongs to).
 `;
 
-export const getOpenAPI = async () => {
+export const getOpenAPI = () => {
   return openapi({
     documentation: {
       info: {

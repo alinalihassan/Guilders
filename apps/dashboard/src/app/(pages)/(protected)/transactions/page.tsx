@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Filter, Plus, Search } from "lucide-react";
-import { useMemo, useRef, useState } from "react";
+import { useRef, useState } from "react";
 
 import { TransactionItem } from "@/components/dashboard/transactions/transaction-item";
 import { TransactionsCard } from "@/components/dashboard/transactions/transactions-card";
@@ -36,7 +36,7 @@ export const Route = createFileRoute("/(pages)/(protected)/transactions/")({
 function TransactionsPage() {
   const { data: transactions, isLoading } = useTransactions();
   const { data: categories } = useCategories();
-  const categoryLookup = useMemo(() => buildCategoryLookup(categories ?? []), [categories]);
+  const categoryLookup = buildCategoryLookup(categories ?? []);
   const { data: user, isLoading: isLoadingUser } = useUser();
   const { open: openAddTransaction } = useDialog("addTransaction");
   const [searchQuery, setSearchQuery] = useState("");

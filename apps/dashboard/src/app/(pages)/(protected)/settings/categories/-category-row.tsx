@@ -2,8 +2,9 @@
 
 import { useDraggable, useDroppable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
+import { DEFAULT_CATEGORY_COLOR } from "@guilders/api/types";
 import { CornerDownRight, GripVertical, Trash2 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 
 import {
   AlertDialog,
@@ -65,10 +66,6 @@ export function CategoryRow({ category, onUpdate, onRemove, isRemoving }: Catego
       }
     : undefined;
 
-  useEffect(() => {
-    if (isEditingName) inputRef.current?.focus();
-  }, [isEditingName]);
-
   const saveName = () => {
     const trimmed = nameDraft.trim();
     if (trimmed && trimmed !== category.name) {
@@ -118,7 +115,7 @@ export function CategoryRow({ category, onUpdate, onRemove, isRemoving }: Catego
           <GripVertical className="h-4 w-4" />
         </button>
         <CategoryColorIconSelector
-          value={category.color ?? "#64748b"}
+          value={category.color ?? DEFAULT_CATEGORY_COLOR}
           icon={category.icon ?? null}
           onColorSelect={(color) => onUpdate(category.id, { color })}
           onIconSelect={(icon) => onUpdate(category.id, { icon })}

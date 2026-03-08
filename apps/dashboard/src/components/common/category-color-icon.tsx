@@ -1,10 +1,9 @@
+import { DEFAULT_CATEGORY_COLOR } from "@guilders/api/types";
 import { CircleDot } from "lucide-react";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 
 import { DEFAULT_CATEGORY_ICON } from "@/lib/constants";
 import { cn } from "@/lib/utils";
-
-const DEFAULT_COLOR = "#64748b";
 
 type CategoryLike = { color?: string | null; icon?: string | null };
 
@@ -32,7 +31,8 @@ export function CategoryColorIcon({
   size = "default",
   className,
 }: CategoryColorIconProps) {
-  const color = (colorProp ?? category?.color ?? DEFAULT_COLOR).trim() || DEFAULT_COLOR;
+  const color =
+    (colorProp ?? category?.color ?? DEFAULT_CATEGORY_COLOR).trim() || DEFAULT_CATEGORY_COLOR;
   const iconName = (iconProp ?? category?.icon)?.trim() || DEFAULT_CATEGORY_ICON;
 
   return (

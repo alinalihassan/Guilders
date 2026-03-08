@@ -17,10 +17,7 @@ export function useCategories() {
       return (data ?? []) as Category[];
     },
   });
-  const categoryTree = useMemo(
-    () => buildCategoryTree(query.data ?? []),
-    [query.data],
-  );
+  const categoryTree = useMemo(() => buildCategoryTree(query.data ?? []), [query.data]);
   return { ...query, categoryTree };
 }
 

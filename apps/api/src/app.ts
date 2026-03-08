@@ -18,7 +18,7 @@ export const app = new Elysia({ adapter: CloudflareAdapter })
       credentials: true,
     }),
   )
-  .use(await getOpenAPI())
+  .use(getOpenAPI())
   .use(oauthPagesRoutes)
   .use(oauthWellKnownRoutes)
   .use(api)

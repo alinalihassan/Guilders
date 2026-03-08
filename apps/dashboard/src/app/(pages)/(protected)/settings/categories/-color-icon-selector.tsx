@@ -44,7 +44,7 @@ export function CategoryColorIconSelector({
           className={cn("shrink-0 transition-transform duration-200 active:scale-95", className)}
           aria-label="Choose color and icon"
         >
-          <CategoryColorIcon color={value?.trim() || PRESET_COLORS[0]} icon={icon} size={size} />
+          <CategoryColorIcon color={normalizedColor} icon={icon} size={size} />
         </button>
       </PopoverTrigger>
       <PopoverContent

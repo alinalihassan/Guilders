@@ -1,4 +1,5 @@
 export type { App } from "./app";
+export { DEFAULT_CATEGORY_COLOR } from "./lib/constants";
 import type { Document as DbDocument } from "./db/schema/documents";
 export type { Account, CreateAccount, UpdateAccount } from "./routes/account/types";
 export type { ChatLimits } from "./routes/chat/types";

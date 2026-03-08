@@ -2,11 +2,7 @@ import { waitUntil } from "cloudflare:workers";
 import { and, asc, eq } from "drizzle-orm";
 import { Elysia, status, t } from "elysia";
 
-import {
-  category,
-  insertCategorySchema,
-  selectCategorySchema,
-} from "../../db/schema/categories";
+import { category, insertCategorySchema, selectCategorySchema } from "../../db/schema/categories";
 import { deliverUserWebhookEvents } from "../../lib/user-webhooks";
 import { isValidIconName } from "../../lib/valid-icon-name";
 import { authPlugin } from "../../middleware/auth";
@@ -39,7 +35,8 @@ export const categoryRoutes = new Elysia({
       response: t.Array(t.Ref("#/components/schemas/Category")),
       detail: {
         summary: "Get categories",
-        description: "Retrieve all categories for the authenticated user. Build a tree client-side using parent_id if needed.",
+        description:
+          "Retrieve all categories for the authenticated user. Build a tree client-side using parent_id if needed.",
       },
     },
   )

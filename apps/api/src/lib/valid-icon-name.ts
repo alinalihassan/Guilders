@@ -8,6 +8,5 @@ const validIconNames = new Set<string>(Object.keys(tags as Record<string, unknow
  * Use this to validate category icon from API input.
  */
 export function isValidIconName(name: string | null | undefined): boolean {
-  if (name == null || name.trim() === "") return false;
-  return validIconNames.has(name.trim());
+  return !!name && validIconNames.has(name.trim());
 }

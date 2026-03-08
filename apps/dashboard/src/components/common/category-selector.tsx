@@ -1,5 +1,5 @@
 import { ChevronsUpDown, Loader2, Plus } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -45,15 +45,12 @@ export function CategorySelector({
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
 
-  const categoryOptions = useMemo(() => {
-    const flat = flattenCategoryTree(categoryTree ?? [], { withDepth: true });
-    if (classification == null) return flat;
-    return flat.filter((c) => c.classification === classification);
-  }, [categoryTree, classification]);
-  const categoryLookup = useMemo(
-    () => buildCategoryLookup(flatCategories ?? []),
-    [flatCategories],
-  );
+  const flatOptions = flattenCategoryTree(categoryTree ?? [], { withDepth: true });
+  const categoryOptions =
+    classification == null
+      ? flatOptions
+      : flatOptions.filter((c) => c.classification === classification);
+  const categoryLookup = buildCategoryLookup(flatCategories ?? []);
   const selectedCategory = value != null ? categoryLookup.get(value) : undefined;
 
   const trimmedSearch = search.trim();

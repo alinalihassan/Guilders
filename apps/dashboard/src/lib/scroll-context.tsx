@@ -14,11 +14,7 @@ export function MainScrollProvider({
   isScrolled,
   children,
 }: MainScrollContextValue & { children: React.ReactNode }) {
-  return (
-    <MainScrollContext.Provider value={{ isScrolled }}>
-      {children}
-    </MainScrollContext.Provider>
-  );
+  return <MainScrollContext.Provider value={{ isScrolled }}>{children}</MainScrollContext.Provider>;
 }
 
 export function useMainScroll() {
