@@ -135,7 +135,7 @@ export function CategoriesForm() {
     const category = categoryLookup.get(draggedId);
     if (!category) return;
 
-    const excludeSelfAndDescendants = getCategoryAndDescendantIds(categoryTree ?? [], draggedId);
+    const affectedIds = getCategoryAndDescendantIds(categoryTree ?? [], draggedId);
 
     let newParentId: number | null = null;
     let newClassification: "income" | "expense" = category.classification as "income" | "expense";
@@ -146,7 +146,7 @@ export function CategoriesForm() {
     } else if (over.id === "root-expense") {
       newParentId = null;
       newClassification = "expense";
-    } else if (typeof over.id === "number" && !excludeSelfAndDescendants.has(over.id)) {
+    } else if (typeof over.id === "number" && !affectedIds.has(over.id)) {
       const target = categoryLookup.get(over.id as number);
       if (target) {
         newParentId = over.id as number;
@@ -170,6 +170,24 @@ export function CategoriesForm() {
         classification: newClassification,
       },
     });
+
+    if (newClassification !== category.classification && affectedIds.size > 1) {
+      for (const id of affectedIds) {
+        if (id === draggedId) continue;
+        const desc = categoryLookup.get(id);
+        if (!desc) continue;
+        updateCategory({
+          id,
+          category: {
+            name: desc.name,
+            parent_id: desc.parent_id ?? undefined,
+            color: desc.color ?? undefined,
+            icon: desc.icon ?? undefined,
+            classification: newClassification,
+          },
+        });
+      }
+    }
   };
 
   const renderSection = (config: SectionConfig) => (
