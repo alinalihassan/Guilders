@@ -40,17 +40,17 @@ export function CategorySelector({
   className,
   classification,
 }: CategorySelectorProps) {
-  const { data: categoriesTree, isLoading } = useCategories();
+  const { categoryTree, isLoading } = useCategories();
   const { mutate: addCategory, isPending: isCreating } = useAddCategory();
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
 
   const categoryOptions = useMemo(() => {
-    const flat = flattenCategoryTree(categoriesTree ?? [], { withDepth: true });
+    const flat = flattenCategoryTree(categoryTree ?? [], { withDepth: true });
     if (classification == null) return flat;
     return flat.filter((c) => c.classification === classification);
-  }, [categoriesTree, classification]);
-  const categoryLookup = useMemo(() => buildCategoryLookup(categoriesTree ?? []), [categoriesTree]);
+  }, [categoryTree, classification]);
+  const categoryLookup = useMemo(() => buildCategoryLookup(categoryTree ?? []), [categoryTree]);
   const selectedCategory = value != null ? categoryLookup.get(value) : undefined;
 
   const trimmedSearch = search.trim();

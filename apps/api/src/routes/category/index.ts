@@ -12,32 +12,7 @@ import { deliverUserWebhookEvents } from "../../lib/user-webhooks";
 import { isValidIconName } from "../../lib/valid-icon-name";
 import { authPlugin } from "../../middleware/auth";
 import { errorSchema } from "../../utils/error";
-import { categoryIdParamSchema, createCategorySchema, categoryTreeSchema } from "./types";
-import type { CategoryTree } from "./types";
-
-function buildCategoryTree(flat: DbCategory[]): CategoryTree[] {
-  const byParent = new Map<number | null, DbCategory[]>();
-  for (const c of flat) {
-    const pid = c.parent_id;
-    if (!byParent.has(pid)) byParent.set(pid, []);
-    byParent.get(pid)!.push(c);
-  }
-  for (const arr of byParent.values()) {
-    arr.sort((a, b) => a.name.localeCompare(b.name));
-  }
-  function children(parentId: number | null): CategoryTree[] {
-    const list = byParent.get(parentId) ?? [];
-    return list.map((c) => {
-      const childList = children(c.id);
-      const node: CategoryTree = {
-        ...c,
-        ...(childList.length > 0 ? { children: childList } : {}),
-      };
-      return node;
-    });
-  }
-  return children(null);
-}
+import { categoryIdParamSchema, createCategorySchema } from "./types";
 
 export const categoryRoutes = new Elysia({
   prefix: "/category",
@@ -49,25 +24,23 @@ export const categoryRoutes = new Elysia({
   .use(authPlugin)
   .model({
     Category: selectCategorySchema,
-    CategoryTree: categoryTreeSchema,
     CreateCategory: insertCategorySchema,
   })
   .get(
     "",
     async ({ user, db }) => {
-      const flat = await db.query.category.findMany({
+      const categories = await db.query.category.findMany({
         where: { user_id: user.id },
         orderBy: (categories) => asc(categories.name),
       });
-      return buildCategoryTree(flat);
+      return categories;
     },
     {
       auth: true,
-      response: t.Array(t.Ref("#/components/schemas/CategoryTree")),
+      response: t.Array(t.Ref("#/components/schemas/Category")),
       detail: {
         summary: "Get categories",
-        description:
-          "Retrieve all categories for the authenticated user as a tree (roots first, each node has optional children sorted by name).",
+        description: "Retrieve all categories for the authenticated user. Build a tree client-side using parent_id if needed.",
       },
     },
   )

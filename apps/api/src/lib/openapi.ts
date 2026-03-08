@@ -39,7 +39,7 @@ Categories are used to group transactions into income and expense categories. Ea
 - **Color** is a hex string (e.g. \`#64748b\`). It is used in the UI to show a tinted badge for the category.
 - **Icon** is a Lucide icon name in kebab-case (e.g. \`circle-dot\`, \`shopping-cart\`, \`utensils\`). The API validates that the icon is a valid Lucide icon name. If omitted or null, the dashboard uses a default icon.
 
-Categories can be nested via \`parent_id\`, allowing hierarchies (e.g. a "Food" category with children "Restaurant", "Groceries"). The child categories are represented by the \`parent\` attribute in the tree response. New users receive default categories with preset names, colors, and icons.
+Categories can be nested via \`parent_id\`, allowing hierarchies (e.g. a "Food" category with children "Restaurant", "Groceries"). The API returns a flat list; each category has \`parent_id\` (null for roots). Build a tree client-side if needed. New users receive default categories with preset names, colors, and icons.
 `;
 
 const currencyText = `

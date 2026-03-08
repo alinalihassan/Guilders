@@ -25,16 +25,16 @@ import { DEFAULT_CATEGORY_ICON, PRESET_COLORS } from "./-constants";
 import { RootDropZone } from "./-root-drop-zone";
 
 export function CategoriesForm() {
-  const { data: categoriesTree, isLoading } = useCategories();
+  const { categoryTree, isLoading } = useCategories();
   const { mutate: addCategory, isPending: isAdding } = useAddCategory();
   const { mutate: updateCategory } = useUpdateCategory();
   const { mutate: removeCategory, isPending: isRemoving } = useRemoveCategory();
 
   const flatList = useMemo(
-    () => flattenCategoryTree(categoriesTree ?? [], { withDepth: true }),
-    [categoriesTree],
+    () => flattenCategoryTree(categoryTree ?? [], { withDepth: true }),
+    [categoryTree],
   );
-  const categoryLookup = useMemo(() => buildCategoryLookup(categoriesTree ?? []), [categoriesTree]);
+  const categoryLookup = useMemo(() => buildCategoryLookup(categoryTree ?? []), [categoryTree]);
 
   const incomeList = useMemo(
     () => flatList.filter((c) => c.classification === "income"),
@@ -133,10 +133,7 @@ export function CategoriesForm() {
       const category = categoryLookup.get(draggedId);
       if (!category) return;
 
-      const excludeSelfAndDescendants = getCategoryAndDescendantIds(
-        categoriesTree ?? [],
-        draggedId,
-      );
+      const excludeSelfAndDescendants = getCategoryAndDescendantIds(categoryTree ?? [], draggedId);
 
       let newParentId: number | null = null;
       let newClassification: "income" | "expense" = category.classification as "income" | "expense";
@@ -173,7 +170,7 @@ export function CategoriesForm() {
         },
       });
     },
-    [categoryLookup, categoriesTree, updateCategory],
+    [categoryLookup, categoryTree, updateCategory],
   );
 
   const renderSection = (
@@ -191,12 +188,7 @@ export function CategoriesForm() {
     rootLabel: string,
   ) => (
     <div className="space-y-2">
-      <h3 className="text-md font-semibold text-foreground">
-        {title}{" "}
-        {list.length > 0 && (
-          <span className="font-normal text-muted-foreground">{list.length}</span>
-        )}
-      </h3>
+      <h3 className="text-md font-semibold text-foreground">{title}</h3>
       <div className="flex flex-wrap items-center gap-3 rounded-lg border border-border/60 bg-muted/20 px-3 py-2.5">
         <CategoryColorIconSelector
           value={addColor}

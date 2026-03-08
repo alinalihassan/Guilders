@@ -14,8 +14,8 @@ interface TransactionItemProps {
 
 export function TransactionItem({ transaction }: TransactionItemProps) {
   const { open } = useDialog("editTransaction");
-  const { data: categoriesTree } = useCategories();
-  const categoryLookup = useMemo(() => buildCategoryLookup(categoriesTree ?? []), [categoriesTree]);
+  const { categoryTree } = useCategories();
+  const categoryLookup = useMemo(() => buildCategoryLookup(categoryTree ?? []), [categoryTree]);
   const category =
     transaction.category_id != null ? categoryLookup.get(transaction.category_id) : undefined;
   const amount = Number(transaction.amount);

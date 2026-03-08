@@ -1,20 +1,27 @@
 import type { Category, CategoryInsert, CategoryTree } from "@guilders/api/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMemo } from "react";
 import { toast } from "sonner";
 
 import { api, edenError } from "../api";
+import { buildCategoryTree } from "../utils/category-tree";
 
 export const queryKey = ["categories"] as const;
 
 export function useCategories() {
-  return useQuery({
+  const query = useQuery({
     queryKey,
-    queryFn: async (): Promise<CategoryTree[]> => {
+    queryFn: async (): Promise<Category[]> => {
       const { data, error } = await api.category.get();
       if (error) throw new Error(edenError(error));
-      return (data ?? []) as CategoryTree[];
+      return (data ?? []) as Category[];
     },
   });
+  const categoryTree = useMemo(
+    () => buildCategoryTree(query.data ?? []),
+    [query.data],
+  );
+  return { ...query, categoryTree };
 }
 
 export function useAddCategory() {

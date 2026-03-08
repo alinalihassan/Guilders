@@ -3,6 +3,33 @@ import type { Category, CategoryTree } from "@guilders/api/types";
 export type CategoryFlatItem = Category & { depth?: number };
 
 /**
+ * Builds a category tree from a flat list (e.g. API response). Roots first, children sorted by name.
+ */
+export function buildCategoryTree(flat: Category[]): CategoryTree[] {
+  const byParent = new Map<number | null, Category[]>();
+  for (const c of flat) {
+    const pid = c.parent_id;
+    if (!byParent.has(pid)) byParent.set(pid, []);
+    byParent.get(pid)!.push(c);
+  }
+  for (const arr of byParent.values()) {
+    arr.sort((a, b) => a.name.localeCompare(b.name));
+  }
+  function children(parentId: number | null): CategoryTree[] {
+    const list = byParent.get(parentId) ?? [];
+    return list.map((c) => {
+      const childList = children(c.id);
+      const node: CategoryTree = {
+        ...c,
+        ...(childList.length > 0 ? { children: childList } : {}),
+      };
+      return node;
+    });
+  }
+  return children(null);
+}
+
+/**
  * Flattens a category tree to a depth-first list (parent then its children, sorted).
  * Each item is the category without `children`. Pass `withDepth: true` for picker indentation.
  */
@@ -53,9 +80,18 @@ export function getCategoryAndDescendantIds(tree: CategoryTree[], categoryId: nu
 /**
  * Builds a map from category id to category (flat, no children).
  * Use for resolving category_id to name/color in transactions and Sankey.
+ * Accepts either a flat list (Category[]) or a tree (CategoryTree[]).
  */
-export function buildCategoryLookup(tree: CategoryTree[]): Map<number, Category> {
+export function buildCategoryLookup(
+  categories: Category[] | CategoryTree[],
+): Map<number, Category> {
   const map = new Map<number, Category>();
+  const isTree = (arr: Category[] | CategoryTree[]): arr is CategoryTree[] =>
+    arr.length > 0 && "children" in arr[0];
+  if (!isTree(categories)) {
+    for (const c of categories) map.set(c.id, c);
+    return map;
+  }
   function visit(nodes: CategoryTree[]) {
     for (const node of nodes) {
       const { children: _c, ...rest } = node;
@@ -63,6 +99,6 @@ export function buildCategoryLookup(tree: CategoryTree[]): Map<number, Category>
       if (node.children?.length) visit(node.children);
     }
   }
-  visit(tree);
+  visit(categories);
   return map;
 }
