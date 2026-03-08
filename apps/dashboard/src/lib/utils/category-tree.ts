@@ -1,5 +1,6 @@
-import type { Category, CategoryTree } from "@guilders/api/types";
+import type { Category } from "@guilders/api/types";
 
+export type CategoryTree = Category & { children?: CategoryTree[] };
 export type CategoryFlatItem = Category & { depth?: number };
 
 /**
