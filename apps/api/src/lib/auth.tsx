@@ -63,6 +63,12 @@ export function createAuth(db?: Database) {
     }),
     appName: "Guilders",
     secret: process.env.BETTER_AUTH_SECRET,
+    advanced: {
+      crossSubDomainCookies: {
+        enabled: true,
+        domain: new URL(baseUrl).hostname.replace(/^[^.]+\./, ""), // e.g. api.guilders.app -> guilders.app
+      },
+    },
     user: {
       additionalFields: {
         currency: {

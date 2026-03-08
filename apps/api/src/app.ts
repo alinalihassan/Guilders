@@ -11,7 +11,14 @@ import { oauthWellKnownRoutes } from "./routes/oauth-well-known";
 
 export const app = new Elysia({ adapter: CloudflareAdapter })
   .use(env())
-  .use(cors())
+  .use(
+    cors({
+      // Reflect request Origin so dashboard gets exact origin (required for cookies)
+      // and API-key clients from any origin are not blocked
+      origin: true,
+      credentials: true,
+    }),
+  )
   .use(
     openapi({
       documentation: {
