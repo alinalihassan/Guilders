@@ -31,7 +31,7 @@ export function CategoryColorSelector({
   const normalizedValue = value?.trim() || PRESET_COLORS[0];
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && e.target instanceof HTMLInputElement) {
+    if (e.key === "Enter" && e.target instanceof HTMLElement) {
       setOpen(false);
     }
   };
