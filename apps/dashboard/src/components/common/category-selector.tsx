@@ -56,7 +56,7 @@ export function CategorySelector({
   const trimmedSearch = search.trim();
   const canCreate =
     trimmedSearch.length > 0 &&
-    !categoryOptions.some((c) => c.name.toLowerCase() === trimmedSearch.toLowerCase());
+    !flatOptions.some((c) => c.name.toLowerCase() === trimmedSearch.toLowerCase());
 
   const handleCreateCategory = () => {
     if (!trimmedSearch) return;
