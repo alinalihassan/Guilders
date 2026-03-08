@@ -201,7 +201,7 @@ export function AccountForm() {
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           <SettingsSubsection
             title="Profile"
-            description="Email and default currency for your account."
+            description="Account settings: email, default currency and time format."
           >
             {profileError ? (
               <p className="text-sm text-destructive">

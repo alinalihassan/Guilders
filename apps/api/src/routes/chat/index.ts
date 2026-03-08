@@ -211,6 +211,7 @@ export const chatRoutes = new Elysia({
           onError(error) {
             console.error("Chat streamText error:", error);
           },
+          headers: { "cf-aig-zdr": "true" },
         });
 
         if (persistenceMode) {
@@ -233,6 +234,7 @@ export const chatRoutes = new Elysia({
             titlePromise = generateText({
               model: aiGateway(unified("workers-ai/@cf/meta/llama-4-scout-17b-16e-instruct")),
               prompt: `Generate a short title (max 6 words, no quotes, no punctuation at the end) for a conversation that starts with:\n"${userText}"`,
+              headers: { "cf-aig-zdr": "true" },
             })
               .then(({ text }) => text.trim() || null)
               .catch(() => null);

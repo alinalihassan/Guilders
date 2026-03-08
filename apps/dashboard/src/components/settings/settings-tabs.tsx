@@ -38,7 +38,7 @@ export function SettingsTabs({ className, items, ...props }: SettingsTabsProps) 
     <ScrollArea>
       <nav
         className={cn(
-          "mb-3 flex h-auto gap-2 rounded-none border-b border-border bg-transparent px-0 py-1 text-foreground",
+          "flex h-auto gap-2 rounded-none bg-transparent px-0 py-1 text-foreground",
           className,
         )}
         {...props}

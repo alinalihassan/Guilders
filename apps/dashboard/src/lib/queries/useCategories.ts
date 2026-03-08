@@ -1,13 +1,15 @@
 import type { Category, CategoryInsert } from "@guilders/api/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMemo } from "react";
 import { toast } from "sonner";
 
 import { api, edenError } from "../api";
+import { buildCategoryTree } from "../utils/category-tree";
 
 export const queryKey = ["categories"] as const;
 
 export function useCategories() {
-  return useQuery({
+  const query = useQuery({
     queryKey,
     queryFn: async (): Promise<Category[]> => {
       const { data, error } = await api.category.get();
@@ -15,13 +17,21 @@ export function useCategories() {
       return (data ?? []) as Category[];
     },
   });
+  const categoryTree = useMemo(() => buildCategoryTree(query.data ?? []), [query.data]);
+  return { ...query, categoryTree };
 }
 
 export function useAddCategory() {
   const queryClient = useQueryClient();
-  return useMutation<Category, Error, Pick<CategoryInsert, "name">>({
+  return useMutation<Category, Error, Partial<CategoryInsert>>({
     mutationFn: async (payload) => {
-      const { data, error } = await api.category.post(payload);
+      const body = {
+        ...payload,
+        color: payload.color ?? undefined,
+        icon: payload.icon ?? undefined,
+        parent_id: payload.parent_id ?? undefined,
+      };
+      const { data, error } = await api.category.post(body);
       if (error) throw new Error(edenError(error));
       return data as Category;
     },
@@ -31,12 +41,8 @@ export function useAddCategory() {
         description: "Please try again later",
       });
     },
-    onSuccess: (newCategory) => {
-      queryClient.setQueryData<Category[]>(queryKey, (old = []) => {
-        const exists = old.some((category) => category.id === newCategory.id);
-        if (exists) return old;
-        return [...old, newCategory].toSorted((a, b) => a.name.localeCompare(b.name));
-      });
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey });
       toast.success("Category added");
     },
   });
@@ -44,9 +50,15 @@ export function useAddCategory() {
 
 export function useUpdateCategory() {
   const queryClient = useQueryClient();
-  return useMutation<Category, Error, { id: number; category: Pick<CategoryInsert, "name"> }>({
+  return useMutation<Category, Error, { id: number; category: Partial<CategoryInsert> }>({
     mutationFn: async ({ id, category }) => {
-      const { data, error } = await api.category({ id }).put(category);
+      const body = {
+        ...category,
+        color: category.color ?? undefined,
+        icon: category.icon ?? undefined,
+        parent_id: category.parent_id ?? undefined,
+      };
+      const { data, error } = await api.category({ id }).put(body);
       if (error) throw new Error(edenError(error));
       return data as Category;
     },
@@ -56,12 +68,8 @@ export function useUpdateCategory() {
         description: "Please try again later",
       });
     },
-    onSuccess: (updatedCategory) => {
-      queryClient.setQueryData<Category[]>(queryKey, (old = []) =>
-        old
-          .map((category) => (category.id === updatedCategory.id ? updatedCategory : category))
-          .toSorted((a, b) => a.name.localeCompare(b.name)),
-      );
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey });
       toast.success("Category updated");
     },
   });
@@ -81,10 +89,8 @@ export function useRemoveCategory() {
         description: "Please try again later",
       });
     },
-    onSuccess: (categoryId) => {
-      queryClient.setQueryData<Category[]>(queryKey, (old = []) =>
-        old.filter((category) => category.id !== categoryId),
-      );
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey });
       toast.success("Category deleted");
     },
   });

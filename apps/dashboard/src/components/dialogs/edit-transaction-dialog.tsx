@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, Trash2 } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -10,6 +10,16 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -21,7 +31,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useDialog } from "@/hooks/useDialog";
 import { useAccounts } from "@/lib/queries/useAccounts";
 import { useFiles } from "@/lib/queries/useFiles";
@@ -64,6 +74,7 @@ export function EditTransactionDialog() {
     });
 
   const currentAccount = accounts?.find((account) => account.id === data?.transaction?.account_id);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const form = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
@@ -231,20 +242,31 @@ export function EditTransactionDialog() {
                   <FormField
                     control={form.control}
                     name="categoryId"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Category</FormLabel>
-                        <FormControl>
-                          <CategorySelector
-                            value={field.value}
-                            onChange={field.onChange}
-                            disabled={isSyncedTransaction}
-                            placeholder="Select or add category"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
+                    render={({ field }) => {
+                      const amountStr = form.watch("amount");
+                      const num = parseFloat(amountStr);
+                      const classification =
+                        amountStr !== "" && !Number.isNaN(num)
+                          ? num > 0
+                            ? ("income" as const)
+                            : ("expense" as const)
+                          : undefined;
+                      return (
+                        <FormItem>
+                          <FormLabel>Category</FormLabel>
+                          <FormControl>
+                            <CategorySelector
+                              value={field.value}
+                              onChange={field.onChange}
+                              disabled={isSyncedTransaction}
+                              placeholder="Select or add category"
+                              classification={classification}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      );
+                    }}
                   />
                 </div>
 
@@ -314,52 +336,56 @@ export function EditTransactionDialog() {
                       />
                     </AccordionContent>
                   </AccordionItem>
-
-                  <AccordionItem value="danger">
-                    <AccordionTrigger>Danger Zone</AccordionTrigger>
-                    <AccordionContent>
-                      <div className="space-y-4">
-                        <p className="text-sm text-muted-foreground">
-                          Deleting this transaction will permanently remove it. This action cannot
-                          be undone.
-                        </p>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <div>
-                              <Button
-                                type="button"
-                                variant="destructive"
-                                size="sm"
-                                onClick={handleDelete}
-                                disabled={isDeleting || isSyncedTransaction}
-                              >
-                                {isDeleting ? (
-                                  <>
-                                    <Loader2 className="mr-2 h-3 w-3 animate-spin" />
-                                    Deleting...
-                                  </>
-                                ) : (
-                                  <>
-                                    <Trash2 className="mr-2 h-3 w-3" />
-                                    Delete Transaction
-                                  </>
-                                )}
-                              </Button>
-                            </div>
-                          </TooltipTrigger>
-                          {isSyncedTransaction && (
-                            <TooltipContent>
-                              Synced transactions cannot be deleted. Remove the connection instead.
-                            </TooltipContent>
-                          )}
-                        </Tooltip>
-                      </div>
-                    </AccordionContent>
-                  </AccordionItem>
                 </Accordion>
               </div>
 
-              <div className="absolute bottom-0 left-0 right-0 flex justify-end border-t bg-card p-4">
+              <div className="absolute bottom-0 left-0 right-0 flex items-center justify-between border-t bg-card p-4">
+                <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="inline-flex">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="text-muted-foreground hover:text-destructive"
+                            onClick={() => setDeleteDialogOpen(true)}
+                            disabled={isDeleting || isSyncedTransaction}
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete
+                          </Button>
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        {isSyncedTransaction
+                          ? "Cannot delete synced transaction — remove the connection instead in Settings → Connections."
+                          : "Delete this transaction. This cannot be undone."}
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete transaction</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Delete this transaction? This cannot be undone.
+                        {isSyncedTransaction &&
+                          " Synced transactions cannot be deleted; remove the connection instead."}
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={handleDelete}
+                        disabled={isDeleting || isSyncedTransaction}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
+                        {isDeleting ? "Deleting…" : "Delete"}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
                 <Button type="submit" disabled={isUpdating || isDeleting || isSyncedTransaction}>
                   {isUpdating ? (
                     <>

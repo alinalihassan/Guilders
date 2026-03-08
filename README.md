@@ -80,7 +80,7 @@ cd apps/dashboard && bun run dev
 cd apps/mobile && bun run start
 ```
 
-### Database Migrations
+### Database (first-time setup)
 
 ```bash
 cd apps/api
@@ -103,11 +103,11 @@ curl https://api.guilders.app/api/account \
   -H "x-api-key: your-api-key"
 ```
 
-Full reference and more examples at [docs.guilders.app](https://docs.guilders.app) · [OpenAPI spec](https://api.guilders.app/api/openapi).
+Full reference and more examples at [docs.guilders.app](https://docs.guilders.app) · [OpenAPI](https://api.guilders.app/openapi).
 
 ## MCP (Model Context Protocol)
 
-Guilders exposes an MCP server so AI agents can access your financial data with your permission. Connect it to Claude, Cursor, or any MCP-compatible client.
+Guilders exposes an MCP server so AI agents can access your financial data with your permission. Use it from Claude, Cursor, or any MCP-compatible client.
 
 **Endpoint:** `https://api.guilders.app/mcp`
 

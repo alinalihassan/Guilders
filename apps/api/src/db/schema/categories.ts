@@ -9,6 +9,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-orm/typebox-legacy";
 
+import { DEFAULT_CATEGORY_COLOR } from "../../lib/constants";
 import { user } from "./auth";
 
 export const category = pgTable(
@@ -23,7 +24,7 @@ export const category = pgTable(
       }),
     name: varchar("name", { length: 100 }).notNull(),
     parent_id: integer("parent_id"),
-    color: varchar("color", { length: 7 }).default("#64748b"),
+    color: varchar("color", { length: 7 }).default(DEFAULT_CATEGORY_COLOR),
     icon: varchar("icon", { length: 100 }),
     classification: varchar("classification", { length: 20 }).notNull().default("expense"),
     created_at: timestamp("created_at").notNull().defaultNow(),

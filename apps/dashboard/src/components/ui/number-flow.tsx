@@ -19,7 +19,9 @@ function NumberFlowStatic({ value, format, className, style }: NumberFlowProps) 
 const NumberFlowLazy = lazy(() =>
   typeof HTMLElement !== "undefined"
     ? import("@number-flow/react")
-    : (Promise.resolve({ default: NumberFlowStatic }) as any),
+    : (Promise.resolve({
+        default: NumberFlowStatic,
+      }) as Promise<{ default: typeof NumberFlowStatic }>),
 );
 
 export default function NumberFlow(props: NumberFlowProps) {

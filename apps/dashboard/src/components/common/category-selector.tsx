@@ -1,5 +1,5 @@
-import { Check, ChevronsUpDown, Loader2, Plus } from "lucide-react";
-import { useMemo, useState } from "react";
+import { ChevronsUpDown, Loader2, Plus } from "lucide-react";
+import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -14,6 +14,13 @@ import { inputTriggerStyles } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useAddCategory, useCategories } from "@/lib/queries/useCategories";
 import { cn } from "@/lib/utils";
+import {
+  buildCategoryLookup,
+  flattenCategoryTree,
+  type CategoryFlatItem,
+} from "@/lib/utils/category-tree";
+
+import { CategoryColorIcon } from "./category-color-icon";
 
 type CategorySelectorProps = {
   value?: number;
@@ -21,6 +28,8 @@ type CategorySelectorProps = {
   disabled?: boolean;
   placeholder?: string;
   className?: string;
+  /** When set, only categories with this classification are shown. Use with transaction amount: positive → income, negative → expense. */
+  classification?: "income" | "expense";
 };
 
 export function CategorySelector({
@@ -29,29 +38,30 @@ export function CategorySelector({
   disabled,
   placeholder = "Select category",
   className,
+  classification,
 }: CategorySelectorProps) {
-  const { data: categories, isLoading } = useCategories();
+  const { categoryTree, data: flatCategories, isLoading } = useCategories();
   const { mutate: addCategory, isPending: isCreating } = useAddCategory();
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
 
-  const categoryOptions = useMemo(
-    () => (categories ?? []).toSorted((a, b) => a.name.localeCompare(b.name)),
-    [categories],
-  );
-  const selectedCategory = categoryOptions.find((category) => category.id === value);
+  const flatOptions = flattenCategoryTree(categoryTree ?? [], { withDepth: true });
+  const categoryOptions =
+    classification == null
+      ? flatOptions
+      : flatOptions.filter((c) => c.classification === classification);
+  const categoryLookup = buildCategoryLookup(flatCategories ?? []);
+  const selectedCategory = value != null ? categoryLookup.get(value) : undefined;
 
   const trimmedSearch = search.trim();
   const canCreate =
     trimmedSearch.length > 0 &&
-    !categoryOptions.some(
-      (category) => category.name.toLowerCase() === trimmedSearch.toLowerCase(),
-    );
+    !flatOptions.some((c) => c.name.toLowerCase() === trimmedSearch.toLowerCase());
 
   const handleCreateCategory = () => {
     if (!trimmedSearch) return;
     addCategory(
-      { name: trimmedSearch },
+      { name: trimmedSearch, classification: classification ?? "expense" },
       {
         onSuccess: (createdCategory) => {
           onChange(createdCategory.id);
@@ -59,6 +69,27 @@ export function CategorySelector({
           setOpen(false);
         },
       },
+    );
+  };
+
+  const renderOption = (category: CategoryFlatItem) => {
+    const depth = category.depth ?? 0;
+
+    return (
+      <CommandItem
+        key={category.id}
+        value={category.name}
+        onSelect={() => {
+          onChange(category.id);
+          setOpen(false);
+          setSearch("");
+        }}
+      >
+        <span className="flex items-center gap-2 truncate" style={{ marginLeft: depth * 12 }}>
+          <CategoryColorIcon category={category} size="lg" />
+          <span className="truncate">{category.name}</span>
+        </span>
+      </CommandItem>
     );
   };
 
@@ -77,7 +108,12 @@ export function CategorySelector({
             className,
           )}
         >
-          <span className="truncate">{selectedCategory?.name || placeholder}</span>
+          <span className="flex min-w-0 flex-1 items-center gap-2 text-left">
+            {selectedCategory && (
+              <CategoryColorIcon category={selectedCategory} size="lg" className="shrink-0" />
+            )}
+            <span className="truncate">{selectedCategory?.name || placeholder}</span>
+          </span>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -118,25 +154,7 @@ export function CategorySelector({
               {isLoading ? (
                 <CommandItem disabled>Loading categories...</CommandItem>
               ) : (
-                categoryOptions.map((category) => (
-                  <CommandItem
-                    key={category.id}
-                    value={category.name}
-                    onSelect={() => {
-                      onChange(category.id);
-                      setOpen(false);
-                      setSearch("");
-                    }}
-                  >
-                    <Check
-                      className={cn(
-                        "mr-2 h-4 w-4",
-                        value === category.id ? "opacity-100" : "opacity-0",
-                      )}
-                    />
-                    {category.name}
-                  </CommandItem>
-                ))
+                categoryOptions.map(renderOption)
               )}
               {canCreate && (
                 <CommandItem value={`add-${trimmedSearch}`} onSelect={handleCreateCategory}>

@@ -35,15 +35,13 @@ export function TransactionsCard({
 
   return (
     <Card className={cn("flex flex-col", className)}>
-      <CardHeader>
-        <div className="flex flex-col space-y-2 md:flex-row md:items-center md:justify-between md:space-y-0">
-          <CardTitle>{title}</CardTitle>
-          {menuComponent ? (
-            <div className="flex items-center gap-2">{menuComponent}</div>
-          ) : (
-            transactionsMenu
-          )}
-        </div>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+        <CardTitle>{title}</CardTitle>
+        {menuComponent ? (
+          <div className="flex items-center gap-2">{menuComponent}</div>
+        ) : (
+          transactionsMenu
+        )}
       </CardHeader>
       <CardContent className="min-h-0 flex-1">
         <ScrollArea className="h-full w-full">

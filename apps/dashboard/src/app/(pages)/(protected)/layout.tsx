@@ -1,11 +1,13 @@
-import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
-import { useCallback, useState } from "react";
+import { createFileRoute, Outlet, redirect, useLocation } from "@tanstack/react-router";
+import { useEffect, useRef, useState } from "react";
 
 import { AdvisorSidebar } from "@/components/advisor/advisor-sidebar";
 import { Dialogs } from "@/components/dialogs/dialogs";
 import { AppSidebar } from "@/components/nav/app-sidebar";
 import { AppTopBar } from "@/components/nav/app-top-bar";
+import { SettingsHeader } from "@/components/settings/settings-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { MainScrollProvider } from "@/lib/scroll-context";
 import { getSession } from "@/lib/session.functions";
 import { useStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
@@ -28,10 +30,18 @@ export const Route = createFileRoute("/(pages)/(protected)")({
 function ProtectedLayout() {
   const advisorOpen = useStore((state) => state.advisorOpen);
   const [isScrolled, setIsScrolled] = useState(false);
+  const mainRef = useRef<HTMLElement>(null);
+  const { pathname } = useLocation();
+  const isSettings = pathname.startsWith("/settings");
 
-  const handleMainScroll = useCallback((e: React.UIEvent<HTMLElement>) => {
+  const handleMainScroll = (e: React.UIEvent<HTMLElement>) => {
     setIsScrolled((e.target as HTMLElement).scrollTop > 0);
-  }, []);
+  };
+
+  useEffect(() => {
+    const el = mainRef.current;
+    setIsScrolled(el ? el.scrollTop > 0 : false);
+  }, [pathname]);
 
   return (
     <SidebarProvider defaultOpen={false}>
@@ -43,13 +53,17 @@ function ProtectedLayout() {
         )}
       >
         <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm">
-          <AppTopBar scrolled={isScrolled} />
-          <main
-            className="flex flex-1 flex-col overflow-auto px-4 md:px-6"
-            onScroll={handleMainScroll}
-          >
-            <Outlet />
-          </main>
+          <AppTopBar scrolled={isScrolled && !isSettings} />
+          <MainScrollProvider isScrolled={isScrolled}>
+            {isSettings && <SettingsHeader />}
+            <main
+              ref={mainRef}
+              className="flex flex-1 flex-col overflow-auto px-4 md:px-6"
+              onScroll={handleMainScroll}
+            >
+              <Outlet />
+            </main>
+          </MainScrollProvider>
         </div>
         <aside
           className={cn(
@@ -59,13 +73,14 @@ function ProtectedLayout() {
           )}
           aria-hidden={!advisorOpen}
         >
-          <div
-            hidden={!advisorOpen}
-            className="flex h-full min-h-0 min-w-[400px] flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm"
-            style={{ width: ADVISOR_SIDEBAR_WIDTH }}
-          >
-            <AdvisorSidebar />
-          </div>
+          {advisorOpen && (
+            <div
+              className="flex h-full min-h-0 min-w-[400px] flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm"
+              style={{ width: ADVISOR_SIDEBAR_WIDTH }}
+            >
+              <AdvisorSidebar />
+            </div>
+          )}
         </aside>
       </SidebarInset>
       <Dialogs />

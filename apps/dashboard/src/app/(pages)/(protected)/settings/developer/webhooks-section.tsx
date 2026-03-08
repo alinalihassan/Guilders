@@ -11,7 +11,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -177,50 +176,15 @@ export function WebhooksSection() {
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <Dialog
-                  open={editingId === ep.id}
-                  onOpenChange={(open) => !open && setEditingId(null)}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => openEdit(ep)}
+                  aria-label={`Edit webhook endpoint ${ep.url}`}
+                  title="Edit webhook endpoint"
                 >
-                  <DialogTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => openEdit(ep)}
-                      aria-label={`Edit webhook endpoint ${ep.url}`}
-                      title="Edit webhook endpoint"
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Edit webhook endpoint</DialogTitle>
-                      <DialogDescription>Enable or disable delivery to this URL.</DialogDescription>
-                    </DialogHeader>
-                    <div className="grid gap-4 py-4">
-                      <div className="flex items-center gap-2">
-                        <AnimatedCheckbox
-                          id="edit-enabled"
-                          title="Enabled"
-                          checked={editEnabled}
-                          onCheckedChange={(v) => setEditEnabled(v)}
-                        />
-                      </div>
-                    </div>
-                    <DialogFooter>
-                      <Button variant="outline" onClick={() => setEditingId(null)}>
-                        Cancel
-                      </Button>
-                      <Button onClick={handleSaveEdit} disabled={updateWebhook.isPending}>
-                        {updateWebhook.isPending ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          "Save"
-                        )}
-                      </Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
+                  <Pencil className="h-4 w-4" />
+                </Button>
                 <Button
                   variant="ghost"
                   size="icon"
@@ -239,6 +203,39 @@ export function WebhooksSection() {
             </li>
           ))}
         </ul>
+      )}
+      {editingId != null && (
+        <Dialog
+          open={true}
+          onOpenChange={(open) => {
+            if (!open) setEditingId(null);
+          }}
+        >
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Edit webhook endpoint</DialogTitle>
+              <DialogDescription>Enable or disable delivery to this URL.</DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="flex items-center gap-2">
+                <AnimatedCheckbox
+                  id="edit-enabled"
+                  title="Enabled"
+                  checked={editEnabled}
+                  onCheckedChange={(v) => setEditEnabled(v)}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setEditingId(null)}>
+                Cancel
+              </Button>
+              <Button onClick={handleSaveEdit} disabled={updateWebhook.isPending}>
+                {updateWebhook.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );

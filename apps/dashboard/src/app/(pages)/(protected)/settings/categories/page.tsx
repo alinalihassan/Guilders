@@ -14,7 +14,7 @@ function CategoriesPage() {
       <div>
         <h3 className="text-lg font-medium">Categories</h3>
         <p className="text-sm text-muted-foreground">
-          Manage your transaction categories for faster tagging and cleaner reports.
+          Manage your transaction categories for faster data entry and cleaner reports.
         </p>
       </div>
       <Separator />
