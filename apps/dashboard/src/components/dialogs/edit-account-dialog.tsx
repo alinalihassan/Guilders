@@ -122,6 +122,8 @@ export function EditAccountDialog() {
     },
   });
 
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+
   useEffect(() => {
     if (data?.account) {
       form.reset({
@@ -142,7 +144,6 @@ export function EditAccountDialog() {
   const { account } = data;
 
   const isSyncedAccount = !!account.institution_connection_id;
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const handleFixConnection = async () => {
     if (!institution || !connection) {
