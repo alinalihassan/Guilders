@@ -24,24 +24,15 @@ import { CategoryColorIconSelector } from "./-color-icon-selector";
 
 type CategoryRowProps = {
   category: CategoryFlatItem;
-  parentName: string | null;
   onUpdate: (
     id: number,
     payload: { name?: string; color?: string | null; icon?: string | null },
   ) => void;
   onRemove: (id: number) => void;
   isRemoving: boolean;
-  isUpdating: boolean;
 };
 
-export function CategoryRow({
-  category,
-  parentName,
-  onUpdate,
-  onRemove,
-  isRemoving,
-  isUpdating,
-}: CategoryRowProps) {
+export function CategoryRow({ category, onUpdate, onRemove, isRemoving }: CategoryRowProps) {
   const depth = category.depth ?? 0;
   const [isEditingName, setIsEditingName] = useState(false);
   const [nameDraft, setNameDraft] = useState(category.name);

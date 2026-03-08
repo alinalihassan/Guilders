@@ -27,7 +27,7 @@ import { RootDropZone } from "./-root-drop-zone";
 export function CategoriesForm() {
   const { data: categoriesTree, isLoading } = useCategories();
   const { mutate: addCategory, isPending: isAdding } = useAddCategory();
-  const { mutate: updateCategory, isPending: isUpdating } = useUpdateCategory();
+  const { mutate: updateCategory } = useUpdateCategory();
   const { mutate: removeCategory, isPending: isRemoving } = useRemoveCategory();
 
   const flatList = useMemo(
@@ -230,19 +230,13 @@ export function CategoriesForm() {
       />
       <div className="space-y-1 pt-1">
         {list.map((category) => {
-          const parentName =
-            category.parent_id != null
-              ? (categoryLookup.get(category.parent_id)?.name ?? null)
-              : null;
           return (
             <CategoryRow
               key={category.id}
               category={category}
-              parentName={parentName}
               onUpdate={handleUpdate}
               onRemove={removeCategory}
               isRemoving={isRemoving}
-              isUpdating={isUpdating}
             />
           );
         })}

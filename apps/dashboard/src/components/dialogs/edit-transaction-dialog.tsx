@@ -5,6 +5,12 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -14,12 +20,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -335,7 +335,6 @@ export function EditTransactionDialog() {
                       />
                     </AccordionContent>
                   </AccordionItem>
-
                 </Accordion>
               </div>
 

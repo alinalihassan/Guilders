@@ -7,6 +7,12 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -16,12 +22,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -493,7 +493,6 @@ export function EditAccountDialog() {
                       />
                     </AccordionContent>
                   </AccordionItem>
-
                 </Accordion>
 
                 <div className="absolute bottom-0 left-0 right-0 flex items-center justify-between border-t bg-card p-4">

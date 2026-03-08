@@ -4,8 +4,8 @@ import { useMemo } from "react";
 import { CategoryColorIcon } from "@/components/common/category-color-icon";
 import NumberFlow from "@/components/ui/number-flow";
 import { useDialog } from "@/hooks/useDialog";
-import { useCategories } from "@/lib/queries/useCategories";
 import { useFormattedTime } from "@/lib/format-time";
+import { useCategories } from "@/lib/queries/useCategories";
 import { buildCategoryLookup } from "@/lib/utils/category-tree";
 
 interface TransactionItemProps {
