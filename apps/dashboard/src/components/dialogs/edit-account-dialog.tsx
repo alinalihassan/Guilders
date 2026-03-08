@@ -535,7 +535,7 @@ export function EditAccountDialog() {
                       <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
                         <AlertDialogAction
-                          onClick={() => handleDelete()}
+                          onClick={handleDelete}
                           disabled={isDeleting || isSyncedAccount}
                           className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                         >

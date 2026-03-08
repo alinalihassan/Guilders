@@ -377,7 +377,7 @@ export function EditTransactionDialog() {
                     <AlertDialogFooter>
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
                       <AlertDialogAction
-                        onClick={() => handleDelete()}
+                        onClick={handleDelete}
                         disabled={isDeleting || isSyncedTransaction}
                         className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                       >
