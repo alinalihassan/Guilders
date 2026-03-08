@@ -42,6 +42,18 @@ Categories are used to group transactions into income and expense categories. Ea
 Categories can be nested via \`parent_id\`, allowing hierarchies (e.g. a "Food" category with children "Restaurant", "Groceries"). The child categories are represented by the \`parent\` attribute in the tree response. New users receive default categories with preset names, colors, and icons.
 `;
 
+const currencyText = `
+Currencies are the reference list of supported ISO 4217 codes (e.g. \`USD\`, \`EUR\`, \`GBP\`). Guilders uses them in several places: every **account** has a currency for its balance and value; every **transaction** has a currency for its amount; and the dashboard uses this list for selects when creating or editing accounts and transactions. Net worth and aggregates that span multiple currencies rely on **Rates** for conversion.
+`;
+
+const rateText = `
+Rates are daily exchange rates used to convert between currencies. They power net-worth and balance views when accounts or transactions use different currencies (e.g. converting GBP and USD into a single base for display). Rates are stored per day; the default base currency is EUR.
+`;
+
+const countryText = `
+Countries are a reference list with ISO 3166 codes and names. They are used for addresses, region or locale selection, and provider or institution metadata (e.g. which country a bank or connection belongs to).
+`;
+
 export const getOpenAPI = async () => {
   // const mainMd = readFileSync("docs/main.md");
   return openapi({
@@ -80,9 +92,9 @@ export const getOpenAPI = async () => {
         },
         { name: "Balance History", description: "Net worth and per-account balance over time." },
         { name: "Conversations", description: "Chat conversation list and metadata." },
-        { name: "Currencies", description: "Supported ISO currencies." },
-        { name: "Rates", description: "Exchange rates for currency conversion." },
-        { name: "Countries", description: "Countries with ISO codes." },
+        { name: "Currencies", description: currencyText },
+        { name: "Rates", description: rateText },
+        { name: "Countries", description: countryText },
         { name: "Documents", description: "Document upload, metadata, and download." },
         { name: "Webhook", description: "Webhook endpoints and event delivery config." },
       ],
