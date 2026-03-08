@@ -14,7 +14,7 @@ import {
 import type { CategoryFlatItem } from "@/lib/utils/category-tree";
 import { cn } from "@/lib/utils";
 
-import { ICON_OPTIONS } from "./-constants";
+import { CategoryColorSelector } from "./-color-selector";
 import type { EditState } from "./-constants";
 
 type CategoryRowProps = {
@@ -29,7 +29,6 @@ type CategoryRowProps = {
   onRemove: (id: number) => void;
   isRemoving: boolean;
   isUpdating: boolean;
-  eligibleParentOptions: (excludeId: number | null) => CategoryFlatItem[];
 };
 
 export function CategoryRow({
@@ -44,7 +43,6 @@ export function CategoryRow({
   onRemove,
   isRemoving,
   isUpdating,
-  eligibleParentOptions,
 }: CategoryRowProps) {
   const depth = category.depth ?? 0;
 
@@ -71,73 +69,40 @@ export function CategoryRow({
     return (
       <div
         ref={setRef}
-        className="flex flex-wrap items-center gap-2 rounded-lg border border-primary/30 bg-muted/30 px-3 py-2.5 shadow-sm"
+        className="flex items-center gap-2 rounded-lg border border-primary/30 bg-muted/30 px-3 py-2.5 shadow-sm"
         style={{ marginLeft: depth * 20 }}
       >
         <button
           type="button"
-          className="cursor-grab touch-none rounded p-1 text-muted-foreground hover:bg-muted"
+          className="cursor-grab touch-none shrink-0 rounded p-1 text-muted-foreground hover:bg-muted"
           aria-label="Drag"
           {...attributes}
           {...listeners}
         >
           <GripVertical className="h-4 w-4" />
         </button>
+        <CategoryColorSelector
+          value={editState.color ?? "#64748b"}
+          onColorSelect={(color) => setEditState({ ...editState, color })}
+          size="default"
+          className="shrink-0"
+        />
         <Input
           value={editState.name}
           onChange={(e) => setEditState({ ...editState, name: e.target.value })}
-          className="h-8 w-40"
+          className="h-8 w-40 shrink-0"
           onKeyDown={(e) => {
             if (e.key === "Enter") onSaveEdit();
             if (e.key === "Escape") onCancelEdit();
           }}
         />
         <Select
-          value={editState.parent_id?.toString() ?? "none"}
-          onValueChange={(v) =>
-            setEditState({ ...editState, parent_id: v === "none" ? null : Number(v) })
-          }
-        >
-          <SelectTrigger className="h-8 w-36">
-            <SelectValue placeholder="Parent" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="none">None (root)</SelectItem>
-            {eligibleParentOptions(category.id).map((c) => (
-              <SelectItem key={c.id} value={c.id.toString()}>
-                {c.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <input
-          type="color"
-          value={editState.color ?? "#64748b"}
-          onChange={(e) => setEditState({ ...editState, color: e.target.value })}
-          className="h-8 w-8 cursor-pointer rounded-md border border-input bg-background"
-        />
-        <Select
-          value={editState.icon || "none"}
-          onValueChange={(v) => setEditState({ ...editState, icon: v === "none" ? null : v })}
-        >
-          <SelectTrigger className="h-8 w-28">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {ICON_OPTIONS.map((opt) => (
-              <SelectItem key={opt.value || "none"} value={opt.value || "none"}>
-                {opt.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Select
           value={editState.classification}
           onValueChange={(v) =>
             setEditState({ ...editState, classification: v as "income" | "expense" })
           }
         >
-          <SelectTrigger className="h-8 w-28">
+          <SelectTrigger className="h-8 w-28 shrink-0">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -145,18 +110,20 @@ export function CategoryRow({
             <SelectItem value="income">Income</SelectItem>
           </SelectContent>
         </Select>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8"
-          onClick={onSaveEdit}
-          disabled={isUpdating || !editState.name.trim()}
-        >
-          <Check className="h-4 w-4" />
-        </Button>
-        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onCancelEdit}>
-          <X className="h-4 w-4" />
-        </Button>
+        <div className="ml-auto flex shrink-0 items-center gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            onClick={onSaveEdit}
+            disabled={isUpdating || !editState.name.trim()}
+          >
+            <Check className="h-4 w-4" />
+          </Button>
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onCancelEdit}>
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
     );
   }
@@ -182,10 +149,14 @@ export function CategoryRow({
         <GripVertical className="h-4 w-4" />
       </button>
       <span
-        className="h-4 w-4 shrink-0 rounded-full border border-border shadow-sm"
-        style={{ backgroundColor: category.color ?? "#64748b" }}
+        className="inline-flex size-5 shrink-0 items-center justify-center rounded-full border-2 border-border bg-background p-0.5"
         aria-hidden
-      />
+      >
+        <span
+          className="size-2.5 rounded-full"
+          style={{ backgroundColor: category.color ?? "#64748b" }}
+        />
+      </span>
       <span className="min-w-0 flex-1 truncate font-medium text-foreground">{category.name}</span>
       {parentName && (
         <span className="truncate text-xs text-muted-foreground">under {parentName}</span>

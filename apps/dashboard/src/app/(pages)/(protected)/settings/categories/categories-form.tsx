@@ -33,7 +33,7 @@ import {
   type CategoryFlatItem,
 } from "@/lib/utils/category-tree";
 import { CategoryRow } from "./-category-row";
-import { ICON_OPTIONS } from "./-constants";
+import { CategoryColorSelector } from "./-color-selector";
 import type { EditState } from "./-constants";
 import { RootDropZone } from "./-root-drop-zone";
 
@@ -51,15 +51,9 @@ export function CategoriesForm() {
     () => buildCategoryLookup(categoriesTree ?? []),
     [categoriesTree],
   );
-  const allFlat = useMemo(
-    () => flattenCategoryTree(categoriesTree ?? []),
-    [categoriesTree],
-  );
 
   const [newName, setNewName] = useState("");
-  const [newParentId, setNewParentId] = useState<number | null>(null);
   const [newColor, setNewColor] = useState("#64748b");
-  const [newIcon, setNewIcon] = useState("");
   const [newClassification, setNewClassification] = useState<"income" | "expense">("expense");
   const [editing, setEditing] = useState<EditState | null>(null);
 
@@ -74,28 +68,19 @@ export function CategoriesForm() {
     if (!trimmed) return;
     const payload: Partial<CategoryInsert> = {
       name: trimmed,
-      parent_id: newParentId,
+      parent_id: null,
       color: newColor,
-      icon: newIcon || null,
+      icon: null,
       classification: newClassification,
     };
     addCategory(payload, {
       onSuccess: () => {
         setNewName("");
-        setNewParentId(null);
         setNewColor("#64748b");
-        setNewIcon("");
         setNewClassification("expense");
       },
     });
-  }, [
-    newName,
-    newParentId,
-    newColor,
-    newIcon,
-    newClassification,
-    addCategory,
-  ]);
+  }, [newName, newColor, newClassification, addCategory]);
 
   const startEditing = useCallback((c: CategoryFlatItem) => {
     setEditing({
@@ -126,15 +111,6 @@ export function CategoriesForm() {
       { onSuccess: cancelEditing },
     );
   }, [editing, updateCategory, cancelEditing]);
-
-  const eligibleParentOptions = useCallback(
-    (excludeCategoryId: number | null) => {
-      if (!excludeCategoryId) return allFlat;
-      const exclude = getCategoryAndDescendantIds(categoriesTree ?? [], excludeCategoryId);
-      return allFlat.filter((c) => !exclude.has(c.id));
-    },
-    [allFlat, categoriesTree],
-  );
 
   const handleDragEnd = useCallback(
     (event: DragEndEvent) => {
@@ -175,95 +151,53 @@ export function CategoriesForm() {
   );
 
   return (
-    <div className="space-y-8">
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Add category</CardTitle>
-          <CardDescription>
-            New categories appear in the transaction picker and can be nested under a parent.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap items-end gap-3">
-            <Input
-              value={newName}
-              onChange={(e) => setNewName(e.target.value)}
-              placeholder="e.g. Groceries"
-              className="w-44"
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  handleAdd();
-                }
-              }}
-            />
-            <Select
-              value={newParentId?.toString() ?? "none"}
-              onValueChange={(v) => setNewParentId(v === "none" ? null : Number(v))}
-            >
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder="Parent" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">None (root)</SelectItem>
-                {eligibleParentOptions(null).map((c) => (
-                  <SelectItem key={c.id} value={c.id.toString()}>
-                    {c.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground">Color</span>
-              <input
-                type="color"
-                value={newColor}
-                onChange={(e) => setNewColor(e.target.value)}
-                className="h-9 w-9 cursor-pointer rounded-lg border border-input bg-background"
-              />
-            </div>
-            <Select value={newIcon || "none"} onValueChange={(v) => setNewIcon(v === "none" ? "" : v)}>
-              <SelectTrigger className="w-32">
-                <SelectValue placeholder="Icon" />
-              </SelectTrigger>
-              <SelectContent>
-                {ICON_OPTIONS.map((opt) => (
-                  <SelectItem key={opt.value || "none"} value={opt.value || "none"}>
-                    {opt.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select
-              value={newClassification}
-              onValueChange={(v) => setNewClassification(v as "income" | "expense")}
-            >
-              <SelectTrigger className="w-32">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="expense">Expense</SelectItem>
-                <SelectItem value="income">Income</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button onClick={handleAdd} disabled={isAdding || !newName.trim()}>
-              <Plus className="mr-2 h-4 w-4" />
-              Add
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base">Categories</CardTitle>
+        <CardDescription>
+          Add categories below, then drag to change parent. Drop on a category to nest under it, or
+          on the root zone to make top-level.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="flex flex-wrap items-center gap-3 rounded-lg border border-border/60 bg-muted/20 px-3 py-2.5">
+          <CategoryColorSelector
+            value={newColor}
+            onColorSelect={setNewColor}
+            size="default"
+            className="shrink-0"
+          />
+          <Input
+            value={newName}
+            onChange={(e) => setNewName(e.target.value)}
+            placeholder="e.g. Groceries"
+            className="w-44"
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                handleAdd();
+              }
+            }}
+          />
+          <Select
+            value={newClassification}
+            onValueChange={(v) => setNewClassification(v as "income" | "expense")}
+          >
+            <SelectTrigger className="w-32">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="expense">Expense</SelectItem>
+              <SelectItem value="income">Income</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button onClick={handleAdd} disabled={isAdding || !newName.trim()}>
+            <Plus className="mr-2 h-4 w-4" />
+            Add
+          </Button>
+        </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Categories</CardTitle>
-          <CardDescription>
-            Drag items to change parent. Drop on a category to nest under it, or on the root zone to
-            make top-level.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-1">
-          {isLoading ? (
+        {isLoading ? (
             <div className="space-y-2">
               {Array.from({ length: 6 }).map((_, i) => (
                 <div
@@ -275,42 +209,40 @@ export function CategoriesForm() {
                 </div>
               ))}
             </div>
-          ) : flatList.length === 0 ? (
-            <p className="rounded-lg border border-dashed border-border/60 bg-muted/20 px-4 py-8 text-center text-sm text-muted-foreground">
-              No categories yet. Add your first one above.
-            </p>
-          ) : (
-            <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
-              <RootDropZone />
-              <div className="space-y-1 pt-1">
-                {flatList.map((category) => {
-                  const parentName =
-                    category.parent_id != null
-                      ? categoryLookup.get(category.parent_id)?.name
-                      : null;
-                  return (
-                    <CategoryRow
-                      key={category.id}
-                      category={category}
-                      parentName={parentName}
-                      isEditing={editing?.id === category.id}
-                      editState={editing}
-                      onStartEdit={startEditing}
-                      onCancelEdit={cancelEditing}
-                      onSaveEdit={saveEditing}
-                      setEditState={setEditing}
-                      onRemove={removeCategory}
-                      isRemoving={isRemoving}
-                      isUpdating={isUpdating}
-                      eligibleParentOptions={eligibleParentOptions}
-                    />
-                  );
-                })}
-              </div>
-            </DndContext>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+        ) : flatList.length === 0 ? (
+          <p className="rounded-lg border border-dashed border-border/60 bg-muted/20 px-4 py-8 text-center text-sm text-muted-foreground">
+            No categories yet. Add your first one above.
+          </p>
+        ) : (
+          <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+            <RootDropZone />
+            <div className="space-y-1 pt-1">
+              {flatList.map((category) => {
+                const parentName =
+                  category.parent_id != null
+                    ? categoryLookup.get(category.parent_id)?.name
+                    : null;
+                return (
+                  <CategoryRow
+                    key={category.id}
+                    category={category}
+                    parentName={parentName}
+                    isEditing={editing?.id === category.id}
+                    editState={editing}
+                    onStartEdit={startEditing}
+                    onCancelEdit={cancelEditing}
+                    onSaveEdit={saveEditing}
+                    setEditState={setEditing}
+                    onRemove={removeCategory}
+                    isRemoving={isRemoving}
+                    isUpdating={isUpdating}
+                  />
+                );
+              })}
+            </div>
+          </DndContext>
+        )}
+      </CardContent>
+    </Card>
   );
 }
