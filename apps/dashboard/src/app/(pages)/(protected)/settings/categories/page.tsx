@@ -16,10 +16,6 @@ function CategoriesPage() {
         <p className="text-sm text-muted-foreground">
           Manage your transaction categories for faster data entry and cleaner reports.
         </p>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Click a name to edit, click the color to change it. Drag to reparent. Income and expense
-          are separate; drop in the right section to change type.
-        </p>
       </div>
       <Separator />
       <CategoriesForm />
