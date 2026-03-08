@@ -34,10 +34,7 @@ export function CategoriesForm() {
     () => flattenCategoryTree(categoryTree ?? [], { withDepth: true }),
     [categoryTree],
   );
-  const categoryLookup = useMemo(
-    () => buildCategoryLookup(flatCategories ?? []),
-    [flatCategories],
-  );
+  const categoryLookup = useMemo(() => buildCategoryLookup(flatCategories ?? []), [flatCategories]);
 
   const incomeList = useMemo(
     () => flatList.filter((c) => c.classification === "income"),

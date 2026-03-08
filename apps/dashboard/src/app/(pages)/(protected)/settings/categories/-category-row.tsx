@@ -131,7 +131,7 @@ export function CategoryRow({ category, onUpdate, onRemove, isRemoving }: Catego
             onChange={(e) => setNameDraft(e.target.value)}
             onBlur={saveName}
             onKeyDown={handleNameKeyDown}
-            className="h-7 min-w-[8rem] max-w-[14rem] shrink-0 text-sm"
+            className="ml-[-3px] h-7 min-w-[8rem] max-w-[14rem] shrink-0 pl-0.5 text-sm font-medium"
             autoFocus
           />
         ) : (
