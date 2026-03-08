@@ -6,7 +6,7 @@
     "directory": "./public",
   },
   "compatibility_date": "2026-02-12",
-  "compatibility_flags": ["nodejs_compat", "nodejs_compat_populate_process_env"],
+  "compatibility_flags": ["nodejs_compat"],
   "dev": {
     "port": 3000,
   },
@@ -16,6 +16,9 @@
       "pattern": "api.guilders.app",
     },
   ],
+  "placement": {
+    "mode": "smart",
+  },
   "workers_dev": false,
   "preview_urls": false,
   "observability": {
