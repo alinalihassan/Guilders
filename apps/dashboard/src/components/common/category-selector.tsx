@@ -1,4 +1,4 @@
-import { Check, ChevronsUpDown, Loader2, Plus, type LucideIcon } from "lucide-react";
+import { Check, ChevronsUpDown, Loader2, Plus } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -19,7 +19,8 @@ import {
   flattenCategoryTree,
   type CategoryFlatItem,
 } from "@/lib/utils/category-tree";
-import { getCategoryIcon } from "@/lib/utils/category-icons";
+
+import { CategoryColorIcon } from "./category-color-icon";
 
 type CategorySelectorProps = {
   value?: number;
@@ -73,8 +74,6 @@ export function CategorySelector({
   };
 
   const renderOption = (category: CategoryFlatItem) => {
-    const color = category.color ?? "#64748b";
-    const Icon = getCategoryIcon(category.icon ?? undefined);
     const depth = category.depth ?? 0;
 
     return (
@@ -97,12 +96,7 @@ export function CategorySelector({
           className="flex items-center gap-2 truncate"
           style={{ marginLeft: depth * 12 }}
         >
-          <span
-            className="h-4 w-4 shrink-0 rounded-full border border-border"
-            style={{ backgroundColor: color }}
-            aria-hidden
-          />
-          {Icon && <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />}
+          <CategoryColorIcon category={category} size="default" />
           <span className="truncate">{category.name}</span>
         </span>
       </CommandItem>
@@ -125,10 +119,10 @@ export function CategorySelector({
           )}
         >
           {selectedCategory && (
-            <span
-              className="mr-2 h-3 w-3 shrink-0 rounded-full border border-border"
-              style={{ backgroundColor: selectedCategory.color ?? "#64748b" }}
-              aria-hidden
+            <CategoryColorIcon
+              category={selectedCategory}
+              size="default"
+              className="mr-2"
             />
           )}
           <span className="truncate">{selectedCategory?.name || placeholder}</span>

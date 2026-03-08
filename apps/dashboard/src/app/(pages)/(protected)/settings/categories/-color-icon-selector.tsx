@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+import { CategoryColorIcon } from "@/components/common/category-color-icon";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { getCategoryIcon } from "@/lib/utils/category-icons";
@@ -17,12 +18,6 @@ interface CategoryColorIconSelectorProps {
   className?: string;
 }
 
-const sizeClasses = {
-  sm: "size-4",
-  default: "size-5",
-  lg: "size-8",
-} as const;
-
 export function CategoryColorIconSelector({
   value,
   icon,
@@ -32,10 +27,8 @@ export function CategoryColorIconSelector({
   className,
 }: CategoryColorIconSelectorProps) {
   const [open, setOpen] = useState(false);
-  const sizeClass = sizeClasses[size];
   const normalizedColor = value?.trim() || PRESET_COLORS[0];
   const effectiveIcon = icon ?? DEFAULT_CATEGORY_ICON;
-  const IconComponent = getCategoryIcon(icon);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && e.target instanceof HTMLInputElement) {
@@ -49,20 +42,15 @@ export function CategoryColorIconSelector({
         <button
           type="button"
           className={cn(
-            "inline-flex shrink-0 items-center justify-center rounded-full border p-1.5 transition-transform duration-200 active:scale-95",
-            sizeClass,
+            "shrink-0 transition-transform duration-200 active:scale-95",
             className,
           )}
-          style={{
-            backgroundColor: `color-mix(in oklab, ${normalizedColor} 10%, transparent)`,
-            borderColor: `color-mix(in oklab, ${normalizedColor} 10%, transparent)`,
-          }}
           aria-label="Choose color and icon"
         >
-          <IconComponent
-            className="size-full shrink-0"
-            style={{ color: normalizedColor }}
-            strokeWidth={2}
+          <CategoryColorIcon
+            color={value?.trim() || PRESET_COLORS[0]}
+            icon={icon}
+            size={size}
           />
         </button>
       </PopoverTrigger>
