@@ -72,7 +72,9 @@ export const categoryRoutes = new Elysia({
         return existingCategory;
       }
 
-      if (body.icon != null && body.icon !== "" && !isValidIconName(body.icon)) {
+      const normalizedIcon =
+        body.icon === "" || body.icon == null ? null : body.icon;
+      if (normalizedIcon != null && !isValidIconName(normalizedIcon)) {
         return status(400, { error: "Invalid category icon name" });
       }
 
@@ -83,7 +85,7 @@ export const categoryRoutes = new Elysia({
           name: normalizedName,
           parent_id: body.parent_id ?? null,
           color: body.color ?? "#64748b",
-          icon: body.icon ?? null,
+          icon: normalizedIcon,
           classification: body.classification ?? "expense",
           created_at: new Date(),
           updated_at: new Date(),
