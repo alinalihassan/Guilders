@@ -21,7 +21,7 @@ import {
 
 import { CategoryRow } from "./-category-row";
 import { CategoryColorIconSelector } from "./-color-icon-selector";
-import { DEFAULT_CATEGORY_ICON, PRESET_COLORS } from "./-constants";
+import { DEFAULT_CATEGORY_ICON, INCOME_DEFAULT_COLOR, PRESET_COLORS } from "./-constants";
 import { RootDropZone } from "./-root-drop-zone";
 
 type SectionConfig = {
@@ -52,7 +52,7 @@ export function CategoriesForm() {
   const expenseList = flatList.filter((c) => c.classification === "expense");
 
   const [newIncomeName, setNewIncomeName] = useState("");
-  const [newIncomeColor, setNewIncomeColor] = useState<string>(PRESET_COLORS[4]); // green
+  const [newIncomeColor, setNewIncomeColor] = useState<string>(INCOME_DEFAULT_COLOR);
   const [newIncomeIcon, setNewIncomeIcon] = useState(DEFAULT_CATEGORY_ICON);
   const [newExpenseName, setNewExpenseName] = useState("");
   const [newExpenseColor, setNewExpenseColor] = useState<string>(PRESET_COLORS[0]); // slate
@@ -77,7 +77,7 @@ export function CategoriesForm() {
     addCategory(payload, {
       onSuccess: () => {
         setNewIncomeName("");
-        setNewIncomeColor(PRESET_COLORS[4]);
+        setNewIncomeColor(INCOME_DEFAULT_COLOR);
         setNewIncomeIcon(DEFAULT_CATEGORY_ICON);
       },
     });

@@ -138,10 +138,15 @@ export const categoryRoutes = new Elysia({
         return status(400, { error: "Category cannot be its own parent" });
       }
 
-      const iconToSet = body.icon === undefined ? existingCategory.icon : body.icon;
-      if (iconToSet != null && iconToSet !== "" && !isValidIconName(iconToSet)) {
+      if (
+        body.icon !== undefined &&
+        body.icon !== null &&
+        body.icon !== "" &&
+        !isValidIconName(body.icon)
+      ) {
         return status(400, { error: "Invalid category icon name" });
       }
+      const iconToSet = body.icon === undefined ? existingCategory.icon : body.icon;
 
       const [updatedCategory] = await db
         .update(category)

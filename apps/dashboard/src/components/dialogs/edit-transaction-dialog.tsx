@@ -31,6 +31,12 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useDialog } from "@/hooks/useDialog";
 import { useAccounts } from "@/lib/queries/useAccounts";
 import { useFiles } from "@/lib/queries/useFiles";
@@ -340,17 +346,30 @@ export function EditTransactionDialog() {
 
               <div className="absolute bottom-0 left-0 right-0 flex items-center justify-between border-t bg-card p-4">
                 <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="text-muted-foreground hover:text-destructive"
-                    onClick={() => setDeleteDialogOpen(true)}
-                    disabled={isDeleting || isSyncedTransaction}
-                  >
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    Delete
-                  </Button>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="inline-flex">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="text-muted-foreground hover:text-destructive"
+                            onClick={() => setDeleteDialogOpen(true)}
+                            disabled={isDeleting || isSyncedTransaction}
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete
+                          </Button>
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        {isSyncedTransaction
+                          ? "Cannot delete synced transaction — remove the connection instead in Settings → Connections."
+                          : "Delete this transaction. This cannot be undone."}
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                   <AlertDialogContent>
                     <AlertDialogHeader>
                       <AlertDialogTitle>Delete transaction</AlertDialogTitle>

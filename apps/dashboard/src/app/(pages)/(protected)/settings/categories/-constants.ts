@@ -34,6 +34,9 @@ export const PRESET_COLORS = [
   "#818cf8", // extra
 ] as const;
 
+/** Default color for new income categories (green from nature row). */
+export const INCOME_DEFAULT_COLOR = PRESET_COLORS[8]; // #22c55e
+
 /** Same length as PRESET_COLORS so color and icon grids align (7 cols × 4 rows = 28). */
 export const ICON_OPTIONS = [
   { value: "circle-dot", label: "Default" },

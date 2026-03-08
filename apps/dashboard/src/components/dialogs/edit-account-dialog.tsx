@@ -41,6 +41,7 @@ import {
 } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useDialog } from "@/hooks/useDialog";
 import { type AccountSubtype, accountSubtypeLabels, accountSubtypes } from "@/lib/account-types";
 import { useRemoveAccount, useUpdateAccount } from "@/lib/queries/useAccounts";
@@ -497,17 +498,30 @@ export function EditAccountDialog() {
 
                 <div className="absolute bottom-0 left-0 right-0 flex items-center justify-between border-t bg-card p-4">
                   <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="text-muted-foreground hover:text-destructive"
-                      onClick={() => setDeleteDialogOpen(true)}
-                      disabled={isDeleting || isSyncedAccount}
-                    >
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      Delete
-                    </Button>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="inline-flex">
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="text-muted-foreground hover:text-destructive"
+                              onClick={() => setDeleteDialogOpen(true)}
+                              disabled={isDeleting || isSyncedAccount}
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Delete
+                            </Button>
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          {isSyncedAccount
+                            ? "Cannot delete linked account. Remove the connection first in Settings → Connections."
+                            : "Delete this account and all its transactions."}
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                     <AlertDialogContent>
                       <AlertDialogHeader>
                         <AlertDialogTitle>Delete account</AlertDialogTitle>
