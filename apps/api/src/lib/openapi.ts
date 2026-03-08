@@ -34,7 +34,12 @@ Transactions can be nested, allowing for complex financial event hierarchies, li
 `;
 
 const categoryText = `
-Categories are used to group transactions into income and expense categories. Each category has a name, color, icon, and classification (\`expense\` or \`income\`). Categories can be nested, allowing for complex income and expense hierarchies, like a category representing a food expense, which contains sub-categories for different types (e.g. restaurant, grocery, etc.). The child categories are represented by the \`parent\` attribute.
+Categories are used to group transactions into income and expense categories. Each category has a **name**, **color**, **icon**, and **classification** (\`expense\` or \`income\`).
+
+- **Color** is a hex string (e.g. \`#64748b\`). It is used in the UI to show a tinted badge for the category.
+- **Icon** is a Lucide icon name in kebab-case (e.g. \`circle-dot\`, \`shopping-cart\`, \`utensils\`). The API validates that the icon is a valid Lucide icon name. If omitted or null, the dashboard uses a default icon.
+
+Categories can be nested via \`parent_id\`, allowing hierarchies (e.g. a "Food" category with children "Restaurant", "Groceries"). The child categories are represented by the \`parent\` attribute in the tree response. New users receive default categories with preset names, colors, and icons.
 `;
 
 export const getOpenAPI = async () => {
@@ -74,12 +79,7 @@ export const getOpenAPI = async () => {
           description: "Per-institution connection state and accounts.",
         },
         { name: "Balance History", description: "Net worth and per-account balance over time." },
-        { name: "Chat", description: "AI financial advisor chat (streaming, rate limits)." },
         { name: "Conversations", description: "Chat conversation list and metadata." },
-        {
-          name: "Dashboard",
-          description: "Batched dashboard data (accounts, transactions, rates, net worth).",
-        },
         { name: "Currencies", description: "Supported ISO currencies." },
         { name: "Rates", description: "Exchange rates for currency conversion." },
         { name: "Countries", description: "Countries with ISO codes." },

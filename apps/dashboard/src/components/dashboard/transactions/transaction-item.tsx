@@ -1,8 +1,12 @@
 import type { Transaction } from "@guilders/api/types";
+import { useMemo } from "react";
 
+import { CategoryColorIcon } from "@/components/common/category-color-icon";
 import NumberFlow from "@/components/ui/number-flow";
 import { useDialog } from "@/hooks/useDialog";
+import { useCategories } from "@/lib/queries/useCategories";
 import { useFormattedTime } from "@/lib/format-time";
+import { buildCategoryLookup } from "@/lib/utils/category-tree";
 
 interface TransactionItemProps {
   transaction: Transaction;
@@ -10,6 +14,10 @@ interface TransactionItemProps {
 
 export function TransactionItem({ transaction }: TransactionItemProps) {
   const { open } = useDialog("editTransaction");
+  const { data: categoriesTree } = useCategories();
+  const categoryLookup = useMemo(() => buildCategoryLookup(categoriesTree ?? []), [categoriesTree]);
+  const category =
+    transaction.category_id != null ? categoryLookup.get(transaction.category_id) : undefined;
   const amount = Number(transaction.amount);
   const timeStr = useFormattedTime(new Date(transaction.timestamp));
 
@@ -19,26 +27,32 @@ export function TransactionItem({ transaction }: TransactionItemProps) {
       onClick={() => open({ transaction })}
     >
       <div className="flex items-center">
-        <div
-          className={`mr-3 flex h-8 w-8 items-center justify-center rounded-full ${
-            amount > 0
-              ? "bg-green-100 dark:bg-green-900"
-              : amount < 0
-                ? "bg-red-100 dark:bg-red-900"
-                : "bg-gray-100 dark:bg-gray-700"
-          }`}
-        >
-          <span
-            className={`text-xl ${
-              amount > 0
-                ? "text-green-600 dark:text-green-400"
-                : amount < 0
-                  ? "text-red-600 dark:text-red-400"
-                  : "text-gray-600 dark:text-gray-400"
-            }`}
-          >
-            {amount > 0 ? "↑" : amount < 0 ? "↓" : "→"}
-          </span>
+        <div className="mr-3 shrink-0">
+          {category ? (
+            <CategoryColorIcon category={category} size="lg" />
+          ) : (
+            <div
+              className={`flex h-8 w-8 items-center justify-center rounded-full ${
+                amount > 0
+                  ? "bg-green-100 dark:bg-green-900"
+                  : amount < 0
+                    ? "bg-red-100 dark:bg-red-900"
+                    : "bg-gray-100 dark:bg-gray-700"
+              }`}
+            >
+              <span
+                className={`text-xl ${
+                  amount > 0
+                    ? "text-green-600 dark:text-green-400"
+                    : amount < 0
+                      ? "text-red-600 dark:text-red-400"
+                      : "text-gray-600 dark:text-gray-400"
+                }`}
+              >
+                {amount > 0 ? "↑" : amount < 0 ? "↓" : "→"}
+              </span>
+            </div>
+          )}
         </div>
         <div className="max-w-[300px]">
           <p

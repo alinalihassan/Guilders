@@ -231,20 +231,31 @@ export function EditTransactionDialog() {
                   <FormField
                     control={form.control}
                     name="categoryId"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Category</FormLabel>
-                        <FormControl>
-                          <CategorySelector
-                            value={field.value}
-                            onChange={field.onChange}
-                            disabled={isSyncedTransaction}
-                            placeholder="Select or add category"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
+                    render={({ field }) => {
+                      const amountStr = form.watch("amount");
+                      const num = parseFloat(amountStr);
+                      const classification =
+                        amountStr !== "" && !Number.isNaN(num)
+                          ? num > 0
+                            ? ("income" as const)
+                            : ("expense" as const)
+                          : undefined;
+                      return (
+                        <FormItem>
+                          <FormLabel>Category</FormLabel>
+                          <FormControl>
+                            <CategorySelector
+                              value={field.value}
+                              onChange={field.onChange}
+                              disabled={isSyncedTransaction}
+                              placeholder="Select or add category"
+                              classification={classification}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      );
+                    }}
                   />
                 </div>
 

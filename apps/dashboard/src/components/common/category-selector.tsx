@@ -28,6 +28,8 @@ type CategorySelectorProps = {
   disabled?: boolean;
   placeholder?: string;
   className?: string;
+  /** When set, only categories with this classification are shown. Use with transaction amount: positive → income, negative → expense. */
+  classification?: "income" | "expense";
 };
 
 export function CategorySelector({
@@ -36,16 +38,18 @@ export function CategorySelector({
   disabled,
   placeholder = "Select category",
   className,
+  classification,
 }: CategorySelectorProps) {
   const { data: categoriesTree, isLoading } = useCategories();
   const { mutate: addCategory, isPending: isCreating } = useAddCategory();
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
 
-  const categoryOptions = useMemo(
-    () => flattenCategoryTree(categoriesTree ?? [], { withDepth: true }),
-    [categoriesTree],
-  );
+  const categoryOptions = useMemo(() => {
+    const flat = flattenCategoryTree(categoriesTree ?? [], { withDepth: true });
+    if (classification == null) return flat;
+    return flat.filter((c) => c.classification === classification);
+  }, [categoriesTree, classification]);
   const categoryLookup = useMemo(() => buildCategoryLookup(categoriesTree ?? []), [categoriesTree]);
   const selectedCategory = value != null ? categoryLookup.get(value) : undefined;
 
@@ -57,7 +61,7 @@ export function CategorySelector({
   const handleCreateCategory = () => {
     if (!trimmedSearch) return;
     addCategory(
-      { name: trimmedSearch },
+      { name: trimmedSearch, classification: classification ?? "expense" },
       {
         onSuccess: (createdCategory) => {
           onChange(createdCategory.id);
