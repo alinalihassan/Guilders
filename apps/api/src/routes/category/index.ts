@@ -26,7 +26,7 @@ export const categoryRoutes = new Elysia({
     async ({ user, db }) => {
       const categories = await db.query.category.findMany({
         where: { user_id: user.id },
-        orderBy: (categories) => asc(categories.name),
+        orderBy: (c) => asc(c.name),
       });
       return categories;
     },
