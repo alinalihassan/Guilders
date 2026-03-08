@@ -19,7 +19,7 @@ type CategoryColorIconProps = {
 const sizeClasses = {
   sm: "size-5 p-1",
   default: "size-6 p-1.5",
-  lg: "size-8 p-2",
+  lg: "size-8 p-1.5",
 } as const;
 
 export function CategoryColorIcon({

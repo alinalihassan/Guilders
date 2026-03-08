@@ -1,4 +1,4 @@
-import { Check, ChevronsUpDown, Loader2, Plus } from "lucide-react";
+import { ChevronsUpDown, Loader2, Plus } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -86,17 +86,11 @@ export function CategorySelector({
           setSearch("");
         }}
       >
-        <Check
-          className={cn(
-            "mr-2 h-4 w-4 shrink-0",
-            value === category.id ? "opacity-100" : "opacity-0",
-          )}
-        />
         <span
           className="flex items-center gap-2 truncate"
           style={{ marginLeft: depth * 12 }}
         >
-          <CategoryColorIcon category={category} size="default" />
+          <CategoryColorIcon category={category} size="lg" />
           <span className="truncate">{category.name}</span>
         </span>
       </CommandItem>
@@ -118,14 +112,16 @@ export function CategorySelector({
             className,
           )}
         >
-          {selectedCategory && (
-            <CategoryColorIcon
-              category={selectedCategory}
-              size="default"
-              className="mr-2"
-            />
-          )}
-          <span className="truncate">{selectedCategory?.name || placeholder}</span>
+          <span className="flex min-w-0 flex-1 items-center gap-2 text-left">
+            {selectedCategory && (
+              <CategoryColorIcon
+                category={selectedCategory}
+                size="lg"
+                className="shrink-0"
+              />  
+            )}
+            <span className="truncate">{selectedCategory?.name || placeholder}</span>
+          </span>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
