@@ -100,6 +100,8 @@ export const createDialogStore: StateSlice<DialogsState & DialogActions> = (set,
   },
   updateDialog: (dialog) =>
     set((state) => ({
-      dialogs: state.dialogs.map((d) => (d.type === dialog.type ? { ...dialog, isOpen: true } : d)),
+      dialogs: state.dialogs.map((d) =>
+        d.type === dialog.type ? { ...d, ...dialog } : d,
+      ),
     })),
 });

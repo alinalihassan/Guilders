@@ -1,5 +1,8 @@
 import { cors } from "@elysiajs/cors";
 import { openapi } from "@elysiajs/openapi";
+import { opentelemetry } from "@elysiajs/opentelemetry";
+import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
+import { BatchSpanProcessor } from "@opentelemetry/sdk-trace-node";
 import { Elysia } from "elysia";
 import { CloudflareAdapter } from "elysia/adapter/cloudflare-worker";
 
@@ -11,6 +14,26 @@ import { oauthWellKnownRoutes } from "./routes/oauth-well-known";
 
 export const app = new Elysia({ adapter: CloudflareAdapter })
   .use(env())
+  .use(
+    opentelemetry({
+      serviceName: process.env.OTEL_SERVICE_NAME || "guilders-api",
+      spanProcessors: process.env.OTEL_EXPORTER_OTLP_ENDPOINT
+        ? [
+            new BatchSpanProcessor(
+              new OTLPTraceExporter({
+                url: `${process.env.OTEL_EXPORTER_OTLP_ENDPOINT}/v1/traces`,
+                headers: {
+                  "x-kubiks-key": (process.env.OTEL_EXPORTER_OTLP_HEADERS || "").replace(
+                    "x-kubiks-key=",
+                    "",
+                  ),
+                },
+              }),
+            ),
+          ]
+        : [],
+    }),
+  )
   .use(
     cors({
       // Reflect request Origin so dashboard gets exact origin (required for cookies)
