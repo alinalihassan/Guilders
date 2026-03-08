@@ -1,4 +1,11 @@
-import { DndContext, type DragEndEvent, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
+import {
+  DndContext,
+  type DragEndEvent,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
 import type { CategoryInsert } from "@guilders/api/types";
 import { Plus } from "lucide-react";
 import { useState } from "react";
@@ -62,6 +69,7 @@ export function CategoriesForm() {
     useSensor(PointerSensor, {
       activationConstraint: { distance: 8 },
     }),
+    useSensor(KeyboardSensor),
   );
 
   const handleAddIncome = () => {
