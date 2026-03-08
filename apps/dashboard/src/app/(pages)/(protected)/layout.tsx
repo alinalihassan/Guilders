@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet, redirect, useLocation } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { AdvisorSidebar } from "@/components/advisor/advisor-sidebar";
 import { Dialogs } from "@/components/dialogs/dialogs";
@@ -30,12 +30,18 @@ export const Route = createFileRoute("/(pages)/(protected)")({
 function ProtectedLayout() {
   const advisorOpen = useStore((state) => state.advisorOpen);
   const [isScrolled, setIsScrolled] = useState(false);
+  const mainRef = useRef<HTMLElement>(null);
   const { pathname } = useLocation();
   const isSettings = pathname.startsWith("/settings");
 
   const handleMainScroll = (e: React.UIEvent<HTMLElement>) => {
     setIsScrolled((e.target as HTMLElement).scrollTop > 0);
   };
+
+  useEffect(() => {
+    const el = mainRef.current;
+    setIsScrolled(el ? el.scrollTop > 0 : false);
+  }, [pathname]);
 
   return (
     <SidebarProvider defaultOpen={false}>
@@ -51,6 +57,7 @@ function ProtectedLayout() {
           <MainScrollProvider isScrolled={isScrolled}>
             {isSettings && <SettingsHeader />}
             <main
+              ref={mainRef}
               className="flex flex-1 flex-col overflow-auto px-4 md:px-6"
               onScroll={handleMainScroll}
             >
