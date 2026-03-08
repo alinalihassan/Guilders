@@ -1,5 +1,5 @@
 import type { Transaction } from "@guilders/api/types";
-import NumberFlow from "@number-flow/react";
+import NumberFlow from "@/components/ui/number-flow";
 
 import { useDialog } from "@/hooks/useDialog";
 import { useFormattedTime } from "@/lib/format-time";

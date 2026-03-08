@@ -1,4 +1,4 @@
-import NumberFlow from "@number-flow/react";
+import NumberFlow from "@/components/ui/number-flow";
 import { useMemo, useState } from "react";
 
 import { BalanceChart } from "@/components/common/balance-chart";

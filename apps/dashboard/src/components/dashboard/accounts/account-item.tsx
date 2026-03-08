@@ -1,5 +1,5 @@
 import type { Account } from "@guilders/api/types";
-import NumberFlow from "@number-flow/react";
+import NumberFlow from "@/components/ui/number-flow";
 import { useRouter } from "@tanstack/react-router";
 import { TriangleAlert } from "lucide-react";
 import { useState } from "react";

@@ -1,13 +1,11 @@
 import type { Account } from "@guilders/api/types";
-import NumberFlow from "@number-flow/react";
-import { useQueries } from "@tanstack/react-query";
+import NumberFlow from "@/components/ui/number-flow";
 import { useMemo } from "react";
 
 import { BalanceChart } from "@/components/common/balance-chart";
 import { ChangeIndicator } from "@/components/common/change-indicator";
 import { Card, CardContent } from "@/components/ui/card";
-import { api, edenError } from "@/lib/api";
-import { balanceHistoryKey, periodToDateRange } from "@/lib/queries/useBalanceHistory";
+import { useBalanceHistories } from "@/lib/queries/useBalanceHistory";
 import { useRates } from "@/lib/queries/useRates";
 import { useUser } from "@/lib/queries/useUser";
 import { convertToUserCurrency } from "@/lib/utils/financial";
@@ -35,24 +33,7 @@ export function CompactBalanceCard({
     0,
   );
 
-  const range = periodToDateRange("1M");
-
-  const historyQueries = useQueries({
-    queries: accounts.map((account) => ({
-      queryKey: balanceHistoryKey(account.id, "1M"),
-      queryFn: async () => {
-        const { data, error } = await api.account({ id: account.id })["balance-history"].get({
-          query: range,
-        });
-        if (error) throw new Error(edenError(error));
-        return {
-          accountId: account.id,
-          currency: account.currency,
-          snapshots: (data as { snapshots: Array<{ date: string; balance: string }> }).snapshots,
-        };
-      },
-    })),
-  });
+  const historyQueries = useBalanceHistories(accounts, "1M");
 
   const allLoaded = historyQueries.every((q) => q.isSuccess);
 

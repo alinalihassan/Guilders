@@ -1,4 +1,4 @@
-import NumberFlow from "@number-flow/react";
+import NumberFlow from "@/components/ui/number-flow";
 import { createFileRoute } from "@tanstack/react-router";
 import { Filter, Plus, Search } from "lucide-react";
 import { useRef, useState } from "react";

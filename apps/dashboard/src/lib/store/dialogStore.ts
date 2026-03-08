@@ -71,19 +71,33 @@ export type DialogActions = {
   updateDialog: (dialog: DialogState) => void;
 };
 
+export const CLOSE_DELAY_MS = 220;
+const closeTimeouts: Partial<Record<DialogState["type"], ReturnType<typeof setTimeout>>> = {};
+
 export const createDialogStore: StateSlice<DialogsState & DialogActions> = (set, _get) => ({
   dialogs: [],
-  openDialog: (dialog) =>
+  openDialog: (dialog) => {
+    if (closeTimeouts[dialog.type]) {
+      clearTimeout(closeTimeouts[dialog.type]);
+      delete closeTimeouts[dialog.type];
+    }
     set((state) => ({
       dialogs: [
         ...state.dialogs.filter((d) => d.type !== dialog.type),
         { ...dialog, isOpen: true },
       ],
-    })),
-  closeDialog: (type) =>
+    }));
+  },
+  closeDialog: (type) => {
+    if (closeTimeouts[type]) return;
     set((state) => ({
-      dialogs: state.dialogs.filter((d) => d.type !== type),
-    })),
+      dialogs: state.dialogs.map((d) => (d.type === type ? { ...d, isOpen: false } : d)),
+    }));
+    closeTimeouts[type] = setTimeout(() => {
+      delete closeTimeouts[type];
+      set((state) => ({ dialogs: state.dialogs.filter((d) => d.type !== type) }));
+    }, CLOSE_DELAY_MS);
+  },
   updateDialog: (dialog) =>
     set((state) => ({
       dialogs: state.dialogs.map((d) => (d.type === dialog.type ? { ...dialog, isOpen: true } : d)),
