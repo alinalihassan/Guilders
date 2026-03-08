@@ -1,3 +1,4 @@
+import { instrumentDrizzle } from "@kubiks/otel-drizzle";
 import { drizzle } from "drizzle-orm/node-postgres";
 
 import { relations } from "../db/schema/relations";
@@ -37,5 +38,9 @@ export function createDb(): Database {
   if (process.env.USE_PGLITE === "1") {
     return pgliteDb!;
   }
-  return drizzle(process.env.DATABASE_URL, { relations });
+
+  const db = drizzle(process.env.DATABASE_URL, { relations });
+  return instrumentDrizzle(db, {
+    dbSystem: "postgresql",
+  }) as unknown as Database;
 }

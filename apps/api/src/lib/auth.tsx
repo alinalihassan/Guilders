@@ -6,6 +6,7 @@ import { passkey } from "@better-auth/passkey";
 import { stripe } from "@better-auth/stripe";
 import ChangeEmail from "@guilders/transactional/emails/change-email";
 import PasswordResetEmail from "@guilders/transactional/emails/password-reset";
+import { instrumentBetterAuth } from "@kubiks/otel-better-auth";
 import { betterAuth } from "better-auth";
 import { APIError } from "better-auth/api";
 import { bearer, jwt, openAPI, testUtils, twoFactor } from "better-auth/plugins";
@@ -55,7 +56,7 @@ export function createAuth(db?: Database) {
   const passkeyRpId = new URL(baseUrl).hostname;
   const stripeAuth = stripePlugin();
 
-  return betterAuth({
+  const auth = betterAuth({
     baseURL: baseUrl,
     database: drizzleAdapter(authDb, {
       provider: "pg",
@@ -190,6 +191,9 @@ export function createAuth(db?: Database) {
       //   : []),
     ],
   });
+
+  // @ts-expect-error - instrumentBetterAuth is not typed correctly
+  return instrumentBetterAuth(auth);
 }
 
 /** Lazily-created instance for OpenAPI schema generation and CLI */
