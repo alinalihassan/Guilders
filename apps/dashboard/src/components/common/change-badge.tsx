@@ -1,5 +1,6 @@
-import NumberFlow from "@number-flow/react";
 import { Minus, TrendingDown, TrendingUp } from "lucide-react";
+
+import NumberFlow from "@/components/ui/number-flow";
 
 export function ChangeBadge({
   change,

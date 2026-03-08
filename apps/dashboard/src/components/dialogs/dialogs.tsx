@@ -50,56 +50,56 @@ export const Dialogs = () => {
   useCommandMenuShortcut();
 
   const dialogs = useStore((state) => state.dialogs);
-  const openTypes = new Set(dialogs.filter((d) => d.isOpen).map((d) => d.type));
+  const dialogTypes = new Set(dialogs.map((d) => d.type));
 
   return (
     <>
-      {openTypes.has("command") && (
+      {dialogTypes.has("command") && (
         <Suspense fallback={null}>
           <CommandMenu />
         </Suspense>
       )}
-      {openTypes.has("addManualAccount") && (
+      {dialogTypes.has("addManualAccount") && (
         <Suspense fallback={null}>
           <AddAccountDialog />
         </Suspense>
       )}
-      {openTypes.has("addLinkedAccount") && (
+      {dialogTypes.has("addLinkedAccount") && (
         <Suspense fallback={null}>
           <AddLinkedAccountDialog />
         </Suspense>
       )}
-      {openTypes.has("addTransaction") && (
+      {dialogTypes.has("addTransaction") && (
         <Suspense fallback={null}>
           <AddTransactionDialog />
         </Suspense>
       )}
-      {openTypes.has("editAccount") && (
+      {dialogTypes.has("editAccount") && (
         <Suspense fallback={null}>
           <EditAccountDialog />
         </Suspense>
       )}
-      {openTypes.has("editTransaction") && (
+      {dialogTypes.has("editTransaction") && (
         <Suspense fallback={null}>
           <EditTransactionDialog />
         </Suspense>
       )}
-      {openTypes.has("provider") && (
+      {dialogTypes.has("provider") && (
         <Suspense fallback={null}>
           <ProviderDialog />
         </Suspense>
       )}
-      {openTypes.has("confirmation") && (
+      {dialogTypes.has("confirmation") && (
         <Suspense fallback={null}>
           <ConfirmationDialog />
         </Suspense>
       )}
-      {openTypes.has("mfa") && (
+      {dialogTypes.has("mfa") && (
         <Suspense fallback={null}>
           <MFADialog />
         </Suspense>
       )}
-      {openTypes.has("inputPrompt") && (
+      {dialogTypes.has("inputPrompt") && (
         <Suspense fallback={null}>
           <InputPromptDialog />
         </Suspense>

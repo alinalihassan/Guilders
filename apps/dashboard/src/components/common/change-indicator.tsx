@@ -1,4 +1,4 @@
-import NumberFlow from "@number-flow/react";
+import NumberFlow from "@/components/ui/number-flow";
 
 interface ChangeIndicatorProps {
   change: {

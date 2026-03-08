@@ -1,5 +1,5 @@
 import type { BalanceSnapshot, NetWorthSnapshot } from "@guilders/api/types";
-import { useQuery } from "@tanstack/react-query";
+import { useQueries, useQuery } from "@tanstack/react-query";
 
 import { api, edenError } from "../api";
 
@@ -37,19 +37,47 @@ export const balanceHistoryKey = (accountId: number, period: Period) =>
 
 export const netWorthHistoryKey = (period: Period) => ["net-worth-history", period] as const;
 
-export function useBalanceHistory(accountId: number | undefined, period: Period = "1M") {
+export type AccountBalanceHistoryResult = {
+  accountId: number;
+  currency: string;
+  snapshots: BalanceSnapshot[];
+};
+
+async function fetchAccountBalanceHistory(
+  accountId: number,
+  period: Period,
+): Promise<BalanceSnapshot[]> {
   const range = periodToDateRange(period);
+  const { data, error } = await api.account({ id: accountId })["balance-history"].get({
+    query: range,
+  });
+  if (error) throw new Error(edenError(error));
+  const snapshots = (data as { snapshots?: BalanceSnapshot[] }).snapshots;
+  return Array.isArray(snapshots) ? snapshots : [];
+}
+
+export function useBalanceHistory(accountId: number | undefined, period: Period = "1M") {
   return useQuery<BalanceSnapshot[], Error>({
     queryKey: balanceHistoryKey(accountId ?? 0, period),
-    queryFn: async () => {
-      const { data, error } = await api.account({ id: accountId! })["balance-history"].get({
-        query: range,
-      });
-      if (error) throw new Error(edenError(error));
-      return (data as { snapshots: BalanceSnapshot[] }).snapshots;
-    },
+    queryFn: () => fetchAccountBalanceHistory(accountId!, period),
     enabled: !!accountId,
   });
+}
+
+export function useBalanceHistories(
+  accounts: { id: number; currency: string }[],
+  period: Period = "1M",
+) {
+  const queries = useQueries({
+    queries: accounts.map((account) => ({
+      queryKey: balanceHistoryKey(account.id, period),
+      queryFn: async (): Promise<AccountBalanceHistoryResult> => {
+        const snapshots = await fetchAccountBalanceHistory(account.id, period);
+        return { accountId: account.id, currency: account.currency, snapshots };
+      },
+    })),
+  });
+  return queries;
 }
 
 export function useNetWorthHistory(period: Period | undefined) {

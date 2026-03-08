@@ -1,9 +1,9 @@
-import NumberFlow from "@number-flow/react";
 import { useMemo, useState } from "react";
 
 import { BalanceChart } from "@/components/common/balance-chart";
 import { ChangeIndicator } from "@/components/common/change-indicator";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import NumberFlow from "@/components/ui/number-flow";
 import {
   Select,
   SelectContent,

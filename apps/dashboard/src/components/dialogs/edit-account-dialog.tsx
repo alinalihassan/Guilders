@@ -1,7 +1,7 @@
 import type { UpdateAccount } from "@guilders/api/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertTriangle, Loader2, Trash2 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -41,6 +41,7 @@ import { useFiles } from "@/lib/queries/useFiles";
 import { useInstitutionConnection } from "@/lib/queries/useInstitutionConnection";
 import { useInstitutionByAccountId } from "@/lib/queries/useInstitutions";
 import { useProviderConnections } from "@/lib/queries/useProviderConnections";
+import { CLOSE_DELAY_MS } from "@/lib/store/dialogStore";
 
 import { FileUploader } from "../common/file-uploader";
 import { AccountIcon } from "../dashboard/accounts/account-icon";
@@ -72,8 +73,6 @@ const notesSchema = z.object({
 const formSchema = detailsSchema.merge(taxSchema).merge(notesSchema);
 
 type FormSchema = z.infer<typeof formSchema>;
-
-const CLOSE_DELAY_MS = 220;
 
 export function EditAccountDialog() {
   const { isOpen, data, close } = useDialog("editAccount");
@@ -129,45 +128,6 @@ export function EditAccountDialog() {
     }
   }, [data?.account, form]);
 
-  const [sheetOpen, setSheetOpen] = useState(false);
-  const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const scheduleClose = (afterClose?: () => void) => {
-    if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
-    closeTimeoutRef.current = setTimeout(() => {
-      closeTimeoutRef.current = null;
-      close();
-      afterClose?.();
-    }, CLOSE_DELAY_MS);
-  };
-
-  useEffect(() => {
-    setSheetOpen(!!isOpen);
-    if (isOpen && closeTimeoutRef.current) {
-      clearTimeout(closeTimeoutRef.current);
-      closeTimeoutRef.current = null;
-    }
-  }, [isOpen]);
-
-  useEffect(
-    () => () => {
-      if (closeTimeoutRef.current) {
-        clearTimeout(closeTimeoutRef.current);
-        closeTimeoutRef.current = null;
-      }
-    },
-    [],
-  );
-
-  const handleOpenChange = (open: boolean) => {
-    if (!open) {
-      setSheetOpen(false);
-      scheduleClose();
-    } else {
-      setSheetOpen(true);
-    }
-  };
-
   if (!data?.account) return null;
   const { account } = data;
 
@@ -188,20 +148,24 @@ export function EditAccountDialog() {
     });
 
     if (redirectURI) {
-      setSheetOpen(false);
-      scheduleClose(() =>
-        openProviderDialog({
-          redirectUri: redirectURI,
-          operation: "reconnect",
-          redirectType,
-        }),
+      close();
+      setTimeout(
+        () =>
+          openProviderDialog({
+            redirectUri: redirectURI,
+            operation: "reconnect",
+            redirectType,
+          }),
+        CLOSE_DELAY_MS,
       );
     } else {
-      setSheetOpen(false);
-      scheduleClose(() =>
-        toast.error("Failed to fix connection", {
-          description: "Unable to fix connection. Please try again later.",
-        }),
+      close();
+      setTimeout(
+        () =>
+          toast.error("Failed to fix connection", {
+            description: "Unable to fix connection. Please try again later.",
+          }),
+        CLOSE_DELAY_MS,
       );
     }
   };
@@ -224,10 +188,7 @@ export function EditAccountDialog() {
         account: updatedAccount,
       },
       {
-        onSuccess: () => {
-          setSheetOpen(false);
-          scheduleClose();
-        },
+        onSuccess: () => close(),
         onError: (error) => {
           console.error("Error updating account:", error);
         },
@@ -237,10 +198,7 @@ export function EditAccountDialog() {
 
   const handleDelete = () => {
     deleteAccount(account.id, {
-      onSuccess: () => {
-        setSheetOpen(false);
-        scheduleClose();
-      },
+      onSuccess: () => close(),
       onError: (error) => {
         console.error("Error deleting account:", error);
       },
@@ -248,7 +206,7 @@ export function EditAccountDialog() {
   };
 
   return (
-    <Sheet open={sheetOpen} onOpenChange={handleOpenChange}>
+    <Sheet open={isOpen} onOpenChange={(open) => !open && close()}>
       <SheetContent className="flex h-full flex-col overflow-hidden p-0">
         <div className="flex-1 overflow-y-auto p-6">
           <SheetTitle className="hidden">Edit Account</SheetTitle>
