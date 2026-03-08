@@ -1,10 +1,9 @@
 import { cors } from "@elysiajs/cors";
-import { openapi } from "@elysiajs/openapi";
 import { Elysia } from "elysia";
 import { CloudflareAdapter } from "elysia/adapter/cloudflare-worker";
 
-import packageJson from "../../../package.json";
 import { env } from "./env";
+import { getOpenAPI } from "./lib/openapi";
 import { api } from "./routes";
 import { oauthPagesRoutes } from "./routes/oauth-pages";
 import { oauthWellKnownRoutes } from "./routes/oauth-well-known";
@@ -19,30 +18,7 @@ export const app = new Elysia({ adapter: CloudflareAdapter })
       credentials: true,
     }),
   )
-  .use(
-    openapi({
-      documentation: {
-        info: {
-          title: "Guilders API Reference",
-          version: packageJson.version,
-        },
-        components: {
-          securitySchemes: {
-            apiKeyAuth: {
-              type: "apiKey",
-              in: "header",
-              name: "x-api-key",
-            },
-            bearerAuth: {
-              type: "http",
-              scheme: "bearer",
-              bearerFormat: "JWT",
-            },
-          },
-        },
-      },
-    }),
-  )
+  .use(await getOpenAPI())
   .use(oauthPagesRoutes)
   .use(oauthWellKnownRoutes)
   .use(api)

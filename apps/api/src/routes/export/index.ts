@@ -63,6 +63,7 @@ export const exportRoutes = new Elysia({
   detail: {
     tags: ["Export"],
     security: [{ apiKeyAuth: [] }, { bearerAuth: [] }],
+    hide: true,
   },
 })
   .use(authPlugin)
