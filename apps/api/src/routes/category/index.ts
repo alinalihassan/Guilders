@@ -72,8 +72,7 @@ export const categoryRoutes = new Elysia({
         return existingCategory;
       }
 
-      const normalizedIcon =
-        body.icon === "" || body.icon == null ? null : body.icon;
+      const normalizedIcon = body.icon === "" || body.icon == null ? null : body.icon;
       if (normalizedIcon != null && !isValidIconName(normalizedIcon)) {
         return status(400, { error: "Invalid category icon name" });
       }

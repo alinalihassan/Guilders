@@ -157,18 +157,15 @@ function CustomNode({ x, y, width, height, index, payload, userCurrency }: any) 
   const isNeutral = kind === "neutral";
   const textAnchor = isNeutral ? "middle" : isIncome ? "end" : "start";
   const textX = isNeutral ? x + width / 2 : isIncome ? x - 6 : x + width + 6;
-  const fillColor = isNeutral ? "var(--color-flow1)" : isIncome ? "var(--color-income)" : "var(--color-expense)";
+  const fillColor = isNeutral
+    ? "var(--color-flow1)"
+    : isIncome
+      ? "var(--color-income)"
+      : "var(--color-expense)";
 
   return (
     <Layer key={`CustomNode${index}`}>
-      <Rectangle
-        x={x}
-        y={y}
-        width={width}
-        height={height}
-        fill={fillColor}
-        fillOpacity={1}
-      />
+      <Rectangle x={x} y={y} width={width} height={height} fill={fillColor} fillOpacity={1} />
       <text
         textAnchor={textAnchor}
         x={textX}
