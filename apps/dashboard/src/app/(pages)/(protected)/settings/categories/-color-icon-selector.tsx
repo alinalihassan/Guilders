@@ -31,7 +31,7 @@ export function CategoryColorIconSelector({
   const effectiveIcon = icon ?? DEFAULT_CATEGORY_ICON;
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && e.target instanceof HTMLInputElement) {
+    if (e.key === "Enter" && e.target instanceof HTMLElement) {
       setOpen(false);
     }
   };

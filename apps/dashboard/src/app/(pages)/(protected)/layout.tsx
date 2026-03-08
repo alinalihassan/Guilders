@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
-import { useCallback, useState } from "react";
+import { useState } from "react";
 
 import { AdvisorSidebar } from "@/components/advisor/advisor-sidebar";
 import { Dialogs } from "@/components/dialogs/dialogs";
@@ -29,9 +29,9 @@ function ProtectedLayout() {
   const advisorOpen = useStore((state) => state.advisorOpen);
   const [isScrolled, setIsScrolled] = useState(false);
 
-  const handleMainScroll = useCallback((e: React.UIEvent<HTMLElement>) => {
+  const handleMainScroll = (e: React.UIEvent<HTMLElement>) => {
     setIsScrolled((e.target as HTMLElement).scrollTop > 0);
-  }, []);
+  };
 
   return (
     <SidebarProvider defaultOpen={false}>
