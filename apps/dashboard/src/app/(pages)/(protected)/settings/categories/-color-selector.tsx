@@ -1,25 +1,11 @@
 "use client";
 
-import { Block } from "@uiw/react-color";
 import { useState } from "react";
 
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 
-const PRESET_COLORS = [
-  "#64748b", // slate
-  "#ef4444", // red
-  "#f97316", // orange
-  "#eab308", // yellow
-  "#22c55e", // green
-  "#14b8a6", // teal
-  "#3b82f6", // blue
-  "#8b5cf6", // violet
-  "#ec4899", // pink
-  "#06b6d4", // cyan
-  "#84cc16", // lime
-  "#f43f5e", // rose
-] as const;
+import { PRESET_COLORS } from "./-constants";
 
 interface CategoryColorSelectorProps {
   value: string;
@@ -42,11 +28,7 @@ export function CategoryColorSelector({
 }: CategoryColorSelectorProps) {
   const [open, setOpen] = useState(false);
   const sizeClass = sizeClasses[size];
-  const normalizedValue = value?.trim() || "#64748b";
-
-  const handleChange = (hex: string) => {
-    onColorSelect(hex);
-  };
+  const normalizedValue = value?.trim() || PRESET_COLORS[0];
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && e.target instanceof HTMLInputElement) {
@@ -69,13 +51,34 @@ export function CategoryColorSelector({
           <span className="size-2.5 rounded-full" style={{ backgroundColor: normalizedValue }} />
         </button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto border-border p-0" align="start" onKeyDown={handleKeyDown}>
-        <Block
-          color={normalizedValue}
-          colors={[...PRESET_COLORS]}
-          onChange={(color) => handleChange(color.hex)}
-          showTriangle={false}
-        />
+      <PopoverContent className="w-auto border-border p-2" align="start" onKeyDown={handleKeyDown}>
+        <div className="flex flex-wrap items-center gap-1.5">
+          {PRESET_COLORS.map((color) => {
+            const isSelected = normalizedValue.toLowerCase() === color.toLowerCase();
+            return (
+              <button
+                key={color}
+                type="button"
+                className={cn(
+                  "rounded-full transition-transform duration-200 active:scale-90",
+                  sizeClass,
+                  isSelected && "ring-2 ring-offset-2 ring-muted-foreground/50",
+                )}
+                style={{
+                  backgroundColor: color,
+                  ...(isSelected && {
+                    boxShadow: `inset 0 0 0 2px var(--background), 0 0 0 2px ${color}`,
+                  }),
+                }}
+                onClick={() => {
+                  onColorSelect(color);
+                  setOpen(false);
+                }}
+                aria-label={`Select color ${color}`}
+              />
+            );
+          })}
+        </div>
       </PopoverContent>
     </Popover>
   );

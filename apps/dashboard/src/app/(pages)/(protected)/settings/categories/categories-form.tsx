@@ -20,7 +20,8 @@ import {
 } from "@/lib/utils/category-tree";
 
 import { CategoryRow } from "./-category-row";
-import { CategoryColorSelector } from "./-color-selector";
+import { CategoryColorIconSelector } from "./-color-icon-selector";
+import { DEFAULT_CATEGORY_ICON, PRESET_COLORS } from "./-constants";
 import { RootDropZone } from "./-root-drop-zone";
 
 export function CategoriesForm() {
@@ -45,9 +46,11 @@ export function CategoriesForm() {
   );
 
   const [newIncomeName, setNewIncomeName] = useState("");
-  const [newIncomeColor, setNewIncomeColor] = useState("#22c55e");
+  const [newIncomeColor, setNewIncomeColor] = useState<string>(PRESET_COLORS[4]); // green
+  const [newIncomeIcon, setNewIncomeIcon] = useState(DEFAULT_CATEGORY_ICON);
   const [newExpenseName, setNewExpenseName] = useState("");
-  const [newExpenseColor, setNewExpenseColor] = useState("#64748b");
+  const [newExpenseColor, setNewExpenseColor] = useState<string>(PRESET_COLORS[0]); // slate
+  const [newExpenseIcon, setNewExpenseIcon] = useState(DEFAULT_CATEGORY_ICON);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -62,16 +65,17 @@ export function CategoriesForm() {
       name: trimmed,
       parent_id: null,
       color: newIncomeColor,
-      icon: null,
+      icon: newIncomeIcon,
       classification: "income",
     };
     addCategory(payload, {
       onSuccess: () => {
         setNewIncomeName("");
-        setNewIncomeColor("#22c55e");
+        setNewIncomeColor(PRESET_COLORS[4]);
+        setNewIncomeIcon(DEFAULT_CATEGORY_ICON);
       },
     });
-  }, [newIncomeName, newIncomeColor, addCategory]);
+  }, [newIncomeName, newIncomeColor, newIncomeIcon, addCategory]);
 
   const handleAddExpense = useCallback(() => {
     const trimmed = newExpenseName.trim();
@@ -80,19 +84,27 @@ export function CategoriesForm() {
       name: trimmed,
       parent_id: null,
       color: newExpenseColor,
-      icon: null,
+      icon: newExpenseIcon,
       classification: "expense",
     };
     addCategory(payload, {
       onSuccess: () => {
         setNewExpenseName("");
-        setNewExpenseColor("#64748b");
+        setNewExpenseColor(PRESET_COLORS[0]);
+        setNewExpenseIcon(DEFAULT_CATEGORY_ICON);
       },
     });
-  }, [newExpenseName, newExpenseColor, addCategory]);
+  }, [newExpenseName, newExpenseColor, newExpenseIcon, addCategory]);
 
   const handleUpdate = useCallback(
-    (id: number, payload: { name?: string; color?: string | null }) => {
+    (
+      id: number,
+      payload: {
+        name?: string;
+        color?: string | null;
+        icon?: string | null;
+      },
+    ) => {
       const category = categoryLookup.get(id);
       if (!category) return;
       updateCategory({
@@ -104,7 +116,10 @@ export function CategoriesForm() {
             payload.color !== undefined
               ? (payload.color ?? undefined)
               : (category.color ?? undefined),
-          icon: category.icon ?? undefined,
+          icon:
+            payload.icon !== undefined
+              ? (payload.icon ?? undefined)
+              : (category.icon ?? undefined),
           classification: (category.classification as "income" | "expense") ?? "expense",
         },
       });
@@ -171,6 +186,8 @@ export function CategoriesForm() {
     setAddName: (v: string) => void,
     addColor: string,
     setAddColor: (v: string) => void,
+    addIcon: string,
+    setAddIcon: (v: string) => void,
     onAdd: () => void,
     rootId: string,
     rootLabel: string,
@@ -183,10 +200,12 @@ export function CategoriesForm() {
         )}
       </h3>
       <div className="flex flex-wrap items-center gap-3 rounded-lg border border-border/60 bg-muted/20 px-3 py-2.5">
-        <CategoryColorSelector
+        <CategoryColorIconSelector
           value={addColor}
+          icon={addIcon}
           onColorSelect={setAddColor}
-          size="default"
+          onIconSelect={setAddIcon}
+          size="lg"
           className="shrink-0"
         />
         <Input
@@ -214,7 +233,7 @@ export function CategoriesForm() {
       <div className="space-y-1 pt-1">
         {list.map((category) => {
           const parentName =
-            category.parent_id != null ? categoryLookup.get(category.parent_id)?.name : null;
+            category.parent_id != null ? categoryLookup.get(category.parent_id)?.name ?? null : null;
           return (
             <CategoryRow
               key={category.id}
@@ -268,6 +287,8 @@ export function CategoriesForm() {
             setNewIncomeName,
             newIncomeColor,
             setNewIncomeColor,
+            newIncomeIcon,
+            setNewIncomeIcon,
             handleAddIncome,
             "root-income",
             "Drop here for top-level income",
@@ -280,6 +301,8 @@ export function CategoriesForm() {
             setNewExpenseName,
             newExpenseColor,
             setNewExpenseColor,
+            newExpenseIcon,
+            setNewExpenseIcon,
             handleAddExpense,
             "root-expense",
             "Drop here for top-level expense",

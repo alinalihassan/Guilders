@@ -1,14 +1,4 @@
-import {
-  Car,
-  Check,
-  ChevronsUpDown,
-  Home,
-  Loader2,
-  Plane,
-  Plus,
-  ShoppingCart,
-  type LucideIcon,
-} from "lucide-react";
+import { Check, ChevronsUpDown, Loader2, Plus, type LucideIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -29,22 +19,7 @@ import {
   flattenCategoryTree,
   type CategoryFlatItem,
 } from "@/lib/utils/category-tree";
-
-const categoryIconMap: Record<string, LucideIcon> = {
-  shoppingcart: ShoppingCart,
-  "shopping-cart": ShoppingCart,
-  utensils: ShoppingCart,
-  car: Car,
-  home: Home,
-  plane: Plane,
-  wallet: ShoppingCart,
-};
-
-function getCategoryIcon(iconName: string | null | undefined): LucideIcon | null {
-  if (!iconName?.trim()) return null;
-  const key = iconName.toLowerCase().replace(/[-_\s]/g, "");
-  return categoryIconMap[key] ?? null;
-}
+import { getCategoryIcon } from "@/lib/utils/category-icons";
 
 type CategorySelectorProps = {
   value?: number;

@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
 import { useDraggable, useDroppable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { CornerDownRight, GripVertical, Trash2 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 import {
   AlertDialog,
@@ -17,15 +17,18 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import type { CategoryFlatItem } from "@/lib/utils/category-tree";
 import { cn } from "@/lib/utils";
+import type { CategoryFlatItem } from "@/lib/utils/category-tree";
 
-import { CategoryColorSelector } from "./-color-selector";
+import { CategoryColorIconSelector } from "./-color-icon-selector";
 
 type CategoryRowProps = {
   category: CategoryFlatItem;
   parentName: string | null;
-  onUpdate: (id: number, payload: { name?: string; color?: string | null }) => void;
+  onUpdate: (
+    id: number,
+    payload: { name?: string; color?: string | null; icon?: string | null },
+  ) => void;
   onRemove: (id: number) => void;
   isRemoving: boolean;
   isUpdating: boolean;
@@ -45,7 +48,13 @@ export function CategoryRow({
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const { attributes, listeners, setNodeRef: setDraggableRef, transform, isDragging } = useDraggable({
+  const {
+    attributes,
+    listeners,
+    setNodeRef: setDraggableRef,
+    transform,
+    isDragging,
+  } = useDraggable({
     id: category.id,
   });
 
@@ -93,15 +102,9 @@ export function CategoryRow({
   const hasParent = category.parent_id != null;
 
   return (
-    <div
-      style={{ marginLeft: depth * 20 }}
-      className="flex items-center gap-2"
-    >
+    <div style={{ marginLeft: depth * 20 }} className="flex items-center gap-2">
       {hasParent && (
-        <CornerDownRight
-          className="h-3.5 w-3.5 shrink-0 text-muted-foreground"
-          aria-hidden
-        />
+        <CornerDownRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden />
       )}
       <div
         ref={setRef}
@@ -113,75 +116,77 @@ export function CategoryRow({
           !isDragging && !isOver && "border-border/60 bg-card hover:bg-muted/30",
         )}
       >
-      <button
-        type="button"
-        className="cursor-grab touch-none shrink-0 rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
-        aria-label="Drag to reorder"
-        {...attributes}
-        {...listeners}
-      >
-        <GripVertical className="h-4 w-4" />
-      </button>
-      <CategoryColorSelector
-        value={category.color ?? "#64748b"}
-        onColorSelect={(color) => onUpdate(category.id, { color })}
-        size="default"
-        className="shrink-0"
-      />
-      {isEditingName ? (
-        <Input
-          ref={inputRef}
-          value={nameDraft}
-          onChange={(e) => setNameDraft(e.target.value)}
-          onBlur={saveName}
-          onKeyDown={handleNameKeyDown}
-          className="h-7 min-w-[8rem] max-w-[14rem] shrink-0 text-sm"
-          autoFocus
-        />
-      ) : (
         <button
           type="button"
-          onClick={() => {
-            setNameDraft(category.name);
-            setIsEditingName(true);
-          }}
-          className="min-w-0 flex-1 truncate text-left text-sm font-medium text-foreground hover:underline"
+          className="shrink-0 cursor-grab touch-none rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+          aria-label="Drag to reorder"
+          {...attributes}
+          {...listeners}
         >
-          {category.name}
+          <GripVertical className="h-4 w-4" />
         </button>
-      )}
-      <div className="ml-auto flex shrink-0 items-center gap-1">
-        <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-muted-foreground hover:text-destructive"
-            onClick={() => setDeleteDialogOpen(true)}
-            disabled={isRemoving || isUpdating}
+        <CategoryColorIconSelector
+          value={category.color ?? "#64748b"}
+          icon={category.icon ?? null}
+          onColorSelect={(color) => onUpdate(category.id, { color })}
+          onIconSelect={(icon) => onUpdate(category.id, { icon })}
+          size="lg"
+          className="shrink-0"
+        />
+        {isEditingName ? (
+          <Input
+            ref={inputRef}
+            value={nameDraft}
+            onChange={(e) => setNameDraft(e.target.value)}
+            onBlur={saveName}
+            onKeyDown={handleNameKeyDown}
+            className="h-7 min-w-[8rem] max-w-[14rem] shrink-0 text-sm"
+            autoFocus
+          />
+        ) : (
+          <button
+            type="button"
+            onClick={() => {
+              setNameDraft(category.name);
+              setIsEditingName(true);
+            }}
+            className="min-w-0 flex-1 truncate text-left text-sm font-medium text-foreground hover:underline"
           >
-            <Trash2 className="h-4 w-4" />
-          </Button>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Delete category</AlertDialogTitle>
-              <AlertDialogDescription>
-                Delete “{category.name}”? This cannot be undone. Transactions using this category
-                may need to be recategorized.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={() => onRemove(category.id)}
-                disabled={isRemoving}
-                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              >
-                {isRemoving ? "Deleting…" : "Delete"}
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      </div>
+            {category.name}
+          </button>
+        )}
+        <div className="ml-auto flex shrink-0 items-center gap-1">
+          <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-muted-foreground hover:text-destructive"
+              onClick={() => setDeleteDialogOpen(true)}
+              disabled={isRemoving}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete category</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Delete “{category.name}”? This cannot be undone. Transactions using this category
+                  may need to be recategorized.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={() => onRemove(category.id)}
+                  disabled={isRemoving}
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                >
+                  {isRemoving ? "Deleting…" : "Delete"}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
       </div>
     </div>
   );
