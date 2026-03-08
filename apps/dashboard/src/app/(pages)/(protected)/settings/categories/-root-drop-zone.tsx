@@ -1,7 +1,13 @@
 import { useDroppable } from "@dnd-kit/core";
 
-export function RootDropZone() {
-  const { isOver, setNodeRef } = useDroppable({ id: "root" });
+type RootDropZoneProps = {
+  id: string;
+  label: string;
+  dropHint?: string;
+};
+
+export function RootDropZone({ id, label, dropHint }: RootDropZoneProps) {
+  const { isOver, setNodeRef } = useDroppable({ id });
 
   return (
     <div
@@ -12,7 +18,7 @@ export function RootDropZone() {
       `}
     >
       <span className="text-muted-foreground">
-        {isOver ? "Drop to make root" : "Drop here for root level"}
+        {isOver ? dropHint ?? `Drop to add to ${label}` : label}
       </span>
     </div>
   );

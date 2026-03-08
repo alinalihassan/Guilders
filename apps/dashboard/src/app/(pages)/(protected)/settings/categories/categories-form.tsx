@@ -1,24 +1,10 @@
+import { DndContext, type DragEndEvent, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
 import type { CategoryInsert } from "@guilders/api/types";
-import {
-  DndContext,
-  type DragEndEvent,
-  PointerSensor,
-  useSensor,
-  useSensors,
-} from "@dnd-kit/core";
 import { Plus } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   useAddCategory,
@@ -32,9 +18,9 @@ import {
   getCategoryAndDescendantIds,
   type CategoryFlatItem,
 } from "@/lib/utils/category-tree";
+
 import { CategoryRow } from "./-category-row";
 import { CategoryColorSelector } from "./-color-selector";
-import type { EditState } from "./-constants";
 import { RootDropZone } from "./-root-drop-zone";
 
 export function CategoriesForm() {
@@ -47,15 +33,21 @@ export function CategoriesForm() {
     () => flattenCategoryTree(categoriesTree ?? [], { withDepth: true }),
     [categoriesTree],
   );
-  const categoryLookup = useMemo(
-    () => buildCategoryLookup(categoriesTree ?? []),
-    [categoriesTree],
+  const categoryLookup = useMemo(() => buildCategoryLookup(categoriesTree ?? []), [categoriesTree]);
+
+  const incomeList = useMemo(
+    () => flatList.filter((c) => c.classification === "income"),
+    [flatList],
+  );
+  const expenseList = useMemo(
+    () => flatList.filter((c) => c.classification === "expense"),
+    [flatList],
   );
 
-  const [newName, setNewName] = useState("");
-  const [newColor, setNewColor] = useState("#64748b");
-  const [newClassification, setNewClassification] = useState<"income" | "expense">("expense");
-  const [editing, setEditing] = useState<EditState | null>(null);
+  const [newIncomeName, setNewIncomeName] = useState("");
+  const [newIncomeColor, setNewIncomeColor] = useState("#22c55e");
+  const [newExpenseName, setNewExpenseName] = useState("");
+  const [newExpenseColor, setNewExpenseColor] = useState("#64748b");
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -63,54 +55,62 @@ export function CategoriesForm() {
     }),
   );
 
-  const handleAdd = useCallback(() => {
-    const trimmed = newName.trim();
+  const handleAddIncome = useCallback(() => {
+    const trimmed = newIncomeName.trim();
     if (!trimmed) return;
     const payload: Partial<CategoryInsert> = {
       name: trimmed,
       parent_id: null,
-      color: newColor,
+      color: newIncomeColor,
       icon: null,
-      classification: newClassification,
+      classification: "income",
     };
     addCategory(payload, {
       onSuccess: () => {
-        setNewName("");
-        setNewColor("#64748b");
-        setNewClassification("expense");
+        setNewIncomeName("");
+        setNewIncomeColor("#22c55e");
       },
     });
-  }, [newName, newColor, newClassification, addCategory]);
+  }, [newIncomeName, newIncomeColor, addCategory]);
 
-  const startEditing = useCallback((c: CategoryFlatItem) => {
-    setEditing({
-      id: c.id,
-      name: c.name,
-      parent_id: c.parent_id ?? null,
-      color: c.color ?? "#64748b",
-      icon: c.icon ?? null,
-      classification: (c.classification as "income" | "expense") ?? "expense",
+  const handleAddExpense = useCallback(() => {
+    const trimmed = newExpenseName.trim();
+    if (!trimmed) return;
+    const payload: Partial<CategoryInsert> = {
+      name: trimmed,
+      parent_id: null,
+      color: newExpenseColor,
+      icon: null,
+      classification: "expense",
+    };
+    addCategory(payload, {
+      onSuccess: () => {
+        setNewExpenseName("");
+        setNewExpenseColor("#64748b");
+      },
     });
-  }, []);
+  }, [newExpenseName, newExpenseColor, addCategory]);
 
-  const cancelEditing = useCallback(() => setEditing(null), []);
-
-  const saveEditing = useCallback(() => {
-    if (!editing || !editing.name.trim()) return;
-    updateCategory(
-      {
-        id: editing.id,
+  const handleUpdate = useCallback(
+    (id: number, payload: { name?: string; color?: string | null }) => {
+      const category = categoryLookup.get(id);
+      if (!category) return;
+      updateCategory({
+        id,
         category: {
-          name: editing.name.trim(),
-          parent_id: editing.parent_id,
-          color: editing.color ?? "#64748b",
-          icon: editing.icon || null,
-          classification: editing.classification,
+          name: payload.name ?? category.name,
+          parent_id: category.parent_id ?? undefined,
+          color:
+            payload.color !== undefined
+              ? (payload.color ?? undefined)
+              : (category.color ?? undefined),
+          icon: category.icon ?? undefined,
+          classification: (category.classification as "income" | "expense") ?? "expense",
         },
-      },
-      { onSuccess: cancelEditing },
-    );
-  }, [editing, updateCategory, cancelEditing]);
+      });
+    },
+    [categoryLookup, updateCategory],
+  );
 
   const handleDragEnd = useCallback(
     (event: DragEndEvent) => {
@@ -126,15 +126,28 @@ export function CategoriesForm() {
       );
 
       let newParentId: number | null = null;
-      if (over.id === "root") {
+      let newClassification: "income" | "expense" = category.classification as "income" | "expense";
+
+      if (over.id === "root-income") {
         newParentId = null;
+        newClassification = "income";
+      } else if (over.id === "root-expense") {
+        newParentId = null;
+        newClassification = "expense";
       } else if (typeof over.id === "number" && !excludeSelfAndDescendants.has(over.id)) {
-        newParentId = over.id as number;
+        const target = categoryLookup.get(over.id as number);
+        if (target) {
+          newParentId = over.id as number;
+          newClassification = target.classification as "income" | "expense";
+        } else {
+          return;
+        }
       } else {
         return;
       }
 
-      if (category.parent_id === newParentId) return;
+      if (category.parent_id === newParentId && category.classification === newClassification)
+        return;
 
       updateCategory({
         id: draggedId,
@@ -143,106 +156,136 @@ export function CategoriesForm() {
           parent_id: newParentId,
           color: category.color ?? undefined,
           icon: category.icon ?? undefined,
-          classification: (category.classification as "income" | "expense") ?? "expense",
+          classification: newClassification,
         },
       });
     },
     [categoryLookup, categoriesTree, updateCategory],
   );
 
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-base">Categories</CardTitle>
-        <CardDescription>
-          Add categories below, then drag to change parent. Drop on a category to nest under it, or
-          on the root zone to make top-level.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="flex flex-wrap items-center gap-3 rounded-lg border border-border/60 bg-muted/20 px-3 py-2.5">
-          <CategoryColorSelector
-            value={newColor}
-            onColorSelect={setNewColor}
-            size="default"
-            className="shrink-0"
-          />
-          <Input
-            value={newName}
-            onChange={(e) => setNewName(e.target.value)}
-            placeholder="e.g. Groceries"
-            className="w-44"
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                handleAdd();
-              }
-            }}
-          />
-          <Select
-            value={newClassification}
-            onValueChange={(v) => setNewClassification(v as "income" | "expense")}
-          >
-            <SelectTrigger className="w-32">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="expense">Expense</SelectItem>
-              <SelectItem value="income">Income</SelectItem>
-            </SelectContent>
-          </Select>
-          <Button onClick={handleAdd} disabled={isAdding || !newName.trim()}>
-            <Plus className="mr-2 h-4 w-4" />
-            Add
-          </Button>
-        </div>
-
-        {isLoading ? (
-            <div className="space-y-2">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="flex items-center gap-3 rounded-lg border border-border/60 bg-muted/30 px-4 py-3"
-                >
-                  <Skeleton className="h-4 w-4 rounded" />
-                  <Skeleton className="h-4 w-32" />
-                </div>
-              ))}
-            </div>
-        ) : flatList.length === 0 ? (
-          <p className="rounded-lg border border-dashed border-border/60 bg-muted/20 px-4 py-8 text-center text-sm text-muted-foreground">
-            No categories yet. Add your first one above.
-          </p>
-        ) : (
-          <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
-            <RootDropZone />
-            <div className="space-y-1 pt-1">
-              {flatList.map((category) => {
-                const parentName =
-                  category.parent_id != null
-                    ? categoryLookup.get(category.parent_id)?.name
-                    : null;
-                return (
-                  <CategoryRow
-                    key={category.id}
-                    category={category}
-                    parentName={parentName}
-                    isEditing={editing?.id === category.id}
-                    editState={editing}
-                    onStartEdit={startEditing}
-                    onCancelEdit={cancelEditing}
-                    onSaveEdit={saveEditing}
-                    setEditState={setEditing}
-                    onRemove={removeCategory}
-                    isRemoving={isRemoving}
-                    isUpdating={isUpdating}
-                  />
-                );
-              })}
-            </div>
-          </DndContext>
+  const renderSection = (
+    classification: "income" | "expense",
+    list: CategoryFlatItem[],
+    title: string,
+    addName: string,
+    setAddName: (v: string) => void,
+    addColor: string,
+    setAddColor: (v: string) => void,
+    onAdd: () => void,
+    rootId: string,
+    rootLabel: string,
+  ) => (
+    <div className="space-y-2">
+      <h3 className="text-md font-semibold text-foreground">
+        {title}{" "}
+        {list.length > 0 && (
+          <span className="font-normal text-muted-foreground">{list.length}</span>
         )}
-      </CardContent>
-    </Card>
+      </h3>
+      <div className="flex flex-wrap items-center gap-3 rounded-lg border border-border/60 bg-muted/20 px-3 py-2.5">
+        <CategoryColorSelector
+          value={addColor}
+          onColorSelect={setAddColor}
+          size="default"
+          className="shrink-0"
+        />
+        <Input
+          value={addName}
+          onChange={(e) => setAddName(e.target.value)}
+          placeholder="e.g. Salary"
+          className="w-44"
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              onAdd();
+            }
+          }}
+        />
+        <Button onClick={onAdd} disabled={isAdding || !addName.trim()}>
+          <Plus className="mr-2 h-4 w-4" />
+          Add
+        </Button>
+      </div>
+      <RootDropZone
+        id={rootId}
+        label={rootLabel}
+        dropHint={`Drop to make top-level ${classification}`}
+      />
+      <div className="space-y-1 pt-1">
+        {list.map((category) => {
+          const parentName =
+            category.parent_id != null ? categoryLookup.get(category.parent_id)?.name : null;
+          return (
+            <CategoryRow
+              key={category.id}
+              category={category}
+              parentName={parentName}
+              onUpdate={handleUpdate}
+              onRemove={removeCategory}
+              isRemoving={isRemoving}
+              isUpdating={isUpdating}
+            />
+          );
+        })}
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="space-y-6">
+      {isLoading ? (
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Skeleton className="h-5 w-40" />
+            <div className="flex gap-3 rounded-lg border border-border/60 px-3 py-2.5">
+              <Skeleton className="h-8 w-8 rounded-full" />
+              <Skeleton className="h-8 w-44" />
+            </div>
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="flex gap-3 rounded-lg border border-border/60 px-4 py-3">
+                <Skeleton className="h-4 w-4" />
+                <Skeleton className="h-4 w-32" />
+              </div>
+            ))}
+          </div>
+          <div className="space-y-2">
+            <Skeleton className="h-5 w-40" />
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="flex gap-3 rounded-lg border border-border/60 px-4 py-3">
+                <Skeleton className="h-4 w-4" />
+                <Skeleton className="h-4 w-32" />
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+          {renderSection(
+            "income",
+            incomeList,
+            "Income categories",
+            newIncomeName,
+            setNewIncomeName,
+            newIncomeColor,
+            setNewIncomeColor,
+            handleAddIncome,
+            "root-income",
+            "Drop here for top-level income",
+          )}
+          {renderSection(
+            "expense",
+            expenseList,
+            "Expense categories",
+            newExpenseName,
+            setNewExpenseName,
+            newExpenseColor,
+            setNewExpenseColor,
+            handleAddExpense,
+            "root-expense",
+            "Drop here for top-level expense",
+          )}
+        </DndContext>
+      )}
+    </div>
   );
 }
