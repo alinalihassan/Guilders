@@ -15,9 +15,16 @@ interface TransactionsSankeyProps {
   userCurrency: string;
 }
 
+type SankeyNodeKind = "income" | "expense" | "neutral";
+
 interface SankeyNode {
+  /** Stable unique key (e.g. income:category:123, expense:__uncategorized__, __center__) */
   name: string;
   value?: number;
+  /** User-facing display name (from categoryLookup or "Uncategorized") */
+  label?: string;
+  /** Flow type for display and styling */
+  kind?: SankeyNodeKind;
 }
 
 interface SankeyLink {
@@ -137,8 +144,8 @@ const chartConfig: ChartConfig = {
 function CustomNode({ x, y, width, height, index, payload, userCurrency }: any) {
   if (![x, y, width, height].every(Number.isFinite)) return null;
 
-  const nodeName = String(payload?.name ?? "");
-  const isIncome = nodeName.includes("Income");
+  const kind = payload?.kind as SankeyNodeKind | undefined;
+  const label = payload?.label ?? String(payload?.name ?? "");
   const nodeValue = toFiniteNumber(payload.value);
   const formattedValue = new Intl.NumberFormat(undefined, {
     style: "currency",
@@ -146,7 +153,11 @@ function CustomNode({ x, y, width, height, index, payload, userCurrency }: any) 
     maximumFractionDigits: 0,
   }).format(Math.round(nodeValue));
 
-  const categoryName = nodeName.replace(/ \(Income\)$/, "").replace(/ \(Expense\)$/, "");
+  const isIncome = kind === "income";
+  const isNeutral = kind === "neutral";
+  const textAnchor = isNeutral ? "middle" : isIncome ? "end" : "start";
+  const textX = isNeutral ? x + width / 2 : isIncome ? x - 6 : x + width + 6;
+  const fillColor = isNeutral ? "var(--color-flow1)" : isIncome ? "var(--color-income)" : "var(--color-expense)";
 
   return (
     <Layer key={`CustomNode${index}`}>
@@ -155,21 +166,21 @@ function CustomNode({ x, y, width, height, index, payload, userCurrency }: any) 
         y={y}
         width={width}
         height={height}
-        fill={`var(--color-${isIncome ? "income" : "expense"})`}
+        fill={fillColor}
         fillOpacity={1}
       />
       <text
-        textAnchor={isIncome ? "end" : "start"}
-        x={isIncome ? x - 6 : x + width + 6}
+        textAnchor={textAnchor}
+        x={textX}
         y={y + height / 2}
         fontSize="12"
         className="fill-foreground"
       >
-        {categoryName}
+        {label}
       </text>
       <text
-        textAnchor={isIncome ? "end" : "start"}
-        x={isIncome ? x - 6 : x + width + 6}
+        textAnchor={textAnchor}
+        x={textX}
         y={y + height / 2 + 13}
         fontSize="10"
         className="fill-muted-foreground"
@@ -281,18 +292,22 @@ export function TransactionsSankey({
       categoryTotals.set(key, (categoryTotals.get(key) || 0) + amount);
     }
 
-    // Create nodes array: use categoryLabel for display names, categoryKey for aggregation
+    // Create nodes array: name = stable unique key, label = display name, kind = income/expense/neutral
     const nodes: SankeyNode[] = [
       ...incomeArray.map(
         (catKey): SankeyNode => ({
-          name: `${keyToLabel.get(catKey) ?? catKey} (Income)`,
+          name: `income:${catKey}`,
+          label: keyToLabel.get(catKey) ?? "Uncategorized",
+          kind: "income",
           value: categoryTotals.get(`${catKey} (Income)`) || 0,
         }),
       ),
-      { name: "Income", value: 0 }, // Central income node
+      { name: "__center__", label: "Income", kind: "neutral", value: 0 },
       ...expenseArray.map(
         (catKey): SankeyNode => ({
-          name: `${keyToLabel.get(catKey) ?? catKey} (Expense)`,
+          name: `expense:${catKey}`,
+          label: keyToLabel.get(catKey) ?? "Uncategorized",
+          kind: "expense",
           value: categoryTotals.get(`${catKey} (Expense)`) || 0,
         }),
       ),
@@ -387,7 +402,7 @@ export function TransactionsSankey({
             link={<CustomLink />}
             nodePadding={20}
             nodeWidth={10}
-            margin={{ top: 10, right: 100, bottom: 10, left: 60 }}
+            margin={{ top: 10, right: 100, bottom: 10, left: 100 }}
           />
         </ChartContainer>
       </CardContent>
