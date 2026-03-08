@@ -1,5 +1,5 @@
-import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import { CircleDot } from "lucide-react";
+import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 
 import { DEFAULT_CATEGORY_ICON } from "@/lib/constants";
 import { cn } from "@/lib/utils";
@@ -33,8 +33,7 @@ export function CategoryColorIcon({
   className,
 }: CategoryColorIconProps) {
   const color = (colorProp ?? category?.color ?? DEFAULT_COLOR).trim() || DEFAULT_COLOR;
-  const iconName =
-    (iconProp ?? category?.icon)?.trim() || DEFAULT_CATEGORY_ICON;
+  const iconName = (iconProp ?? category?.icon)?.trim() || DEFAULT_CATEGORY_ICON;
 
   return (
     <span

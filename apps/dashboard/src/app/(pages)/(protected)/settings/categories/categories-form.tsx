@@ -117,9 +117,7 @@ export function CategoriesForm() {
               ? (payload.color ?? undefined)
               : (category.color ?? undefined),
           icon:
-            payload.icon !== undefined
-              ? (payload.icon ?? undefined)
-              : (category.icon ?? undefined),
+            payload.icon !== undefined ? (payload.icon ?? undefined) : (category.icon ?? undefined),
           classification: (category.classification as "income" | "expense") ?? "expense",
         },
       });
@@ -233,7 +231,9 @@ export function CategoriesForm() {
       <div className="space-y-1 pt-1">
         {list.map((category) => {
           const parentName =
-            category.parent_id != null ? categoryLookup.get(category.parent_id)?.name ?? null : null;
+            category.parent_id != null
+              ? (categoryLookup.get(category.parent_id)?.name ?? null)
+              : null;
           return (
             <CategoryRow
               key={category.id}

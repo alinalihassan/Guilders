@@ -36,10 +36,7 @@ export const Route = createFileRoute("/(pages)/(protected)/transactions/")({
 function TransactionsPage() {
   const { data: transactions, isLoading } = useTransactions();
   const { data: categories } = useCategories();
-  const categoryLookup = useMemo(
-    () => buildCategoryLookup(categories ?? []),
-    [categories],
-  );
+  const categoryLookup = useMemo(() => buildCategoryLookup(categories ?? []), [categories]);
   const { data: user, isLoading: isLoadingUser } = useUser();
   const { open: openAddTransaction } = useDialog("addTransaction");
   const [searchQuery, setSearchQuery] = useState("");

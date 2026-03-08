@@ -12,13 +12,10 @@ export function RootDropZone({ id, label, dropHint }: RootDropZoneProps) {
   return (
     <div
       ref={setNodeRef}
-      className={`
-        rounded-lg border-2 border-dashed px-3 py-2 text-center text-sm transition-colors
-        ${isOver ? "border-primary/50 bg-primary/5" : "border-muted-foreground/25 bg-muted/20"}
-      `}
+      className={`rounded-lg border-2 border-dashed px-3 py-2 text-center text-sm transition-colors ${isOver ? "border-primary/50 bg-primary/5" : "border-muted-foreground/25 bg-muted/20"} `}
     >
       <span className="text-muted-foreground">
-        {isOver ? dropHint ?? `Drop to add to ${label}` : label}
+        {isOver ? (dropHint ?? `Drop to add to ${label}`) : label}
       </span>
     </div>
   );

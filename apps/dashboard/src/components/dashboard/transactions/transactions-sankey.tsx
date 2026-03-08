@@ -229,10 +229,7 @@ export function TransactionsSankey({
   userCurrency,
 }: TransactionsSankeyProps) {
   const { data: categories } = useCategories();
-  const categoryLookup = useMemo(
-    () => buildCategoryLookup(categories ?? []),
-    [categories],
-  );
+  const categoryLookup = useMemo(() => buildCategoryLookup(categories ?? []), [categories]);
   const sankeyData = useMemo<SankeyData>(() => {
     if (!transactions) return { nodes: [], links: [] };
 

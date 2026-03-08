@@ -28,10 +28,7 @@ export function flattenCategoryTree(
  * Returns the set of category ids that are the given category or any of its descendants.
  * Use to exclude from parent selector (prevent cycles).
  */
-export function getCategoryAndDescendantIds(
-  tree: CategoryTree[],
-  categoryId: number,
-): Set<number> {
+export function getCategoryAndDescendantIds(tree: CategoryTree[], categoryId: number): Set<number> {
   const set = new Set<number>();
   function addSubtree(nodes: CategoryTree[]) {
     for (const node of nodes) {

@@ -8,8 +8,8 @@ import {
   insertCategorySchema,
   selectCategorySchema,
 } from "../../db/schema/categories";
-import { isValidIconName } from "../../lib/valid-icon-name";
 import { deliverUserWebhookEvents } from "../../lib/user-webhooks";
+import { isValidIconName } from "../../lib/valid-icon-name";
 import { authPlugin } from "../../middleware/auth";
 import { errorSchema } from "../../utils/error";
 import { categoryIdParamSchema, createCategorySchema, categoryTreeSchema } from "./types";

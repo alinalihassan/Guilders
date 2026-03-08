@@ -4,13 +4,34 @@ export { DEFAULT_CATEGORY_ICON };
 
 /** Cohesive palette: neutrals → warm → nature → cool → purple → pink (7 cols × 4 rows = 28). */
 export const PRESET_COLORS = [
-  "#64748b", "#475569", "#334155", "#1e293b", // slate
-  "#ef4444", "#f97316", "#eab308", "#f59e0b", // warm
-  "#22c55e", "#10b981", "#14b8a6", "#84cc16", // nature
-  "#06b6d4", "#0ea5e9", "#3b82f6", "#6366f1", // cool
-  "#8b5cf6", "#a855f7", "#d946ef", "#c026d3", // purple
-  "#ec4899", "#f43f5e", "#fb7185", "#e11d48", // pink
-  "#94a3b8", "#fbbf24", "#2dd4bf", "#818cf8", // extra
+  "#64748b",
+  "#475569",
+  "#334155",
+  "#1e293b", // slate
+  "#ef4444",
+  "#f97316",
+  "#eab308",
+  "#f59e0b", // warm
+  "#22c55e",
+  "#10b981",
+  "#14b8a6",
+  "#84cc16", // nature
+  "#06b6d4",
+  "#0ea5e9",
+  "#3b82f6",
+  "#6366f1", // cool
+  "#8b5cf6",
+  "#a855f7",
+  "#d946ef",
+  "#c026d3", // purple
+  "#ec4899",
+  "#f43f5e",
+  "#fb7185",
+  "#e11d48", // pink
+  "#94a3b8",
+  "#fbbf24",
+  "#2dd4bf",
+  "#818cf8", // extra
 ] as const;
 
 /** Same length as PRESET_COLORS so color and icon grids align (7 cols × 4 rows = 28). */

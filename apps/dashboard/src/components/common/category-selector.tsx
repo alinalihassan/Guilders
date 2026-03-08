@@ -46,18 +46,13 @@ export function CategorySelector({
     () => flattenCategoryTree(categoriesTree ?? [], { withDepth: true }),
     [categoriesTree],
   );
-  const categoryLookup = useMemo(
-    () => buildCategoryLookup(categoriesTree ?? []),
-    [categoriesTree],
-  );
+  const categoryLookup = useMemo(() => buildCategoryLookup(categoriesTree ?? []), [categoriesTree]);
   const selectedCategory = value != null ? categoryLookup.get(value) : undefined;
 
   const trimmedSearch = search.trim();
   const canCreate =
     trimmedSearch.length > 0 &&
-    !categoryOptions.some(
-      (c) => c.name.toLowerCase() === trimmedSearch.toLowerCase(),
-    );
+    !categoryOptions.some((c) => c.name.toLowerCase() === trimmedSearch.toLowerCase());
 
   const handleCreateCategory = () => {
     if (!trimmedSearch) return;
@@ -86,10 +81,7 @@ export function CategorySelector({
           setSearch("");
         }}
       >
-        <span
-          className="flex items-center gap-2 truncate"
-          style={{ marginLeft: depth * 12 }}
-        >
+        <span className="flex items-center gap-2 truncate" style={{ marginLeft: depth * 12 }}>
           <CategoryColorIcon category={category} size="lg" />
           <span className="truncate">{category.name}</span>
         </span>
@@ -114,11 +106,7 @@ export function CategorySelector({
         >
           <span className="flex min-w-0 flex-1 items-center gap-2 text-left">
             {selectedCategory && (
-              <CategoryColorIcon
-                category={selectedCategory}
-                size="lg"
-                className="shrink-0"
-              />  
+              <CategoryColorIcon category={selectedCategory} size="lg" className="shrink-0" />
             )}
             <span className="truncate">{selectedCategory?.name || placeholder}</span>
           </span>

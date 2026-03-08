@@ -46,11 +46,7 @@ export function useAddCategory() {
 
 export function useUpdateCategory() {
   const queryClient = useQueryClient();
-  return useMutation<
-    Category,
-    Error,
-    { id: number; category: Partial<CategoryInsert> }
-  >({
+  return useMutation<Category, Error, { id: number; category: Partial<CategoryInsert> }>({
     mutationFn: async ({ id, category }) => {
       const body = {
         ...category,

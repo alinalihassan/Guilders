@@ -1,11 +1,11 @@
 "use client";
 
+import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import { useState } from "react";
 
 import { CategoryColorIcon } from "@/components/common/category-color-icon";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 
 import { DEFAULT_CATEGORY_ICON, ICON_OPTIONS, PRESET_COLORS } from "./-constants";
 
@@ -41,17 +41,10 @@ export function CategoryColorIconSelector({
       <PopoverTrigger asChild>
         <button
           type="button"
-          className={cn(
-            "shrink-0 transition-transform duration-200 active:scale-95",
-            className,
-          )}
+          className={cn("shrink-0 transition-transform duration-200 active:scale-95", className)}
           aria-label="Choose color and icon"
         >
-          <CategoryColorIcon
-            color={value?.trim() || PRESET_COLORS[0]}
-            icon={icon}
-            size={size}
-          />
+          <CategoryColorIcon color={value?.trim() || PRESET_COLORS[0]} icon={icon} size={size} />
         </button>
       </PopoverTrigger>
       <PopoverContent
@@ -92,34 +85,34 @@ export function CategoryColorIconSelector({
           <div>
             <p className="mb-1.5 text-xs font-medium text-foreground">Icon</p>
             <div className="grid grid-cols-7 gap-1 p-1">
-                {ICON_OPTIONS.map((opt) => {
-                  const isSelected = effectiveIcon === opt.value;
-                  return (
-                    <button
-                      key={opt.value}
-                      type="button"
-                      className={cn(
-                        "flex size-8 items-center justify-center rounded-full transition-colors",
-                        isSelected && "ring-2 ring-offset-2 ring-muted-foreground/50",
-                      )}
-                      style={{
-                        backgroundColor: isSelected
-                          ? `color-mix(in oklab, ${normalizedColor} 10%, transparent)`
-                          : undefined,
-                      }}
-                      onClick={() => onIconSelect(opt.value)}
-                      title={opt.label}
-                      aria-label={opt.label}
-                    >
-                      <DynamicIcon
-                        name={opt.value as IconName}
-                        className="size-5 shrink-0"
-                        style={{ color: isSelected ? normalizedColor : undefined }}
-                        strokeWidth={2}
-                      />
-                    </button>
-                  );
-                })}
+              {ICON_OPTIONS.map((opt) => {
+                const isSelected = effectiveIcon === opt.value;
+                return (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    className={cn(
+                      "flex size-8 items-center justify-center rounded-full transition-colors",
+                      isSelected && "ring-2 ring-offset-2 ring-muted-foreground/50",
+                    )}
+                    style={{
+                      backgroundColor: isSelected
+                        ? `color-mix(in oklab, ${normalizedColor} 10%, transparent)`
+                        : undefined,
+                    }}
+                    onClick={() => onIconSelect(opt.value)}
+                    title={opt.label}
+                    aria-label={opt.label}
+                  >
+                    <DynamicIcon
+                      name={opt.value as IconName}
+                      className="size-5 shrink-0"
+                      style={{ color: isSelected ? normalizedColor : undefined }}
+                      strokeWidth={2}
+                    />
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>
