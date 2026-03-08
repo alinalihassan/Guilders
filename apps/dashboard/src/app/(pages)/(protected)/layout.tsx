@@ -59,13 +59,14 @@ function ProtectedLayout() {
           )}
           aria-hidden={!advisorOpen}
         >
-          <div
-            hidden={!advisorOpen}
-            className="flex h-full min-h-0 min-w-[400px] flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm"
-            style={{ width: ADVISOR_SIDEBAR_WIDTH }}
-          >
-            <AdvisorSidebar />
-          </div>
+          {advisorOpen && (
+            <div
+              className="flex h-full min-h-0 min-w-[400px] flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm"
+              style={{ width: ADVISOR_SIDEBAR_WIDTH }}
+            >
+              <AdvisorSidebar />
+            </div>
+          )}
         </aside>
       </SidebarInset>
       <Dialogs />
