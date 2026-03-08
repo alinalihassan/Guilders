@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Filter, Plus, Search } from "lucide-react";
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 
 import { TransactionItem } from "@/components/dashboard/transactions/transaction-item";
 import { TransactionsCard } from "@/components/dashboard/transactions/transactions-card";
@@ -15,6 +15,7 @@ import { useCategories } from "@/lib/queries/useCategories";
 import { useTransactions } from "@/lib/queries/useTransactions";
 import { useUser } from "@/lib/queries/useUser";
 import { cn } from "@/lib/utils";
+import { buildCategoryLookup } from "@/lib/utils/category-tree";
 import { convertToUserCurrency } from "@/lib/utils/financial";
 
 function toFiniteNumber(value: unknown): number {
@@ -35,6 +36,10 @@ export const Route = createFileRoute("/(pages)/(protected)/transactions/")({
 function TransactionsPage() {
   const { data: transactions, isLoading } = useTransactions();
   const { data: categories } = useCategories();
+  const categoryLookup = useMemo(
+    () => buildCategoryLookup(categories ?? []),
+    [categories],
+  );
   const { data: user, isLoading: isLoadingUser } = useUser();
   const { open: openAddTransaction } = useDialog("addTransaction");
   const [searchQuery, setSearchQuery] = useState("");
@@ -60,7 +65,9 @@ function TransactionsPage() {
   const filteredTransactions = transactions?.filter((transaction) => {
     const searchLower = searchQuery.toLowerCase();
     const categoryName =
-      categories?.find((category) => category.id === transaction.category_id)?.name ?? "";
+      (transaction.category_id != null
+        ? categoryLookup.get(transaction.category_id)?.name
+        : undefined) ?? "";
     return (
       transaction.description?.toLowerCase().includes(searchLower) ||
       categoryName.toLowerCase().includes(searchLower) ||

@@ -2,11 +2,41 @@ import { waitUntil } from "cloudflare:workers";
 import { and, asc, eq } from "drizzle-orm";
 import { Elysia, status, t } from "elysia";
 
-import { category, insertCategorySchema, selectCategorySchema } from "../../db/schema/categories";
+import {
+  category,
+  type Category as DbCategory,
+  insertCategorySchema,
+  selectCategorySchema,
+} from "../../db/schema/categories";
 import { deliverUserWebhookEvents } from "../../lib/user-webhooks";
 import { authPlugin } from "../../middleware/auth";
 import { errorSchema } from "../../utils/error";
-import { categoryIdParamSchema, createCategorySchema } from "./types";
+import { categoryIdParamSchema, createCategorySchema, categoryTreeSchema } from "./types";
+import type { CategoryTree } from "./types";
+
+function buildCategoryTree(flat: DbCategory[]): CategoryTree[] {
+  const byParent = new Map<number | null, DbCategory[]>();
+  for (const c of flat) {
+    const pid = c.parent_id;
+    if (!byParent.has(pid)) byParent.set(pid, []);
+    byParent.get(pid)!.push(c);
+  }
+  for (const arr of byParent.values()) {
+    arr.sort((a, b) => a.name.localeCompare(b.name));
+  }
+  function children(parentId: number | null): CategoryTree[] {
+    const list = byParent.get(parentId) ?? [];
+    return list.map((c) => {
+      const childList = children(c.id);
+      const node: CategoryTree = {
+        ...c,
+        ...(childList.length > 0 ? { children: childList } : {}),
+      };
+      return node;
+    });
+  }
+  return children(null);
+}
 
 export const categoryRoutes = new Elysia({
   prefix: "/category",
@@ -18,24 +48,25 @@ export const categoryRoutes = new Elysia({
   .use(authPlugin)
   .model({
     Category: selectCategorySchema,
+    CategoryTree: categoryTreeSchema,
     CreateCategory: insertCategorySchema,
   })
   .get(
     "",
     async ({ user, db }) => {
-      return db.query.category.findMany({
-        where: {
-          user_id: user.id,
-        },
+      const flat = await db.query.category.findMany({
+        where: { user_id: user.id },
         orderBy: (categories) => asc(categories.name),
       });
+      return buildCategoryTree(flat);
     },
     {
       auth: true,
-      response: t.Array(t.Ref("#/components/schemas/Category")),
+      response: t.Array(t.Ref("#/components/schemas/CategoryTree")),
       detail: {
         summary: "Get categories",
-        description: "Retrieve all categories for the authenticated user",
+        description:
+          "Retrieve all categories for the authenticated user as a tree (roots first, each node has optional children sorted by name).",
       },
     },
   )

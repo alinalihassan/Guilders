@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { type ChartConfig, ChartContainer } from "@/components/ui/chart";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCategories } from "@/lib/queries/useCategories";
+import { buildCategoryLookup } from "@/lib/utils/category-tree";
 import { convertToUserCurrency } from "@/lib/utils/financial";
 
 interface TransactionsSankeyProps {
@@ -179,7 +180,7 @@ function CustomNode({ x, y, width, height, index, payload, userCurrency }: any) 
   );
 }
 
-// Custom link component with theme support
+// Custom link component with theme support; uses category color when available
 function CustomLink({
   sourceX,
   sourceY,
@@ -197,9 +198,10 @@ function CustomLink({
   targetY: number;
   targetControlX: number;
   linkWidth: number;
-  payload: { flowIndex: number };
+  payload?: { flowIndex?: number; color?: string };
 }) {
-  const flowIndex = payload.flowIndex;
+  const flowIndex = payload?.flowIndex ?? 1;
+  const strokeColor = payload?.color ?? `var(--color-flow${flowIndex})`;
 
   return (
     <path
@@ -208,7 +210,7 @@ function CustomLink({
         C${sourceControlX},${sourceY} ${targetControlX},${targetY} ${targetX},${targetY}
       `}
       fill="none"
-      stroke={`var(--color-flow${flowIndex})`}
+      stroke={strokeColor}
       strokeWidth={linkWidth}
       strokeOpacity={0.6}
       onMouseEnter={(e) => {
@@ -227,13 +229,19 @@ export function TransactionsSankey({
   userCurrency,
 }: TransactionsSankeyProps) {
   const { data: categories } = useCategories();
+  const categoryLookup = useMemo(
+    () => buildCategoryLookup(categories ?? []),
+    [categories],
+  );
   const sankeyData = useMemo<SankeyData>(() => {
     if (!transactions) return { nodes: [], links: [] };
 
     const normalizedTransactions = transactions.map((transaction) => {
       const amount = toFiniteNumber(transaction.amount);
       const category =
-        categories?.find((item) => item.id === transaction.category_id)?.name ?? "uncategorized";
+        (transaction.category_id != null
+          ? categoryLookup.get(transaction.category_id)?.name
+          : undefined) ?? "uncategorized";
       const convertedAmount = convertAmountSafely(amount, transaction.currency, userCurrency);
 
       return {
@@ -290,6 +298,11 @@ export function TransactionsSankey({
       expenseArray.map((cat, index) => [cat, index + incomeArray.length + 1]),
     );
 
+    const categoryNameToColor = new Map<string, string>();
+    for (const c of categoryLookup.values()) {
+      if (c.color) categoryNameToColor.set(c.name, c.color);
+    }
+
     const links: SankeyLink[] = [];
     let colorIndex = 0;
 
@@ -304,7 +317,8 @@ export function TransactionsSankey({
           source: incomeIndices.get(incomeCat) ?? 0,
           target: incomeNodeIndex,
           value: incomeForCategory,
-          flowIndex: (colorIndex % 12) + 1, // Use all 12 colors
+          flowIndex: (colorIndex % 12) + 1,
+          color: categoryNameToColor.get(incomeCat),
         });
         colorIndex++;
       }
@@ -326,14 +340,15 @@ export function TransactionsSankey({
           source: incomeNodeIndex,
           target: expenseIndices.get(expenseCat) ?? 0,
           value: expenseForCategory,
-          flowIndex: (colorIndex % 12) + 1, // Use all 12 colors
+          flowIndex: (colorIndex % 12) + 1,
+          color: categoryNameToColor.get(expenseCat),
         });
         colorIndex++;
       }
     }
 
     return { nodes, links };
-  }, [categories, transactions, userCurrency]);
+  }, [categoryLookup, transactions, userCurrency]);
 
   if (isLoading) {
     return (
