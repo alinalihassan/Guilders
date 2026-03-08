@@ -1,4 +1,4 @@
-import { DEFAULT_CATEGORY_ICON } from "@/lib/utils/category-icons";
+import { DEFAULT_CATEGORY_ICON } from "@/lib/constants";
 
 export { DEFAULT_CATEGORY_ICON };
 

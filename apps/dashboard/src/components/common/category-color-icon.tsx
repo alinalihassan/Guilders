@@ -1,4 +1,7 @@
-import { getCategoryIcon } from "@/lib/utils/category-icons";
+import { DynamicIcon, type IconName } from "lucide-react/dynamic";
+import { CircleDot } from "lucide-react";
+
+import { DEFAULT_CATEGORY_ICON } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
 const DEFAULT_COLOR = "#64748b";
@@ -30,8 +33,8 @@ export function CategoryColorIcon({
   className,
 }: CategoryColorIconProps) {
   const color = (colorProp ?? category?.color ?? DEFAULT_COLOR).trim() || DEFAULT_COLOR;
-  const iconName = iconProp ?? category?.icon ?? undefined;
-  const IconComponent = getCategoryIcon(iconName);
+  const iconName =
+    (iconProp ?? category?.icon)?.trim() || DEFAULT_CATEGORY_ICON;
 
   return (
     <span
@@ -46,10 +49,14 @@ export function CategoryColorIcon({
       }}
       aria-hidden
     >
-      <IconComponent
+      <DynamicIcon
+        name={iconName as IconName}
         className="size-full shrink-0"
         style={{ color }}
         strokeWidth={2}
+        fallback={() => (
+          <CircleDot className="size-full shrink-0" style={{ color }} strokeWidth={2} />
+        )}
       />
     </span>
   );

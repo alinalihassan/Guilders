@@ -8,6 +8,7 @@ import {
   insertCategorySchema,
   selectCategorySchema,
 } from "../../db/schema/categories";
+import { isValidIconName } from "../../lib/valid-icon-name";
 import { deliverUserWebhookEvents } from "../../lib/user-webhooks";
 import { authPlugin } from "../../middleware/auth";
 import { errorSchema } from "../../utils/error";
@@ -102,6 +103,10 @@ export const categoryRoutes = new Elysia({
         return existingCategory;
       }
 
+      if (body.icon != null && body.icon !== "" && !isValidIconName(body.icon)) {
+        return status(400, { error: "Invalid category icon name" });
+      }
+
       const [newCategory] = await db
         .insert(category)
         .values({
@@ -164,13 +169,18 @@ export const categoryRoutes = new Elysia({
         return status(400, { error: "Category cannot be its own parent" });
       }
 
+      const iconToSet = body.icon === undefined ? existingCategory.icon : body.icon;
+      if (iconToSet != null && iconToSet !== "" && !isValidIconName(iconToSet)) {
+        return status(400, { error: "Invalid category icon name" });
+      }
+
       const [updatedCategory] = await db
         .update(category)
         .set({
           name: normalizedName,
           parent_id: body.parent_id ?? null,
           color: body.color ?? existingCategory.color ?? "#64748b",
-          icon: body.icon === undefined ? existingCategory.icon : body.icon,
+          icon: iconToSet,
           classification: body.classification ?? existingCategory.classification,
           updated_at: new Date(),
         })

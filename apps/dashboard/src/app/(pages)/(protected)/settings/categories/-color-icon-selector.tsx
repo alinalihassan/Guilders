@@ -5,7 +5,7 @@ import { useState } from "react";
 import { CategoryColorIcon } from "@/components/common/category-color-icon";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { getCategoryIcon } from "@/lib/utils/category-icons";
+import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 
 import { DEFAULT_CATEGORY_ICON, ICON_OPTIONS, PRESET_COLORS } from "./-constants";
 
@@ -93,7 +93,6 @@ export function CategoryColorIconSelector({
             <p className="mb-1.5 text-xs font-medium text-foreground">Icon</p>
             <div className="grid grid-cols-7 gap-1 p-1">
                 {ICON_OPTIONS.map((opt) => {
-                  const Icon = getCategoryIcon(opt.value);
                   const isSelected = effectiveIcon === opt.value;
                   return (
                     <button
@@ -112,7 +111,8 @@ export function CategoryColorIconSelector({
                       title={opt.label}
                       aria-label={opt.label}
                     >
-                      <Icon
+                      <DynamicIcon
+                        name={opt.value as IconName}
                         className="size-5 shrink-0"
                         style={{ color: isSelected ? normalizedColor : undefined }}
                         strokeWidth={2}
