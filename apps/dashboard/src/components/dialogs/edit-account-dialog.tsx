@@ -1,11 +1,21 @@
 import type { UpdateAccount } from "@guilders/api/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertTriangle, Loader2, Trash2 } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
   Accordion,
   AccordionContent,
@@ -31,7 +41,6 @@ import {
 } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useDialog } from "@/hooks/useDialog";
 import { type AccountSubtype, accountSubtypeLabels, accountSubtypes } from "@/lib/account-types";
 import { useRemoveAccount, useUpdateAccount } from "@/lib/queries/useAccounts";
@@ -132,6 +141,7 @@ export function EditAccountDialog() {
   const { account } = data;
 
   const isSyncedAccount = !!account.institution_connection_id;
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const handleFixConnection = async () => {
     if (!institution || !connection) {
@@ -484,50 +494,42 @@ export function EditAccountDialog() {
                     </AccordionContent>
                   </AccordionItem>
 
-                  <AccordionItem value="danger" className="hidden">
-                    <AccordionTrigger>Danger Zone</AccordionTrigger>
-                    <AccordionContent>
-                      <div className="space-y-4">
-                        <p className="text-sm text-muted-foreground">
-                          Deleting this account will permanently remove it and all associated
-                          transactions. This action cannot be undone.
-                        </p>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <div>
-                              <Button
-                                type="button"
-                                variant="destructive"
-                                size="sm"
-                                onClick={handleDelete}
-                                disabled={isDeleting || isSyncedAccount}
-                              >
-                                {isDeleting ? (
-                                  <>
-                                    <Loader2 className="mr-2 h-3 w-3 animate-spin" />
-                                    Deleting...
-                                  </>
-                                ) : (
-                                  <>
-                                    <Trash2 className="mr-2 h-3 w-3" />
-                                    Delete Account
-                                  </>
-                                )}
-                              </Button>
-                            </div>
-                          </TooltipTrigger>
-                          {isSyncedAccount && (
-                            <TooltipContent>
-                              Connected accounts cannot be deleted. Remove the connection instead.
-                            </TooltipContent>
-                          )}
-                        </Tooltip>
-                      </div>
-                    </AccordionContent>
-                  </AccordionItem>
                 </Accordion>
 
-                <div className="absolute bottom-0 left-0 right-0 flex justify-end border-t bg-card p-4">
+                <div className="absolute bottom-0 left-0 right-0 flex items-center justify-between border-t bg-card p-4">
+                  <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="text-muted-foreground hover:text-destructive"
+                      onClick={() => setDeleteDialogOpen(true)}
+                      disabled={isDeleting || isSyncedAccount}
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Delete
+                    </Button>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete account</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Delete this account and all its transactions? This cannot be undone.
+                          {isSyncedAccount &&
+                            " Connected accounts cannot be deleted; remove the connection instead."}
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => handleDelete()}
+                          disabled={isDeleting || isSyncedAccount}
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                          {isDeleting ? "Deleting…" : "Delete"}
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                   <Button type="submit" disabled={isUpdating}>
                     {isUpdating ? (
                       <>

@@ -162,7 +162,7 @@ function AccountPage() {
                     <DropdownMenuItem
                       onClick={handleDelete}
                       className="text-destructive focus:text-destructive"
-                      disabled={isDeleting}
+                      disabled={isDeleting || !!account.institution_connection_id}
                     >
                       <Trash2 className="mr-2 h-4 w-4" />
                       Delete
