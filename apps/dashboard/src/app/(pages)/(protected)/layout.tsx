@@ -5,9 +5,10 @@ import { AdvisorSidebar } from "@/components/advisor/advisor-sidebar";
 import { Dialogs } from "@/components/dialogs/dialogs";
 import { AppSidebar } from "@/components/nav/app-sidebar";
 import { AppTopBar } from "@/components/nav/app-top-bar";
+import { SettingsHeader } from "@/components/settings/settings-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { getSession } from "@/lib/session.functions";
 import { MainScrollProvider } from "@/lib/scroll-context";
+import { getSession } from "@/lib/session.functions";
 import { useStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
@@ -47,6 +48,7 @@ function ProtectedLayout() {
       >
         <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm">
           <AppTopBar scrolled={isScrolled && !isSettings} />
+          {isSettings && <SettingsHeader />}
           <MainScrollProvider isScrolled={isScrolled}>
             <main
               className="flex flex-1 flex-col overflow-auto px-4 md:px-6"
