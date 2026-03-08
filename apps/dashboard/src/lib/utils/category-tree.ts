@@ -78,27 +78,12 @@ export function getCategoryAndDescendantIds(tree: CategoryTree[], categoryId: nu
 }
 
 /**
- * Builds a map from category id to category (flat, no children).
+ * Builds a map from category id to category.
  * Use for resolving category_id to name/color in transactions and Sankey.
- * Accepts either a flat list (Category[]) or a tree (CategoryTree[]).
+ * Pass the flat list from the API (or useCategories().data).
  */
-export function buildCategoryLookup(
-  categories: Category[] | CategoryTree[],
-): Map<number, Category> {
+export function buildCategoryLookup(categories: Category[]): Map<number, Category> {
   const map = new Map<number, Category>();
-  const isTree = (arr: Category[] | CategoryTree[]): arr is CategoryTree[] =>
-    arr.length > 0 && "children" in arr[0];
-  if (!isTree(categories)) {
-    for (const c of categories) map.set(c.id, c);
-    return map;
-  }
-  function visit(nodes: CategoryTree[]) {
-    for (const node of nodes) {
-      const { children: _c, ...rest } = node;
-      map.set(node.id, rest as Category);
-      if (node.children?.length) visit(node.children);
-    }
-  }
-  visit(categories);
+  for (const c of categories) map.set(c.id, c);
   return map;
 }

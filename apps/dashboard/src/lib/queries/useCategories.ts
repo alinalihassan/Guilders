@@ -1,4 +1,4 @@
-import type { Category, CategoryInsert, CategoryTree } from "@guilders/api/types";
+import type { Category, CategoryInsert } from "@guilders/api/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { toast } from "sonner";

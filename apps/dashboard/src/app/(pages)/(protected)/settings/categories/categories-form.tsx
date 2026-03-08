@@ -25,7 +25,7 @@ import { DEFAULT_CATEGORY_ICON, PRESET_COLORS } from "./-constants";
 import { RootDropZone } from "./-root-drop-zone";
 
 export function CategoriesForm() {
-  const { categoryTree, isLoading } = useCategories();
+  const { categoryTree, data: flatCategories, isLoading } = useCategories();
   const { mutate: addCategory, isPending: isAdding } = useAddCategory();
   const { mutate: updateCategory } = useUpdateCategory();
   const { mutate: removeCategory, isPending: isRemoving } = useRemoveCategory();
@@ -34,7 +34,10 @@ export function CategoriesForm() {
     () => flattenCategoryTree(categoryTree ?? [], { withDepth: true }),
     [categoryTree],
   );
-  const categoryLookup = useMemo(() => buildCategoryLookup(categoryTree ?? []), [categoryTree]);
+  const categoryLookup = useMemo(
+    () => buildCategoryLookup(flatCategories ?? []),
+    [flatCategories],
+  );
 
   const incomeList = useMemo(
     () => flatList.filter((c) => c.classification === "income"),

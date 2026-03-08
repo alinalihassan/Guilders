@@ -4,7 +4,6 @@ import { Elysia, status, t } from "elysia";
 
 import {
   category,
-  type Category as DbCategory,
   insertCategorySchema,
   selectCategorySchema,
 } from "../../db/schema/categories";

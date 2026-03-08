@@ -1,5 +1,3 @@
-// import { readFileSync } from "node:fs";
-
 import { openapi } from "@elysiajs/openapi";
 
 import packageJson from "../../../../package.json";
@@ -55,7 +53,6 @@ Countries are a reference list with ISO 3166 codes and names. They are used for 
 `;
 
 export const getOpenAPI = async () => {
-  // const mainMd = readFileSync("docs/main.md");
   return openapi({
     documentation: {
       info: {
