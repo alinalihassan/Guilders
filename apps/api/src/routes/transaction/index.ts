@@ -87,6 +87,19 @@ export const transactionRoutes = new Elysia({
         }
       }
 
+      if (body.merchant_id) {
+        const merchantResult = await db.query.merchant.findFirst({
+          where: {
+            id: body.merchant_id,
+            user_id: user.id,
+          },
+        });
+
+        if (!merchantResult) {
+          return status(404, { error: "Merchant not found" });
+        }
+      }
+
       // Update account value
       const currentValue = parseFloat(accountResult.value.toString());
       const newValue = currentValue + amount;
@@ -251,6 +264,19 @@ export const transactionRoutes = new Elysia({
 
         if (!categoryResult) {
           return status(404, { error: "Category not found" });
+        }
+      }
+
+      if (effectiveMerchantId) {
+        const merchantResult = await db.query.merchant.findFirst({
+          where: {
+            id: effectiveMerchantId,
+            user_id: user.id,
+          },
+        });
+
+        if (!merchantResult) {
+          return status(404, { error: "Merchant not found" });
         }
       }
 
