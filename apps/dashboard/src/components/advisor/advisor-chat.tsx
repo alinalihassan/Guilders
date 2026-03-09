@@ -85,7 +85,8 @@ export function AdvisorChat({ chatId, initialMessages }: AdvisorChatProps) {
   const invalidateChatLimits = useInvalidateChatLimits();
   const { data: token } = useUserToken();
   const [inputText, setInputText] = useState("");
-  const [readOnly, setReadOnly] = useState(true);
+  const readOnly = useStore((state) => state.advisorReadOnly);
+  const setReadOnly = useStore((state) => state.setAdvisorReadOnly);
   const atLimit = limits != null && limits.remaining <= 0;
 
   const tokenRef = useRef(token);
@@ -304,7 +305,7 @@ export function AdvisorChat({ chatId, initialMessages }: AdvisorChatProps) {
                 variant="ghost"
                 size="sm"
                 className="h-9 gap-1.5 rounded-full px-2.5 text-xs"
-                onClick={() => setReadOnly((prev) => !prev)}
+                onClick={() => setReadOnly(!readOnly)}
                 title={
                   readOnly
                     ? "Advisor can only read your data. Click for full access."

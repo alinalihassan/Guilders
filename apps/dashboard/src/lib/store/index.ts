@@ -29,7 +29,10 @@ export const useStore = create<State>()(
     }),
     {
       name: STORAGE_KEY,
-      partialize: (state) => ({ advisorOpen: state.advisorOpen }),
+      partialize: (state) => ({
+        advisorOpen: state.advisorOpen,
+        advisorReadOnly: state.advisorReadOnly,
+      }),
     },
   ),
 );
