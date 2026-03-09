@@ -21,9 +21,13 @@ export function useAddMerchant() {
   const queryClient = useQueryClient();
   return useMutation<Merchant, Error, Partial<MerchantInsert>>({
     mutationFn: async (payload) => {
+      if (!payload.name) {
+        throw new Error("Merchant name is required for add");
+      }
+
       const body = {
         ...payload,
-        name: payload.name!,
+        name: payload.name,
         logo_url: payload.logo_url ?? undefined,
         website_url: payload.website_url ?? undefined,
       };
