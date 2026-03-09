@@ -1,4 +1,4 @@
-import { index, pgTable, serial, timestamp, uniqueIndex, varchar } from "drizzle-orm/pg-core";
+import { index, pgTable, serial, timestamp, uniqueIndex, varchar, text } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-orm/typebox-legacy";
 
 import { user } from "./auth";
@@ -7,7 +7,7 @@ export const merchant = pgTable(
   "merchant",
   {
     id: serial("id").primaryKey(),
-    user_id: varchar("user_id", { length: 255 })
+    user_id: text("user_id")
       .notNull()
       .references(() => user.id, {
         onDelete: "cascade",
@@ -17,7 +17,10 @@ export const merchant = pgTable(
     logo_url: varchar("logo_url", { length: 1024 }),
     website_url: varchar("website_url", { length: 1024 }),
     created_at: timestamp("created_at").notNull().defaultNow(),
-    updated_at: timestamp("updated_at").notNull().defaultNow(),
+    updated_at: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .notNull(),
   },
   (table) => [
     index("merchant_user_idx").on(table.user_id),

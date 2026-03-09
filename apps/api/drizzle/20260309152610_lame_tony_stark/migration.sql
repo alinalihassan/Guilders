@@ -1,6 +1,6 @@
 CREATE TYPE "account_subtype" AS ENUM('depository', 'brokerage', 'crypto', 'property', 'vehicle', 'creditcard', 'loan', 'stock');--> statement-breakpoint
 CREATE TYPE "account_type" AS ENUM('asset', 'liability');--> statement-breakpoint
-CREATE TYPE "document_entity_type" AS ENUM('account', 'transaction');--> statement-breakpoint
+CREATE TYPE "document_entity_type" AS ENUM('account', 'transaction', 'merchant');--> statement-breakpoint
 CREATE TYPE "investable" AS ENUM('non_investable', 'investable_easy_convert', 'investable_cash');--> statement-breakpoint
 CREATE TYPE "subscription_status" AS ENUM('unsubscribed', 'trialing', 'active', 'canceled', 'incomplete', 'incomplete_expired', 'past_due', 'unpaid', 'paused');--> statement-breakpoint
 CREATE TYPE "taxability" AS ENUM('taxable', 'tax_free', 'tax_deferred');--> statement-breakpoint
@@ -297,7 +297,7 @@ CREATE TABLE "institution" (
 --> statement-breakpoint
 CREATE TABLE "merchant" (
 	"id" serial PRIMARY KEY,
-	"user_id" varchar(255) NOT NULL,
+	"user_id" text NOT NULL,
 	"name" varchar(255) NOT NULL,
 	"logo_url" varchar(1024),
 	"website_url" varchar(1024),
@@ -394,7 +394,6 @@ CREATE INDEX "institution_id_idx" ON "institution" ("id");--> statement-breakpoi
 CREATE INDEX "institution_provider_idx" ON "institution" ("provider_id");--> statement-breakpoint
 CREATE INDEX "institution_country_idx" ON "institution" ("country");--> statement-breakpoint
 CREATE UNIQUE INDEX "institution_provider_provider_institution_unique" ON "institution" ("provider_id","provider_institution_id");--> statement-breakpoint
-CREATE INDEX "merchant_id_idx" ON "merchant" ("id");--> statement-breakpoint
 CREATE INDEX "merchant_user_idx" ON "merchant" ("user_id");--> statement-breakpoint
 CREATE UNIQUE INDEX "merchant_user_name_unique" ON "merchant" ("user_id","name");--> statement-breakpoint
 CREATE INDEX "provider_connection_id_idx" ON "provider_connection" ("id");--> statement-breakpoint

@@ -1,4 +1,5 @@
 import { Skeleton } from "@/components/ui/skeleton";
+import { useMerchants } from "@/lib/queries/useMerchants";
 import { useTransactions } from "@/lib/queries/useTransactions";
 
 import { TransactionItem } from "./transaction-item";
@@ -6,6 +7,7 @@ import { TransactionsEmptyPlaceholder } from "./transactions-placeholder";
 
 export function TransactionsTable({ accountId }: { accountId?: number }) {
   const { data: transactions, isLoading, error } = useTransactions(accountId);
+  const { data: merchants } = useMerchants();
 
   return (
     <div className="space-y-2">
@@ -24,7 +26,9 @@ export function TransactionsTable({ accountId }: { accountId?: number }) {
       ) : (
         transactions
           .toSorted((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-          .map((transaction) => <TransactionItem key={transaction.id} transaction={transaction} />)
+          .map((transaction) => (
+            <TransactionItem key={transaction.id} transaction={transaction} merchants={merchants} />
+          ))
       )}
     </div>
   );
