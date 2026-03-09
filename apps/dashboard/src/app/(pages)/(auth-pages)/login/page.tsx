@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { FormMessage, type Message } from "@/components/common/form-message";
@@ -33,6 +33,11 @@ function LoginForm({
   } = useAuthStore();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  useEffect(() => {
+    // Clear persisted UI state to prevent leaking between users if session expires
+    localStorage.removeItem("guilders-dashboard-ui");
+  }, []);
 
   const message: Message = {
     message: search?.message ?? "",
