@@ -45,6 +45,12 @@ export const updateCategoryTool: McpToolDefinition<UpdateCategoryInput> = {
       }
 
       if (updates.parent_id !== undefined && updates.parent_id !== null) {
+        if (updates.parent_id === id) {
+          return {
+            isError: true,
+            content: [{ type: "text", text: "Category cannot be its own parent." }],
+          };
+        }
         const parent = await db.query.category.findFirst({
           where: { id: updates.parent_id, user_id: userId },
         });
