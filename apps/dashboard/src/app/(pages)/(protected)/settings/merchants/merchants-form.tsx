@@ -43,22 +43,6 @@ export function MerchantsForm() {
     );
   };
 
-  if (isLoading) {
-    return (
-      <div className="space-y-4">
-        <div className="flex gap-3 rounded-lg border border-border/60 px-3 py-2.5">
-          <Skeleton className="h-8 w-44" />
-        </div>
-        {Array.from({ length: 5 }).map((_, i) => (
-          <div key={i} className="flex gap-3 rounded-lg border border-border/60 px-4 py-3">
-            <Skeleton className="h-8 w-8 rounded-full" />
-            <Skeleton className="h-4 w-32" />
-          </div>
-        ))}
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
       <div className="space-y-2">
@@ -82,8 +66,18 @@ export function MerchantsForm() {
         </div>
 
         <div className="space-y-1 pt-4">
-          {merchants?.length === 0 ? (
-            <div className="text-sm text-muted-foreground py-4 text-center">
+          {isLoading ? (
+            Array.from({ length: 5 }).map((_, i) => (
+              <div
+                key={i}
+                className="flex items-center gap-3 rounded-lg border border-border/60 px-3 py-2.5"
+              >
+                <Skeleton className="h-8 w-8 rounded-full" />
+                <Skeleton className="h-5 w-32" />
+              </div>
+            ))
+          ) : merchants?.length === 0 ? (
+            <div className="py-4 text-center text-sm text-muted-foreground">
               No merchants found.
             </div>
           ) : (
@@ -139,10 +133,10 @@ function MerchantRow({ merchant }: { merchant: Merchant }) {
           <img
             src={merchant.logo_url}
             alt={merchant.name}
-            className="flex size-8 items-center justify-center rounded-full object-cover border bg-muted"
+            className="flex size-8 items-center justify-center rounded-full border bg-muted object-cover"
           />
         ) : (
-          <div className="flex size-8 items-center justify-center rounded-full border bg-muted text-muted-foreground font-medium">
+          <div className="flex size-8 items-center justify-center rounded-full border bg-muted font-medium text-muted-foreground">
             {initial}
           </div>
         )}
