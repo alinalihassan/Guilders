@@ -27,7 +27,7 @@ export const createTransactionTool: McpToolDefinition<CreateTransactionInput> = 
     timestamp: z.iso.datetime(),
     description: z.string().min(1),
     category_id: z.number().int().optional(),
-    merchant_id: z.number().int().optional(),
+    merchant_id: z.number().int().positive().optional(),
   },
   handler: async (
     { account_id, amount, currency, timestamp, description, category_id, merchant_id },
@@ -79,7 +79,7 @@ export const createTransactionTool: McpToolDefinition<CreateTransactionInput> = 
         }
       }
 
-      if (merchant_id) {
+      if (merchant_id !== undefined) {
         const merchantResult = await db.query.merchant.findFirst({
           where: {
             id: merchant_id,
