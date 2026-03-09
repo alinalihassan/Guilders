@@ -160,8 +160,8 @@ function MerchantRow({ merchant }: { merchant: Merchant }) {
         "border-border/60 bg-card hover:bg-muted/30",
       )}
     >
-      <div 
-        className="shrink-0 relative group cursor-pointer"
+      <div
+        className="group relative shrink-0 cursor-pointer"
         onClick={() => fileInputRef.current?.click()}
       >
         <input
@@ -182,7 +182,7 @@ function MerchantRow({ merchant }: { merchant: Merchant }) {
               alt={merchant.name}
               className="flex size-8 items-center justify-center rounded-full border bg-muted object-cover transition-opacity group-hover:opacity-50"
             />
-            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100">
               <Upload className="size-3.5 text-foreground drop-shadow-md" />
             </div>
           </>
@@ -191,7 +191,7 @@ function MerchantRow({ merchant }: { merchant: Merchant }) {
             <div className="flex size-8 items-center justify-center rounded-full border bg-muted font-medium text-muted-foreground transition-opacity group-hover:opacity-50">
               {initial}
             </div>
-            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100">
               <Upload className="size-3.5 text-foreground" />
             </div>
           </>

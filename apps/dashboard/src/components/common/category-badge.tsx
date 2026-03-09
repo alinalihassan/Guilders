@@ -35,7 +35,7 @@ export function CategoryBadge({ category, className }: CategoryBadgeProps) {
         strokeWidth={2.5}
         fallback={() => <CircleDot className="size-3.5 shrink-0" strokeWidth={2.5} />}
       />
-      <span className="truncate max-w-[100px]">{category.name}</span>
+      <span className="max-w-[100px] truncate">{category.name}</span>
     </span>
   );
 }

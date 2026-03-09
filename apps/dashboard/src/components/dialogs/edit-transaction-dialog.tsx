@@ -39,9 +39,9 @@ import { useRemoveTransaction, useUpdateTransaction } from "@/lib/queries/useTra
 
 import { AccountSelector } from "../common/account-selector";
 import { CategorySelector } from "../common/category-selector";
-import { MerchantSelector } from "../common/merchant-selector";
 import { DatePicker } from "../common/date-picker";
 import { FileUploader } from "../common/file-uploader";
+import { MerchantSelector } from "../common/merchant-selector";
 import { TimePicker } from "../common/time-picker";
 import { AccountIcon } from "../dashboard/accounts/account-icon";
 

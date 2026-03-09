@@ -11,7 +11,8 @@ type DeleteCategoryInput = {
 
 export const deleteCategoryTool: McpToolDefinition<DeleteCategoryInput> = {
   name: "delete_category",
-  description: "Delete a category. Transactions using this category will have their category_id set to null.",
+  description:
+    "Delete a category. Transactions using this category will have their category_id set to null.",
   requiredScope: "write",
   inputSchema: {
     id: z.number().int(),

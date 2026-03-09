@@ -19,7 +19,9 @@ export const documentIdParamSchema = t.Object({
 });
 
 export const documentQuerySchema = t.Object({
-  entity_type: t.Optional(t.Union([t.Literal("account"), t.Literal("transaction"), t.Literal("merchant")])),
+  entity_type: t.Optional(
+    t.Union([t.Literal("account"), t.Literal("transaction"), t.Literal("merchant")]),
+  ),
   entity_id: t.Optional(t.Numeric()),
 });
 

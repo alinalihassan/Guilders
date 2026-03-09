@@ -11,7 +11,8 @@ type DeleteMerchantInput = {
 
 export const deleteMerchantTool: McpToolDefinition<DeleteMerchantInput> = {
   name: "delete_merchant",
-  description: "Delete a merchant. Transactions using this merchant will have their merchant_id set to null.",
+  description:
+    "Delete a merchant. Transactions using this merchant will have their merchant_id set to null.",
   requiredScope: "write",
   inputSchema: {
     id: z.number().int(),

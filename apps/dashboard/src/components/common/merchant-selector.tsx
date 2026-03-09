@@ -26,19 +26,27 @@ type MerchantSelectorProps = {
 
 function MerchantIcon({ merchant, className }: { merchant: Merchant; className?: string }) {
   const initial = merchant.name.charAt(0).toUpperCase();
-  
+
   if (merchant.logo_url) {
     return (
       <img
         src={merchant.logo_url}
         alt={merchant.name}
-        className={cn("flex size-6 items-center justify-center rounded-full border bg-muted object-cover", className)}
+        className={cn(
+          "flex size-6 items-center justify-center rounded-full border bg-muted object-cover",
+          className,
+        )}
       />
     );
   }
-  
+
   return (
-    <div className={cn("flex size-6 items-center justify-center rounded-full border bg-muted text-xs font-medium text-muted-foreground", className)}>
+    <div
+      className={cn(
+        "flex size-6 items-center justify-center rounded-full border bg-muted text-xs font-medium text-muted-foreground",
+        className,
+      )}
+    >
       {initial}
     </div>
   );
@@ -93,9 +101,7 @@ export function MerchantSelector({
           )}
         >
           <span className="flex min-w-0 flex-1 items-center gap-2 text-left">
-            {selectedMerchant && (
-              <MerchantIcon merchant={selectedMerchant} className="shrink-0" />
-            )}
+            {selectedMerchant && <MerchantIcon merchant={selectedMerchant} className="shrink-0" />}
             <span className="truncate">{selectedMerchant?.name || placeholder}</span>
           </span>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
