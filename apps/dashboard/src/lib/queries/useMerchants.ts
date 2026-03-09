@@ -48,9 +48,13 @@ export function useUpdateMerchant() {
   const queryClient = useQueryClient();
   return useMutation<Merchant, Error, { id: number; merchant: Partial<MerchantInsert> }>({
     mutationFn: async ({ id, merchant }) => {
+      if (!merchant.name) {
+        throw new Error("Merchant name is required for update");
+      }
+
       const body = {
         ...merchant,
-        name: merchant.name!,
+        name: merchant.name,
         logo_url: merchant.logo_url ?? undefined,
         website_url: merchant.website_url ?? undefined,
       };

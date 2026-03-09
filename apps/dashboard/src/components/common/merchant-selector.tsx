@@ -1,3 +1,4 @@
+import type { Merchant } from "@guilders/api/types";
 import { ChevronsUpDown, Loader2, Plus } from "lucide-react";
 import { useState } from "react";
 
@@ -22,6 +23,26 @@ type MerchantSelectorProps = {
   placeholder?: string;
   className?: string;
 };
+
+function MerchantIcon({ merchant, className }: { merchant: Merchant; className?: string }) {
+  const initial = merchant.name.charAt(0).toUpperCase();
+  
+  if (merchant.logo_url) {
+    return (
+      <img
+        src={merchant.logo_url}
+        alt={merchant.name}
+        className={cn("flex size-6 items-center justify-center rounded-full border bg-muted object-cover", className)}
+      />
+    );
+  }
+  
+  return (
+    <div className={cn("flex size-6 items-center justify-center rounded-full border bg-muted text-xs font-medium text-muted-foreground", className)}>
+      {initial}
+    </div>
+  );
+}
 
 export function MerchantSelector({
   value,
@@ -72,6 +93,9 @@ export function MerchantSelector({
           )}
         >
           <span className="flex min-w-0 flex-1 items-center gap-2 text-left">
+            {selectedMerchant && (
+              <MerchantIcon merchant={selectedMerchant} className="shrink-0" />
+            )}
             <span className="truncate">{selectedMerchant?.name || placeholder}</span>
           </span>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -124,7 +148,10 @@ export function MerchantSelector({
                       setSearch("");
                     }}
                   >
-                    <span className="truncate">{merchant.name}</span>
+                    <span className="flex items-center gap-2 truncate">
+                      <MerchantIcon merchant={merchant} className="shrink-0" />
+                      <span className="truncate">{merchant.name}</span>
+                    </span>
                   </CommandItem>
                 ))
               )}

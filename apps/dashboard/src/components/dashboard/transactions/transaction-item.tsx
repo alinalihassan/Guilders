@@ -24,8 +24,9 @@ export function TransactionItem({ transaction }: TransactionItemProps) {
   const amount = Number(transaction.amount);
   const timeStr = useFormattedTime(new Date(transaction.timestamp));
 
-  const displayName = merchant ? merchant.name : transaction.description;
-  const initial = displayName.charAt(0).toUpperCase();
+  const displayName = transaction.description;
+  const secondaryName = merchant?.name;
+  const initial = (merchant?.name || transaction.description).charAt(0).toUpperCase();
 
   return (
     <div
@@ -35,29 +36,25 @@ export function TransactionItem({ transaction }: TransactionItemProps) {
       <div className="flex items-center gap-3 overflow-hidden">
         <div className="shrink-0">
           {merchant?.logo_url ? (
-            <img 
-              src={merchant.logo_url} 
-              alt={merchant.name} 
-              className="flex size-8 items-center justify-center rounded-full object-cover border bg-muted" 
+            <img
+              src={merchant.logo_url}
+              alt={merchant.name}
+              className="flex size-8 items-center justify-center rounded-full border bg-muted object-cover"
             />
           ) : (
-            <div className="flex size-8 items-center justify-center rounded-full border bg-muted text-muted-foreground font-medium">
+            <div className="flex size-8 items-center justify-center rounded-full border bg-muted font-medium text-muted-foreground">
               {initial}
             </div>
           )}
         </div>
         <div className="flex flex-col overflow-hidden">
-          <p className="truncate font-medium text-sm text-foreground">
-            {displayName}
-          </p>
-          {merchant && transaction.description !== merchant.name && (
-            <p className="truncate text-xs text-muted-foreground">
-              {transaction.description}
-            </p>
+          <p className="truncate text-sm font-medium text-foreground">{displayName}</p>
+          {secondaryName && secondaryName !== displayName && (
+            <p className="truncate text-xs text-muted-foreground">{secondaryName}</p>
           )}
         </div>
       </div>
-      <div className="flex items-center gap-3 shrink-0 pl-4">
+      <div className="flex shrink-0 items-center gap-3 pl-4">
         {category && <CategoryBadge category={category} />}
         <div className="flex flex-col items-end">
           <p

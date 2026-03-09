@@ -1,5 +1,5 @@
 import type { Merchant } from "@guilders/api/types";
-import { Plus, Trash2 } from "lucide-react";
+import { Loader2, Plus, Trash2, Upload } from "lucide-react";
 import { useRef, useState } from "react";
 
 import {
@@ -16,6 +16,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useFiles } from "@/lib/queries/useFiles";
 import {
   useAddMerchant,
   useMerchants,
@@ -92,6 +93,18 @@ export function MerchantsForm() {
 function MerchantRow({ merchant }: { merchant: Merchant }) {
   const { mutate: updateMerchant } = useUpdateMerchant();
   const { mutate: removeMerchant, isPending: isRemoving } = useRemoveMerchant();
+  const { uploadFile, isUploading, getFileUrl, documents, deleteFile } = useFiles({
+    entityType: "merchant",
+    entityId: merchant.id,
+    onSuccess: (file) => {
+      // Once uploaded, update the merchant's logo_url to point to this new document
+      updateMerchant({
+        id: merchant.id,
+        merchant: { name: merchant.name, logo_url: getFileUrl(file.id) },
+      });
+    },
+  });
+
   const [isEditingName, setIsEditingName] = useState(false);
   const [nameDraft, setNameDraft] = useState(merchant.name);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -119,6 +132,25 @@ function MerchantRow({ merchant }: { merchant: Merchant }) {
     }
   };
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // If there's already a logo document, we should probably delete it first to save space
+    if (documents.length > 0) {
+      for (const doc of documents) {
+        await deleteFile(doc.id);
+      }
+    }
+
+    await uploadFile([file]);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
   const initial = merchant.name.charAt(0).toUpperCase();
 
   return (
@@ -128,17 +160,41 @@ function MerchantRow({ merchant }: { merchant: Merchant }) {
         "border-border/60 bg-card hover:bg-muted/30",
       )}
     >
-      <div className="shrink-0">
-        {merchant.logo_url ? (
-          <img
-            src={merchant.logo_url}
-            alt={merchant.name}
-            className="flex size-8 items-center justify-center rounded-full border bg-muted object-cover"
-          />
-        ) : (
-          <div className="flex size-8 items-center justify-center rounded-full border bg-muted font-medium text-muted-foreground">
-            {initial}
+      <div 
+        className="shrink-0 relative group cursor-pointer"
+        onClick={() => fileInputRef.current?.click()}
+      >
+        <input
+          type="file"
+          ref={fileInputRef}
+          className="hidden"
+          accept="image/jpeg,image/png,image/webp,image/heic"
+          onChange={handleFileChange}
+        />
+        {isUploading ? (
+          <div className="flex size-8 items-center justify-center rounded-full border bg-muted">
+            <Loader2 className="size-4 animate-spin text-muted-foreground" />
           </div>
+        ) : merchant.logo_url ? (
+          <>
+            <img
+              src={merchant.logo_url}
+              alt={merchant.name}
+              className="flex size-8 items-center justify-center rounded-full border bg-muted object-cover transition-opacity group-hover:opacity-50"
+            />
+            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+              <Upload className="size-3.5 text-foreground drop-shadow-md" />
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="flex size-8 items-center justify-center rounded-full border bg-muted font-medium text-muted-foreground transition-opacity group-hover:opacity-50">
+              {initial}
+            </div>
+            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+              <Upload className="size-3.5 text-foreground" />
+            </div>
+          </>
         )}
       </div>
 

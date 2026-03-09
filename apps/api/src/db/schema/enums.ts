@@ -29,6 +29,7 @@ export const accountSubtypeEnum = pgEnum("account_subtype", enumToPgEnum(Account
 export enum DocumentEntityTypeEnum {
   account = "account",
   transaction = "transaction",
+  merchant = "merchant",
 }
 
 export const documentEntityTypeEnum = pgEnum(

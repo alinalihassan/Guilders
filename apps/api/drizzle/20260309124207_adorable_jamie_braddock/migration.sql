@@ -1,0 +1,1 @@
+ALTER TYPE "document_entity_type" ADD VALUE 'merchant';
