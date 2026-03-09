@@ -204,6 +204,7 @@ Queue: `guilders-webhook-events` (Cloudflare Queues, max batch 10, 5 retries, DL
 5. **Currency handling** — accounts have their own currency; consider conversion for net-worth totals.
 6. **Eden treaty** — the dashboard uses `@elysiajs/eden` for end-to-end type-safe API calls.
 7. **React 19 compiler** — the dashboard uses `babel-plugin-react-compiler`; avoid manual `useMemo`/`useCallback` where the compiler handles it.
+8. **Formatting** — ALWAYS run `bun format` after making any code changes to ensure the codebase remains consistently formatted.
 
 ### Common Patterns
 

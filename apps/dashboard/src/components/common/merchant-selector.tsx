@@ -161,16 +161,6 @@ export function MerchantSelector({
                   </CommandItem>
                 ))
               )}
-              {canCreate && (
-                <CommandItem value={`add-${trimmedSearch}`} onSelect={handleCreateMerchant}>
-                  {isCreating ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : (
-                    <Plus className="mr-2 h-4 w-4" />
-                  )}
-                  Add "{trimmedSearch}"
-                </CommandItem>
-              )}
             </CommandGroup>
           </CommandList>
         </Command>
