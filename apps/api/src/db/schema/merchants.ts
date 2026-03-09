@@ -20,7 +20,6 @@ export const merchant = pgTable(
     updated_at: timestamp("updated_at").notNull().defaultNow(),
   },
   (table) => [
-    index("merchant_id_idx").on(table.id),
     index("merchant_user_idx").on(table.user_id),
     uniqueIndex("merchant_user_name_unique").on(table.user_id, table.name),
   ],
