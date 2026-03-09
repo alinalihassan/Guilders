@@ -35,7 +35,17 @@ export const deleteCategoryTool: McpToolDefinition<DeleteCategoryInput> = {
         };
       }
 
-      await db.delete(category).where(and(eq(category.id, id), eq(category.user_id, userId)));
+      await db.transaction(async (tx) => {
+        await tx
+          .update(category)
+          .set({
+            parent_id: null,
+            updated_at: new Date(),
+          })
+          .where(and(eq(category.user_id, userId), eq(category.parent_id, id)));
+
+        await tx.delete(category).where(and(eq(category.id, id), eq(category.user_id, userId)));
+      });
 
       return makeTextPayload({
         userId,
