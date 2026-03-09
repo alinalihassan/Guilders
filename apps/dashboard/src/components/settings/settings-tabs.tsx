@@ -1,5 +1,5 @@
 import { Link, useLocation } from "@tanstack/react-router";
-import { CodeXml, CreditCard, Satellite, Shield, Tag, UserCircle } from "lucide-react";
+import { CodeXml, CreditCard, Satellite, Shield, Store, Tag, UserCircle } from "lucide-react";
 import { motion } from "motion/react";
 
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
@@ -24,6 +24,8 @@ const getIcon = (title: string): React.ReactNode => {
       return <CodeXml className="-ms-0.5 me-1.5 opacity-60" size={16} strokeWidth={2} />;
     case "Categories":
       return <Tag className="-ms-0.5 me-1.5 opacity-60" size={16} strokeWidth={2} />;
+    case "Merchants":
+      return <Store className="-ms-0.5 me-1.5 opacity-60" size={16} strokeWidth={2} />;
     case "Subscription":
       return <CreditCard className="-ms-0.5 me-1.5 opacity-60" size={16} strokeWidth={2} />;
     default:

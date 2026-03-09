@@ -15,6 +15,7 @@ import { createInsertSchema, createSelectSchema } from "drizzle-orm/typebox-lega
 import { account } from "./accounts";
 import { category } from "./categories";
 import { currency } from "./currencies";
+import { merchant } from "./merchants";
 
 export const transaction = pgTable(
   "transaction",
@@ -27,6 +28,10 @@ export const transaction = pgTable(
       }),
     amount: numeric("amount", { precision: 19, scale: 4 }).notNull(),
     category_id: integer("category_id").references(() => category.id, {
+      onDelete: "set null",
+      onUpdate: "cascade",
+    }),
+    merchant_id: integer("merchant_id").references(() => merchant.id, {
       onDelete: "set null",
       onUpdate: "cascade",
     }),
@@ -51,6 +56,7 @@ export const transaction = pgTable(
     index("transaction_id_idx").on(table.id),
     index("transaction_account_idx").on(table.account_id),
     index("transaction_category_idx").on(table.category_id),
+    index("transaction_merchant_idx").on(table.merchant_id),
     index("transaction_currency_idx").on(table.currency),
     index("transaction_timestamp_idx").on(table.timestamp),
   ],

@@ -26,6 +26,7 @@ import { Route as pagesauthFlowsRecoveryPageRouteImport } from './app/(pages)/(a
 import { Route as pagesauthFlowsOnboardingPageRouteImport } from './app/(pages)/(auth-flows)/onboarding/page'
 import { Route as pagesprotectedSettingsSubscriptionPageRouteImport } from './app/(pages)/(protected)/settings/subscription/page'
 import { Route as pagesprotectedSettingsSecurityPageRouteImport } from './app/(pages)/(protected)/settings/security/page'
+import { Route as pagesprotectedSettingsMerchantsPageRouteImport } from './app/(pages)/(protected)/settings/merchants/page'
 import { Route as pagesprotectedSettingsDeveloperPageRouteImport } from './app/(pages)/(protected)/settings/developer/page'
 import { Route as pagesprotectedSettingsConnectionsPageRouteImport } from './app/(pages)/(protected)/settings/connections/page'
 import { Route as pagesprotectedSettingsCategoriesPageRouteImport } from './app/(pages)/(protected)/settings/categories/page'
@@ -126,6 +127,12 @@ const pagesprotectedSettingsSecurityPageRoute =
     path: '/security/',
     getParentRoute: () => pagesprotectedSettingsLayoutRoute,
   } as any)
+const pagesprotectedSettingsMerchantsPageRoute =
+  pagesprotectedSettingsMerchantsPageRouteImport.update({
+    id: '/merchants/',
+    path: '/merchants/',
+    getParentRoute: () => pagesprotectedSettingsLayoutRoute,
+  } as any)
 const pagesprotectedSettingsDeveloperPageRoute =
   pagesprotectedSettingsDeveloperPageRouteImport.update({
     id: '/developer/',
@@ -182,6 +189,7 @@ export interface FileRoutesByFullPath {
   '/settings/categories/': typeof pagesprotectedSettingsCategoriesPageRoute
   '/settings/connections/': typeof pagesprotectedSettingsConnectionsPageRoute
   '/settings/developer/': typeof pagesprotectedSettingsDeveloperPageRoute
+  '/settings/merchants/': typeof pagesprotectedSettingsMerchantsPageRoute
   '/settings/security/': typeof pagesprotectedSettingsSecurityPageRoute
   '/settings/subscription/': typeof pagesprotectedSettingsSubscriptionPageRoute
 }
@@ -203,6 +211,7 @@ export interface FileRoutesByTo {
   '/settings/categories': typeof pagesprotectedSettingsCategoriesPageRoute
   '/settings/connections': typeof pagesprotectedSettingsConnectionsPageRoute
   '/settings/developer': typeof pagesprotectedSettingsDeveloperPageRoute
+  '/settings/merchants': typeof pagesprotectedSettingsMerchantsPageRoute
   '/settings/security': typeof pagesprotectedSettingsSecurityPageRoute
   '/settings/subscription': typeof pagesprotectedSettingsSubscriptionPageRoute
 }
@@ -229,6 +238,7 @@ export interface FileRoutesById {
   '/(pages)/(protected)/settings/categories/': typeof pagesprotectedSettingsCategoriesPageRoute
   '/(pages)/(protected)/settings/connections/': typeof pagesprotectedSettingsConnectionsPageRoute
   '/(pages)/(protected)/settings/developer/': typeof pagesprotectedSettingsDeveloperPageRoute
+  '/(pages)/(protected)/settings/merchants/': typeof pagesprotectedSettingsMerchantsPageRoute
   '/(pages)/(protected)/settings/security/': typeof pagesprotectedSettingsSecurityPageRoute
   '/(pages)/(protected)/settings/subscription/': typeof pagesprotectedSettingsSubscriptionPageRoute
 }
@@ -253,6 +263,7 @@ export interface FileRouteTypes {
     | '/settings/categories/'
     | '/settings/connections/'
     | '/settings/developer/'
+    | '/settings/merchants/'
     | '/settings/security/'
     | '/settings/subscription/'
   fileRoutesByTo: FileRoutesByTo
@@ -274,6 +285,7 @@ export interface FileRouteTypes {
     | '/settings/categories'
     | '/settings/connections'
     | '/settings/developer'
+    | '/settings/merchants'
     | '/settings/security'
     | '/settings/subscription'
   id:
@@ -299,6 +311,7 @@ export interface FileRouteTypes {
     | '/(pages)/(protected)/settings/categories/'
     | '/(pages)/(protected)/settings/connections/'
     | '/(pages)/(protected)/settings/developer/'
+    | '/(pages)/(protected)/settings/merchants/'
     | '/(pages)/(protected)/settings/security/'
     | '/(pages)/(protected)/settings/subscription/'
   fileRoutesById: FileRoutesById
@@ -431,6 +444,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof pagesprotectedSettingsSecurityPageRouteImport
       parentRoute: typeof pagesprotectedSettingsLayoutRoute
     }
+    '/(pages)/(protected)/settings/merchants/': {
+      id: '/(pages)/(protected)/settings/merchants/'
+      path: '/merchants'
+      fullPath: '/settings/merchants/'
+      preLoaderRoute: typeof pagesprotectedSettingsMerchantsPageRouteImport
+      parentRoute: typeof pagesprotectedSettingsLayoutRoute
+    }
     '/(pages)/(protected)/settings/developer/': {
       id: '/(pages)/(protected)/settings/developer/'
       path: '/developer'
@@ -514,6 +534,7 @@ interface pagesprotectedSettingsLayoutRouteChildren {
   pagesprotectedSettingsCategoriesPageRoute: typeof pagesprotectedSettingsCategoriesPageRoute
   pagesprotectedSettingsConnectionsPageRoute: typeof pagesprotectedSettingsConnectionsPageRoute
   pagesprotectedSettingsDeveloperPageRoute: typeof pagesprotectedSettingsDeveloperPageRoute
+  pagesprotectedSettingsMerchantsPageRoute: typeof pagesprotectedSettingsMerchantsPageRoute
   pagesprotectedSettingsSecurityPageRoute: typeof pagesprotectedSettingsSecurityPageRoute
   pagesprotectedSettingsSubscriptionPageRoute: typeof pagesprotectedSettingsSubscriptionPageRoute
 }
@@ -529,6 +550,8 @@ const pagesprotectedSettingsLayoutRouteChildren: pagesprotectedSettingsLayoutRou
       pagesprotectedSettingsConnectionsPageRoute,
     pagesprotectedSettingsDeveloperPageRoute:
       pagesprotectedSettingsDeveloperPageRoute,
+    pagesprotectedSettingsMerchantsPageRoute:
+      pagesprotectedSettingsMerchantsPageRoute,
     pagesprotectedSettingsSecurityPageRoute:
       pagesprotectedSettingsSecurityPageRoute,
     pagesprotectedSettingsSubscriptionPageRoute:

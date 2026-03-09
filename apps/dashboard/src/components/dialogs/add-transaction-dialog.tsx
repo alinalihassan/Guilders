@@ -7,6 +7,7 @@ import { z } from "zod";
 
 import { AccountSelector } from "@/components/common/account-selector";
 import { CategorySelector } from "@/components/common/category-selector";
+import { MerchantSelector } from "@/components/common/merchant-selector";
 import { DatePicker } from "@/components/common/date-picker";
 import { TimePicker } from "@/components/common/time-picker";
 import { Button } from "@/components/ui/button";
@@ -53,6 +54,7 @@ const formSchema = z.object({
   categoryId: z.number({
     required_error: "Category is required.",
   }),
+  merchantId: z.number().optional(),
   timestamp: z.date(),
 });
 
@@ -74,6 +76,7 @@ export function AddTransactionDialog() {
       currency: user?.currency ?? "",
       description: "",
       categoryId: undefined,
+      merchantId: undefined,
       timestamp: new Date(),
     },
   });
@@ -121,6 +124,7 @@ export function AddTransactionDialog() {
       currency: data.currency,
       description: data.description,
       category_id: data.categoryId,
+      merchant_id: data.merchantId,
       timestamp: data.timestamp,
     });
     close();
@@ -201,6 +205,24 @@ export function AddTransactionDialog() {
                   <FormLabel>Description</FormLabel>
                   <FormControl>
                     <Input placeholder="Enter description" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="merchantId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Merchant</FormLabel>
+                  <FormControl>
+                    <MerchantSelector
+                      value={field.value}
+                      onChange={field.onChange}
+                      placeholder="Select or add merchant"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
