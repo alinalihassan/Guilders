@@ -1,6 +1,9 @@
-import { and, asc, eq } from "drizzle-orm";
+import { env } from "cloudflare:workers";
+import { and, asc, eq, inArray } from "drizzle-orm";
 import { Elysia, status, t } from "elysia";
 
+import { document } from "../../db/schema/documents";
+import type { DocumentEntityTypeEnum } from "../../db/schema/enums";
 import { insertMerchantSchema, merchant, selectMerchantSchema } from "../../db/schema/merchants";
 import { cleanupEntityDocuments } from "../../lib/cleanup-documents";
 import { authPlugin } from "../../middleware/auth";
@@ -105,6 +108,39 @@ export const merchantRoutes = new Elysia({
       const normalizedName = body.name.trim();
       if (!normalizedName) {
         return status(400, { error: "Merchant name is required" });
+      }
+
+      // If the logo is being updated, clean up old logo
+      const newLogoUrl = body.logo_url;
+      if (newLogoUrl && newLogoUrl !== existingMerchant.logo_url) {
+        let newDocId: number | null = null;
+        const match = newLogoUrl.match(/\/api\/document\/(\d+)\/file/);
+        if (match && match[1]) {
+          newDocId = parseInt(match[1], 10);
+        }
+
+        const docs = await db
+          .select()
+          .from(document)
+          .where(
+            and(
+              eq(document.user_id, user.id),
+              eq(document.entity_type, "merchant" as DocumentEntityTypeEnum),
+              eq(document.entity_id, params.id),
+            ),
+          );
+
+        const docsToDelete = docs.filter((d) => d.id !== newDocId);
+
+        if (docsToDelete.length > 0) {
+          await Promise.allSettled(docsToDelete.map((doc) => env.USER_BUCKET.delete(doc.path)));
+          await db.delete(document).where(
+            inArray(
+              document.id,
+              docsToDelete.map((d) => d.id),
+            ),
+          );
+        }
       }
 
       const [updatedMerchant] = await db

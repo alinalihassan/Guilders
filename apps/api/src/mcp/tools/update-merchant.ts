@@ -1,6 +1,9 @@
-import { and, eq } from "drizzle-orm";
+import { env } from "cloudflare:workers";
+import { and, eq, inArray } from "drizzle-orm";
 import * as z from "zod/v4";
 
+import { document } from "../../db/schema/documents";
+import type { DocumentEntityTypeEnum } from "../../db/schema/enums";
 import { merchant } from "../../db/schema/merchants";
 import { createDb } from "../../lib/db";
 import { makeTextPayload, type McpToolDefinition } from "./types";
@@ -38,6 +41,37 @@ export const updateMerchantTool: McpToolDefinition<UpdateMerchantInput> = {
           isError: true,
           content: [{ type: "text", text: "Merchant not found or does not belong to user." }],
         };
+      }
+
+      if (updates.logo_url && updates.logo_url !== existing.logo_url) {
+        let newDocId: number | null = null;
+        const match = updates.logo_url.match(/\/api\/document\/(\d+)\/file/);
+        if (match && match[1]) {
+          newDocId = parseInt(match[1], 10);
+        }
+
+        const docs = await db
+          .select()
+          .from(document)
+          .where(
+            and(
+              eq(document.user_id, userId),
+              eq(document.entity_type, "merchant" as DocumentEntityTypeEnum),
+              eq(document.entity_id, id),
+            ),
+          );
+
+        const docsToDelete = docs.filter((d) => d.id !== newDocId);
+
+        if (docsToDelete.length > 0) {
+          await Promise.allSettled(docsToDelete.map((doc) => env.USER_BUCKET.delete(doc.path)));
+          await db.delete(document).where(
+            inArray(
+              document.id,
+              docsToDelete.map((d) => d.id),
+            ),
+          );
+        }
       }
 
       const [updated] = await db

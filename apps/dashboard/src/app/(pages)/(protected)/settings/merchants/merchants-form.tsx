@@ -93,7 +93,7 @@ export function MerchantsForm() {
 function MerchantRow({ merchant }: { merchant: Merchant }) {
   const { mutate: updateMerchant } = useUpdateMerchant();
   const { mutate: removeMerchant, isPending: isRemoving } = useRemoveMerchant();
-  const { uploadFile, isUploading, getFileUrl, documents, deleteFile } = useFiles({
+  const { uploadFile, isUploading, getFileUrl } = useFiles({
     entityType: "merchant",
     entityId: merchant.id,
     onSuccess: (file) => {
@@ -138,16 +138,14 @@ function MerchantRow({ merchant }: { merchant: Merchant }) {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // If there's already a logo document, we should probably delete it first to save space
-    if (documents.length > 0) {
-      for (const doc of documents) {
-        await deleteFile(doc.id);
+    try {
+      await uploadFile([file]);
+    } catch (error) {
+      console.error("Failed to upload merchant logo:", error);
+    } finally {
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
       }
-    }
-
-    await uploadFile([file]);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
     }
   };
 
