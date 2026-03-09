@@ -2,6 +2,7 @@ import { and, asc, eq } from "drizzle-orm";
 import { Elysia, status, t } from "elysia";
 
 import { insertMerchantSchema, merchant, selectMerchantSchema } from "../../db/schema/merchants";
+import { cleanupEntityDocuments } from "../../lib/cleanup-documents";
 import { authPlugin } from "../../middleware/auth";
 import { errorSchema } from "../../utils/error";
 import { createMerchantSchema, merchantIdParamSchema } from "./types";
@@ -153,10 +154,9 @@ export const merchantRoutes = new Elysia({
         return status(404, { error: "Merchant not found" });
       }
 
-      // We could check if it's in use, but we have "onDelete: 'set null'" in the transaction schema
-      // so it's safe to delete it, transactions will just lose their merchant.
-      
-      await db.delete(merchant)
+      await cleanupEntityDocuments(db, user.id, "merchant", params.id);
+      await db
+        .delete(merchant)
         .where(and(eq(merchant.id, params.id), eq(merchant.user_id, user.id)));
 
       return { success: true };

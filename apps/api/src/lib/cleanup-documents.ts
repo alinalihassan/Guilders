@@ -10,7 +10,7 @@ import type { Database } from "./db";
 export async function cleanupEntityDocuments(
   db: Database,
   userId: string,
-  entityType: "account" | "transaction",
+  entityType: "account" | "transaction" | "merchant",
   entityId: number,
 ): Promise<void> {
   const docs = await db
