@@ -13,6 +13,7 @@ type CreateTransactionInput = {
   timestamp: string;
   description: string;
   category_id?: number;
+  merchant_id?: number;
 };
 
 export const createTransactionTool: McpToolDefinition<CreateTransactionInput> = {
@@ -26,9 +27,10 @@ export const createTransactionTool: McpToolDefinition<CreateTransactionInput> = 
     timestamp: z.iso.datetime(),
     description: z.string().min(1),
     category_id: z.number().int().optional(),
+    merchant_id: z.number().int().optional(),
   },
   handler: async (
-    { account_id, amount, currency, timestamp, description, category_id },
+    { account_id, amount, currency, timestamp, description, category_id, merchant_id },
     { userId },
   ) => {
     try {
@@ -77,6 +79,22 @@ export const createTransactionTool: McpToolDefinition<CreateTransactionInput> = 
         }
       }
 
+      if (merchant_id) {
+        const merchantResult = await db.query.merchant.findFirst({
+          where: {
+            id: merchant_id,
+            user_id: userId,
+          },
+        });
+
+        if (!merchantResult) {
+          return {
+            isError: true,
+            content: [{ type: "text", text: "Merchant not found or does not belong to user." }],
+          };
+        }
+      }
+
       const newTransaction = await db.transaction(async (tx) => {
         await tx
           .update(account)
@@ -95,6 +113,7 @@ export const createTransactionTool: McpToolDefinition<CreateTransactionInput> = 
             timestamp: new Date(timestamp),
             description,
             category_id: category_id ?? null,
+            merchant_id: merchant_id ?? null,
           })
           .returning();
 

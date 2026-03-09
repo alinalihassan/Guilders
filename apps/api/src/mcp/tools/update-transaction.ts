@@ -15,6 +15,7 @@ type UpdateTransactionInput = {
   timestamp?: string;
   description?: string;
   category_id?: number | null;
+  merchant_id?: number | null;
 };
 
 export const updateTransactionTool: McpToolDefinition<UpdateTransactionInput> = {
@@ -29,6 +30,7 @@ export const updateTransactionTool: McpToolDefinition<UpdateTransactionInput> = 
     timestamp: z.iso.datetime().optional(),
     description: z.string().min(1).optional(),
     category_id: z.number().int().nullable().optional(),
+    merchant_id: z.number().int().nullable().optional(),
   },
   handler: async ({ id, ...updates }, { userId }) => {
     try {
@@ -55,6 +57,7 @@ export const updateTransactionTool: McpToolDefinition<UpdateTransactionInput> = 
       if (updates.timestamp !== undefined) body.timestamp = updates.timestamp;
       if (updates.description !== undefined) body.description = updates.description;
       if (updates.category_id !== undefined) body.category_id = updates.category_id;
+      if (updates.merchant_id !== undefined) body.merchant_id = updates.merchant_id;
 
       const { allowed, blocked } = filterLockedUpdate(body, existing.locked_attributes);
       if (blocked.length > 0) {
@@ -78,6 +81,8 @@ export const updateTransactionTool: McpToolDefinition<UpdateTransactionInput> = 
       const effectiveDescription = (allowed.description as string) ?? existing.description;
       const effectiveCategoryId =
         "category_id" in allowed ? (allowed.category_id as number | null) : existing.category_id;
+      const effectiveMerchantId =
+        "merchant_id" in allowed ? (allowed.merchant_id as number | null) : existing.merchant_id;
 
       const targetAccount = await db.query.account.findFirst({
         where: { id: effectiveAccountId, user_id: userId },
@@ -110,6 +115,18 @@ export const updateTransactionTool: McpToolDefinition<UpdateTransactionInput> = 
           return {
             isError: true,
             content: [{ type: "text", text: "Category not found or does not belong to user." }],
+          };
+        }
+      }
+
+      if (effectiveMerchantId) {
+        const merch = await db.query.merchant.findFirst({
+          where: { id: effectiveMerchantId, user_id: userId },
+        });
+        if (!merch) {
+          return {
+            isError: true,
+            content: [{ type: "text", text: "Merchant not found or does not belong to user." }],
           };
         }
       }
@@ -174,6 +191,7 @@ export const updateTransactionTool: McpToolDefinition<UpdateTransactionInput> = 
             timestamp: effectiveTimestamp,
             description: effectiveDescription,
             category_id: effectiveCategoryId,
+            merchant_id: effectiveMerchantId,
             updated_at: new Date(),
           })
           .where(eq(transaction.id, id))
