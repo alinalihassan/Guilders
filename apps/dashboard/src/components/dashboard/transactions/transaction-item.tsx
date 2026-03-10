@@ -1,5 +1,4 @@
 import type { Merchant, Transaction } from "@guilders/api/types";
-import { useMemo } from "react";
 
 import { CategoryBadge } from "@/components/common/category-badge";
 import NumberFlow from "@/components/ui/number-flow";
@@ -16,7 +15,7 @@ interface TransactionItemProps {
 export function TransactionItem({ transaction, merchants }: TransactionItemProps) {
   const { open } = useDialog("editTransaction");
   const { data: flatCategories } = useCategories();
-  const categoryLookup = useMemo(() => buildCategoryLookup(flatCategories ?? []), [flatCategories]);
+  const categoryLookup = buildCategoryLookup(flatCategories ?? []);
   const category =
     transaction.category_id != null ? categoryLookup.get(transaction.category_id) : undefined;
   const merchant = merchants?.find((m) => m.id === transaction.merchant_id);
