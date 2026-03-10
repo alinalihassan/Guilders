@@ -272,9 +272,7 @@ export class GoCardlessProvider implements IProvider {
       }
 
       const name =
-        (d.name as string | undefined) ??
-        (d.product as string | undefined) ??
-        "Bank Account";
+        (d.name as string | undefined) ?? (d.product as string | undefined) ?? "Bank Account";
       const currency = (d.currency as string | undefined) ?? "XXX";
 
       accounts.push({

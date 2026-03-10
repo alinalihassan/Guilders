@@ -4,7 +4,6 @@ import type { ReactNode } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 
 import { TransactionsTable } from "./transactions-table";
@@ -43,11 +42,8 @@ export function TransactionsCard({
           transactionsMenu
         )}
       </CardHeader>
-      <CardContent className="min-h-0 flex-1">
-        <ScrollArea className="h-full w-full">
-          {children || <TransactionsTable accountId={accountId} />}
-          <ScrollBar orientation="vertical" />
-        </ScrollArea>
+      <CardContent className="flex min-h-0 flex-1 flex-col">
+        {children || <TransactionsTable accountId={accountId} />}
       </CardContent>
     </Card>
   );
