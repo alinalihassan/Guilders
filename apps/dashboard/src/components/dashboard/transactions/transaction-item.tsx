@@ -9,16 +9,15 @@ import { buildCategoryLookup } from "@/lib/utils/category-tree";
 
 interface TransactionItemProps {
   transaction: Transaction;
-  merchants?: Merchant[];
+  merchant?: Merchant | null;
 }
 
-export function TransactionItem({ transaction, merchants }: TransactionItemProps) {
+export function TransactionItem({ transaction, merchant }: TransactionItemProps) {
   const { open } = useDialog("editTransaction");
   const { data: flatCategories } = useCategories();
   const categoryLookup = buildCategoryLookup(flatCategories ?? []);
   const category =
     transaction.category_id != null ? categoryLookup.get(transaction.category_id) : undefined;
-  const merchant = merchants?.find((m) => m.id === transaction.merchant_id);
   const amount = Number(transaction.amount);
   const timeStr = useFormattedTime(new Date(transaction.timestamp));
 

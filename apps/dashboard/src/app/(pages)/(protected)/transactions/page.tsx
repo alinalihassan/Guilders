@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Filter, Plus, Search } from "lucide-react";
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 
 import { TransactionItem } from "@/components/dashboard/transactions/transaction-item";
 import { TransactionsCard } from "@/components/dashboard/transactions/transactions-card";
@@ -39,10 +39,14 @@ function TransactionsPage() {
   const { data: categories } = useCategories();
   const { data: merchants } = useMerchants();
   const categoryLookup = buildCategoryLookup(categories ?? []);
-  const merchantLookup = new Map<number, string>();
-  for (const m of merchants ?? []) {
-    merchantLookup.set(m.id, m.name ?? "");
-  }
+  const merchantsById = useMemo(() => new Map(merchants?.map((m) => [m.id, m]) ?? []), [merchants]);
+  const merchantLookup = useMemo(() => {
+    const map = new Map<number, string>();
+    for (const m of merchants ?? []) {
+      map.set(m.id, m.name ?? "");
+    }
+    return map;
+  }, [merchants]);
   const { data: user, isLoading: isLoadingUser } = useUser();
   const { open: openAddTransaction } = useDialog("addTransaction");
   const [searchQuery, setSearchQuery] = useState("");
@@ -211,7 +215,11 @@ function TransactionsPage() {
                 <TransactionItem
                   key={transaction.id}
                   transaction={transaction}
-                  merchants={merchants}
+                  merchant={
+                    transaction.merchant_id != null
+                      ? merchantsById.get(transaction.merchant_id)
+                      : undefined
+                  }
                 />
               ))
           )}
