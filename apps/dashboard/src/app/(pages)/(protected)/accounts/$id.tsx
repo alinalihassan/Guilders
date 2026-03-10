@@ -216,10 +216,19 @@ function AccountPage() {
           </div>
 
           {account.subtype === "depository" ? (
-            <TransactionsCard accountId={account.id} menuComponent={<></>} />
+            <TransactionsCard
+              accountId={account.id}
+              menuComponent={<></>}
+              className="max-h-[60vh] min-h-[300px]"
+            />
           ) : null}
           {account.subtype === "brokerage" && (account.children?.length ?? 0) > 0 ? (
-            <AccountsCard title="Holdings" accounts={account.children} menuComponent={<></>} />
+            <AccountsCard
+              title="Holdings"
+              accounts={account.children}
+              menuComponent={<></>}
+              className="max-h-[60vh] min-h-[300px]"
+            />
           ) : null}
         </div>
       )}
