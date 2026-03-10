@@ -107,7 +107,7 @@ export const updateTransactionTool: McpToolDefinition<UpdateTransactionInput> = 
         };
       }
 
-      if (effectiveCategoryId) {
+      if (effectiveCategoryId != null) {
         const cat = await db.query.category.findFirst({
           where: { id: effectiveCategoryId, user_id: userId },
         });
@@ -119,7 +119,7 @@ export const updateTransactionTool: McpToolDefinition<UpdateTransactionInput> = 
         }
       }
 
-      if (effectiveMerchantId) {
+      if (effectiveMerchantId != null) {
         const merch = await db.query.merchant.findFirst({
           where: { id: effectiveMerchantId, user_id: userId },
         });
