@@ -141,6 +141,22 @@ export function MerchantSelector({
               )}
             </CommandEmpty>
             <CommandGroup>
+              {value != null && (
+                // We're using button since selecting No Merchant doesn't update the input field
+                <button
+                  type="button"
+                  className="relative flex w-full cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-left text-sm outline-none hover:bg-accent hover:text-accent-foreground"
+                  onPointerDown={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onChange(undefined);
+                    setOpen(false);
+                    setSearch("");
+                  }}
+                >
+                  <span className="text-muted-foreground">No merchant</span>
+                </button>
+              )}
               {isLoading ? (
                 <CommandItem disabled>Loading merchants...</CommandItem>
               ) : (
