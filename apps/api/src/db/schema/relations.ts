@@ -23,6 +23,7 @@ import { currency } from "./currencies";
 import { document } from "./documents";
 import { institutionConnection } from "./institution-connections";
 import { institution } from "./institutions";
+import { merchant } from "./merchants";
 import { providerConnection } from "./provider-connections";
 import { provider } from "./providers";
 import { rate } from "./rates";
@@ -50,6 +51,7 @@ const schema = {
   document,
   institutionConnection,
   institution,
+  merchant,
   providerConnection,
   provider,
   rate,
@@ -75,6 +77,10 @@ export const relations = defineRelations(schema, (r) => ({
     categories: r.many.category({
       from: r.user.id,
       to: r.category.user_id,
+    }),
+    merchants: r.many.merchant({
+      from: r.user.id,
+      to: r.merchant.user_id,
     }),
     apikeys: r.many.apikey({
       from: r.user.id,
@@ -271,6 +277,16 @@ export const relations = defineRelations(schema, (r) => ({
       to: r.transaction.category_id,
     }),
   },
+  merchant: {
+    user: r.one.user({
+      from: r.merchant.user_id,
+      to: r.user.id,
+    }),
+    transactions: r.many.transaction({
+      from: r.merchant.id,
+      to: r.transaction.merchant_id,
+    }),
+  },
   transaction: {
     account: r.one.account({
       from: r.transaction.account_id,
@@ -284,6 +300,10 @@ export const relations = defineRelations(schema, (r) => ({
     category: r.one.category({
       from: r.transaction.category_id,
       to: r.category.id,
+    }),
+    merchant: r.one.merchant({
+      from: r.transaction.merchant_id,
+      to: r.merchant.id,
     }),
   },
   currency: {

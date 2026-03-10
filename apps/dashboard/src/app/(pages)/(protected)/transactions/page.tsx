@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Filter, Plus, Search } from "lucide-react";
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 
 import { TransactionItem } from "@/components/dashboard/transactions/transaction-item";
 import { TransactionsCard } from "@/components/dashboard/transactions/transactions-card";
@@ -12,6 +12,7 @@ import NumberFlow from "@/components/ui/number-flow";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDialog } from "@/hooks/useDialog";
 import { useCategories } from "@/lib/queries/useCategories";
+import { useMerchants } from "@/lib/queries/useMerchants";
 import { useTransactions } from "@/lib/queries/useTransactions";
 import { useUser } from "@/lib/queries/useUser";
 import { cn } from "@/lib/utils";
@@ -36,7 +37,16 @@ export const Route = createFileRoute("/(pages)/(protected)/transactions/")({
 function TransactionsPage() {
   const { data: transactions, isLoading } = useTransactions();
   const { data: categories } = useCategories();
+  const { data: merchants } = useMerchants();
   const categoryLookup = buildCategoryLookup(categories ?? []);
+  const merchantsById = useMemo(() => new Map(merchants?.map((m) => [m.id, m]) ?? []), [merchants]);
+  const merchantLookup = useMemo(() => {
+    const map = new Map<number, string>();
+    for (const m of merchants ?? []) {
+      map.set(m.id, m.name ?? "");
+    }
+    return map;
+  }, [merchants]);
   const { data: user, isLoading: isLoadingUser } = useUser();
   const { open: openAddTransaction } = useDialog("addTransaction");
   const [searchQuery, setSearchQuery] = useState("");
@@ -65,9 +75,13 @@ function TransactionsPage() {
       (transaction.category_id != null
         ? categoryLookup.get(transaction.category_id)?.name
         : undefined) ?? "";
+    const merchantLabel =
+      (transaction.merchant_id != null ? merchantLookup.get(transaction.merchant_id) : undefined) ??
+      "";
     return (
       transaction.description?.toLowerCase().includes(searchLower) ||
       categoryName.toLowerCase().includes(searchLower) ||
+      merchantLabel.toLowerCase().includes(searchLower) ||
       toFiniteNumber(transaction.amount).toString().includes(searchLower) ||
       transaction.currency.toLowerCase().includes(searchLower)
     );
@@ -198,7 +212,15 @@ function TransactionsPage() {
             filteredTransactions
               .toSorted((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
               .map((transaction) => (
-                <TransactionItem key={transaction.id} transaction={transaction} />
+                <TransactionItem
+                  key={transaction.id}
+                  transaction={transaction}
+                  merchant={
+                    transaction.merchant_id != null
+                      ? merchantsById.get(transaction.merchant_id)
+                      : undefined
+                  }
+                />
               ))
           )}
         </div>

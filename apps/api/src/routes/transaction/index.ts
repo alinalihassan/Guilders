@@ -87,6 +87,19 @@ export const transactionRoutes = new Elysia({
         }
       }
 
+      if (body.merchant_id) {
+        const merchantResult = await db.query.merchant.findFirst({
+          where: {
+            id: body.merchant_id,
+            user_id: user.id,
+          },
+        });
+
+        if (!merchantResult) {
+          return status(404, { error: "Merchant not found" });
+        }
+      }
+
       // Update account value
       const currentValue = parseFloat(accountResult.value.toString());
       const newValue = currentValue + amount;
@@ -107,6 +120,7 @@ export const transactionRoutes = new Elysia({
             timestamp: new Date(body.timestamp),
             description: body.description,
             category_id: body.category_id,
+            merchant_id: body.merchant_id,
             provider_transaction_id: body.provider_transaction_id || null,
             documents: body.documents || null,
           })
@@ -210,6 +224,8 @@ export const transactionRoutes = new Elysia({
       const effectiveAccountId = unlockedBody.account_id ?? existingTransaction.account_id;
       const effectiveCategoryId =
         "category_id" in unlockedBody ? unlockedBody.category_id : existingTransaction.category_id;
+      const effectiveMerchantId =
+        "merchant_id" in unlockedBody ? unlockedBody.merchant_id : existingTransaction.merchant_id;
       const effectiveAmount = unlockedBody.amount ?? existingTransaction.amount;
       const effectiveCurrency = unlockedBody.currency ?? existingTransaction.currency;
       const rawTimestamp = unlockedBody.timestamp ?? existingTransaction.timestamp;
@@ -251,6 +267,19 @@ export const transactionRoutes = new Elysia({
         }
       }
 
+      if (effectiveMerchantId) {
+        const merchantResult = await db.query.merchant.findFirst({
+          where: {
+            id: effectiveMerchantId,
+            user_id: user.id,
+          },
+        });
+
+        if (!merchantResult) {
+          return status(404, { error: "Merchant not found" });
+        }
+      }
+
       // Calculate value adjustment
       const oldTransactionAmount = parseFloat(existingTransaction.amount.toString());
       const newTransactionAmount = parseFloat(effectiveAmount.toString());
@@ -275,6 +304,7 @@ export const transactionRoutes = new Elysia({
             timestamp: effectiveTimestamp,
             description: effectiveDescription,
             category_id: effectiveCategoryId,
+            merchant_id: effectiveMerchantId,
             provider_transaction_id: effectiveProviderTransactionId,
             documents: effectiveDocuments,
             updated_at: new Date(),

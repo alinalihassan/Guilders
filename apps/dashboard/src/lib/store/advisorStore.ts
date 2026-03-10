@@ -4,6 +4,7 @@ import type { StateSlice } from ".";
 
 export type AdvisorState = {
   advisorOpen: boolean;
+  advisorReadOnly: boolean;
   sessionTitle: string;
   currentChatId: string | null;
   initialMessages: UIMessage[];
@@ -12,6 +13,7 @@ export type AdvisorState = {
 export type AdvisorActions = {
   openAdvisorSidebar: () => void;
   closeAdvisorSidebar: () => void;
+  setAdvisorReadOnly: (readOnly: boolean) => void;
   setSessionTitle: (title: string) => void;
   resetSessionTitle: () => void;
   setCurrentChat: (id: string | null, title: string, messages: UIMessage[]) => void;
@@ -32,11 +34,13 @@ const INITIAL_SESSION_TITLE = "New chat";
 
 export const createAdvisorStore: StateSlice<AdvisorState & AdvisorActions> = (set) => ({
   advisorOpen: false,
+  advisorReadOnly: true,
   sessionTitle: INITIAL_SESSION_TITLE,
   currentChatId: null,
   initialMessages: [],
   openAdvisorSidebar: () => set({ advisorOpen: true }),
   closeAdvisorSidebar: () => set({ advisorOpen: false }),
+  setAdvisorReadOnly: (readOnly) => set({ advisorReadOnly: readOnly }),
   setSessionTitle: (title) => set({ sessionTitle: title }),
   resetSessionTitle: () => set({ sessionTitle: getDefaultSessionTitle() }),
   setCurrentChat: (id, title, messages) =>

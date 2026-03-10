@@ -41,6 +41,7 @@ import { AccountSelector } from "../common/account-selector";
 import { CategorySelector } from "../common/category-selector";
 import { DatePicker } from "../common/date-picker";
 import { FileUploader } from "../common/file-uploader";
+import { MerchantSelector } from "../common/merchant-selector";
 import { TimePicker } from "../common/time-picker";
 import { AccountIcon } from "../dashboard/accounts/account-icon";
 
@@ -56,6 +57,7 @@ const formSchema = z.object({
   categoryId: z.number({
     required_error: "Category is required.",
   }),
+  merchantId: z.number().optional(),
   timestamp: z.date(),
   documents: z.array(z.custom<File>()).optional(),
 });
@@ -84,6 +86,7 @@ export function EditTransactionDialog() {
         amount: data?.transaction?.amount != null ? Number(data.transaction.amount).toString() : "",
         description: data?.transaction?.description ?? "",
         categoryId: data?.transaction?.category_id ?? undefined,
+        merchantId: data?.transaction?.merchant_id ?? undefined,
         timestamp:
           data?.transaction?.timestamp != null ? new Date(data.transaction.timestamp) : new Date(),
         documents: [],
@@ -98,6 +101,7 @@ export function EditTransactionDialog() {
         amount: Number(data.transaction.amount).toString(),
         description: data.transaction.description,
         categoryId: data.transaction.category_id ?? undefined,
+        merchantId: data.transaction.merchant_id ?? undefined,
         timestamp:
           data.transaction.timestamp != null ? new Date(data.transaction.timestamp) : new Date(),
         documents: [],
@@ -117,6 +121,7 @@ export function EditTransactionDialog() {
       amount: formData.amount,
       description: formData.description,
       category_id: formData.categoryId,
+      merchant_id: formData.merchantId,
       timestamp: formData.timestamp,
       currency: transaction.currency,
       documents: transaction.documents,
@@ -239,6 +244,27 @@ export function EditTransactionDialog() {
                     )}
                   />
 
+                  <FormField
+                    control={form.control}
+                    name="merchantId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Merchant</FormLabel>
+                        <FormControl>
+                          <MerchantSelector
+                            value={field.value}
+                            onChange={field.onChange}
+                            disabled={isSyncedTransaction}
+                            placeholder="Select or add merchant"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
                     name="categoryId"

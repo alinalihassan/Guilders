@@ -1,7 +1,6 @@
-import type { Transaction } from "@guilders/api/types";
-import { useMemo } from "react";
+import type { Merchant, Transaction } from "@guilders/api/types";
 
-import { CategoryColorIcon } from "@/components/common/category-color-icon";
+import { CategoryBadge } from "@/components/common/category-badge";
 import NumberFlow from "@/components/ui/number-flow";
 import { useDialog } from "@/hooks/useDialog";
 import { useFormattedTime } from "@/lib/format-time";
@@ -10,51 +9,54 @@ import { buildCategoryLookup } from "@/lib/utils/category-tree";
 
 interface TransactionItemProps {
   transaction: Transaction;
+  merchant?: Merchant | null;
 }
 
-export function TransactionItem({ transaction }: TransactionItemProps) {
+export function TransactionItem({ transaction, merchant }: TransactionItemProps) {
   const { open } = useDialog("editTransaction");
   const { data: flatCategories } = useCategories();
-  const categoryLookup = useMemo(() => buildCategoryLookup(flatCategories ?? []), [flatCategories]);
+  const categoryLookup = buildCategoryLookup(flatCategories ?? []);
   const category =
     transaction.category_id != null ? categoryLookup.get(transaction.category_id) : undefined;
   const amount = Number(transaction.amount);
   const timeStr = useFormattedTime(new Date(transaction.timestamp));
+
+  const rawMerchantName = merchant?.name?.trim() ?? "";
+  const rawDescription = transaction.description?.trim() ?? "";
+  const displayName = rawMerchantName || rawDescription || "Unknown Transaction";
+  const initial = displayName.charAt(0).toUpperCase();
+  const secondaryName =
+    displayName === rawMerchantName ? rawDescription || undefined : rawMerchantName || undefined;
 
   return (
     <div
       className="flex cursor-pointer items-center justify-between rounded-lg p-2 hover:bg-secondary"
       onClick={() => open({ transaction })}
     >
-      <div className="flex items-center">
-        <div className="mr-3 shrink-0">
-          {category ? (
-            <CategoryColorIcon category={category} size="lg" />
+      <div className="flex items-center gap-3 overflow-hidden">
+        <div className="shrink-0">
+          {merchant?.logo_url ? (
+            <img
+              src={merchant.logo_url}
+              alt={merchant.name}
+              className="flex size-8 items-center justify-center rounded-full border bg-muted object-cover"
+            />
           ) : (
-            <div
-              className={`flex h-8 w-8 items-center justify-center rounded-full ${
-                amount > 0
-                  ? "bg-green-100 dark:bg-green-900"
-                  : amount < 0
-                    ? "bg-red-100 dark:bg-red-900"
-                    : "bg-gray-100 dark:bg-gray-700"
-              }`}
-            >
-              <span
-                className={`text-xl ${
-                  amount > 0
-                    ? "text-green-600 dark:text-green-400"
-                    : amount < 0
-                      ? "text-red-600 dark:text-red-400"
-                      : "text-gray-600 dark:text-gray-400"
-                }`}
-              >
-                {amount > 0 ? "↑" : amount < 0 ? "↓" : "→"}
-              </span>
+            <div className="flex size-8 items-center justify-center rounded-full border bg-muted font-medium text-muted-foreground">
+              {initial}
             </div>
           )}
         </div>
-        <div className="max-w-[300px]">
+        <div className="flex flex-col overflow-hidden">
+          <p className="truncate text-sm font-medium text-foreground">{displayName}</p>
+          {secondaryName && secondaryName !== displayName && (
+            <p className="truncate text-xs text-muted-foreground">{secondaryName}</p>
+          )}
+        </div>
+      </div>
+      <div className="flex shrink-0 items-center gap-3 pl-4">
+        {category && <CategoryBadge category={category} />}
+        <div className="flex flex-col items-end">
           <p
             className={`font-mono font-medium ${
               amount > 0
@@ -72,16 +74,12 @@ export function TransactionItem({ transaction }: TransactionItemProps) {
               }}
             />
           </p>
-          <p className="truncate text-xs text-gray-500 dark:text-gray-400">
-            {transaction.description}
-          </p>
+          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+            <span>{new Date(transaction.timestamp).toLocaleDateString()}</span>
+            <span className="hidden sm:inline">•</span>
+            <span className="hidden sm:inline">{timeStr}</span>
+          </div>
         </div>
-      </div>
-      <div className="text-right">
-        <p className="text-sm text-gray-700 dark:text-gray-300">
-          {new Date(transaction.timestamp).toLocaleDateString()}
-        </p>
-        <p className="text-xs text-gray-500">{timeStr}</p>
       </div>
     </div>
   );

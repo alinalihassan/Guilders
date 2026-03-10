@@ -8,6 +8,7 @@ const SETTINGS_TAB_ITEMS = [
   { title: "Security", href: "/settings/security" },
   { title: "Connections", href: "/settings/connections" },
   { title: "Categories", href: "/settings/categories" },
+  { title: "Merchants", href: "/settings/merchants" },
   { title: "Developer", href: "/settings/developer" },
   { title: "Subscription", href: "/settings/subscription" },
 ];

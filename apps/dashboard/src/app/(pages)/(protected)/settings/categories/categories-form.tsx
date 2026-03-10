@@ -233,80 +233,61 @@ export function CategoriesForm() {
         dropHint={`Drop to make top-level ${config.classification}`}
       />
       <div className="space-y-1 pt-1">
-        {config.list.map((category) => {
-          return (
-            <CategoryRow
-              key={category.id}
-              category={category}
-              onUpdate={handleUpdate}
-              onRemove={removeCategory}
-              isRemoving={isRemoving}
-            />
-          );
-        })}
+        {isLoading
+          ? Array.from({ length: 2 }).map((_, i) => (
+              <div key={i} className="flex gap-3 rounded-lg border border-border/60 px-4 py-2.5">
+                <Skeleton className="mx-1 mt-2 h-4 w-2 rounded-sm" />
+                <Skeleton className="ml-1 h-8 w-8 rounded-full" />
+                <Skeleton className="mt-1.5 h-5 w-32" />
+              </div>
+            ))
+          : config.list.map((category) => {
+              return (
+                <CategoryRow
+                  key={category.id}
+                  category={category}
+                  onUpdate={handleUpdate}
+                  onRemove={removeCategory}
+                  isRemoving={isRemoving}
+                />
+              );
+            })}
       </div>
     </div>
   );
 
   return (
     <div className="space-y-6">
-      {isLoading ? (
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Skeleton className="h-5 w-40" />
-            <div className="flex gap-3 rounded-lg border border-border/60 px-3 py-2.5">
-              <Skeleton className="h-8 w-8 rounded-full" />
-              <Skeleton className="h-8 w-44" />
-            </div>
-            {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="flex gap-3 rounded-lg border border-border/60 px-4 py-3">
-                <Skeleton className="h-4 w-4" />
-                <Skeleton className="h-4 w-32" />
-              </div>
-            ))}
-          </div>
-          <div className="space-y-2">
-            <Skeleton className="h-5 w-40" />
-            {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="flex gap-3 rounded-lg border border-border/60 px-4 py-3">
-                <Skeleton className="h-4 w-4" />
-                <Skeleton className="h-4 w-32" />
-              </div>
-            ))}
-          </div>
-        </div>
-      ) : (
-        <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
-          {renderSection({
-            classification: "income",
-            list: incomeList,
-            title: "Income categories",
-            addName: newIncomeName,
-            setAddName: setNewIncomeName,
-            addColor: newIncomeColor,
-            setAddColor: setNewIncomeColor,
-            addIcon: newIncomeIcon,
-            setAddIcon: setNewIncomeIcon,
-            onAdd: handleAddIncome,
-            rootId: "root-income",
-            rootLabel: "Drop here for top-level income",
-          })}
-          {renderSection({
-            classification: "expense",
-            list: expenseList,
-            title: "Expense categories",
-            addName: newExpenseName,
-            setAddName: setNewExpenseName,
-            addColor: newExpenseColor,
-            setAddColor: setNewExpenseColor,
-            addIcon: newExpenseIcon,
-            setAddIcon: setNewExpenseIcon,
-            onAdd: handleAddExpense,
-            rootId: "root-expense",
-            rootLabel: "Drop here for top-level expense",
-          })}
-        </DndContext>
-      )}
+      <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+        {renderSection({
+          classification: "income",
+          list: incomeList,
+          title: "Income categories",
+          addName: newIncomeName,
+          setAddName: setNewIncomeName,
+          addColor: newIncomeColor,
+          setAddColor: setNewIncomeColor,
+          addIcon: newIncomeIcon,
+          setAddIcon: setNewIncomeIcon,
+          onAdd: handleAddIncome,
+          rootId: "root-income",
+          rootLabel: "Drop here for top-level income",
+        })}
+        {renderSection({
+          classification: "expense",
+          list: expenseList,
+          title: "Expense categories",
+          addName: newExpenseName,
+          setAddName: setNewExpenseName,
+          addColor: newExpenseColor,
+          setAddColor: setNewExpenseColor,
+          addIcon: newExpenseIcon,
+          setAddIcon: setNewExpenseIcon,
+          onAdd: handleAddExpense,
+          rootId: "root-expense",
+          rootLabel: "Drop here for top-level expense",
+        })}
+      </DndContext>
     </div>
   );
 }

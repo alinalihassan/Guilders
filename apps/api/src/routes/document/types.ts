@@ -10,7 +10,7 @@ export const createDocumentSchema = t.Object({
     maxSize: "10m",
     type: ["image/jpeg", "image/png", "image/webp", "image/heic", "application/pdf"],
   }),
-  entity_type: t.Union([t.Literal("account"), t.Literal("transaction")]),
+  entity_type: t.Union([t.Literal("account"), t.Literal("transaction"), t.Literal("merchant")]),
   entity_id: t.Numeric(),
 });
 
@@ -19,7 +19,9 @@ export const documentIdParamSchema = t.Object({
 });
 
 export const documentQuerySchema = t.Object({
-  entity_type: t.Optional(t.Union([t.Literal("account"), t.Literal("transaction")])),
+  entity_type: t.Optional(
+    t.Union([t.Literal("account"), t.Literal("transaction"), t.Literal("merchant")]),
+  ),
   entity_id: t.Optional(t.Numeric()),
 });
 

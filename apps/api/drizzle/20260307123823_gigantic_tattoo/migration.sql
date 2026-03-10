@@ -1,1 +1,0 @@
-ALTER TABLE "user" ADD COLUMN "time_format" text DEFAULT '24';

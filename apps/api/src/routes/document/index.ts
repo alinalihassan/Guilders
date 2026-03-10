@@ -20,11 +20,17 @@ import {
 async function verifyEntityOwnership(
   db: Database,
   userId: string,
-  entityType: "account" | "transaction",
+  entityType: "account" | "transaction" | "merchant",
   entityId: number,
 ): Promise<boolean> {
   if (entityType === "account") {
     const result = await db.query.account.findFirst({
+      where: { id: entityId, user_id: userId },
+    });
+    return !!result;
+  }
+  if (entityType === "merchant") {
+    const result = await db.query.merchant.findFirst({
       where: { id: entityId, user_id: userId },
     });
     return !!result;
@@ -83,7 +89,7 @@ export const documentRoutes = new Elysia({
       const ownsEntity = await verifyEntityOwnership(db, user.id, body.entity_type, body.entity_id);
       if (!ownsEntity) {
         return status(404, {
-          error: `${body.entity_type === "account" ? "Account" : "Transaction"} not found`,
+          error: `${body.entity_type === "account" ? "Account" : body.entity_type === "merchant" ? "Merchant" : "Transaction"} not found`,
         });
       }
 
@@ -134,7 +140,7 @@ export const documentRoutes = new Elysia({
       detail: {
         summary: "Upload document",
         description:
-          "Upload a file (JPEG, PNG, WebP, HEIC, PDF; max 10MB) and attach it to an account or transaction",
+          "Upload a file (JPEG, PNG, WebP, HEIC, PDF; max 10MB) and attach it to an account, transaction, or merchant",
       },
     },
   )
