@@ -21,7 +21,12 @@ export const updateMerchantTool: McpToolDefinition<UpdateMerchantInput> = {
   requiredScope: "write",
   inputSchema: {
     id: z.number().int(),
-    name: z.string().min(1).max(255).optional(),
+    name: z.optional(
+      z
+        .string()
+        .transform((s) => s.trim())
+        .pipe(z.string().min(1).max(255)),
+    ),
     logo_url: z.string().max(1024).nullable().optional(),
     website_url: z.string().max(1024).nullable().optional(),
   },
