@@ -14,19 +14,15 @@ function escapeHtml(str: string): string {
     .replaceAll("/", "&#x2F;");
 }
 
-function validateOrigin(raw: string): string {
-  if (!raw) throw new Error("parentOrigin is required for callback template");
-
-  let origin: string;
+function getOrigin(): string | null {
+  const raw = process.env.DASHBOARD_URL;
+  if (!raw) return null;
   try {
-    origin = new URL(raw).origin;
+    const o = new URL(raw).origin;
+    return o === "null" ? null : o;
   } catch {
-    throw new Error(`Invalid parentOrigin: ${raw}`);
+    return null;
   }
-
-  if (origin === "null") throw new Error(`parentOrigin resolved to null: ${raw}`);
-
-  return origin;
 }
 
 function getTemplate({
@@ -36,18 +32,18 @@ function getTemplate({
     ? "You can safely close this window and return to Guilders."
     : "There was an error connecting to your bank. Please close this window and try again in Guilders.",
 }: TemplateOptions) {
-  const safeOrigin = validateOrigin(process.env.DASHBOARD_URL);
-
+  const origin = getOrigin();
   const safeTitle = escapeHtml(title);
   const safeMessage = escapeHtml(message);
   const safeStatus = escapeHtml(status);
   const jsonStatus = JSON.stringify(status);
-  const jsonOrigin = JSON.stringify(safeOrigin);
+  const jsonOrigin = origin ? JSON.stringify(origin) : "null";
 
   return `
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="utf-8">
     <title>${safeTitle}</title>
     <style>
         body {
@@ -87,12 +83,14 @@ function getTemplate({
         window.onload = function() {
             var msg = { stage: ${jsonStatus} };
             var origin = ${jsonOrigin};
-            if (window.parent !== window) {
-                window.parent.postMessage(msg, origin);
-            }
-            if (window.opener) {
-                window.opener.postMessage(msg, origin);
-                setTimeout(function() { window.close(); }, 1000);
+            if (origin) {
+                if (window.parent !== window) {
+                    window.parent.postMessage(msg, origin);
+                }
+                if (window.opener) {
+                    window.opener.postMessage(msg, origin);
+                    setTimeout(function() { window.close(); }, 1000);
+                }
             }
         }
     </script>

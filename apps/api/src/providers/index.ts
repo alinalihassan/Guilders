@@ -1,4 +1,5 @@
 import { EnableBankingProvider } from "./enablebanking/provider";
+import { GoCardlessProvider } from "./gocardless/provider";
 import { SnapTradeProvider } from "./snaptrade/provider";
 import { TellerProvider } from "./teller/provider";
 import type { IProvider, ProviderName } from "./types";
@@ -7,6 +8,8 @@ export function getProvider(name: ProviderName): IProvider {
   switch (name) {
     case "EnableBanking":
       return new EnableBankingProvider();
+    case "GoCardless":
+      return new GoCardlessProvider();
     case "SnapTrade":
       return new SnapTradeProvider();
     case "Teller":

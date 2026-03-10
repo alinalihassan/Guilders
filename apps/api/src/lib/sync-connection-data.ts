@@ -5,6 +5,7 @@ import { AccountSubtypeEnum, AccountTypeEnum } from "../db/schema/enums";
 import { transaction } from "../db/schema/transactions";
 import { getProvider } from "../providers";
 import { EnableBankingClient } from "../providers/enablebanking/client";
+import { GoCardlessClient } from "../providers/gocardless/client";
 import { getSnapTradeClient } from "../providers/snaptrade/client";
 import * as tellerClient from "../providers/teller/client";
 import type { ProviderName } from "../providers/types";
@@ -24,6 +25,7 @@ export async function syncConnectionData(params: {
       await syncSnapTradeConnection(params.userId, params.institutionConnectionId);
       break;
     case "EnableBanking":
+    case "GoCardless":
     case "Teller":
       await syncPullBasedConnection(
         params.providerName,
@@ -98,6 +100,27 @@ export async function syncAccountData(accountId: number): Promise<void> {
         }
       } catch {
         // Balance endpoint may not be available for all Teller accounts
+      }
+      break;
+    }
+    case "GoCardless": {
+      const secretId = process.env.GOCARDLESS_SECRET_ID;
+      const secretKey = process.env.GOCARDLESS_SECRET_KEY;
+      if (!secretId || !secretKey) throw new Error("GoCardless not configured");
+
+      const gcClient = new GoCardlessClient(secretId, secretKey);
+      const balancesRes = await gcClient.getAccountBalances(providerAccountId);
+      const primary = gcClient.getPrimaryBalance(balancesRes.balances);
+      if (primary) {
+        let value = primary.balanceAmount.amount;
+        const amountNum = Number(value);
+        if (accountRecord.type === "liability" && amountNum < 0) {
+          value = String(Math.abs(amountNum));
+        }
+        await db
+          .update(account)
+          .set({ value, updated_at: new Date() })
+          .where(eq(account.id, accountId));
       }
       break;
     }

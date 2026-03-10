@@ -38,7 +38,7 @@ async function enqueueProviderCleanupJobs(env: Env, userId: string): Promise<voi
       userId,
     };
     if (needsSecret && connection.providerSecret) payload.userSecret = connection.providerSecret;
-    if (connection.providerName === "EnableBanking") {
+    if (connection.providerName === "EnableBanking" || connection.providerName === "GoCardless") {
       const rows = await db
         .select({ connectionId: institutionConnection.connection_id })
         .from(institutionConnection)

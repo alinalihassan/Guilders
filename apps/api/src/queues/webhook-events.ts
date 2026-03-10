@@ -14,6 +14,7 @@ import { getProvider } from "../providers";
 import { getSnapTradeClient } from "../providers/snaptrade/client";
 import type {
   EnableBankingWebhookEvent,
+  GoCardlessWebhookEvent,
   ProviderUserCleanupEvent,
   SnapTradeWebhookEvent,
   TellerWebhookEvent,
@@ -42,6 +43,9 @@ export async function handleWebhookQueue(
           break;
         case "teller":
           await processTellerEvent(event);
+          break;
+        case "gocardless":
+          await processGoCardlessEvent(event);
           break;
         case "provider-user-cleanup":
           await processProviderUserCleanupEvent(event);
@@ -513,6 +517,19 @@ async function processEnableBankingEvent(event: EnableBankingWebhookEvent) {
   const { userId, institutionConnectionId } = event.payload;
   await syncConnectionData({
     providerName: "EnableBanking",
+    userId,
+    institutionConnectionId,
+  });
+}
+
+// --- GoCardless processing ---
+
+async function processGoCardlessEvent(event: GoCardlessWebhookEvent) {
+  if (event.eventType !== "CONNECTION_CREATED") return;
+
+  const { userId, institutionConnectionId } = event.payload;
+  await syncConnectionData({
+    providerName: "GoCardless",
     userId,
     institutionConnectionId,
   });

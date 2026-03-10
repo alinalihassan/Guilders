@@ -1,4 +1,5 @@
 import { handleEnableBankingCallback } from "./enablebanking";
+import { handleGoCardlessCallback } from "./gocardless";
 import { handleSnapTradeCallback } from "./snaptrade";
 import { handleTellerCallback } from "./teller";
 
@@ -11,6 +12,10 @@ export async function handleCallback(request: Request, env: Env, url: URL): Prom
 
   if (path === "/callback/providers/enablebanking") {
     return handleEnableBankingCallback(request, env, url);
+  }
+
+  if (path === "/callback/providers/gocardless") {
+    return handleGoCardlessCallback(request, env, url);
   }
 
   if (path === "/callback/providers/teller") {
