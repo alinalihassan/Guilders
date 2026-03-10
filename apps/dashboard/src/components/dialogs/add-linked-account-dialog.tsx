@@ -28,14 +28,22 @@ export function AddLinkedAccountDialog() {
   const provider = useProviderById(data?.institution?.provider_id);
   const { mutateAsync: createConnection, isPending } = useCreateConnection();
 
-  if (!isOpen || !provider || !data?.institution) return null;
-  const { institution } = data;
-
   const billingConfigLoaded = !billingConfigPending;
   const billingReady = billingConfigLoaded && billing !== undefined;
   const billingEnabled = billingReady ? (billing.billingEnabled ?? true) : undefined;
   const isSubscribed =
     billingEnabled !== undefined ? !billingEnabled || isPro(user, billingEnabled) : false;
+  const canContinue = isOpen && !!provider && !!data?.institution && billingReady && !isPending;
+
+  // Focus Continue when it appears (e.g. after billing loads) so Close isn't focused first
+  useEffect(() => {
+    if (canContinue) {
+      continueButtonRef.current?.focus();
+    }
+  }, [canContinue]);
+
+  if (!isOpen || !provider || !data?.institution) return null;
+  const { institution } = data;
 
   const onContinue = async () => {
     if (!billingReady) {
@@ -68,15 +76,6 @@ export function AddLinkedAccountDialog() {
       description: "Unable to create connection. Please try again later.",
     });
   };
-
-  const canContinue = billingReady && !isPending;
-
-  // Focus Continue when it appears (e.g. after billing loads) so Close isn't focused first
-  useEffect(() => {
-    if (isOpen && canContinue) {
-      continueButtonRef.current?.focus();
-    }
-  }, [isOpen, canContinue]);
 
   return (
     <Dialog open={isOpen} onOpenChange={close}>
