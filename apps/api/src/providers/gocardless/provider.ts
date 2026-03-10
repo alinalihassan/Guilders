@@ -307,11 +307,14 @@ export class GoCardlessProvider implements IProvider {
     return booked.map((t) => {
       const amountNum = Number(t.transactionAmount.amount);
       const amount = String(amountNum);
-      const desc =
+      const counterparty =
+        t.creditorName?.trim() || t.debtorName?.trim() || "";
+      const remittance =
         t.remittanceInformationUnstructured ??
         t.remittanceInformationUnstructuredArray?.join(", ") ??
         t.additionalInformation ??
-        "No information";
+        "";
+      const desc = [counterparty, remittance].filter(Boolean).join(" — ") || "No information";
       const currency =
         t.transactionAmount.currency === "RUR" ? "RUB" : t.transactionAmount.currency;
       return {
