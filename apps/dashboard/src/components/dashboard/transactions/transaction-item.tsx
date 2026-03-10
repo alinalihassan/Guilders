@@ -22,9 +22,12 @@ export function TransactionItem({ transaction, merchants }: TransactionItemProps
   const amount = Number(transaction.amount);
   const timeStr = useFormattedTime(new Date(transaction.timestamp));
 
-  const displayName = transaction.description;
-  const secondaryName = merchant?.name;
-  const initial = (merchant?.name || transaction.description).charAt(0).toUpperCase();
+  const rawMerchantName = merchant?.name?.trim() ?? "";
+  const rawDescription = transaction.description?.trim() ?? "";
+  const displayName = rawMerchantName || rawDescription || "Unknown Transaction";
+  const initial = displayName.charAt(0).toUpperCase();
+  const secondaryName =
+    displayName === rawMerchantName ? rawDescription || undefined : rawMerchantName || undefined;
 
   return (
     <div
