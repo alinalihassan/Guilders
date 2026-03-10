@@ -87,7 +87,8 @@ export function useNetWorthHistory(period: Period | undefined) {
     queryFn: async () => {
       const { data, error } = await api["balance-history"].get({ query: range });
       if (error) throw new Error(edenError(error));
-      return (data as { snapshots: NetWorthSnapshot[] }).snapshots;
+      const snapshots = (data as { snapshots?: NetWorthSnapshot[] }).snapshots;
+      return Array.isArray(snapshots) ? snapshots : [];
     },
     enabled: !!period,
   });

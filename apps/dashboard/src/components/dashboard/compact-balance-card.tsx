@@ -44,7 +44,8 @@ export function CompactBalanceCard({
     for (const query of historyQueries) {
       if (!query.data) continue;
       const { currency: accountCurrency, snapshots } = query.data;
-      for (const snap of snapshots) {
+      const list = Array.isArray(snapshots) ? snapshots : [];
+      for (const snap of list) {
         const converted = convertToUserCurrency(snap.balance, accountCurrency, rates, userCurrency);
         const dateKey = typeof snap.date === "string" ? snap.date : String(snap.date);
         dateMap.set(dateKey, (dateMap.get(dateKey) ?? 0) + converted);
