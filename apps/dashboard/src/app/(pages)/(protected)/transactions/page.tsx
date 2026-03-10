@@ -39,6 +39,10 @@ function TransactionsPage() {
   const { data: categories } = useCategories();
   const { data: merchants } = useMerchants();
   const categoryLookup = buildCategoryLookup(categories ?? []);
+  const merchantLookup = new Map<number, string>();
+  for (const m of merchants ?? []) {
+    merchantLookup.set(m.id, m.name ?? "");
+  }
   const { data: user, isLoading: isLoadingUser } = useUser();
   const { open: openAddTransaction } = useDialog("addTransaction");
   const [searchQuery, setSearchQuery] = useState("");
@@ -67,9 +71,13 @@ function TransactionsPage() {
       (transaction.category_id != null
         ? categoryLookup.get(transaction.category_id)?.name
         : undefined) ?? "";
+    const merchantLabel =
+      (transaction.merchant_id != null ? merchantLookup.get(transaction.merchant_id) : undefined) ??
+      "";
     return (
       transaction.description?.toLowerCase().includes(searchLower) ||
       categoryName.toLowerCase().includes(searchLower) ||
+      merchantLabel.toLowerCase().includes(searchLower) ||
       toFiniteNumber(transaction.amount).toString().includes(searchLower) ||
       transaction.currency.toLowerCase().includes(searchLower)
     );
