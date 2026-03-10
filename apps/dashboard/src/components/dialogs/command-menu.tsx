@@ -64,6 +64,11 @@ export function CommandMenu() {
   };
 
   const changePage = (newPage: string) => {
+    if (newPage === "add-account") {
+      setValue("add-manual");
+    } else if (newPage === "add-synced-account") {
+      setValue("");
+    }
     update({
       pages: [...pages, newPage],
     });
@@ -100,6 +105,16 @@ export function CommandMenu() {
       virtualizer.scrollToIndex(idx, { align: "auto" });
     }
   }, [value, filteredInstitutions, currentPage, virtualizer]);
+
+  // When entering add-account submenu, focus the first item so it's preselected and Enter works
+  useEffect(() => {
+    if (currentPage !== "add-account") return;
+    const frame = requestAnimationFrame(() => {
+      const first = parentRef.current?.querySelector("[cmdk-item]");
+      (first as HTMLElement)?.focus();
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [currentPage]);
 
   const handleOpenChange = (_open: boolean) => {
     if (!_open) {
@@ -140,7 +155,10 @@ export function CommandMenu() {
       commandProps={{
         onKeyDown: handleKeyDown,
         shouldFilter: currentPage !== "add-synced-account",
-        ...(currentPage === "add-synced-account" && { value, onValueChange: setValue }),
+        ...((currentPage === "add-account" || currentPage === "add-synced-account") && {
+          value,
+          onValueChange: setValue,
+        }),
       }}
     >
       <CommandInput
@@ -176,11 +194,11 @@ export function CommandMenu() {
         )}
         {currentPage === "add-account" && (
           <CommandGroup>
-            <CommandItem onSelect={handleAddAccount}>
+            <CommandItem value="add-manual" onSelect={handleAddAccount}>
               <SquarePen className="mr-2 h-4 w-4" />
               Add Manual Account
             </CommandItem>
-            <CommandItem onSelect={() => changePage("add-synced-account")}>
+            <CommandItem value="add-synced" onSelect={() => changePage("add-synced-account")}>
               <Link2 className="mr-2 h-4 w-4" />
               Add Synced Account
             </CommandItem>
