@@ -97,6 +97,13 @@ export type UserFilesCleanupEvent = {
   };
 };
 
+// --- Transaction enrichment (separate queue) ---
+
+export type TransactionEnrichmentPayload = {
+  transactionId: number;
+  userId: string;
+};
+
 // --- Union ---
 
 export type WebhookEvent =

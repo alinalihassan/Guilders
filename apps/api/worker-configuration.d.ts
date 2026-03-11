@@ -9,6 +9,7 @@ declare namespace Cloudflare {
   interface Env {
     USER_BUCKET: R2Bucket;
     WEBHOOK_QUEUE: Queue;
+    TRANSACTION_ENRICHMENT_QUEUE: Queue;
     RATE_LIMIT: RateLimit;
     DATABASE_URL: string;
     BACKEND_URL: string;

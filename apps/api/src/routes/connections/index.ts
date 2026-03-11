@@ -1,3 +1,4 @@
+import { env } from "cloudflare:workers";
 import { and, eq } from "drizzle-orm";
 import { Elysia, status, t } from "elysia";
 
@@ -385,7 +386,15 @@ export const connectionsRoutes = new Elysia({
       }
 
       try {
-        await syncAccountData(accountId);
+        const { newTransactionIds } = await syncAccountData(accountId);
+        if (env.TRANSACTION_ENRICHMENT_QUEUE && newTransactionIds.length > 0) {
+          for (const transactionId of newTransactionIds) {
+            await env.TRANSACTION_ENRICHMENT_QUEUE.send({
+              transactionId,
+              userId: user.id,
+            });
+          }
+        }
         return { success: true };
       } catch (error) {
         return status(500, {

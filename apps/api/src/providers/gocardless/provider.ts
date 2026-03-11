@@ -247,7 +247,19 @@ export class GoCardlessProvider implements IProvider {
     });
     if (!instConn?.connection_id) throw new Error("Connection not found");
 
+    console.log("[GoCardless] getAccounts: fetching requisition", {
+      connectionId: params.connectionId,
+      requisitionId: instConn.connection_id,
+    });
+
     const requisition = await client.getRequisition(instConn.connection_id);
+    console.log("[GoCardless] getAccounts: requisition", {
+      id: requisition.id,
+      status: requisition.status,
+      institution_id: requisition.institution_id,
+      accountIds: requisition.accounts,
+    });
+
     if (requisition.status !== "LN") throw new Error("Requisition not linked");
 
     if (!requisition.accounts?.length) return [];
@@ -258,6 +270,11 @@ export class GoCardlessProvider implements IProvider {
         client.getAccountDetails(accountId),
         client.getAccountBalances(accountId),
       ]);
+      console.log("[GoCardless] getAccounts: account raw data", {
+        accountId,
+        details: details as Record<string, unknown>,
+        balances: balancesRes.balances,
+      });
       const primary = client.getPrimaryBalance(balancesRes.balances, details.currency);
       if (!primary) continue;
 
@@ -271,8 +288,8 @@ export class GoCardlessProvider implements IProvider {
         value = String(Math.abs(amountNum));
       }
 
-      const name =
-        (d.name as string | undefined) ?? (d.product as string | undefined) ?? "Bank Account";
+      const rawName = (d.name as string | undefined) ?? (d.product as string | undefined) ?? "";
+      const name = typeof rawName === "string" && rawName.trim() ? rawName.trim() : "Account";
       const currency = (d.currency as string | undefined) ?? "XXX";
 
       accounts.push({
@@ -301,8 +318,26 @@ export class GoCardlessProvider implements IProvider {
     });
     if (!accountRecord) throw new Error("Account not found");
 
+    console.log("[GoCardless] getTransactions: fetching", {
+      providerAccountId: params.accountId,
+      dbAccountId: accountRecord.id,
+    });
+
     const res = await client.getAccountTransactions(params.accountId);
     const booked = res.transactions?.booked ?? [];
+    const pending = res.transactions?.pending ?? [];
+    console.log("[GoCardless] getTransactions: raw response", {
+      providerAccountId: params.accountId,
+      bookedCount: booked.length,
+      pendingCount: pending.length,
+      sampleBooked: booked.slice(0, 3).map((t) => ({
+        amount: t.transactionAmount,
+        bookingDate: t.bookingDate,
+        creditorName: t.creditorName,
+        debtorName: t.debtorName,
+        remittanceInformationUnstructured: t.remittanceInformationUnstructured,
+      })),
+    });
 
     return booked.map((t) => {
       const amountNum = Number(t.transactionAmount.amount);
