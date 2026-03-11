@@ -29,6 +29,14 @@ export type Institution = {
   separate_continuous_history_consent?: boolean;
 };
 
+/** Paginated list from GET /api/v2/institutions/ */
+export type InstitutionsListResponse = {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: Institution[];
+};
+
 // End-user agreement
 export type CreateAgreementBody = {
   institution_id: string;
