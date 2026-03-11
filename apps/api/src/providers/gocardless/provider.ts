@@ -307,8 +307,7 @@ export class GoCardlessProvider implements IProvider {
     return booked.map((t) => {
       const amountNum = Number(t.transactionAmount.amount);
       const amount = String(amountNum);
-      const counterparty =
-        t.creditorName?.trim() || t.debtorName?.trim() || "";
+      const counterparty = t.creditorName?.trim() || t.debtorName?.trim() || "";
       const remittance =
         t.remittanceInformationUnstructured ??
         t.remittanceInformationUnstructuredArray?.join(", ") ??
