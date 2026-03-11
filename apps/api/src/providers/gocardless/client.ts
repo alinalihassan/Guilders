@@ -9,6 +9,7 @@ import type {
   CreateAgreementBody,
   CreateRequisitionBody,
   Institution,
+  InstitutionsListResponse,
   Requisition,
   RequisitionsListResponse,
   TokenNewResponse,
@@ -172,8 +173,18 @@ export class GoCardlessClient {
   }
 
   async getInstitutions(country?: string): Promise<Institution[]> {
-    const params = country ? { country } : undefined;
-    return this.get<Institution[]>("/api/v2/institutions/", params);
+    const all: Institution[] = [];
+    let path = "/api/v2/institutions/";
+    let params: Record<string, string> | undefined = country ? { country } : undefined;
+
+    while (true) {
+      const page = await this.get<InstitutionsListResponse>(path, params);
+      all.push(...page.results);
+      if (!page.next) return all;
+      const next = new URL(page.next, this.baseUrl);
+      path = next.pathname;
+      params = Object.fromEntries(next.searchParams) as Record<string, string>;
+    }
   }
 
   async getInstitution(id: string): Promise<Institution> {
