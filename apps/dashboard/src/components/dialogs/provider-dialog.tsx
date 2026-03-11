@@ -2,6 +2,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef } from "react";
 import { toast } from "sonner";
 
+import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { useDialog } from "@/hooks/useDialog";
 import { clientEnv } from "@/lib/env";
@@ -163,12 +164,22 @@ export function ProviderDialog() {
             sandbox="allow-forms allow-scripts allow-popups allow-popups-to-escape-sandbox allow-same-origin"
           />
         ) : (
-          <div className="flex h-full flex-col items-center justify-center space-y-4 p-6 text-center">
+          <div className="flex h-full flex-col items-center justify-center gap-4 p-6 text-center">
             <h3 className="text-lg font-semibold">Please Complete Authorization</h3>
             <p className="text-muted-foreground">
-              We've opened a new tab where you can complete the connection process. Please return to
-              this window once you're done. Feel free to close this popup once you're done.
+              We've opened a new tab where you can complete the connection process. Return here when
+              you're done—this dialog will close automatically if the connection succeeds.
             </p>
+            <Button
+              variant="outline"
+              onClick={() => {
+                queryClient.invalidateQueries({ queryKey: accountsQueryKey });
+                queryClient.invalidateQueries({ queryKey: transactionsQueryKey });
+                close();
+              }}
+            >
+              I've completed the connection
+            </Button>
           </div>
         )}
       </DialogContent>
