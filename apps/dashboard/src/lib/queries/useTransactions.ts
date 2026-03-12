@@ -3,7 +3,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { api, edenError } from "../api";
-import { clientEnv } from "../env";
 import { queryKey as accountQueryKey } from "./useAccounts";
 
 export const queryKey = ["transactions"] as const;
@@ -98,19 +97,11 @@ export function useCreateMerchantFromTransaction() {
     { transactionId: number; name?: string }
   >({
     mutationFn: async ({ transactionId, name }) => {
-      const base = clientEnv.VITE_API_URL.replace(/\/$/, "");
-      const url = `${base}/api/transaction/${transactionId}/create-merchant`;
-      const res = await fetch(url, {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(name != null ? { name } : {}),
-      });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error((err as { error?: string }).error ?? res.statusText);
-      }
-      return res.json();
+      const { data, error } = await api
+        .transaction({ id: transactionId })
+        ["create-merchant"].post(name != null ? { name } : {});
+      if (error) throw new Error(edenError(error));
+      return data as { merchant: { id: number; name: string }; transaction: Transaction };
     },
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey });
