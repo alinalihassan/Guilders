@@ -333,8 +333,6 @@ export class GoCardlessProvider implements IProvider {
       sampleBooked: booked.slice(0, 3).map((t) => ({
         amount: t.transactionAmount,
         bookingDate: t.bookingDate,
-        creditorName: t.creditorName,
-        debtorName: t.debtorName,
         remittanceInformationUnstructured: t.remittanceInformationUnstructured,
       })),
     });

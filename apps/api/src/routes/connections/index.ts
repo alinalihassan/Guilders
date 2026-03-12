@@ -392,11 +392,22 @@ export const connectionsRoutes = new Elysia({
           process.env.TRANSACTION_ENRICHMENT_ENABLED !== "0" &&
           newTransactionIds.length > 0
         ) {
-          for (const transactionId of newTransactionIds) {
-            await env.TRANSACTION_ENRICHMENT_QUEUE.send({
+          const sendPromises = newTransactionIds.map((transactionId) =>
+            env.TRANSACTION_ENRICHMENT_QUEUE.send({
               transactionId,
               userId: user.id,
-            });
+            }),
+          );
+          const results = await Promise.allSettled(sendPromises);
+          for (let i = 0; i < results.length; i++) {
+            const r = results[i];
+            if (r.status === "rejected") {
+              console.error("[Connections] transaction enrichment enqueue failed", {
+                transactionId: newTransactionIds[i],
+                userId: user.id,
+                error: r.reason,
+              });
+            }
           }
         }
         return { success: true };
