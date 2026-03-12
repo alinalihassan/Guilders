@@ -238,6 +238,13 @@ export const transactionRoutes = new Elysia({
       const merchantResult = await db.query.merchant.findFirst({
         where: { id: merchantId, user_id: user.id },
       });
+
+      waitUntil(
+        deliverUserWebhookEvents(db, user.id, "transaction.updated", {
+          transaction: updated,
+        }),
+      );
+
       return { merchant: merchantResult, transaction: updated };
     },
     {
