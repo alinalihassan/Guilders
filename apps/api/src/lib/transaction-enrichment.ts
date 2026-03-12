@@ -6,16 +6,11 @@ import { transaction } from "../db/schema/transactions";
 import { createDb } from "./db";
 import { findOrCreateMerchant } from "./merchant-from-transaction";
 
-const ENRICHMENT_MODEL = "workers-ai/@cf/nvidia/nemotron-3-120b-a12b";
-const MAX_BATCH_SIZE = 20;
-
 const enrichmentSchema = z.object({
   description: z.string(),
   categoryName: z.string(),
   merchantName: z.string(),
 });
-
-const enrichmentArraySchema = z.array(enrichmentSchema);
 
 type EnrichmentResult = z.infer<typeof enrichmentSchema>;
 
@@ -35,12 +30,7 @@ function parseJsonFromContent(content: string | unknown): unknown {
   }
 }
 
-/** Call gateway; returns parsed array of enrichment results (or null on parse failure). */
-async function callEnrichmentModelBatch(
-  prompt: string,
-  env: EnrichmentEnv,
-  expectedCount: number,
-): Promise<EnrichmentResult[] | null> {
+async function callGateway(prompt: string, env: EnrichmentEnv): Promise<string | unknown> {
   const url = `https://gateway.ai.cloudflare.com/v1/${env.CLOUDFLARE_ACCOUNT_ID}/${env.CLOUDFLARE_AI_GATEWAY}/compat/chat/completions`;
   const res = await fetch(url, {
     method: "POST",
@@ -50,7 +40,7 @@ async function callEnrichmentModelBatch(
       "cf-aig-zdr": "true",
     },
     body: JSON.stringify({
-      model: ENRICHMENT_MODEL,
+      model: "workers-ai/@cf/meta/llama-4-scout-17b-16e-instruct",
       messages: [{ role: "user", content: prompt }],
     }),
   });
@@ -63,11 +53,37 @@ async function callEnrichmentModelBatch(
   };
   const content = data.choices?.[0]?.message?.content;
   if (content == null) return null;
-  const raw = parseJsonFromContent(content);
-  if (raw == null) return null;
-  const parsed = enrichmentArraySchema.safeParse(raw);
-  if (!parsed.success || parsed.data.length !== expectedCount) return null;
-  return parsed.data;
+  return typeof content === "string" ? parseJsonFromContent(content) : content;
+}
+
+/** One transaction → one API call; returns parsed result or null. */
+async function callEnrichmentModelSingle(
+  row: { txn: typeof transaction.$inferSelect },
+  categoryList: string,
+  merchantList: string,
+  env: EnrichmentEnv,
+): Promise<EnrichmentResult | null> {
+  const { txn } = row;
+  const date =
+    typeof txn.timestamp === "string" ? txn.timestamp : (txn.timestamp?.toISOString?.() ?? "");
+  const prompt = `You are a transaction enrichment assistant. Return a short human-readable description, a category from the user's list, and a merchant (from the list or a new concise name).
+
+Transaction: ${txn.description} | ${String(txn.amount)} ${txn.currency} | ${date}
+
+User's categories (use exactly one, or "Uncategorized"): ${categoryList || "Uncategorized"}
+
+User's merchants (use one or a new short name): ${merchantList || "None"}
+
+Respond with only a single JSON object, no other text: {"description":"...","categoryName":"...","merchantName":"..."}`;
+
+  try {
+    const raw = await callGateway(prompt, env);
+    if (raw == null) return null;
+    const parsed = enrichmentSchema.safeParse(raw);
+    return parsed.success ? parsed.data : null;
+  } catch {
+    return null;
+  }
 }
 
 export type EnrichmentOutcome = {
@@ -80,8 +96,8 @@ export type EnrichmentOutcome = {
 };
 
 /**
- * Enriches multiple transactions (same user) in one LLM call. Updates DB unless dryRun.
- * Splits into chunks of MAX_BATCH_SIZE if needed.
+ * Enriches multiple transactions (same user). One API call per transaction, all in parallel.
+ * Updates DB unless dryRun.
  */
 export async function enrichTransactions(
   transactionIds: number[],
@@ -131,107 +147,84 @@ export async function enrichTransactions(
   const categoryList = categories.map((c) => `${c.name} (${c.classification})`).join(", ");
   const merchantList = merchants.map((m) => m.name).join(", ");
 
-  const outcomes: EnrichmentOutcome[] = [];
+  const results = await Promise.all(
+    ordered.map((row) => callEnrichmentModelSingle(row, categoryList, merchantList, env)),
+  );
 
-  for (let i = 0; i < ordered.length; i += MAX_BATCH_SIZE) {
-    const chunk = ordered.slice(i, i + MAX_BATCH_SIZE);
-    const lines = chunk
-      .map(
-        (r, j) =>
-          `[${j}] description: ${r.txn.description} | amount: ${String(r.txn.amount)} ${r.txn.currency} | date: ${typeof r.txn.timestamp === "string" ? r.txn.timestamp : (r.txn.timestamp?.toISOString?.() ?? "")}`,
-      )
-      .join("\n");
-
-    const prompt = `You are a transaction enrichment assistant. For each bank transaction below, return a short human-readable description, a category from the user's list, and a merchant (from the list or a new concise name).
-
-Transactions (one per line, index in brackets):
-${lines}
-
-User's categories (use exactly one of these names per transaction, or "Uncategorized"): ${categoryList || "Uncategorized"}
-
-User's merchants (use one of these names or a new short merchant name per transaction): ${merchantList || "None"}
-
-Respond with only a JSON array of ${chunk.length} objects, in the same order as the transactions (index 0 = first transaction). No other text. Each object: {"description":"...","categoryName":"...","merchantName":"..."}
-- description: short, human-readable (e.g. "Coffee at Starbucks", "Salary")
-- categoryName: exactly one of the category names above or "Uncategorized"
-- merchantName: one of the merchant names above or a new concise name`;
-
-    let results: EnrichmentResult[] | null = null;
-    try {
-      results = await callEnrichmentModelBatch(prompt, env, chunk.length);
-    } catch (err) {
-      console.error("[Transaction enrichment] LLM call failed", {
-        transactionIds: chunk.map((r) => r.txn.id),
-        err,
-      });
+  const work: Array<{
+    row: (typeof ordered)[number];
+    description: string;
+    categoryName: string;
+    merchantName: string;
+    category_id: number | null;
+  }> = [];
+  for (let k = 0; k < ordered.length; k++) {
+    const row = ordered[k]!;
+    const txn = row.txn;
+    const result = results[k];
+    if (!result) {
+      console.warn("[Transaction enrichment] no result for transaction", { transactionId: txn.id });
       continue;
     }
-
-    if (!results) {
-      console.warn("[Transaction enrichment] could not parse or validate LLM response", {
-        transactionIds: chunk.map((r) => r.txn.id),
-      });
-      continue;
+    const description = result.description.trim().slice(0, 4096) || txn.description;
+    const categoryName = result.categoryName.trim();
+    const merchantName = result.merchantName.trim();
+    let category_id: number | null = null;
+    if (categoryName && categoryName.toLowerCase() !== "uncategorized") {
+      const cat = categories.find((c) => c.name.toLowerCase() === categoryName.toLowerCase());
+      if (cat) category_id = cat.id;
     }
+    work.push({ row, description, categoryName, merchantName, category_id });
+  }
 
-    for (let k = 0; k < chunk.length; k++) {
-      const row = chunk[k]!;
-      const txn = row.txn;
-      const result = results[k];
-      if (!result) continue;
+  const merchantIds = await Promise.all(
+    work.map((w) =>
+      w.merchantName && !dryRun
+        ? findOrCreateMerchant(db, userId, w.merchantName).catch((err) => {
+            console.error("[Transaction enrichment] findOrCreateMerchant failed", {
+              transactionId: w.row.txn.id,
+              merchantName: w.merchantName,
+              err,
+            });
+            return null;
+          })
+        : Promise.resolve(null as number | null),
+    ),
+  );
 
-      const description = result.description.trim().slice(0, 4096) || txn.description;
-      const categoryName = result.categoryName.trim();
-      const merchantName = result.merchantName.trim();
-
-      let category_id: number | null = null;
-      if (categoryName && categoryName.toLowerCase() !== "uncategorized") {
-        const cat = categories.find((c) => c.name.toLowerCase() === categoryName.toLowerCase());
-        if (cat) category_id = cat.id;
-      }
-
-      let merchant_id: number | null = null;
-      if (merchantName && !dryRun) {
-        try {
-          merchant_id = await findOrCreateMerchant(db, userId, merchantName);
-        } catch (err) {
-          console.error("[Transaction enrichment] findOrCreateMerchant failed", {
-            transactionId: txn.id,
-            merchantName,
-            err,
-          });
-        }
-      }
-
-      outcomes.push({
-        transactionId: txn.id,
-        description,
-        categoryName,
-        merchantName,
-        category_id,
-        merchant_id,
-      });
-
-      if (!dryRun) {
-        await db
+  if (!dryRun) {
+    await Promise.all(
+      work.map((w, i) =>
+        db
           .update(transaction)
           .set({
-            description,
-            category_id,
-            merchant_id,
+            description: w.description,
+            category_id: w.category_id,
+            merchant_id: merchantIds[i] ?? null,
             updated_at: new Date(),
           })
-          .where(eq(transaction.id, txn.id));
-      }
+          .where(eq(transaction.id, w.row.txn.id)),
+      ),
+    );
+  }
 
-      if (!dryRun) {
-        console.log("[Transaction enrichment] applied", {
-          transactionId: txn.id,
-          description: description.slice(0, 50),
-          category_id,
-          merchant_id,
-        });
-      }
+  const outcomes: EnrichmentOutcome[] = work.map((w, i) => ({
+    transactionId: w.row.txn.id,
+    description: w.description,
+    categoryName: w.categoryName,
+    merchantName: w.merchantName,
+    category_id: w.category_id,
+    merchant_id: merchantIds[i] ?? null,
+  }));
+
+  if (!dryRun) {
+    for (const o of outcomes) {
+      console.log("[Transaction enrichment] applied", {
+        transactionId: o.transactionId,
+        description: o.description.slice(0, 50),
+        category_id: o.category_id,
+        merchant_id: o.merchant_id,
+      });
     }
   }
 
