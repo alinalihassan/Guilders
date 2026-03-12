@@ -36,7 +36,7 @@ export function AccountsCard({
         <CardTitle>{title}</CardTitle>
         {menuComponent || accountsMenu}
       </CardHeader>
-      <CardContent className="flex min-h-0 flex-1 flex-col">
+      <CardContent className="flex max-h-[60vh] min-h-[300px] flex-1 flex-col">
         <AccountsTable accounts={accounts} />
       </CardContent>
     </Card>
