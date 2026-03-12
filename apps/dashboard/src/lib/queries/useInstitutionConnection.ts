@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import { api, edenError } from "@/lib/api";
 
-const queryKey = ["institution-connections"] as const;
+export const queryKey = ["institution-connections"] as const;
 
 export function useInstitutionConnections() {
   return useQuery({

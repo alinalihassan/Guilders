@@ -5,6 +5,8 @@ import { toast } from "sonner";
 import { api, edenError } from "@/lib/api";
 
 import { queryKey as accountQueryKey } from "./useAccounts";
+import { queryKey as institutionConnectionQueryKey } from "./useInstitutionConnection";
+import { queryKey as providerConnectionQueryKey } from "./useProviderConnections";
 import { queryKey as transactionQueryKey } from "./useTransactions";
 
 export function useRegisterConnection() {
@@ -38,6 +40,8 @@ export function useDeregisterConnection() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: accountQueryKey });
       queryClient.invalidateQueries({ queryKey: transactionQueryKey });
+      queryClient.invalidateQueries({ queryKey: institutionConnectionQueryKey });
+      queryClient.invalidateQueries({ queryKey: providerConnectionQueryKey });
     },
     onError: (error) => {
       console.error("Failed to deregister connection:", error);
