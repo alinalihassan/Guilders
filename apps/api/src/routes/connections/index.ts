@@ -387,7 +387,11 @@ export const connectionsRoutes = new Elysia({
 
       try {
         const { newTransactionIds } = await syncAccountData(accountId);
-        if (env.TRANSACTION_ENRICHMENT_QUEUE && newTransactionIds.length > 0) {
+        if (
+          env.TRANSACTION_ENRICHMENT_QUEUE &&
+          process.env.TRANSACTION_ENRICHMENT_ENABLED !== "0" &&
+          newTransactionIds.length > 0
+        ) {
           for (const transactionId of newTransactionIds) {
             await env.TRANSACTION_ENRICHMENT_QUEUE.send({
               transactionId,

@@ -14,10 +14,6 @@ import {
   SYNCED_ACCOUNT_LOCKED_ATTRIBUTES,
   SYNCED_TRANSACTION_LOCKED_ATTRIBUTES,
 } from "./locked-attributes";
-import {
-  deriveMerchantNameFromDescription,
-  findOrCreateMerchant,
-} from "./merchant-from-transaction";
 
 export async function syncConnectionData(params: {
   providerName: ProviderName;
@@ -154,22 +150,16 @@ export async function syncAccountData(accountId: number): Promise<{ newTransacti
 
   let newTransactionIds: number[] = [];
   if (newTxns.length) {
-    const userId = accountRecord.user_id;
-    const rows = await Promise.all(
-      newTxns.map(async (t) => {
-        let currency = t.currency;
-        if (currency === "RUR") currency = "RUB";
-        const merchantName = deriveMerchantNameFromDescription(t.description);
-        const merchant_id =
-          merchantName != null ? await findOrCreateMerchant(db, userId, merchantName) : null;
-        return {
-          ...t,
-          currency,
-          merchant_id,
-          locked_attributes: SYNCED_TRANSACTION_LOCKED_ATTRIBUTES,
-        };
-      }),
-    );
+    const rows = newTxns.map((t) => {
+      let currency = t.currency;
+      if (currency === "RUR") currency = "RUB";
+      return {
+        ...t,
+        currency,
+        merchant_id: null,
+        locked_attributes: SYNCED_TRANSACTION_LOCKED_ATTRIBUTES,
+      };
+    });
     const inserted = await db.insert(transaction).values(rows).returning({ id: transaction.id });
     newTransactionIds = inserted.map((r) => r.id);
   }
@@ -261,21 +251,16 @@ async function syncPullBasedConnection(
       );
 
       if (newTxns.length) {
-        const rows = await Promise.all(
-          newTxns.map(async (t) => {
-            let txnCurrency = t.currency;
-            if (txnCurrency === "RUR") txnCurrency = "RUB";
-            const merchantName = deriveMerchantNameFromDescription(t.description);
-            const merchant_id =
-              merchantName != null ? await findOrCreateMerchant(db, userId, merchantName) : null;
-            return {
-              ...t,
-              currency: txnCurrency,
-              merchant_id,
-              locked_attributes: SYNCED_TRANSACTION_LOCKED_ATTRIBUTES,
-            };
-          }),
-        );
+        const rows = newTxns.map((t) => {
+          let txnCurrency = t.currency;
+          if (txnCurrency === "RUR") txnCurrency = "RUB";
+          return {
+            ...t,
+            currency: txnCurrency,
+            merchant_id: null,
+            locked_attributes: SYNCED_TRANSACTION_LOCKED_ATTRIBUTES,
+          };
+        });
         const inserted = await db
           .insert(transaction)
           .values(rows)

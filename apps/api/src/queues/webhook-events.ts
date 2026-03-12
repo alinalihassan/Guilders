@@ -523,7 +523,11 @@ async function processEnableBankingEvent(
     userId,
     institutionConnectionId,
   });
-  if (env.TRANSACTION_ENRICHMENT_QUEUE && newTransactionIds.length > 0) {
+  if (
+    env.TRANSACTION_ENRICHMENT_QUEUE &&
+    process.env.TRANSACTION_ENRICHMENT_ENABLED !== "0" &&
+    newTransactionIds.length > 0
+  ) {
     for (const transactionId of newTransactionIds) {
       await env.TRANSACTION_ENRICHMENT_QUEUE.send({ transactionId, userId });
     }
@@ -541,7 +545,11 @@ async function processGoCardlessEvent(event: GoCardlessWebhookEvent, env: Env): 
     userId,
     institutionConnectionId,
   });
-  if (env.TRANSACTION_ENRICHMENT_QUEUE && newTransactionIds.length > 0) {
+  if (
+    env.TRANSACTION_ENRICHMENT_QUEUE &&
+    process.env.TRANSACTION_ENRICHMENT_ENABLED !== "0" &&
+    newTransactionIds.length > 0
+  ) {
     for (const transactionId of newTransactionIds) {
       await env.TRANSACTION_ENRICHMENT_QUEUE.send({ transactionId, userId });
     }
@@ -573,7 +581,11 @@ async function handleTellerEnrollmentCreated(
     userId: payload.userId,
     institutionConnectionId: payload.institutionConnectionId,
   });
-  if (env.TRANSACTION_ENRICHMENT_QUEUE && newTransactionIds.length > 0) {
+  if (
+    env.TRANSACTION_ENRICHMENT_QUEUE &&
+    process.env.TRANSACTION_ENRICHMENT_ENABLED !== "0" &&
+    newTransactionIds.length > 0
+  ) {
     for (const transactionId of newTransactionIds) {
       await env.TRANSACTION_ENRICHMENT_QUEUE.send({
         transactionId,
@@ -592,7 +604,11 @@ async function handleTellerTransactionsUpdated(
     userId: payload.userId,
     institutionConnectionId: payload.institutionConnectionId,
   });
-  if (env.TRANSACTION_ENRICHMENT_QUEUE && newTransactionIds.length > 0) {
+  if (
+    env.TRANSACTION_ENRICHMENT_QUEUE &&
+    process.env.TRANSACTION_ENRICHMENT_ENABLED !== "0" &&
+    newTransactionIds.length > 0
+  ) {
     for (const transactionId of newTransactionIds) {
       await env.TRANSACTION_ENRICHMENT_QUEUE.send({
         transactionId,

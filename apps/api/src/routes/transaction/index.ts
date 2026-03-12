@@ -143,7 +143,7 @@ export const transactionRoutes = new Elysia({
         }),
       );
 
-      if (env.TRANSACTION_ENRICHMENT_QUEUE) {
+      if (env.TRANSACTION_ENRICHMENT_QUEUE && process.env.TRANSACTION_ENRICHMENT_ENABLED !== "0") {
         waitUntil(
           env.TRANSACTION_ENRICHMENT_QUEUE.send({
             transactionId: newTransaction.id,
