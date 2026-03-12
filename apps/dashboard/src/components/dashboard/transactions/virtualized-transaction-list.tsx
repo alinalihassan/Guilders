@@ -36,28 +36,7 @@ export function VirtualizedTransactionList({
     overscan: 5,
   });
 
-  if (isLoading) {
-    return (
-      <div className="space-y-2">
-        {[...Array(4)].map((_, index) => (
-          <Skeleton key={index} className="h-16 w-full" />
-        ))}
-      </div>
-    );
-  }
-
-  if (transactions.length === 0) {
-    if (searchQuery) {
-      return (
-        <div className="py-8 text-center text-muted-foreground">
-          No transactions found matching "{searchQuery}"
-        </div>
-      );
-    }
-    return <TransactionsEmptyPlaceholder accountId={accountId} />;
-  }
-
-  return (
+  const viewport = (
     <div
       ref={parentRef}
       className={className}
@@ -67,40 +46,58 @@ export function VirtualizedTransactionList({
         overflow: "auto",
       }}
     >
-      <div
-        style={{
-          height: `${virtualizer.getTotalSize()}px`,
-          width: "100%",
-          position: "relative",
-        }}
-      >
-        {virtualizer.getVirtualItems().map((virtualRow) => {
-          const transaction = transactions[virtualRow.index];
-          if (!transaction) return null;
-          return (
-            <div
-              key={transaction.id}
-              style={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                width: "100%",
-                height: `${virtualRow.size}px`,
-                transform: `translateY(${virtualRow.start}px)`,
-              }}
-            >
-              <TransactionItem
-                transaction={transaction}
-                merchant={
-                  transaction.merchant_id != null
-                    ? merchantsById.get(transaction.merchant_id)
-                    : undefined
-                }
-              />
-            </div>
-          );
-        })}
-      </div>
+      {isLoading ? (
+        <div className="space-y-2">
+          {[...Array(4)].map((_, index) => (
+            <Skeleton key={index} className="h-16 w-full" />
+          ))}
+        </div>
+      ) : transactions.length === 0 ? (
+        searchQuery ? (
+          <div className="py-8 text-center text-muted-foreground">
+            No transactions found matching "{searchQuery}"
+          </div>
+        ) : (
+          <TransactionsEmptyPlaceholder accountId={accountId} />
+        )
+      ) : (
+        <div
+          style={{
+            height: `${virtualizer.getTotalSize()}px`,
+            width: "100%",
+            position: "relative",
+          }}
+        >
+          {virtualizer.getVirtualItems().map((virtualRow) => {
+            const transaction = transactions[virtualRow.index];
+            if (!transaction) return null;
+            return (
+              <div
+                key={transaction.id}
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  width: "100%",
+                  height: `${virtualRow.size}px`,
+                  transform: `translateY(${virtualRow.start}px)`,
+                }}
+              >
+                <TransactionItem
+                  transaction={transaction}
+                  merchant={
+                    transaction.merchant_id != null
+                      ? merchantsById.get(transaction.merchant_id)
+                      : undefined
+                  }
+                />
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
+
+  return viewport;
 }
