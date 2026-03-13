@@ -270,10 +270,9 @@ export class GoCardlessProvider implements IProvider {
         client.getAccountDetails(accountId),
         client.getAccountBalances(accountId),
       ]);
-      console.log("[GoCardless] getAccounts: account raw data", {
+      console.log("[GoCardless] getAccounts: account fetched", {
         accountId,
-        details: details as Record<string, unknown>,
-        balances: balancesRes.balances,
+        balancesCount: balancesRes.balances?.length ?? 0,
       });
       const primary = client.getPrimaryBalance(balancesRes.balances, details.currency);
       if (!primary) continue;
