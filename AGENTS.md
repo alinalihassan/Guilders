@@ -262,7 +262,7 @@ POST /api/transaction
 | **Email**         | `RESEND_API_KEY`                                                                                                                        |
 | **Cloudflare**    | `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_AI_GATEWAY`, `CLOUDFLARE_AI_GATEWAY_TOKEN`, `CLOUDFLARE_R2_ACCESS_KEY`, `CLOUDFLARE_R2_SECRET_KEY` |
 | **Bindings**      | `PUBLIC_BUCKET` (R2), `USER_BUCKET` (R2), `WEBHOOK_QUEUE` (Queue)                                                                       |
-| **Dev tunnels**   | `NGROK_TOKEN`, `NGROK_URL` (optional, for provider callbacks)                                                                           |
+| **Dev tunnels**   | `NGROK_URL` (optional; use a stable URL e.g. Cloudflare Tunnel — see `apps/api/TUNNEL.md`)                                              |
 | **SnapTrade**     | `SNAPTRADE_CLIENT_ID`, `SNAPTRADE_CLIENT_SECRET`                                                                                        |
 | **SaltEdge**      | `SALTEDGE_APP_ID`, `SALTEDGE_SECRET`                                                                                                    |
 | **EnableBanking** | `ENABLEBANKING_CLIENT_ID`, `ENABLEBANKING_CLIENT_PRIVATE_KEY`                                                                           |

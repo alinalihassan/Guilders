@@ -268,7 +268,7 @@ export class TellerProvider implements IProvider {
 
       accounts.push({
         user_id: params.userId,
-        name: ta.name,
+        name: (ta.name?.trim() ?? "") || "Account",
         type: mapped.type,
         subtype: mapped.subtype,
         value,

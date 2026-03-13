@@ -51,7 +51,8 @@ export function AccountHoldingsDonutCard({ holdings, className }: AccountHolding
   const userCurrency = user?.currency ?? "EUR";
 
   const data = useMemo(() => {
-    return holdings
+    const list = Array.isArray(holdings) ? holdings : [];
+    return list
       .map((child) => {
         const value = convertToUserCurrency(child.value, child.currency, rates, userCurrency);
         return {

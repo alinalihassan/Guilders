@@ -5,6 +5,7 @@ import { AccountSubtypeEnum, AccountTypeEnum } from "../db/schema/enums";
 import { transaction } from "../db/schema/transactions";
 import { getProvider } from "../providers";
 import { EnableBankingClient } from "../providers/enablebanking/client";
+import { GoCardlessClient } from "../providers/gocardless/client";
 import { getSnapTradeClient } from "../providers/snaptrade/client";
 import * as tellerClient from "../providers/teller/client";
 import type { ProviderName } from "../providers/types";
@@ -18,19 +19,19 @@ export async function syncConnectionData(params: {
   providerName: ProviderName;
   userId: string;
   institutionConnectionId: number;
-}): Promise<void> {
+}): Promise<{ newTransactionIds: number[] }> {
   switch (params.providerName) {
     case "SnapTrade":
       await syncSnapTradeConnection(params.userId, params.institutionConnectionId);
-      break;
+      return { newTransactionIds: [] };
     case "EnableBanking":
+    case "GoCardless":
     case "Teller":
-      await syncPullBasedConnection(
+      return syncPullBasedConnection(
         params.providerName,
         params.userId,
         params.institutionConnectionId,
       );
-      break;
     default:
       throw new Error(`Unknown provider: ${params.providerName}`);
   }
@@ -40,7 +41,7 @@ export async function syncConnectionData(params: {
  * Sync a single account: refresh its balance and pull new transactions.
  * This is what the user triggers from the refresh button on an account page.
  */
-export async function syncAccountData(accountId: number): Promise<void> {
+export async function syncAccountData(accountId: number): Promise<{ newTransactionIds: number[] }> {
   const db = createDb();
 
   const accountRecord = await db.query.account.findFirst({
@@ -101,6 +102,27 @@ export async function syncAccountData(accountId: number): Promise<void> {
       }
       break;
     }
+    case "GoCardless": {
+      const secretId = process.env.GOCARDLESS_SECRET_ID;
+      const secretKey = process.env.GOCARDLESS_SECRET_KEY;
+      if (!secretId || !secretKey) throw new Error("GoCardless not configured");
+
+      const gcClient = new GoCardlessClient(secretId, secretKey);
+      const balancesRes = await gcClient.getAccountBalances(providerAccountId);
+      const primary = gcClient.getPrimaryBalance(balancesRes.balances);
+      if (primary) {
+        let value = primary.balanceAmount.amount;
+        const amountNum = Number(value);
+        if (accountRecord.type === "liability" && amountNum < 0) {
+          value = String(Math.abs(amountNum));
+        }
+        await db
+          .update(account)
+          .set({ value, updated_at: new Date() })
+          .where(eq(account.id, accountId));
+      }
+      break;
+    }
     case "SnapTrade": {
       const provConn = accountRecord.institutionConnection.providerConnection;
       if (!provConn?.secret) throw new Error("SnapTrade secret not found");
@@ -113,7 +135,7 @@ export async function syncAccountData(accountId: number): Promise<void> {
   const provider = getProvider(providerName);
   const providerTxns = await provider.getTransactions({ accountId: providerAccountId });
 
-  if (!providerTxns.length) return;
+  if (!providerTxns.length) return { newTransactionIds: [] };
 
   const existingTxnRows = await db
     .select({ provider_transaction_id: transaction.provider_transaction_id })
@@ -126,19 +148,26 @@ export async function syncAccountData(accountId: number): Promise<void> {
     (t) => t.provider_transaction_id && !knownIds.has(t.provider_transaction_id),
   );
 
+  let newTransactionIds: number[] = [];
   if (newTxns.length) {
-    await db.insert(transaction).values(
-      newTxns.map((t) => {
-        let currency = t.currency;
-        if (currency === "RUR") currency = "RUB";
-        return { ...t, currency, locked_attributes: SYNCED_TRANSACTION_LOCKED_ATTRIBUTES };
-      }),
-    );
+    const rows = newTxns.map((t) => {
+      let currency = t.currency;
+      if (currency === "RUR") currency = "RUB";
+      return {
+        ...t,
+        currency,
+        merchant_id: null,
+        locked_attributes: SYNCED_TRANSACTION_LOCKED_ATTRIBUTES,
+      };
+    });
+    const inserted = await db.insert(transaction).values(rows).returning({ id: transaction.id });
+    newTransactionIds = inserted.map((r) => r.id);
   }
 
   console.log(`[${providerName} sync] account ${accountId} synced`, {
     newTransactions: newTxns.length,
   });
+  return { newTransactionIds };
 }
 
 /**
@@ -149,9 +178,10 @@ async function syncPullBasedConnection(
   providerName: ProviderName,
   userId: string,
   institutionConnectionId: number,
-): Promise<void> {
+): Promise<{ newTransactionIds: number[] }> {
   const db = createDb();
   const provider = getProvider(providerName);
+  const newTransactionIds: number[] = [];
 
   const accounts = await provider.getAccounts({
     userId,
@@ -160,7 +190,7 @@ async function syncPullBasedConnection(
 
   if (!accounts.length) {
     console.log(`[${providerName} sync] no accounts found`, { userId, institutionConnectionId });
-    return;
+    return { newTransactionIds: [] };
   }
 
   const existingAccounts = await db
@@ -221,17 +251,21 @@ async function syncPullBasedConnection(
       );
 
       if (newTxns.length) {
-        await db.insert(transaction).values(
-          newTxns.map((t) => {
-            let txnCurrency = t.currency;
-            if (txnCurrency === "RUR") txnCurrency = "RUB";
-            return {
-              ...t,
-              currency: txnCurrency,
-              locked_attributes: SYNCED_TRANSACTION_LOCKED_ATTRIBUTES,
-            };
-          }),
-        );
+        const rows = newTxns.map((t) => {
+          let txnCurrency = t.currency;
+          if (txnCurrency === "RUR") txnCurrency = "RUB";
+          return {
+            ...t,
+            currency: txnCurrency,
+            merchant_id: null,
+            locked_attributes: SYNCED_TRANSACTION_LOCKED_ATTRIBUTES,
+          };
+        });
+        const inserted = await db
+          .insert(transaction)
+          .values(rows)
+          .returning({ id: transaction.id });
+        newTransactionIds.push(...inserted.map((r) => r.id));
       }
     } catch (error) {
       console.error(
@@ -246,7 +280,9 @@ async function syncPullBasedConnection(
     userId,
     institutionConnectionId,
     accounts: accounts.length,
+    newTransactionIds: newTransactionIds.length,
   });
+  return { newTransactionIds };
 }
 
 /**

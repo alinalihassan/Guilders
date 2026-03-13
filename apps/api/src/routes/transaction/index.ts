@@ -1,4 +1,4 @@
-import { waitUntil } from "cloudflare:workers";
+import { env, waitUntil } from "cloudflare:workers";
 import { eq } from "drizzle-orm";
 import { Elysia, status, t } from "elysia";
 
@@ -10,6 +10,10 @@ import {
 } from "../../db/schema/transactions";
 import { cleanupEntityDocuments } from "../../lib/cleanup-documents";
 import { filterLockedUpdate } from "../../lib/locked-attributes";
+import {
+  deriveMerchantNameFromDescription,
+  findOrCreateMerchant,
+} from "../../lib/merchant-from-transaction";
 import { deliverUserWebhookEvents } from "../../lib/user-webhooks";
 import { authPlugin } from "../../middleware/auth";
 import { errorSchema } from "../../utils/error";
@@ -139,6 +143,15 @@ export const transactionRoutes = new Elysia({
         }),
       );
 
+      if (env.TRANSACTION_ENRICHMENT_QUEUE && process.env.TRANSACTION_ENRICHMENT_ENABLED !== "0") {
+        waitUntil(
+          env.TRANSACTION_ENRICHMENT_QUEUE.send({
+            transactionId: newTransaction.id,
+            userId: user.id,
+          }),
+        );
+      }
+
       return newTransaction;
     },
     {
@@ -184,6 +197,73 @@ export const transactionRoutes = new Elysia({
       detail: {
         summary: "Get transaction by ID",
         description: "Retrieve a specific transaction by its ID",
+      },
+    },
+  )
+  .post(
+    "/:id/create-merchant",
+    async ({ params, user, db, body }) => {
+      const transactionResult = await db.query.transaction.findFirst({
+        where: {
+          id: params.id,
+          account: {
+            user_id: user.id,
+          },
+        },
+      });
+
+      if (!transactionResult) {
+        return status(404, { error: "Transaction not found" });
+      }
+
+      const nameInput = body?.name?.trim();
+      const merchantName =
+        nameInput ?? deriveMerchantNameFromDescription(transactionResult.description);
+      if (!merchantName) {
+        return status(400, {
+          error:
+            "Could not derive merchant name from transaction description. Provide a name in the request body.",
+        });
+      }
+
+      const merchantId = await findOrCreateMerchant(db, user.id, merchantName);
+      const [updated] = await db
+        .update(transaction)
+        .set({ merchant_id: merchantId, updated_at: new Date() })
+        .where(eq(transaction.id, params.id))
+        .returning();
+
+      if (!updated) return status(500, { error: "Failed to update transaction" });
+
+      const merchantResult = await db.query.merchant.findFirst({
+        where: { id: merchantId, user_id: user.id },
+      });
+
+      waitUntil(
+        deliverUserWebhookEvents(db, user.id, "transaction.updated", {
+          transaction: updated,
+        }),
+      );
+
+      return { merchant: merchantResult, transaction: updated };
+    },
+    {
+      auth: true,
+      params: transactionIdParamSchema,
+      body: t.Optional(t.Object({ name: t.Optional(t.String()) })),
+      response: {
+        200: t.Object({
+          merchant: t.Any(),
+          transaction: t.Ref("#/components/schemas/Transaction"),
+        }),
+        400: errorSchema,
+        404: errorSchema,
+        500: errorSchema,
+      },
+      detail: {
+        summary: "Create merchant from transaction",
+        description:
+          "Create a merchant from the transaction's description (or optional name) and link it to the transaction.",
       },
     },
   )

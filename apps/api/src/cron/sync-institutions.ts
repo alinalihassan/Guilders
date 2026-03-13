@@ -1,20 +1,31 @@
 import { sql } from "drizzle-orm";
 
+import { country } from "../db/schema/countries";
 import { institution } from "../db/schema/institutions";
 import { createDb } from "../lib/db";
 import { EnableBankingProvider } from "../providers/enablebanking/provider";
+import { GoCardlessProvider } from "../providers/gocardless/provider";
 import { SnapTradeProvider } from "../providers/snaptrade/provider";
 import { TellerProvider } from "../providers/teller/provider";
 import type { IProvider } from "../providers/types";
 
 function getProviderAdapters(): IProvider[] {
-  return [new EnableBankingProvider(), new SnapTradeProvider(), new TellerProvider()];
+  return [
+    new EnableBankingProvider(),
+    new GoCardlessProvider(),
+    new SnapTradeProvider(),
+    new TellerProvider(),
+  ];
 }
 
 export async function syncInstitutions() {
   const db = createDb();
   const providers = await db.query.provider.findMany();
   const adapters = getProviderAdapters();
+
+  const validCountryCodes = new Set(
+    (await db.select({ code: country.code }).from(country)).map((r) => r.code),
+  );
 
   for (const adapter of adapters) {
     try {
@@ -33,10 +44,15 @@ export async function syncInstitutions() {
       const BATCH_SIZE = 500;
       for (let i = 0; i < institutions.length; i += BATCH_SIZE) {
         const batch = institutions.slice(i, i + BATCH_SIZE);
-        const rows = batch.map((inst) => ({
-          ...inst,
-          provider_id: providerRecord.id,
-        }));
+        const rows = batch.map((inst) => {
+          const code = inst.country ?? undefined;
+          const countryOrNull = code && validCountryCodes.has(code) ? code : null;
+          return {
+            ...inst,
+            provider_id: providerRecord.id,
+            country: countryOrNull,
+          };
+        });
 
         await db
           .insert(institution)

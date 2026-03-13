@@ -6,7 +6,6 @@ import type { ReactNode } from "react";
 import { AccountsTable } from "@/components/dashboard/accounts/accounts-table";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 
 interface AccountsCardProps {
@@ -37,11 +36,8 @@ export function AccountsCard({
         <CardTitle>{title}</CardTitle>
         {menuComponent || accountsMenu}
       </CardHeader>
-      <CardContent className="min-h-0 flex-1">
-        <ScrollArea className="h-full w-full">
-          <AccountsTable accounts={accounts} />
-          <ScrollBar orientation="vertical" />
-        </ScrollArea>
+      <CardContent className="flex max-h-[60vh] min-h-[300px] flex-1 flex-col">
+        <AccountsTable accounts={accounts} />
       </CardContent>
     </Card>
   );

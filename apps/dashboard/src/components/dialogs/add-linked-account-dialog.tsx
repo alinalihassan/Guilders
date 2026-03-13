@@ -1,5 +1,6 @@
 import { useRouter } from "@tanstack/react-router";
 import { Loader2 } from "lucide-react";
+import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -19,6 +20,7 @@ import { isPro } from "@/lib/utils";
 
 export function AddLinkedAccountDialog() {
   const router = useRouter();
+  const continueButtonRef = useRef<HTMLButtonElement>(null);
   const { data: user } = useUser();
   const { data: billing, isPending: billingConfigPending } = useBillingConfig();
   const { isOpen, data, close } = useDialog("addLinkedAccount");
@@ -26,14 +28,22 @@ export function AddLinkedAccountDialog() {
   const provider = useProviderById(data?.institution?.provider_id);
   const { mutateAsync: createConnection, isPending } = useCreateConnection();
 
-  if (!isOpen || !provider || !data?.institution) return null;
-  const { institution } = data;
-
   const billingConfigLoaded = !billingConfigPending;
   const billingReady = billingConfigLoaded && billing !== undefined;
   const billingEnabled = billingReady ? (billing.billingEnabled ?? true) : undefined;
   const isSubscribed =
     billingEnabled !== undefined ? !billingEnabled || isPro(user, billingEnabled) : false;
+  const canContinue = isOpen && !!provider && !!data?.institution && billingReady && !isPending;
+
+  // Focus Continue when it appears (e.g. after billing loads) so Close isn't focused first
+  useEffect(() => {
+    if (canContinue) {
+      continueButtonRef.current?.focus();
+    }
+  }, [canContinue]);
+
+  if (!isOpen || !provider || !data?.institution) return null;
+  const { institution } = data;
 
   const onContinue = async () => {
     if (!billingReady) {
@@ -70,7 +80,15 @@ export function AddLinkedAccountDialog() {
   return (
     <Dialog open={isOpen} onOpenChange={close}>
       <DialogTitle className="hidden">Add Linked Account</DialogTitle>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent
+        className="sm:max-w-[425px]"
+        onOpenAutoFocus={(e) => {
+          if (canContinue) {
+            e.preventDefault();
+            continueButtonRef.current?.focus();
+          }
+        }}
+      >
         <DialogDescription className="hidden">
           This connection is provided by {provider.name}. By clicking continue, you authorize{" "}
           {provider.name} to establish the connection and access your financial data.
@@ -127,7 +145,9 @@ export function AddLinkedAccountDialog() {
             Loading…
           </Button>
         ) : (
-          <Button onClick={onContinue}>{isSubscribed ? "Continue" : "Upgrade to Pro"}</Button>
+          <Button ref={continueButtonRef} onClick={onContinue}>
+            {isSubscribed ? "Continue" : "Upgrade to Pro"}
+          </Button>
         )}
       </DialogContent>
     </Dialog>

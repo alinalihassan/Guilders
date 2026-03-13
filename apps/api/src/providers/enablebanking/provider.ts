@@ -299,7 +299,7 @@ export class EnableBankingProvider implements IProvider {
 
       accounts.push({
         user_id: params.userId,
-        name: details.details ?? details.name ?? "Bank Account",
+        name: (details.details ?? details.name ?? "").trim() || "Account",
         type: mapped.type,
         subtype: mapped.subtype,
         value: balance.balance_amount.amount,

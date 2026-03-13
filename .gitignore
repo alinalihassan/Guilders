@@ -46,3 +46,6 @@ coverage/
 **/*.tgz
 **/*.log
 **/*.bun
+
+# Localflare
+.localflare/

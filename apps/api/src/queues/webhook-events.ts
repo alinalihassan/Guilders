@@ -14,6 +14,7 @@ import { getProvider } from "../providers";
 import { getSnapTradeClient } from "../providers/snaptrade/client";
 import type {
   EnableBankingWebhookEvent,
+  GoCardlessWebhookEvent,
   ProviderUserCleanupEvent,
   SnapTradeWebhookEvent,
   TellerWebhookEvent,
@@ -38,10 +39,13 @@ export async function handleWebhookQueue(
           await processSnapTradeEvent(event);
           break;
         case "enablebanking":
-          await processEnableBankingEvent(event);
+          await processEnableBankingEvent(event, env);
           break;
         case "teller":
-          await processTellerEvent(event);
+          await processTellerEvent(event, env);
+          break;
+        case "gocardless":
+          await processGoCardlessEvent(event, env);
           break;
         case "provider-user-cleanup":
           await processProviderUserCleanupEvent(event);
@@ -507,26 +511,60 @@ async function syncSnapTradeHoldings(
 
 // --- EnableBanking processing ---
 
-async function processEnableBankingEvent(event: EnableBankingWebhookEvent) {
+async function processEnableBankingEvent(
+  event: EnableBankingWebhookEvent,
+  env: Env,
+): Promise<void> {
   if (event.eventType !== "CONNECTION_CREATED") return;
 
   const { userId, institutionConnectionId } = event.payload;
-  await syncConnectionData({
+  const { newTransactionIds } = await syncConnectionData({
     providerName: "EnableBanking",
     userId,
     institutionConnectionId,
   });
+  if (
+    env.TRANSACTION_ENRICHMENT_QUEUE &&
+    process.env.TRANSACTION_ENRICHMENT_ENABLED !== "0" &&
+    newTransactionIds.length > 0
+  ) {
+    for (const transactionId of newTransactionIds) {
+      await env.TRANSACTION_ENRICHMENT_QUEUE.send({ transactionId, userId });
+    }
+  }
+}
+
+// --- GoCardless processing ---
+
+async function processGoCardlessEvent(event: GoCardlessWebhookEvent, env: Env): Promise<void> {
+  if (event.eventType !== "CONNECTION_CREATED") return;
+
+  const { userId, institutionConnectionId } = event.payload;
+  const { newTransactionIds } = await syncConnectionData({
+    providerName: "GoCardless",
+    userId,
+    institutionConnectionId,
+  });
+  if (
+    env.TRANSACTION_ENRICHMENT_QUEUE &&
+    process.env.TRANSACTION_ENRICHMENT_ENABLED !== "0" &&
+    newTransactionIds.length > 0
+  ) {
+    for (const transactionId of newTransactionIds) {
+      await env.TRANSACTION_ENRICHMENT_QUEUE.send({ transactionId, userId });
+    }
+  }
 }
 
 // --- Teller processing ---
 
-async function processTellerEvent(event: TellerWebhookEvent) {
+async function processTellerEvent(event: TellerWebhookEvent, env: Env): Promise<void> {
   switch (event.eventType) {
     case "ENROLLMENT_CREATED":
-      await handleTellerEnrollmentCreated(event.payload);
+      await handleTellerEnrollmentCreated(event.payload, env);
       break;
     case "TRANSACTIONS_UPDATED":
-      await handleTellerTransactionsUpdated(event.payload);
+      await handleTellerTransactionsUpdated(event.payload, env);
       break;
     case "ENROLLMENT_DISCONNECTED":
       await handleTellerEnrollmentDisconnected(event.payload);
@@ -536,22 +574,48 @@ async function processTellerEvent(event: TellerWebhookEvent) {
 
 async function handleTellerEnrollmentCreated(
   payload: TellerWebhookEvent["payload"],
+  env: Env,
 ): Promise<void> {
-  await syncConnectionData({
+  const { newTransactionIds } = await syncConnectionData({
     providerName: "Teller",
     userId: payload.userId,
     institutionConnectionId: payload.institutionConnectionId,
   });
+  if (
+    env.TRANSACTION_ENRICHMENT_QUEUE &&
+    process.env.TRANSACTION_ENRICHMENT_ENABLED !== "0" &&
+    newTransactionIds.length > 0
+  ) {
+    for (const transactionId of newTransactionIds) {
+      await env.TRANSACTION_ENRICHMENT_QUEUE.send({
+        transactionId,
+        userId: payload.userId,
+      });
+    }
+  }
 }
 
 async function handleTellerTransactionsUpdated(
   payload: TellerWebhookEvent["payload"],
+  env: Env,
 ): Promise<void> {
-  await syncConnectionData({
+  const { newTransactionIds } = await syncConnectionData({
     providerName: "Teller",
     userId: payload.userId,
     institutionConnectionId: payload.institutionConnectionId,
   });
+  if (
+    env.TRANSACTION_ENRICHMENT_QUEUE &&
+    process.env.TRANSACTION_ENRICHMENT_ENABLED !== "0" &&
+    newTransactionIds.length > 0
+  ) {
+    for (const transactionId of newTransactionIds) {
+      await env.TRANSACTION_ENRICHMENT_QUEUE.send({
+        transactionId,
+        userId: payload.userId,
+      });
+    }
+  }
 }
 
 async function handleTellerEnrollmentDisconnected(

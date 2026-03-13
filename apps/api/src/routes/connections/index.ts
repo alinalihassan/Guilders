@@ -1,3 +1,4 @@
+import { env } from "cloudflare:workers";
 import { and, eq } from "drizzle-orm";
 import { Elysia, status, t } from "elysia";
 
@@ -385,7 +386,30 @@ export const connectionsRoutes = new Elysia({
       }
 
       try {
-        await syncAccountData(accountId);
+        const { newTransactionIds } = await syncAccountData(accountId);
+        if (
+          env.TRANSACTION_ENRICHMENT_QUEUE &&
+          process.env.TRANSACTION_ENRICHMENT_ENABLED !== "0" &&
+          newTransactionIds.length > 0
+        ) {
+          const sendPromises = newTransactionIds.map((transactionId) =>
+            env.TRANSACTION_ENRICHMENT_QUEUE.send({
+              transactionId,
+              userId: user.id,
+            }),
+          );
+          const results = await Promise.allSettled(sendPromises);
+          for (let i = 0; i < results.length; i++) {
+            const r = results[i];
+            if (r.status === "rejected") {
+              console.error("[Connections] transaction enrichment enqueue failed", {
+                transactionId: newTransactionIds[i],
+                userId: user.id,
+                error: r.reason,
+              });
+            }
+          }
+        }
         return { success: true };
       } catch (error) {
         return status(500, {

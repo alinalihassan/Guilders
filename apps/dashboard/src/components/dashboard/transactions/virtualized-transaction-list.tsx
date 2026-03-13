@@ -1,52 +1,65 @@
+import type { Merchant, Transaction } from "@guilders/api/types";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { useMemo, useRef } from "react";
+import { useRef } from "react";
 
 import { Skeleton } from "@/components/ui/skeleton";
-import { useMerchants } from "@/lib/queries/useMerchants";
-import { useTransactions } from "@/lib/queries/useTransactions";
 
 import { TransactionItem } from "./transaction-item";
 import { TransactionsEmptyPlaceholder } from "./transactions-placeholder";
 
 const ROW_HEIGHT = 64;
 
-export function TransactionsTable({ accountId }: { accountId?: number }) {
-  const parentRef = useRef<HTMLDivElement>(null);
-  const { data: transactions, isLoading, error } = useTransactions(accountId);
-  const { data: merchants } = useMerchants();
-  const merchantsById = useMemo(() => new Map(merchants?.map((m) => [m.id, m]) ?? []), [merchants]);
+interface VirtualizedTransactionListProps {
+  transactions: Transaction[];
+  isLoading: boolean;
+  searchQuery: string;
+  merchantsById: Map<number, Merchant>;
+  accountId?: number;
+  /** Optional class for the scroll container (e.g. max-h-[60vh] for page layout) */
+  className?: string;
+}
 
-  const sortedTransactions = useMemo(
-    () =>
-      transactions
-        ? [...transactions].toSorted(
-            (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
-          )
-        : [],
-    [transactions],
-  );
+export function VirtualizedTransactionList({
+  transactions,
+  isLoading,
+  searchQuery,
+  merchantsById,
+  accountId,
+  className,
+}: VirtualizedTransactionListProps) {
+  const parentRef = useRef<HTMLDivElement>(null);
 
   const virtualizer = useVirtualizer({
-    count: sortedTransactions.length,
+    count: transactions.length,
     getScrollElement: () => parentRef.current,
     estimateSize: () => ROW_HEIGHT,
     overscan: 5,
   });
 
-  return (
-    <div ref={parentRef} className="h-full min-h-0 flex-1 overflow-auto">
+  const viewport = (
+    <div
+      ref={parentRef}
+      className={className}
+      style={{
+        height: "60vh",
+        minHeight: 300,
+        overflow: "auto",
+      }}
+    >
       {isLoading ? (
         <div className="space-y-2">
           {[...Array(4)].map((_, index) => (
-            <Skeleton key={index} className="mb-2 h-10 w-full" />
+            <Skeleton key={index} className="h-16 w-full" />
           ))}
         </div>
-      ) : error || !transactions ? (
-        <div className="py-8 text-center">
-          <p className="mb-4">Error loading transactions. Please try again later.</p>
-        </div>
-      ) : sortedTransactions.length === 0 ? (
-        <TransactionsEmptyPlaceholder accountId={accountId} />
+      ) : transactions.length === 0 ? (
+        searchQuery ? (
+          <div className="py-8 text-center text-muted-foreground">
+            No transactions found matching "{searchQuery}"
+          </div>
+        ) : (
+          <TransactionsEmptyPlaceholder accountId={accountId} />
+        )
       ) : (
         <div
           style={{
@@ -56,7 +69,7 @@ export function TransactionsTable({ accountId }: { accountId?: number }) {
           }}
         >
           {virtualizer.getVirtualItems().map((virtualRow) => {
-            const transaction = sortedTransactions[virtualRow.index];
+            const transaction = transactions[virtualRow.index];
             if (!transaction) return null;
             return (
               <div
@@ -85,4 +98,6 @@ export function TransactionsTable({ accountId }: { accountId?: number }) {
       )}
     </div>
   );
+
+  return viewport;
 }

@@ -2,7 +2,7 @@ import { createDb } from "../lib/db";
 import { syncConnectionData } from "../lib/sync-connection-data";
 import type { ProviderName } from "../providers/types";
 
-const PULL_BASED_PROVIDERS: ProviderName[] = ["EnableBanking", "Teller"];
+const PULL_BASED_PROVIDERS: ProviderName[] = ["EnableBanking", "GoCardless", "Teller"];
 
 export async function syncConnectionDataCron() {
   const db = createDb();

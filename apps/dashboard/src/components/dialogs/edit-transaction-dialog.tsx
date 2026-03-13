@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2, Trash2 } from "lucide-react";
+import { Loader2, Plus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -35,7 +35,11 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { useDialog } from "@/hooks/useDialog";
 import { useAccounts } from "@/lib/queries/useAccounts";
 import { useFiles } from "@/lib/queries/useFiles";
-import { useRemoveTransaction, useUpdateTransaction } from "@/lib/queries/useTransactions";
+import {
+  useCreateMerchantFromTransaction,
+  useRemoveTransaction,
+  useUpdateTransaction,
+} from "@/lib/queries/useTransactions";
 
 import { AccountSelector } from "../common/account-selector";
 import { CategorySelector } from "../common/category-selector";
@@ -68,6 +72,8 @@ export function EditTransactionDialog() {
   const { isOpen, data, close } = useDialog("editTransaction");
   const { mutate: updateTransaction, isPending: isUpdating } = useUpdateTransaction();
   const { mutate: deleteTransaction, isPending: isDeleting } = useRemoveTransaction();
+  const { mutate: createMerchantFromTransaction, isPending: isCreatingMerchant } =
+    useCreateMerchantFromTransaction();
   const { data: accounts } = useAccounts();
   const { documents, isLoadingDocuments, uploadFile, deleteFile, getFileUrl, isUploading } =
     useFiles({
@@ -250,14 +256,54 @@ export function EditTransactionDialog() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Merchant</FormLabel>
-                        <FormControl>
-                          <MerchantSelector
-                            value={field.value}
-                            onChange={field.onChange}
-                            disabled={isSyncedTransaction}
-                            placeholder="Select or add merchant"
-                          />
-                        </FormControl>
+                        <div className="flex gap-2">
+                          <FormControl>
+                            <div className="min-w-0 flex-1">
+                              <MerchantSelector
+                                value={field.value}
+                                onChange={field.onChange}
+                                disabled={isSyncedTransaction}
+                                placeholder="Select or add merchant"
+                              />
+                            </div>
+                          </FormControl>
+                          {!field.value &&
+                            transaction.description?.trim() &&
+                            !isSyncedTransaction && (
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button
+                                      type="button"
+                                      variant="outline"
+                                      size="icon"
+                                      disabled={isCreatingMerchant}
+                                      onClick={() =>
+                                        createMerchantFromTransaction(
+                                          { transactionId: transaction.id },
+                                          {
+                                            onSuccess: (res) => {
+                                              form.setValue("merchantId", res.merchant.id);
+                                            },
+                                          },
+                                        )
+                                      }
+                                      aria-label="Create merchant from description"
+                                    >
+                                      {isCreatingMerchant ? (
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                      ) : (
+                                        <Plus className="h-4 w-4" />
+                                      )}
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    Create merchant from description and link
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            )}
+                        </div>
                         <FormMessage />
                       </FormItem>
                     )}

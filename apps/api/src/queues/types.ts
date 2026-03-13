@@ -59,6 +59,21 @@ export type TellerWebhookEvent = {
   payload: TellerWebhookPayload;
 };
 
+// --- GoCardless ---
+
+export type GoCardlessEventType = "CONNECTION_CREATED";
+
+export type GoCardlessWebhookPayload = {
+  userId: string;
+  institutionConnectionId: number;
+};
+
+export type GoCardlessWebhookEvent = {
+  source: "gocardless";
+  eventType: GoCardlessEventType;
+  payload: GoCardlessWebhookPayload;
+};
+
 // --- Provider cleanup ---
 
 export type ProviderUserCleanupEvent = {
@@ -82,11 +97,19 @@ export type UserFilesCleanupEvent = {
   };
 };
 
+// --- Transaction enrichment (separate queue) ---
+
+export type TransactionEnrichmentPayload = {
+  transactionId: number;
+  userId: string;
+};
+
 // --- Union ---
 
 export type WebhookEvent =
   | SnapTradeWebhookEvent
   | EnableBankingWebhookEvent
   | TellerWebhookEvent
+  | GoCardlessWebhookEvent
   | ProviderUserCleanupEvent
   | UserFilesCleanupEvent;

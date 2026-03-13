@@ -89,6 +89,31 @@ export function useUpdateTransaction() {
   );
 }
 
+export function useCreateMerchantFromTransaction() {
+  const queryClient = useQueryClient();
+  return useMutation<
+    { merchant: { id: number; name: string }; transaction: Transaction },
+    Error,
+    { transactionId: number; name?: string }
+  >({
+    mutationFn: async ({ transactionId, name }) => {
+      const { data, error } = await api
+        .transaction({ id: transactionId })
+        ["create-merchant"].post(name != null ? { name } : {});
+      if (error) throw new Error(edenError(error));
+      return data as { merchant: { id: number; name: string }; transaction: Transaction };
+    },
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey });
+      queryClient.invalidateQueries({ queryKey: ["merchants"] });
+      toast.success(`Merchant "${result.merchant.name}" created and linked`);
+    },
+    onError: (error) => {
+      toast.error("Failed to create merchant", { description: error.message });
+    },
+  });
+}
+
 export function useRemoveTransaction() {
   const queryClient = useQueryClient();
   return useMutation<number, Error, Transaction>({

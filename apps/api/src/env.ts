@@ -51,6 +51,10 @@ const EnvSchema = z.object({
   TELLER_ENVIRONMENT: z.string().optional(),
   TELLER_WEBHOOK_SECRET: z.string().optional(),
 
+  // GoCardless
+  GOCARDLESS_SECRET_ID: z.string().optional(),
+  GOCARDLESS_SECRET_KEY: z.string().optional(),
+
   // Runtime / test
   NODE_ENV: z.enum(["development", "production", "test"]).optional(),
 });
