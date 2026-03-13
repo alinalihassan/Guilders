@@ -290,7 +290,9 @@ export class GoCardlessProvider implements IProvider {
 
       const rawName = (d.name as string | undefined) ?? (d.product as string | undefined) ?? "";
       const name = typeof rawName === "string" && rawName.trim() ? rawName.trim() : "Account";
-      const currency = (d.currency as string | undefined) ?? "XXX";
+      const rawCurrency =
+        (d.currency as string | undefined) ?? primary.balanceAmount.currency ?? "EUR";
+      const currency = rawCurrency === "RUR" ? "RUB" : rawCurrency;
 
       accounts.push({
         user_id: params.userId,
@@ -298,7 +300,7 @@ export class GoCardlessProvider implements IProvider {
         type: mapped.type,
         subtype: mapped.subtype,
         value,
-        currency: currency === "RUR" ? "RUB" : currency,
+        currency,
         institution_connection_id: params.connectionId,
         provider_account_id: accountId,
         image: instConn.institution?.logo_url ?? null,
