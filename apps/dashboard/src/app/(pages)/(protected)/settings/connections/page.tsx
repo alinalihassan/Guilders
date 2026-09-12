@@ -87,7 +87,7 @@ function ConnectionsPage() {
                       <div className="space-y-2">
                         <div className="font-medium">{providerName}</div>
                         <div className="text-muted-foreground text-sm">
-                          Connected {format(new Date(connection.created_at), "PPP")}
+                          Connected on {format(new Date(connection.created_at), "PPP")}
                         </div>
                       </div>
                     </div>
