@@ -5,7 +5,7 @@
     "./emails/*": "./emails/*.tsx"
   },
   "scripts": {
-    "build": "email build",
+    "build": "bun ./scripts/build.ts",
     "dev": "email dev -p 3004",
     "export": "email export",
     "start": "email start",
