@@ -1,3 +1,6 @@
+# Local Wrangler secrets. Copy to .dev.vars (gitignored).
+# Keep in sync with .env used by drizzle / bun scripts.
+
 # Postgres database
 DATABASE_URL=postgresql://postgres:postgres@localhost:5432/guilders
 

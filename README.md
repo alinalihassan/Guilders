@@ -64,7 +64,11 @@ cd Guilders
 bun install
 
 cp apps/api/.env.example apps/api/.env
-# Edit apps/api/.env with your database URL and secrets
+cp apps/api/.dev.vars.example apps/api/.dev.vars
+# Edit both files with your database URL and secrets (Wrangler reads .dev.vars)
+
+# Optional: start local Postgres (matches the default DATABASE_URL)
+docker compose up -d
 ```
 
 ### Run locally
@@ -75,6 +79,9 @@ cd apps/api && bun run dev
 
 # Dashboard → http://localhost:3002
 cd apps/dashboard && bun run dev
+
+# Docs → http://localhost:3003
+cd apps/docs && bun run dev
 
 # Mobile (scan QR with Expo Go)
 cd apps/mobile && bun run start
