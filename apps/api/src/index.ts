@@ -11,7 +11,7 @@ export type * from "./types";
 export { ChatRateLimiter };
 
 export default {
-  async fetch(request: Request, env: Env, executionCtx: ExecutionContext): Promise<Response> {
+  async fetch(request: Request, env: Env, _executionCtx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
 
     if (url.pathname.startsWith("/callback/")) {
@@ -19,7 +19,7 @@ export default {
     }
 
     if (url.pathname === "/mcp") {
-      return handleMcp(request, env, executionCtx);
+      return handleMcp(request);
     }
 
     return await app.fetch(request);

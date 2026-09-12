@@ -31,16 +31,15 @@ export const useSecurityStore = create<SecurityStore>((set) => ({
       throw new Error(error.message);
     }
 
-    const setup = (data as { totpURI?: string; backupCodes?: string[] }) ?? {};
-    if (!setup.totpURI) {
+    if (!data || !("totpURI" in data) || !data.totpURI) {
       set({ isLoadingMFA: false });
       throw new Error("Unable to initialize 2FA setup.");
     }
 
     set({
       setup: {
-        totpURI: setup.totpURI,
-        backupCodes: setup.backupCodes ?? [],
+        totpURI: data.totpURI,
+        backupCodes: data.backupCodes ?? [],
       },
       isLoadingMFA: false,
     });

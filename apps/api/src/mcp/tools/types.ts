@@ -1,5 +1,5 @@
-import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import type * as z from "zod/v4";
+import type { McpServer } from "@modelcontextprotocol/server";
+import * as z from "zod/v4";
 
 import type { McpScope } from "../scopes";
 
@@ -58,7 +58,7 @@ export const registerMcpTool = <TInput extends Record<string, unknown>>(
     tool.name,
     {
       description: tool.description,
-      inputSchema: tool.inputSchema,
+      inputSchema: z.object(tool.inputSchema),
     },
     async (input) => tool.handler(input as TInput, context),
   );

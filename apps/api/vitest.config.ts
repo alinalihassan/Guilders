@@ -36,7 +36,7 @@ export default defineConfig({
     maxWorkers: 8,
     server: {
       deps: {
-        inline: ["agents", "partyserver", /cloudflare:/],
+        inline: ["partyserver", /cloudflare:/],
       },
     },
   },

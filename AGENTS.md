@@ -40,7 +40,7 @@ guilders/
 | Database      | PostgreSQL (Neon serverless) via Drizzle ORM                                                |
 | Auth          | Better Auth (session cookies, bearer, passkeys, API keys, OAuth) + dash plugin              |
 | AI            | Vercel AI SDK via Workers AI binding (`env.AI`) and AI Gateway id `guilders-ai-gateway`     |
-| MCP           | `@modelcontextprotocol/sdk` — OAuth-authenticated                                           |
+| MCP           | `@modelcontextprotocol/server` — OAuth-authenticated (2026-07-28)                           |
 | Dashboard     | TanStack Start + Vite, React 19, Tailwind CSS, shadcn/ui, Recharts, Zustand, TanStack Query |
 | Mobile        | Expo 55, React Native 0.83, Expo Router                                                     |
 | Docs          | Fumadocs 16 (Next.js), OpenAPI integration                                                  |
@@ -200,6 +200,8 @@ Endpoint: `/mcp` (OAuth-authenticated via Better Auth as OAuth provider).
 
 Implementation: `apps/api/src/mcp/`
 
+Protocol is **2026-07-28 only** (`legacy: "reject"`). Local testing: MCP Inspector CLI under Local verification below.
+
 ## Provider Integrations
 
 Providers implement the `IProvider` interface (`apps/api/src/providers/types.ts`):
@@ -248,6 +250,29 @@ Local services: website `http://localhost:3001`, API `http://localhost:3000`, da
 **Wrangler.** `apps/api` `bun run dev` needs Wrangler 4.131+. The `AI` binding must stay `"remote": true` (Workers AI has no local simulator). 4.71 fails to create that preview session.
 
 **Known local user.** After the API is up: `bun run agent:user` creates `agent@guilders.test` / `agent-agent-agent`. Sign-up does not require email verification.
+
+**MCP Inspector.** Use the CLI against a running API (`:3000`) and dashboard (`:3002`). Pin `protocolEra` to `modern` — Inspector defaults to legacy `initialize` (`2025-11-25`), which `/mcp` rejects with `-32022`. Prefer the CLI over the web UI: Better Auth DCR accepts Inspector’s loopback callback only for `application_type: native` (CLI), not web.
+
+```bash
+cat > /tmp/guilders-mcp-inspector.json <<'EOF'
+{
+  "mcpServers": {
+    "guilders": {
+      "type": "http",
+      "url": "http://localhost:3000/mcp",
+      "protocolEra": "modern"
+    }
+  }
+}
+EOF
+
+npx @modelcontextprotocol/inspector --cli \
+  --config /tmp/guilders-mcp-inspector.json \
+  --server guilders \
+  --method tools/list --format json
+```
+
+First run opens OAuth; sign in as `agent@guilders.test` / `agent-agent-agent` and allow access. Later runs reuse the stored token. Call a tool with `--method tools/call --tool-name get_accounts`.
 
 ### Common Patterns
 

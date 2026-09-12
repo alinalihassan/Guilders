@@ -5,8 +5,11 @@ import {
   apikey,
   oauthAccessToken,
   oauthClient,
+  oauthClientAssertion,
+  oauthClientResource,
   oauthConsent,
   oauthRefreshToken,
+  oauthResource,
   passkey,
   session,
   subscription,
@@ -38,9 +41,12 @@ const schema = {
   twoFactor,
   passkey,
   oauthClient,
+  oauthResource,
+  oauthClientResource,
   oauthRefreshToken,
   oauthAccessToken,
   oauthConsent,
+  oauthClientAssertion,
   subscription,
   conversation,
   category,
@@ -178,6 +184,10 @@ export const relations = defineRelations(schema, (r) => ({
       from: r.oauthClient.userId,
       to: r.user.id,
     }),
+    oauthClientResources: r.many.oauthClientResource({
+      from: r.oauthClient.clientId,
+      to: r.oauthClientResource.clientId,
+    }),
     oauthRefreshTokens: r.many.oauthRefreshToken({
       from: r.oauthClient.clientId,
       to: r.oauthRefreshToken.clientId,
@@ -189,6 +199,22 @@ export const relations = defineRelations(schema, (r) => ({
     oauthConsents: r.many.oauthConsent({
       from: r.oauthClient.clientId,
       to: r.oauthConsent.clientId,
+    }),
+  },
+  oauthResource: {
+    oauthClientResources: r.many.oauthClientResource({
+      from: r.oauthResource.identifier,
+      to: r.oauthClientResource.resourceId,
+    }),
+  },
+  oauthClientResource: {
+    oauthClient: r.one.oauthClient({
+      from: r.oauthClientResource.clientId,
+      to: r.oauthClient.clientId,
+    }),
+    oauthResource: r.one.oauthResource({
+      from: r.oauthClientResource.resourceId,
+      to: r.oauthResource.identifier,
     }),
   },
   oauthRefreshToken: {

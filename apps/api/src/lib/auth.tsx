@@ -1,8 +1,9 @@
 import { apiKey } from "@better-auth/api-key";
+import { cimd } from "@better-auth/cimd";
 import { drizzleAdapter } from "@better-auth/drizzle-adapter";
 import { expo } from "@better-auth/expo";
 import { dash } from "@better-auth/infra";
-import { oauthProvider } from "@better-auth/oauth-provider";
+import { mcp } from "@better-auth/mcp";
 import { passkey } from "@better-auth/passkey";
 import { stripe } from "@better-auth/stripe";
 import ChangeEmail from "@guilders/transactional/emails/change-email";
@@ -49,10 +50,19 @@ function stripePlugin() {
   });
 }
 
+export function getMcpResource() {
+  return `${process.env.BACKEND_URL}/mcp`;
+}
+
+/** OAuth/OIDC issuer. Auth is mounted at `/api/auth`, so tokens use this — not `BACKEND_URL`. */
+export function getAuthIssuer() {
+  return `${process.env.BACKEND_URL}/api/auth`;
+}
+
 export function createAuth(db?: Database) {
   const authDb = db ?? createDb();
   const baseUrl = process.env.BACKEND_URL;
-  const mcpAudience = `${baseUrl}/mcp`;
+  const mcpResource = `${baseUrl}/mcp`;
   const passkeyRpId = new URL(baseUrl).hostname;
   const stripeAuth = stripePlugin();
 
@@ -68,6 +78,11 @@ export function createAuth(db?: Database) {
       crossSubDomainCookies: {
         enabled: true,
         domain: new URL(baseUrl).hostname.replace(/^[^.]+\./, ""), // e.g. api.guilders.app -> guilders.app
+      },
+      backgroundTasks: {
+        handler: (task: Promise<unknown>) => {
+          waitUntil(task);
+        },
       },
     },
     user: {
@@ -166,16 +181,17 @@ export function createAuth(db?: Database) {
         rpName: "Guilders",
       }),
       bearer(),
-      oauthProvider({
+      mcp({
         loginPage: `${baseUrl}/oauth/sign-in`,
         consentPage: `${baseUrl}/oauth/consent`,
-        validAudiences: [mcpAudience],
+        resource: mcpResource,
+        scopes: ["openid", "profile", "email", "offline_access", "read", "write"],
         allowDynamicClientRegistration: true,
         allowUnauthenticatedClientRegistration: true,
-        silenceWarnings: {
-          oauthAuthServerConfig: true,
-          openidConfig: true,
-        },
+      }),
+      cimd({
+        fetchClientMetadataResource: (input, init) => fetch(input, { ...init, redirect: "error" }),
+        metadataProfile: "mcp-2026-07-28",
       }),
       openAPI({ disableDefaultReference: true }),
       expo(),

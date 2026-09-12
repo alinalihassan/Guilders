@@ -9,47 +9,52 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './app/__root'
-import { Route as CallbackAuthRouteImport } from './app/callback/auth'
-import { Route as pagesprotectedLayoutRouteImport } from './app/(pages)/(protected)/layout'
-import { Route as pagesauthPagesLayoutRouteImport } from './app/(pages)/(auth-pages)/layout'
 import { Route as pagesauthFlowsLayoutRouteImport } from './app/(pages)/(auth-flows)/layout'
-import { Route as pagesprotectedSettingsLayoutRouteImport } from './app/(pages)/(protected)/settings/layout'
+import { Route as pagesauthPagesLayoutRouteImport } from './app/(pages)/(auth-pages)/layout'
+import { Route as pagesprotectedLayoutRouteImport } from './app/(pages)/(protected)/layout'
+import { Route as CallbackAuthRouteImport } from './app/callback/auth'
 import { Route as pagesprotectedPageRouteImport } from './app/(pages)/(protected)/page'
-import { Route as pagesprotectedAccountsIdRouteImport } from './app/(pages)/(protected)/accounts/$id'
-import { Route as pagesprotectedTransactionsPageRouteImport } from './app/(pages)/(protected)/transactions/page'
-import { Route as pagesprotectedSettingsPageRouteImport } from './app/(pages)/(protected)/settings/page'
-import { Route as pagesprotectedAccountsPageRouteImport } from './app/(pages)/(protected)/accounts/page'
-import { Route as pagesauthPagesSignUpPageRouteImport } from './app/(pages)/(auth-pages)/sign-up/page'
-import { Route as pagesauthPagesLoginPageRouteImport } from './app/(pages)/(auth-pages)/login/page'
-import { Route as pagesauthPagesForgotPasswordPageRouteImport } from './app/(pages)/(auth-pages)/forgot-password/page'
-import { Route as pagesauthFlowsRecoveryPageRouteImport } from './app/(pages)/(auth-flows)/recovery/page'
+import { Route as pagesprotectedSettingsLayoutRouteImport } from './app/(pages)/(protected)/settings/layout'
 import { Route as pagesauthFlowsOnboardingPageRouteImport } from './app/(pages)/(auth-flows)/onboarding/page'
-import { Route as pagesprotectedSettingsSubscriptionPageRouteImport } from './app/(pages)/(protected)/settings/subscription/page'
-import { Route as pagesprotectedSettingsSecurityPageRouteImport } from './app/(pages)/(protected)/settings/security/page'
-import { Route as pagesprotectedSettingsMerchantsPageRouteImport } from './app/(pages)/(protected)/settings/merchants/page'
-import { Route as pagesprotectedSettingsDeveloperPageRouteImport } from './app/(pages)/(protected)/settings/developer/page'
-import { Route as pagesprotectedSettingsConnectionsPageRouteImport } from './app/(pages)/(protected)/settings/connections/page'
-import { Route as pagesprotectedSettingsCategoriesPageRouteImport } from './app/(pages)/(protected)/settings/categories/page'
-import { Route as pagesprotectedSettingsAccountPageRouteImport } from './app/(pages)/(protected)/settings/account/page'
-import { Route as pagesauthPagesOauthSignInPageRouteImport } from './app/(pages)/(auth-pages)/oauth/sign-in/page'
+import { Route as pagesauthFlowsRecoveryPageRouteImport } from './app/(pages)/(auth-flows)/recovery/page'
+import { Route as pagesauthPagesForgotPasswordPageRouteImport } from './app/(pages)/(auth-pages)/forgot-password/page'
+import { Route as pagesauthPagesLoginPageRouteImport } from './app/(pages)/(auth-pages)/login/page'
+import { Route as pagesauthPagesSignUpPageRouteImport } from './app/(pages)/(auth-pages)/sign-up/page'
+import { Route as pagesprotectedAccountsPageRouteImport } from './app/(pages)/(protected)/accounts/page'
+import { Route as pagesprotectedAccountsIdRouteImport } from './app/(pages)/(protected)/accounts/$id'
+import { Route as pagesprotectedSettingsPageRouteImport } from './app/(pages)/(protected)/settings/page'
+import { Route as pagesprotectedTransactionsPageRouteImport } from './app/(pages)/(protected)/transactions/page'
 import { Route as pagesauthPagesOauthConsentPageRouteImport } from './app/(pages)/(auth-pages)/oauth/consent/page'
+import { Route as pagesauthPagesOauthSignInPageRouteImport } from './app/(pages)/(auth-pages)/oauth/sign-in/page'
+import { Route as pagesprotectedSettingsAccountPageRouteImport } from './app/(pages)/(protected)/settings/account/page'
+import { Route as pagesprotectedSettingsCategoriesPageRouteImport } from './app/(pages)/(protected)/settings/categories/page'
+import { Route as pagesprotectedSettingsConnectionsPageRouteImport } from './app/(pages)/(protected)/settings/connections/page'
+import { Route as pagesprotectedSettingsDeveloperPageRouteImport } from './app/(pages)/(protected)/settings/developer/page'
+import { Route as pagesprotectedSettingsMerchantsPageRouteImport } from './app/(pages)/(protected)/settings/merchants/page'
+import { Route as pagesprotectedSettingsSecurityPageRouteImport } from './app/(pages)/(protected)/settings/security/page'
+import { Route as pagesprotectedSettingsSubscriptionPageRouteImport } from './app/(pages)/(protected)/settings/subscription/page'
 
-const CallbackAuthRoute = CallbackAuthRouteImport.update({
-  id: '/callback/auth',
-  path: '/callback/auth',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const pagesprotectedLayoutRoute = pagesprotectedLayoutRouteImport.update({
-  id: '/(pages)/(protected)',
+const pagesauthFlowsLayoutRoute = pagesauthFlowsLayoutRouteImport.update({
+  id: '/(pages)/(auth-flows)',
   getParentRoute: () => rootRouteImport,
 } as any)
 const pagesauthPagesLayoutRoute = pagesauthPagesLayoutRouteImport.update({
   id: '/(pages)/(auth-pages)',
   getParentRoute: () => rootRouteImport,
 } as any)
-const pagesauthFlowsLayoutRoute = pagesauthFlowsLayoutRouteImport.update({
-  id: '/(pages)/(auth-flows)',
+const pagesprotectedLayoutRoute = pagesprotectedLayoutRouteImport.update({
+  id: '/(pages)/(protected)',
   getParentRoute: () => rootRouteImport,
+} as any)
+const CallbackAuthRoute = CallbackAuthRouteImport.update({
+  id: '/callback/auth',
+  path: '/callback/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const pagesprotectedPageRoute = pagesprotectedPageRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => pagesprotectedLayoutRoute,
 } as any)
 const pagesprotectedSettingsLayoutRoute =
   pagesprotectedSettingsLayoutRouteImport.update({
@@ -57,21 +62,45 @@ const pagesprotectedSettingsLayoutRoute =
     path: '/settings',
     getParentRoute: () => pagesprotectedLayoutRoute,
   } as any)
-const pagesprotectedPageRoute = pagesprotectedPageRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => pagesprotectedLayoutRoute,
+const pagesauthFlowsOnboardingPageRoute =
+  pagesauthFlowsOnboardingPageRouteImport.update({
+    id: '/onboarding/',
+    path: '/onboarding/',
+    getParentRoute: () => pagesauthFlowsLayoutRoute,
+  } as any)
+const pagesauthFlowsRecoveryPageRoute =
+  pagesauthFlowsRecoveryPageRouteImport.update({
+    id: '/recovery/',
+    path: '/recovery/',
+    getParentRoute: () => pagesauthFlowsLayoutRoute,
+  } as any)
+const pagesauthPagesForgotPasswordPageRoute =
+  pagesauthPagesForgotPasswordPageRouteImport.update({
+    id: '/forgot-password/',
+    path: '/forgot-password/',
+    getParentRoute: () => pagesauthPagesLayoutRoute,
+  } as any)
+const pagesauthPagesLoginPageRoute = pagesauthPagesLoginPageRouteImport.update({
+  id: '/login/',
+  path: '/login/',
+  getParentRoute: () => pagesauthPagesLayoutRoute,
 } as any)
+const pagesauthPagesSignUpPageRoute =
+  pagesauthPagesSignUpPageRouteImport.update({
+    id: '/sign-up/',
+    path: '/sign-up/',
+    getParentRoute: () => pagesauthPagesLayoutRoute,
+  } as any)
+const pagesprotectedAccountsPageRoute =
+  pagesprotectedAccountsPageRouteImport.update({
+    id: '/accounts/',
+    path: '/accounts/',
+    getParentRoute: () => pagesprotectedLayoutRoute,
+  } as any)
 const pagesprotectedAccountsIdRoute =
   pagesprotectedAccountsIdRouteImport.update({
     id: '/accounts/$id',
     path: '/accounts/$id',
-    getParentRoute: () => pagesprotectedLayoutRoute,
-  } as any)
-const pagesprotectedTransactionsPageRoute =
-  pagesprotectedTransactionsPageRouteImport.update({
-    id: '/transactions/',
-    path: '/transactions/',
     getParentRoute: () => pagesprotectedLayoutRoute,
   } as any)
 const pagesprotectedSettingsPageRoute =
@@ -80,69 +109,28 @@ const pagesprotectedSettingsPageRoute =
     path: '/',
     getParentRoute: () => pagesprotectedSettingsLayoutRoute,
   } as any)
-const pagesprotectedAccountsPageRoute =
-  pagesprotectedAccountsPageRouteImport.update({
-    id: '/accounts/',
-    path: '/accounts/',
+const pagesprotectedTransactionsPageRoute =
+  pagesprotectedTransactionsPageRouteImport.update({
+    id: '/transactions/',
+    path: '/transactions/',
     getParentRoute: () => pagesprotectedLayoutRoute,
   } as any)
-const pagesauthPagesSignUpPageRoute =
-  pagesauthPagesSignUpPageRouteImport.update({
-    id: '/sign-up/',
-    path: '/sign-up/',
+const pagesauthPagesOauthConsentPageRoute =
+  pagesauthPagesOauthConsentPageRouteImport.update({
+    id: '/oauth/consent/',
+    path: '/oauth/consent/',
     getParentRoute: () => pagesauthPagesLayoutRoute,
   } as any)
-const pagesauthPagesLoginPageRoute = pagesauthPagesLoginPageRouteImport.update({
-  id: '/login/',
-  path: '/login/',
-  getParentRoute: () => pagesauthPagesLayoutRoute,
-} as any)
-const pagesauthPagesForgotPasswordPageRoute =
-  pagesauthPagesForgotPasswordPageRouteImport.update({
-    id: '/forgot-password/',
-    path: '/forgot-password/',
+const pagesauthPagesOauthSignInPageRoute =
+  pagesauthPagesOauthSignInPageRouteImport.update({
+    id: '/oauth/sign-in/',
+    path: '/oauth/sign-in/',
     getParentRoute: () => pagesauthPagesLayoutRoute,
   } as any)
-const pagesauthFlowsRecoveryPageRoute =
-  pagesauthFlowsRecoveryPageRouteImport.update({
-    id: '/recovery/',
-    path: '/recovery/',
-    getParentRoute: () => pagesauthFlowsLayoutRoute,
-  } as any)
-const pagesauthFlowsOnboardingPageRoute =
-  pagesauthFlowsOnboardingPageRouteImport.update({
-    id: '/onboarding/',
-    path: '/onboarding/',
-    getParentRoute: () => pagesauthFlowsLayoutRoute,
-  } as any)
-const pagesprotectedSettingsSubscriptionPageRoute =
-  pagesprotectedSettingsSubscriptionPageRouteImport.update({
-    id: '/subscription/',
-    path: '/subscription/',
-    getParentRoute: () => pagesprotectedSettingsLayoutRoute,
-  } as any)
-const pagesprotectedSettingsSecurityPageRoute =
-  pagesprotectedSettingsSecurityPageRouteImport.update({
-    id: '/security/',
-    path: '/security/',
-    getParentRoute: () => pagesprotectedSettingsLayoutRoute,
-  } as any)
-const pagesprotectedSettingsMerchantsPageRoute =
-  pagesprotectedSettingsMerchantsPageRouteImport.update({
-    id: '/merchants/',
-    path: '/merchants/',
-    getParentRoute: () => pagesprotectedSettingsLayoutRoute,
-  } as any)
-const pagesprotectedSettingsDeveloperPageRoute =
-  pagesprotectedSettingsDeveloperPageRouteImport.update({
-    id: '/developer/',
-    path: '/developer/',
-    getParentRoute: () => pagesprotectedSettingsLayoutRoute,
-  } as any)
-const pagesprotectedSettingsConnectionsPageRoute =
-  pagesprotectedSettingsConnectionsPageRouteImport.update({
-    id: '/connections/',
-    path: '/connections/',
+const pagesprotectedSettingsAccountPageRoute =
+  pagesprotectedSettingsAccountPageRouteImport.update({
+    id: '/account/',
+    path: '/account/',
     getParentRoute: () => pagesprotectedSettingsLayoutRoute,
   } as any)
 const pagesprotectedSettingsCategoriesPageRoute =
@@ -151,23 +139,35 @@ const pagesprotectedSettingsCategoriesPageRoute =
     path: '/categories/',
     getParentRoute: () => pagesprotectedSettingsLayoutRoute,
   } as any)
-const pagesprotectedSettingsAccountPageRoute =
-  pagesprotectedSettingsAccountPageRouteImport.update({
-    id: '/account/',
-    path: '/account/',
+const pagesprotectedSettingsConnectionsPageRoute =
+  pagesprotectedSettingsConnectionsPageRouteImport.update({
+    id: '/connections/',
+    path: '/connections/',
     getParentRoute: () => pagesprotectedSettingsLayoutRoute,
   } as any)
-const pagesauthPagesOauthSignInPageRoute =
-  pagesauthPagesOauthSignInPageRouteImport.update({
-    id: '/oauth/sign-in/',
-    path: '/oauth/sign-in/',
-    getParentRoute: () => pagesauthPagesLayoutRoute,
+const pagesprotectedSettingsDeveloperPageRoute =
+  pagesprotectedSettingsDeveloperPageRouteImport.update({
+    id: '/developer/',
+    path: '/developer/',
+    getParentRoute: () => pagesprotectedSettingsLayoutRoute,
   } as any)
-const pagesauthPagesOauthConsentPageRoute =
-  pagesauthPagesOauthConsentPageRouteImport.update({
-    id: '/oauth/consent/',
-    path: '/oauth/consent/',
-    getParentRoute: () => pagesauthPagesLayoutRoute,
+const pagesprotectedSettingsMerchantsPageRoute =
+  pagesprotectedSettingsMerchantsPageRouteImport.update({
+    id: '/merchants/',
+    path: '/merchants/',
+    getParentRoute: () => pagesprotectedSettingsLayoutRoute,
+  } as any)
+const pagesprotectedSettingsSecurityPageRoute =
+  pagesprotectedSettingsSecurityPageRouteImport.update({
+    id: '/security/',
+    path: '/security/',
+    getParentRoute: () => pagesprotectedSettingsLayoutRoute,
+  } as any)
+const pagesprotectedSettingsSubscriptionPageRoute =
+  pagesprotectedSettingsSubscriptionPageRouteImport.update({
+    id: '/subscription/',
+    path: '/subscription/',
+    getParentRoute: () => pagesprotectedSettingsLayoutRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
@@ -325,18 +325,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/callback/auth': {
-      id: '/callback/auth'
-      path: '/callback/auth'
-      fullPath: '/callback/auth'
-      preLoaderRoute: typeof CallbackAuthRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/(pages)/(protected)': {
-      id: '/(pages)/(protected)'
+    '/(pages)/(auth-flows)': {
+      id: '/(pages)/(auth-flows)'
       path: ''
       fullPath: ''
-      preLoaderRoute: typeof pagesprotectedLayoutRouteImport
+      preLoaderRoute: typeof pagesauthFlowsLayoutRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/(pages)/(auth-pages)': {
@@ -346,19 +339,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof pagesauthPagesLayoutRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/(pages)/(auth-flows)': {
-      id: '/(pages)/(auth-flows)'
+    '/(pages)/(protected)': {
+      id: '/(pages)/(protected)'
       path: ''
       fullPath: ''
-      preLoaderRoute: typeof pagesauthFlowsLayoutRouteImport
+      preLoaderRoute: typeof pagesprotectedLayoutRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/(pages)/(protected)/settings': {
-      id: '/(pages)/(protected)/settings'
-      path: '/settings'
-      fullPath: '/settings'
-      preLoaderRoute: typeof pagesprotectedSettingsLayoutRouteImport
-      parentRoute: typeof pagesprotectedLayoutRoute
+    '/callback/auth': {
+      id: '/callback/auth'
+      path: '/callback/auth'
+      fullPath: '/callback/auth'
+      preLoaderRoute: typeof CallbackAuthRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/(pages)/(protected)/': {
       id: '/(pages)/(protected)/'
@@ -367,39 +360,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof pagesprotectedPageRouteImport
       parentRoute: typeof pagesprotectedLayoutRoute
     }
-    '/(pages)/(protected)/accounts/$id': {
-      id: '/(pages)/(protected)/accounts/$id'
-      path: '/accounts/$id'
-      fullPath: '/accounts/$id'
-      preLoaderRoute: typeof pagesprotectedAccountsIdRouteImport
+    '/(pages)/(protected)/settings': {
+      id: '/(pages)/(protected)/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof pagesprotectedSettingsLayoutRouteImport
       parentRoute: typeof pagesprotectedLayoutRoute
     }
-    '/(pages)/(protected)/transactions/': {
-      id: '/(pages)/(protected)/transactions/'
-      path: '/transactions'
-      fullPath: '/transactions/'
-      preLoaderRoute: typeof pagesprotectedTransactionsPageRouteImport
-      parentRoute: typeof pagesprotectedLayoutRoute
+    '/(pages)/(auth-flows)/onboarding/': {
+      id: '/(pages)/(auth-flows)/onboarding/'
+      path: '/onboarding'
+      fullPath: '/onboarding/'
+      preLoaderRoute: typeof pagesauthFlowsOnboardingPageRouteImport
+      parentRoute: typeof pagesauthFlowsLayoutRoute
     }
-    '/(pages)/(protected)/settings/': {
-      id: '/(pages)/(protected)/settings/'
-      path: '/'
-      fullPath: '/settings/'
-      preLoaderRoute: typeof pagesprotectedSettingsPageRouteImport
-      parentRoute: typeof pagesprotectedSettingsLayoutRoute
+    '/(pages)/(auth-flows)/recovery/': {
+      id: '/(pages)/(auth-flows)/recovery/'
+      path: '/recovery'
+      fullPath: '/recovery/'
+      preLoaderRoute: typeof pagesauthFlowsRecoveryPageRouteImport
+      parentRoute: typeof pagesauthFlowsLayoutRoute
     }
-    '/(pages)/(protected)/accounts/': {
-      id: '/(pages)/(protected)/accounts/'
-      path: '/accounts'
-      fullPath: '/accounts/'
-      preLoaderRoute: typeof pagesprotectedAccountsPageRouteImport
-      parentRoute: typeof pagesprotectedLayoutRoute
-    }
-    '/(pages)/(auth-pages)/sign-up/': {
-      id: '/(pages)/(auth-pages)/sign-up/'
-      path: '/sign-up'
-      fullPath: '/sign-up/'
-      preLoaderRoute: typeof pagesauthPagesSignUpPageRouteImport
+    '/(pages)/(auth-pages)/forgot-password/': {
+      id: '/(pages)/(auth-pages)/forgot-password/'
+      path: '/forgot-password'
+      fullPath: '/forgot-password/'
+      preLoaderRoute: typeof pagesauthPagesForgotPasswordPageRouteImport
       parentRoute: typeof pagesauthPagesLayoutRoute
     }
     '/(pages)/(auth-pages)/login/': {
@@ -409,60 +395,60 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof pagesauthPagesLoginPageRouteImport
       parentRoute: typeof pagesauthPagesLayoutRoute
     }
-    '/(pages)/(auth-pages)/forgot-password/': {
-      id: '/(pages)/(auth-pages)/forgot-password/'
-      path: '/forgot-password'
-      fullPath: '/forgot-password/'
-      preLoaderRoute: typeof pagesauthPagesForgotPasswordPageRouteImport
+    '/(pages)/(auth-pages)/sign-up/': {
+      id: '/(pages)/(auth-pages)/sign-up/'
+      path: '/sign-up'
+      fullPath: '/sign-up/'
+      preLoaderRoute: typeof pagesauthPagesSignUpPageRouteImport
       parentRoute: typeof pagesauthPagesLayoutRoute
     }
-    '/(pages)/(auth-flows)/recovery/': {
-      id: '/(pages)/(auth-flows)/recovery/'
-      path: '/recovery'
-      fullPath: '/recovery/'
-      preLoaderRoute: typeof pagesauthFlowsRecoveryPageRouteImport
-      parentRoute: typeof pagesauthFlowsLayoutRoute
+    '/(pages)/(protected)/accounts/': {
+      id: '/(pages)/(protected)/accounts/'
+      path: '/accounts'
+      fullPath: '/accounts/'
+      preLoaderRoute: typeof pagesprotectedAccountsPageRouteImport
+      parentRoute: typeof pagesprotectedLayoutRoute
     }
-    '/(pages)/(auth-flows)/onboarding/': {
-      id: '/(pages)/(auth-flows)/onboarding/'
-      path: '/onboarding'
-      fullPath: '/onboarding/'
-      preLoaderRoute: typeof pagesauthFlowsOnboardingPageRouteImport
-      parentRoute: typeof pagesauthFlowsLayoutRoute
+    '/(pages)/(protected)/accounts/$id': {
+      id: '/(pages)/(protected)/accounts/$id'
+      path: '/accounts/$id'
+      fullPath: '/accounts/$id'
+      preLoaderRoute: typeof pagesprotectedAccountsIdRouteImport
+      parentRoute: typeof pagesprotectedLayoutRoute
     }
-    '/(pages)/(protected)/settings/subscription/': {
-      id: '/(pages)/(protected)/settings/subscription/'
-      path: '/subscription'
-      fullPath: '/settings/subscription/'
-      preLoaderRoute: typeof pagesprotectedSettingsSubscriptionPageRouteImport
+    '/(pages)/(protected)/settings/': {
+      id: '/(pages)/(protected)/settings/'
+      path: '/'
+      fullPath: '/settings/'
+      preLoaderRoute: typeof pagesprotectedSettingsPageRouteImport
       parentRoute: typeof pagesprotectedSettingsLayoutRoute
     }
-    '/(pages)/(protected)/settings/security/': {
-      id: '/(pages)/(protected)/settings/security/'
-      path: '/security'
-      fullPath: '/settings/security/'
-      preLoaderRoute: typeof pagesprotectedSettingsSecurityPageRouteImport
-      parentRoute: typeof pagesprotectedSettingsLayoutRoute
+    '/(pages)/(protected)/transactions/': {
+      id: '/(pages)/(protected)/transactions/'
+      path: '/transactions'
+      fullPath: '/transactions/'
+      preLoaderRoute: typeof pagesprotectedTransactionsPageRouteImport
+      parentRoute: typeof pagesprotectedLayoutRoute
     }
-    '/(pages)/(protected)/settings/merchants/': {
-      id: '/(pages)/(protected)/settings/merchants/'
-      path: '/merchants'
-      fullPath: '/settings/merchants/'
-      preLoaderRoute: typeof pagesprotectedSettingsMerchantsPageRouteImport
-      parentRoute: typeof pagesprotectedSettingsLayoutRoute
+    '/(pages)/(auth-pages)/oauth/consent/': {
+      id: '/(pages)/(auth-pages)/oauth/consent/'
+      path: '/oauth/consent'
+      fullPath: '/oauth/consent/'
+      preLoaderRoute: typeof pagesauthPagesOauthConsentPageRouteImport
+      parentRoute: typeof pagesauthPagesLayoutRoute
     }
-    '/(pages)/(protected)/settings/developer/': {
-      id: '/(pages)/(protected)/settings/developer/'
-      path: '/developer'
-      fullPath: '/settings/developer/'
-      preLoaderRoute: typeof pagesprotectedSettingsDeveloperPageRouteImport
-      parentRoute: typeof pagesprotectedSettingsLayoutRoute
+    '/(pages)/(auth-pages)/oauth/sign-in/': {
+      id: '/(pages)/(auth-pages)/oauth/sign-in/'
+      path: '/oauth/sign-in'
+      fullPath: '/oauth/sign-in/'
+      preLoaderRoute: typeof pagesauthPagesOauthSignInPageRouteImport
+      parentRoute: typeof pagesauthPagesLayoutRoute
     }
-    '/(pages)/(protected)/settings/connections/': {
-      id: '/(pages)/(protected)/settings/connections/'
-      path: '/connections'
-      fullPath: '/settings/connections/'
-      preLoaderRoute: typeof pagesprotectedSettingsConnectionsPageRouteImport
+    '/(pages)/(protected)/settings/account/': {
+      id: '/(pages)/(protected)/settings/account/'
+      path: '/account'
+      fullPath: '/settings/account/'
+      preLoaderRoute: typeof pagesprotectedSettingsAccountPageRouteImport
       parentRoute: typeof pagesprotectedSettingsLayoutRoute
     }
     '/(pages)/(protected)/settings/categories/': {
@@ -472,26 +458,40 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof pagesprotectedSettingsCategoriesPageRouteImport
       parentRoute: typeof pagesprotectedSettingsLayoutRoute
     }
-    '/(pages)/(protected)/settings/account/': {
-      id: '/(pages)/(protected)/settings/account/'
-      path: '/account'
-      fullPath: '/settings/account/'
-      preLoaderRoute: typeof pagesprotectedSettingsAccountPageRouteImport
+    '/(pages)/(protected)/settings/connections/': {
+      id: '/(pages)/(protected)/settings/connections/'
+      path: '/connections'
+      fullPath: '/settings/connections/'
+      preLoaderRoute: typeof pagesprotectedSettingsConnectionsPageRouteImport
       parentRoute: typeof pagesprotectedSettingsLayoutRoute
     }
-    '/(pages)/(auth-pages)/oauth/sign-in/': {
-      id: '/(pages)/(auth-pages)/oauth/sign-in/'
-      path: '/oauth/sign-in'
-      fullPath: '/oauth/sign-in/'
-      preLoaderRoute: typeof pagesauthPagesOauthSignInPageRouteImport
-      parentRoute: typeof pagesauthPagesLayoutRoute
+    '/(pages)/(protected)/settings/developer/': {
+      id: '/(pages)/(protected)/settings/developer/'
+      path: '/developer'
+      fullPath: '/settings/developer/'
+      preLoaderRoute: typeof pagesprotectedSettingsDeveloperPageRouteImport
+      parentRoute: typeof pagesprotectedSettingsLayoutRoute
     }
-    '/(pages)/(auth-pages)/oauth/consent/': {
-      id: '/(pages)/(auth-pages)/oauth/consent/'
-      path: '/oauth/consent'
-      fullPath: '/oauth/consent/'
-      preLoaderRoute: typeof pagesauthPagesOauthConsentPageRouteImport
-      parentRoute: typeof pagesauthPagesLayoutRoute
+    '/(pages)/(protected)/settings/merchants/': {
+      id: '/(pages)/(protected)/settings/merchants/'
+      path: '/merchants'
+      fullPath: '/settings/merchants/'
+      preLoaderRoute: typeof pagesprotectedSettingsMerchantsPageRouteImport
+      parentRoute: typeof pagesprotectedSettingsLayoutRoute
+    }
+    '/(pages)/(protected)/settings/security/': {
+      id: '/(pages)/(protected)/settings/security/'
+      path: '/security'
+      fullPath: '/settings/security/'
+      preLoaderRoute: typeof pagesprotectedSettingsSecurityPageRouteImport
+      parentRoute: typeof pagesprotectedSettingsLayoutRoute
+    }
+    '/(pages)/(protected)/settings/subscription/': {
+      id: '/(pages)/(protected)/settings/subscription/'
+      path: '/subscription'
+      fullPath: '/settings/subscription/'
+      preLoaderRoute: typeof pagesprotectedSettingsSubscriptionPageRouteImport
+      parentRoute: typeof pagesprotectedSettingsLayoutRoute
     }
   }
 }
