@@ -71,7 +71,7 @@ export type DialogActions = {
   updateDialog: (dialog: DialogState) => void;
 };
 
-export const CLOSE_DELAY_MS = 220;
+export const CLOSE_DELAY_MS = 300;
 const closeTimeouts: Partial<Record<DialogState["type"], ReturnType<typeof setTimeout>>> = {};
 
 export const createDialogStore: StateSlice<DialogsState & DialogActions> = (set, _get) => ({

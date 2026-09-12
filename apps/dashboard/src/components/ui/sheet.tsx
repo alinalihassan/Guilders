@@ -20,7 +20,7 @@ const SheetOverlay = React.forwardRef<
   <SheetPrimitive.Overlay
     forceMount
     className={cn(
-      "fixed inset-0 z-50 bg-background/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:duration-200 data-[state=open]:duration-300 data-[state=closed]:pointer-events-none",
+      "fixed inset-0 z-50 bg-background/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:duration-200 data-[state=open]:duration-300 data-[state=closed]:pointer-events-none data-[state=closed]:[animation-fill-mode:forwards]",
       className,
     )}
     {...props}
@@ -63,7 +63,11 @@ const SheetContent = React.forwardRef<
       ref={ref}
       forceMount
       aria-describedby={undefined}
-      className={cn(sheetVariants({ side }), "data-[state=closed]:pointer-events-none", className)}
+      className={cn(
+        sheetVariants({ side }),
+        "data-[state=closed]:pointer-events-none data-[state=closed]:[animation-fill-mode:forwards]",
+        className,
+      )}
       {...props}
     >
       {children}
