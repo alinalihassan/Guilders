@@ -1,6 +1,7 @@
 import { apiKey } from "@better-auth/api-key";
 import { drizzleAdapter } from "@better-auth/drizzle-adapter";
 import { expo } from "@better-auth/expo";
+import { dash } from "@better-auth/infra";
 import { oauthProvider } from "@better-auth/oauth-provider";
 import { passkey } from "@better-auth/passkey";
 import { stripe } from "@better-auth/stripe";
@@ -151,6 +152,12 @@ export function createAuth(db?: Database) {
       },
     },
     plugins: [
+      dash({
+        apiKey: process.env.BETTER_AUTH_API_KEY,
+        activityTracking: {
+          enabled: true,
+        },
+      }),
       apiKey(),
       twoFactor(),
       jwt(),

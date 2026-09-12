@@ -10,6 +10,7 @@ const EnvSchema = z.object({
 
   // Auth & secrets
   BETTER_AUTH_SECRET: z.string(),
+  BETTER_AUTH_API_KEY: z.string().optional(),
 
   // Cloudflare
   CLOUDFLARE_ACCOUNT_ID: z.string(),

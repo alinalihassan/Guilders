@@ -1,4 +1,5 @@
 import { apiKeyClient } from "@better-auth/api-key/client";
+import { dashClient } from "@better-auth/infra/client";
 import { passkeyClient } from "@better-auth/passkey/client";
 import { stripeClient } from "@better-auth/stripe/client";
 import type { BetterAuthClientOptions } from "better-auth/client";
@@ -8,6 +9,7 @@ import { inferAdditionalFields, twoFactorClient } from "better-auth/client/plugi
 import { clientEnv } from "./env";
 
 const plugins = [
+  dashClient(),
   twoFactorClient(),
   apiKeyClient(),
   passkeyClient(),

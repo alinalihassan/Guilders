@@ -19,6 +19,7 @@
   "dependencies": {
     "@ai-sdk/react": "catalog:",
     "@better-auth/api-key": "catalog:",
+    "@better-auth/infra": "catalog:",
     "@better-auth/passkey": "catalog:",
     "@better-auth/stripe": "catalog:",
     "@dnd-kit/core": "^6.3.1",

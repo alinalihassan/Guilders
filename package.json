@@ -10,7 +10,15 @@
     "lint": "oxlint --deny-warnings .",
     "lint:fix": "oxlint --deny-warnings --fix .",
     "format": "oxfmt --write .",
-    "format:check": "oxfmt --check ."
+    "format:check": "oxfmt --check .",
+    "db:up": "docker compose up -d",
+    "db:down": "docker compose down",
+    "db:generate": "bun run --filter @guilders/api db:generate",
+    "db:migrate": "bun run --filter @guilders/api db:migrate",
+    "db:studio": "bun run --filter @guilders/api db:studio",
+    "db:init": "bun run --filter @guilders/api db:init",
+    "db:reset": "bun run --filter @guilders/api db:reset",
+    "auth:generate": "bun run --filter @guilders/api auth:generate"
   },
   "devDependencies": {
     "oxfmt": "^0.35.0",
@@ -35,6 +43,7 @@
     "@better-auth/expo": "^1.5.3",
     "@better-auth/oauth-provider": "^1.5.3",
     "@better-auth/passkey": "^1.5.3",
+    "@better-auth/infra": "^0.3.6",
     "@better-auth/stripe": "^1.5.3",
     "ai": "^6.0.116",
     "@ai-sdk/react": "^3.0.107",
