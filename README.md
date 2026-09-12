@@ -64,8 +64,7 @@ cd Guilders
 bun install
 
 cp apps/api/.env.example apps/api/.env
-cp apps/api/.dev.vars.example apps/api/.dev.vars
-# Edit both files with your database URL and secrets (Wrangler reads .dev.vars)
+# Edit apps/api/.env (Wrangler loads this file; do not create .dev.vars)
 
 # Optional: start local Postgres (matches the default DATABASE_URL)
 docker compose up -d

@@ -42,6 +42,9 @@ coverage/
 .DS_Store
 *.pem
 
+# Local agent mailbox and scratch files
+.local/
+
 # Wrangler
 .wrangler/
 

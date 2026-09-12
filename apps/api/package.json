@@ -20,6 +20,11 @@
     "db:studio": "bun --env-file=.env drizzle-kit studio --config drizzle.config.ts",
     "db:init": "bun --env-file=.env scripts/init-db.ts",
     "db:reset": "docker compose -f ../../docker-compose.yml down -v && docker compose -f ../../docker-compose.yml up -d --wait && bun run db:migrate && bun run db:init",
+    "db:query": "bun scripts/db-query.ts",
+    "mail:latest": "bun scripts/mailbox.ts",
+    "mail:list": "bun scripts/mailbox.ts list",
+    "mail:open": "bun scripts/mailbox.ts open",
+    "agent:user": "bun --env-file=.env scripts/seed-agent-user.ts",
     "__ngrok-command": "ngrok http 3000 --authtoken=$NGROK_AUTHTOKEN --url=${NGROK_URL}"
   },
   "dependencies": {

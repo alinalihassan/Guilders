@@ -18,6 +18,11 @@
     "db:studio": "bun run --filter @guilders/api db:studio",
     "db:init": "bun run --filter @guilders/api db:init",
     "db:reset": "bun run --filter @guilders/api db:reset",
+    "db:query": "bun run --filter @guilders/api db:query",
+    "mail:latest": "bun run --filter @guilders/api mail:latest",
+    "mail:list": "bun run --filter @guilders/api mail:list",
+    "mail:open": "bun run --filter @guilders/api mail:open",
+    "agent:user": "bun run --filter @guilders/api agent:user",
     "auth:generate": "bun run --filter @guilders/api auth:generate"
   },
   "devDependencies": {

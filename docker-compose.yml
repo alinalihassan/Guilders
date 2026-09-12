@@ -6,7 +6,7 @@
 #   docker compose down -v         Stop and delete all data (full reset)
 #
 # The default connection string matches apps/api/.env.example:
-#   postgresql://postgres:postgres@localhost:5432/guilders
+#   postgresql://postgres:postgres@localhost:5433/guilders
 #
 # After starting, from the repo root:
 #   bun run db:migrate && bun run db:init
@@ -24,7 +24,7 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: guilders
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - guilders_postgres_data:/var/lib/postgresql/data
     healthcheck:

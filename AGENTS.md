@@ -237,6 +237,24 @@ Queue: `guilders-webhook-events` (Cloudflare Queues, max batch 10, 5 retries, DL
 8. **Formatting** — ALWAYS run `bun format` after making any code changes to ensure the codebase remains consistently formatted.
 9. **Schema changes** — only via Drizzle CLI (`bun run db:generate`). Never hand-write migration SQL. After Better Auth plugin changes, run `bun run auth:generate` first, then `db:generate`.
 
+### Local verification (agents)
+
+Local services: website `http://localhost:3001`, API `http://localhost:3000`, dashboard `http://localhost:3002`, docs `http://localhost:3003`. Start Postgres with `bun run db:up`, then `bun run db:migrate && bun run db:init`.
+
+**Database.** Prefer `bun run db:query -- "SELECT id, email FROM \"user\" LIMIT 10"` (runs `psql` in `guilders-postgres`). `bun run db:studio` opens Drizzle Studio. Do not guess connection strings — local is `postgresql://postgres:postgres@localhost:5433/guilders` (host 5433 so it does not collide with other local Postgres).
+
+**Email and magic links.** Wrangler does not deliver real mail. `sendEmail` writes `.local/mail/*.html` plus `.local/mail/latest.json` (`to`, `subject`, `links`). After a password reset or email change:
+
+```bash
+bun run mail:latest          # JSON: recipient, subject, links
+bun run mail:open            # prints the first http(s) link — open it in the browser
+bun run mail:list            # all captured messages
+```
+
+Production mail to a real inbox: use the Gmail MCP (`search_threads` / `get_message`) and click links from the HTML.
+
+**Known local user.** After the API is up: `bun run agent:user` creates `agent@guilders.test` / `agent-agent-agent` and prints the login URL. Sign-up does not require email verification.
+
 ### Common Patterns
 
 **Fetch dashboard data:**
@@ -282,7 +300,7 @@ POST /api/transaction
 - **Backend / scripts:** Use `process.env` for environment variables (API, db scripts, CLI scripts). This avoids having to determine whether code is used indirectly by scripts (e.g. db code used by `drizzle.config.ts` or migrations).
 - **Frontend:** For dashboard (and other frontend) code that needs env vars, **t3 env is preferred** (`@t3-oss/env-nextjs` or equivalent t3 env setup). You can use `process.env` as well, but t3 env gives validated, typed access and makes which variables are exposed to the client explicit.
 
-**API:** One local file: `apps/api/.env` (see `.env.example`). Wrangler 4 loads `.env` into the Worker during `wrangler dev`. Bun scripts use `--env-file=.env`. **Do not create `.dev.vars`** — if it exists, Wrangler ignores `.env`. Production secrets live in Cloudflare (`bun run deploy:secrets` uploads `.env.production`). Types in `apps/api/worker-configuration.d.ts`.
+**API:** One local file: `apps/api/.env` (see `.env.example`). Wrangler 4 loads `.env` into the Worker during `wrangler dev`. Bun scripts use `--env-file=.env`. **Do not create `.dev.vars`** — if it exists, Wrangler ignores `.env`. Production secrets live in Cloudflare. Prefer `wrangler secret put` for one-off keys. **`wrangler secret bulk` deploys the Worker from the current working tree** — never run it from `dev` or a dirty checkout against production. Types in `apps/api/worker-configuration.d.ts`.
 
 | Group             | Variables                                                                                                                                |
 | ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
