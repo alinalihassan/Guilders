@@ -9,11 +9,11 @@ import {
   streamText,
   type UIMessage,
 } from "ai";
-import { createAiGateway } from "ai-gateway-provider";
-import { unified } from "ai-gateway-provider/providers/unified";
 import { env } from "cloudflare:workers";
 import { and, eq } from "drizzle-orm";
 import { Elysia, status, t } from "elysia";
+import { createWorkersAI } from "workers-ai-provider";
+import { google } from "workers-ai-provider/google";
 
 import { conversation } from "../../db/schema/conversations";
 import { getChatLimitConfig } from "../../lib/chat-limits";
@@ -25,6 +25,13 @@ import { buildChatTools, getMcpToolsOverview } from "./mcp-tools";
 import { chatRequestSchema, FINANCIAL_ADVISOR_PROMPT } from "./types";
 
 const generateMessageId = createIdGenerator({ prefix: "msg", size: 16 });
+
+const workersai = () =>
+  createWorkersAI({
+    binding: env.AI,
+    gateway: { id: "guilders-ai-gateway" },
+    providers: [google],
+  });
 
 function buildSystemContent(today: string, readOnly: boolean): string {
   const mcpSection = getMcpToolsOverview(readOnly);
@@ -194,14 +201,10 @@ export const chatRoutes = new Elysia({
           ...(await convertToModelMessages(inputMessages)),
         ];
 
-        const aiGateway = createAiGateway({
-          accountId: process.env.CLOUDFLARE_ACCOUNT_ID,
-          gateway: process.env.CLOUDFLARE_AI_GATEWAY,
-          apiKey: process.env.CLOUDFLARE_AI_GATEWAY_TOKEN,
-        });
+        const ai = workersai();
 
         const result = streamText({
-          model: aiGateway(unified("google-ai-studio/gemini-2.5-flash")),
+          model: ai("google-ai-studio/gemini-2.5-flash"),
           messages: modelMessages,
           tools: {
             ...chatTools,
@@ -232,7 +235,7 @@ export const chatRoutes = new Elysia({
               .slice(0, 500);
 
             titlePromise = generateText({
-              model: aiGateway(unified("workers-ai/@cf/meta/llama-4-scout-17b-16e-instruct")),
+              model: ai("@cf/meta/llama-4-scout-17b-16e-instruct"),
               prompt: `Generate a short title (max 6 words, no quotes, no punctuation at the end) for a conversation that starts with:\n"${userText}"`,
               headers: { "cf-aig-zdr": "true" },
             })

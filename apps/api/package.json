@@ -14,15 +14,16 @@
     "typecheck": "tsc --noEmit",
     "cf-typegen": "wrangler types",
     "ngrok": "bun --env-file=.env __ngrok-command",
-    "auth:generate": "better-auth generate --config better-auth.config.ts --output src/db/schema/auth.ts -y",
-    "db:generate": "drizzle-kit generate --config drizzle.config.ts",
-    "db:migrate": "drizzle-kit migrate --config drizzle.config.ts",
-    "db:studio": "drizzle-kit studio --config drizzle.config.ts",
+    "auth:generate": "bun --env-file=.env better-auth generate --config better-auth.config.ts --output src/db/schema/auth.ts -y",
+    "db:generate": "bun --env-file=.env drizzle-kit generate --config drizzle.config.ts",
+    "db:migrate": "bun --env-file=.env drizzle-kit migrate --config drizzle.config.ts",
+    "db:studio": "bun --env-file=.env drizzle-kit studio --config drizzle.config.ts",
     "db:init": "bun --env-file=.env scripts/init-db.ts",
     "db:reset": "docker compose -f ../../docker-compose.yml down -v && docker compose -f ../../docker-compose.yml up -d --wait && bun run db:migrate && bun run db:init",
     "__ngrok-command": "ngrok http 3000 --authtoken=$NGROK_AUTHTOKEN --url=${NGROK_URL}"
   },
   "dependencies": {
+    "@ai-sdk/google": "^3.0.30",
     "@better-auth/api-key": "catalog:",
     "@better-auth/drizzle-adapter": "catalog:",
     "@better-auth/expo": "catalog:",
@@ -41,7 +42,6 @@
     "@sinclair/typebox": "^0.34.48",
     "agents": "^0.6.0",
     "ai": "catalog:",
-    "ai-gateway-provider": "^3.1.1",
     "better-auth": "catalog:",
     "drizzle-orm": "1.0.0-beta.15-859cf75",
     "drizzle-typebox": "^0.3.3",
@@ -54,6 +54,7 @@
     "react": "catalog:",
     "snaptrade-typescript-sdk": "^9.0.169",
     "stripe": "^20.4.0",
+    "workers-ai-provider": "3.3.1",
     "zod": "^4.3.6"
   },
   "devDependencies": {

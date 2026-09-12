@@ -17,6 +17,12 @@ export class WorkflowEntrypoint {
 }
 
 export const env = {
+  AI: {
+    run: async () => ({ response: "test" }),
+    gateway: () => ({
+      run: async () => new Response("{}", { status: 200 }),
+    }),
+  },
   USER_BUCKET: {
     put: async () => undefined,
     get: async () => null,
