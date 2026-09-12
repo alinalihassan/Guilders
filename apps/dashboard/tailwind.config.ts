@@ -1,6 +1,4 @@
 import type { Config } from "tailwindcss";
-// @ts-expect-error
-import flattenColorPalette from "tailwindcss/lib/util/flattenColorPalette";
 
 export default {
   darkMode: ["class"],
@@ -125,25 +123,4 @@ export default {
       },
     },
   },
-  plugins: [
-    require("tailwindcss-animate"),
-    require("@tailwindcss/typography"),
-    addVariablesForColors,
-  ],
 } satisfies Config;
-
-interface PluginParams {
-  addBase: (base: Record<string, Record<string, string>>) => void;
-  theme: (path: string) => Record<string, string>;
-}
-
-function addVariablesForColors({ addBase, theme }: PluginParams) {
-  const allColors = flattenColorPalette(theme("colors"));
-  const newVars = Object.fromEntries(
-    Object.entries(allColors).map(([key, val]) => [`--${key}`, val]),
-  );
-
-  addBase({
-    ":root": newVars as Record<string, string>,
-  });
-}

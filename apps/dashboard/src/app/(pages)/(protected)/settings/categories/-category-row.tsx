@@ -93,7 +93,7 @@ export function CategoryRow({ category, onUpdate, onRemove, isRemoving }: Catego
   return (
     <div style={{ marginLeft: depth * 20 }} className="flex items-center gap-2">
       {hasParent && (
-        <CornerDownRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden />
+        <CornerDownRight className="text-muted-foreground h-3.5 w-3.5 shrink-0" aria-hidden />
       )}
       <div
         ref={setRef}
@@ -107,7 +107,7 @@ export function CategoryRow({ category, onUpdate, onRemove, isRemoving }: Catego
       >
         <button
           type="button"
-          className="shrink-0 cursor-grab touch-none rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+          className="text-muted-foreground hover:bg-muted hover:text-foreground shrink-0 cursor-grab touch-none rounded p-1"
           aria-label="Drag to reorder"
           {...attributes}
           {...listeners}
@@ -129,7 +129,7 @@ export function CategoryRow({ category, onUpdate, onRemove, isRemoving }: Catego
             onChange={(e) => setNameDraft(e.target.value)}
             onBlur={saveName}
             onKeyDown={handleNameKeyDown}
-            className="ml-[-3px] h-7 min-w-[8rem] max-w-[14rem] shrink-0 pl-0.5 text-sm font-medium"
+            className="ml-[-3px] h-7 max-w-[14rem] min-w-[8rem] shrink-0 pl-0.5 text-sm font-medium"
             autoFocus
           />
         ) : (
@@ -139,7 +139,7 @@ export function CategoryRow({ category, onUpdate, onRemove, isRemoving }: Catego
               setNameDraft(category.name);
               setIsEditingName(true);
             }}
-            className="min-w-0 flex-1 truncate text-left text-sm font-medium text-foreground hover:underline"
+            className="text-foreground min-w-0 flex-1 truncate text-left text-sm font-medium hover:underline"
           >
             {category.name}
           </button>
@@ -150,7 +150,7 @@ export function CategoryRow({ category, onUpdate, onRemove, isRemoving }: Catego
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                className="text-muted-foreground hover:text-destructive h-8 w-8"
                 disabled={isRemoving}
                 aria-label={`Delete category ${category.name}`}
               >

@@ -112,7 +112,7 @@ export function BalanceCard({
           <NumberFlow
             value={value}
             format={{ style: "currency", currency }}
-            className="-mb-0.5 -mt-2.5 font-mono text-4xl font-normal tracking-tight"
+            className="-mt-2.5 -mb-0.5 font-mono text-4xl font-normal tracking-tight"
           />
           {displayChange && <ChangeIndicator change={displayChange} periodLabel={period} />}
         </div>

@@ -159,7 +159,7 @@ export function WebhooksSection() {
           ))}
         </div>
       ) : endpoints.length === 0 && !createdSecret ? (
-        <p className="text-sm text-muted-foreground">No webhook endpoints yet.</p>
+        <p className="text-muted-foreground text-sm">No webhook endpoints yet.</p>
       ) : (
         <ul className="space-y-4">
           {endpoints.map((ep) => (
@@ -168,7 +168,7 @@ export function WebhooksSection() {
               className="flex flex-wrap items-center justify-between gap-3 rounded-md border p-3"
             >
               <div className="min-w-0 flex-1">
-                <p className="break-all text-sm font-medium">{ep.url}</p>
+                <p className="text-sm font-medium break-all">{ep.url}</p>
                 <span
                   className={`mt-1 inline-block text-xs ${ep.enabled ? "text-green-600" : "text-muted-foreground"}`}
                 >

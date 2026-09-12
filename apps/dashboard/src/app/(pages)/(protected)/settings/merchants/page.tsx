@@ -13,7 +13,7 @@ function MerchantsPage() {
     <div className="space-y-6">
       <div>
         <h3 className="text-lg font-medium">Merchants</h3>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-muted-foreground text-sm">
           Manage your merchants for faster data entry and cleaner reports.
         </p>
       </div>

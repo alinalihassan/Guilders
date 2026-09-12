@@ -26,7 +26,7 @@ function ConnectionsPage() {
     <div className="space-y-6">
       <div>
         <h3 className="text-lg font-medium">Connections</h3>
-        <p className="text-sm text-muted-foreground">Manage your connections.</p>
+        <p className="text-muted-foreground text-sm">Manage your connections.</p>
       </div>
       <Separator />
       {isLoading || isProvidersLoading ? (
@@ -49,12 +49,12 @@ function ConnectionsPage() {
       ) : isError ? (
         <Card className="p-6">
           <div className="flex flex-col items-center justify-center gap-4 text-center">
-            <div className="rounded-full bg-destructive/10 p-3">
-              <XCircle className="h-6 w-6 text-destructive" />
+            <div className="bg-destructive/10 rounded-full p-3">
+              <XCircle className="text-destructive h-6 w-6" />
             </div>
             <div className="space-y-2">
               <h4 className="font-medium">Failed to load connections</h4>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 There was an error loading your connections. Please try again later.
               </p>
             </div>
@@ -86,7 +86,7 @@ function ConnectionsPage() {
                       </div>
                       <div className="space-y-2">
                         <div className="font-medium">{providerName}</div>
-                        <div className="text-sm text-muted-foreground">
+                        <div className="text-muted-foreground text-sm">
                           Connected {format(new Date(connection.created_at), "PPP")}
                         </div>
                       </div>

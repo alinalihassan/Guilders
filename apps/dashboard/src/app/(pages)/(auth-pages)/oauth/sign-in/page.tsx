@@ -76,7 +76,7 @@ function OAuthSignInForm() {
 
   return (
     <div className="w-full max-w-sm">
-      <Card className="border bg-card shadow-md">
+      <Card className="bg-card border shadow-md">
         <CardHeader className="space-y-3 pb-3">
           <div className="flex flex-col items-center">
             <img src="/assets/logo/logo_filled_rounded.svg" alt="" width={64} height={64} />
@@ -89,22 +89,22 @@ function OAuthSignInForm() {
 
         <CardContent className="space-y-4">
           {(clientId || scopeList.length > 0) && (
-            <div className="rounded-md border bg-muted/40 p-3">
+            <div className="bg-muted/40 rounded-md border p-3">
               <div className="mb-2 flex items-center gap-2 text-sm font-medium">
-                <ShieldCheck className="h-4 w-4 text-primary" />
+                <ShieldCheck className="text-primary h-4 w-4" />
                 Authorization details
               </div>
               {clientId && (
-                <div className="text-xs text-muted-foreground">
+                <div className="text-muted-foreground text-xs">
                   Client:{" "}
-                  <span className="font-medium text-foreground">
+                  <span className="text-foreground font-medium">
                     {clientName?.trim() || clientId}
                   </span>
                 </div>
               )}
               {clientUri && (
-                <div className="mt-1 text-xs text-muted-foreground">
-                  Origin: <span className="break-all text-foreground">{clientUri}</span>
+                <div className="text-muted-foreground mt-1 text-xs">
+                  Origin: <span className="text-foreground break-all">{clientUri}</span>
                 </div>
               )}
               {scopeList.length > 0 && (
@@ -151,8 +151,8 @@ function OAuthSignInForm() {
               </SubmitButton>
             </div>
 
-            <div className="rounded-md border bg-muted/40 p-3 text-xs text-muted-foreground">
-              <div className="mb-1 flex items-center gap-2 font-medium text-foreground">
+            <div className="bg-muted/40 text-muted-foreground rounded-md border p-3 text-xs">
+              <div className="text-foreground mb-1 flex items-center gap-2 font-medium">
                 <KeyRound className="h-3.5 w-3.5" />
                 Secure redirect
               </div>
@@ -195,7 +195,7 @@ function OAuthSignInPage() {
 function OAuthSignInSkeleton() {
   return (
     <div className="w-full max-w-sm">
-      <Card className="animate-pulse border bg-card shadow-md">
+      <Card className="bg-card animate-pulse border shadow-md">
         <CardHeader className="pb-3">
           <img
             src="/assets/logo/logo_filled_rounded.svg"
@@ -204,14 +204,14 @@ function OAuthSignInSkeleton() {
             height={64}
             className="mx-auto opacity-30"
           />
-          <div className="mx-auto h-6 w-36 rounded bg-muted" />
-          <div className="mx-auto h-4 w-56 rounded bg-muted" />
+          <div className="bg-muted mx-auto h-6 w-36 rounded" />
+          <div className="bg-muted mx-auto h-4 w-56 rounded" />
         </CardHeader>
         <CardContent className="space-y-3">
-          <div className="h-16 rounded bg-muted" />
-          <div className="h-10 rounded bg-muted" />
-          <div className="h-10 rounded bg-muted" />
-          <div className="h-10 rounded bg-muted" />
+          <div className="bg-muted h-16 rounded" />
+          <div className="bg-muted h-10 rounded" />
+          <div className="bg-muted h-10 rounded" />
+          <div className="bg-muted h-10 rounded" />
         </CardContent>
       </Card>
     </div>

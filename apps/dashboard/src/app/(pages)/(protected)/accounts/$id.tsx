@@ -128,9 +128,9 @@ function AccountPage() {
             />
             <div className="flex flex-1 items-center justify-between">
               <div>
-                <h1 className="text-xl font-semibold text-foreground">{account.name}</h1>
+                <h1 className="text-foreground text-xl font-semibold">{account.name}</h1>
                 {account.institutionConnection?.institution?.name && (
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-muted-foreground text-sm">
                     {account.institutionConnection.institution.name}
                   </p>
                 )}

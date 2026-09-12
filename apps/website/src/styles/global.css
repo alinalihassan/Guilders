@@ -1,6 +1,20 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@theme {
+  --color-bg: var(--c-bg);
+  --color-fg: var(--c-fg);
+  --color-gold: var(--c-gold);
+  --color-dim: var(--c-dim);
+  --color-line: var(--c-line);
+  --font-display: Archivo, sans-serif;
+  --font-mono: "Azeret Mono", monospace;
+  --text-massive: clamp(3.5rem, 11vw, 9rem);
+  --text-big: clamp(2rem, 5vw, 3.5rem);
+  --text-mid: clamp(1.25rem, 2.5vw, 1.75rem);
+  --border-width-3: 3px;
+  --animate-grain: grain-drift 0.8s steps(6) infinite;
+  --animate-marquee: marquee 25s linear infinite;
+}
 
 @layer base {
   :root {

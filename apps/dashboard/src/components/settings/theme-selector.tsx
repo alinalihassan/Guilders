@@ -24,7 +24,7 @@ export function ThemeSelector() {
 
   return (
     <fieldset className="space-y-4">
-      <legend className="text-sm font-medium leading-none text-foreground">Theme Preference</legend>
+      <legend className="text-foreground text-sm leading-none font-medium">Theme Preference</legend>
       <RadioGroup className="flex gap-3" value={value} onValueChange={(v) => setTheme(v)}>
         {items.map((item) => (
           <label key={item.id} htmlFor={item.id}>
@@ -38,9 +38,9 @@ export function ThemeSelector() {
               alt={item.label}
               width={88}
               height={70}
-              className="relative cursor-pointer overflow-hidden rounded-lg border border-input shadow-sm shadow-black/5 outline-offset-2 transition-colors peer-[:focus-visible]:outline peer-[:focus-visible]:outline-2 peer-[:focus-visible]:outline-ring/70 peer-data-[disabled]:cursor-not-allowed peer-data-[state=checked]:border-ring peer-data-[state=checked]:bg-accent peer-data-[disabled]:opacity-50"
+              className="border-input peer-[:focus-visible]:outline-ring/70 peer-data-[state=checked]:border-ring peer-data-[state=checked]:bg-accent relative cursor-pointer overflow-hidden rounded-lg border shadow-sm shadow-black/5 outline-offset-2 transition-colors peer-data-[disabled]:cursor-not-allowed peer-data-[disabled]:opacity-50 peer-[:focus-visible]:outline peer-[:focus-visible]:outline-2"
             />
-            <span className="group mt-2 flex items-center gap-1 peer-data-[state=unchecked]:text-muted-foreground/70">
+            <span className="group peer-data-[state=unchecked]:text-muted-foreground/70 mt-2 flex items-center gap-1">
               <Check
                 size={16}
                 strokeWidth={2}

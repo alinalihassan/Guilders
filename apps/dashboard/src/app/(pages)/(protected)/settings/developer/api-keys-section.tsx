@@ -92,7 +92,7 @@ export function ApiKeysSection() {
           ))}
         </div>
       ) : !hasApiKeys ? (
-        <p className="text-sm text-muted-foreground">No API keys created yet.</p>
+        <p className="text-muted-foreground text-sm">No API keys created yet.</p>
       ) : (
         <div className="space-y-4">
           {keys.map((key) => (
@@ -102,7 +102,7 @@ export function ApiKeysSection() {
             >
               <div className="min-w-0">
                 <p className="truncate text-sm font-medium">{key.name || "API key"}</p>
-                <p className="truncate text-xs text-muted-foreground">
+                <p className="text-muted-foreground truncate text-xs">
                   {key.prefix || "key"}-{key.start || key.id.slice(0, 8)}...
                 </p>
               </div>

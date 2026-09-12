@@ -200,8 +200,8 @@ export function CategoriesForm() {
 
   const renderSection = (config: SectionConfig) => (
     <div className="space-y-2">
-      <h3 className="text-md font-semibold text-foreground">{config.title}</h3>
-      <div className="flex flex-wrap items-center gap-3 rounded-lg border border-border/60 bg-muted/20 px-3 py-2.5">
+      <h3 className="text-md text-foreground font-semibold">{config.title}</h3>
+      <div className="border-border/60 bg-muted/20 flex flex-wrap items-center gap-3 rounded-lg border px-3 py-2.5">
         <CategoryColorIconSelector
           value={config.addColor}
           icon={config.addIcon}
@@ -235,7 +235,7 @@ export function CategoriesForm() {
       <div className="space-y-1 pt-1">
         {isLoading
           ? Array.from({ length: 2 }).map((_, i) => (
-              <div key={i} className="flex gap-3 rounded-lg border border-border/60 px-4 py-2.5">
+              <div key={i} className="border-border/60 flex gap-3 rounded-lg border px-4 py-2.5">
                 <Skeleton className="mx-1 mt-2 h-4 w-2 rounded-sm" />
                 <Skeleton className="ml-1 h-8 w-8 rounded-full" />
                 <Skeleton className="mt-1.5 h-5 w-32" />

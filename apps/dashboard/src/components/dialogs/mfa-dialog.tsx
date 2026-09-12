@@ -119,7 +119,7 @@ export function MFADialog() {
                 <Badge variant="secondary">Step 2</Badge>
                 <h3 className="font-medium">Verify authenticator code</h3>
               </div>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 Add this TOTP URI to your authenticator app, then enter a 6-digit code.
               </p>
               <div className="flex justify-center rounded-md border bg-white p-3">
@@ -148,7 +148,7 @@ export function MFADialog() {
                 <Badge variant="secondary">Step 3</Badge>
                 <h3 className="font-medium">Save your backup codes</h3>
               </div>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 Store these codes in a safe place. Each code can be used once if you lose access to
                 your authenticator app.
               </p>
@@ -173,7 +173,7 @@ export function MFADialog() {
                   </div>
                   <div className="grid grid-cols-2 gap-2">
                     {setup.backupCodes.map((backupCode) => (
-                      <code key={backupCode} className="rounded bg-muted px-2 py-1 text-xs">
+                      <code key={backupCode} className="bg-muted rounded px-2 py-1 text-xs">
                         {backupCode}
                       </code>
                     ))}

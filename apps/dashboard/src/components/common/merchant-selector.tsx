@@ -108,7 +108,7 @@ export function MerchantSelector({
         </Button>
       </PopoverTrigger>
       <PopoverContent
-        className="w-(--radix-popover-trigger-width) max-h-[min(400px,80vh)] p-0"
+        className="max-h-[min(400px,80vh)] w-(--radix-popover-trigger-width) p-0"
         align="start"
       >
         <Command shouldFilter>
@@ -118,7 +118,7 @@ export function MerchantSelector({
             placeholder="Search merchants..."
             disabled={disabled || isCreating}
           />
-          <CommandList className="max-h-[300px] overflow-y-auto overflow-x-hidden">
+          <CommandList className="max-h-[300px] overflow-x-hidden overflow-y-auto">
             <CommandEmpty className="p-2">
               {canCreate ? (
                 <Button
@@ -145,7 +145,7 @@ export function MerchantSelector({
                 // We're using button since selecting No Merchant doesn't update the input field
                 <button
                   type="button"
-                  className="relative flex w-full cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-left text-sm outline-none hover:bg-accent hover:text-accent-foreground"
+                  className="hover:bg-accent hover:text-accent-foreground relative flex w-full cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-left text-sm outline-none select-none"
                   onPointerDown={(e) => {
                     e.preventDefault();
                     e.stopPropagation();

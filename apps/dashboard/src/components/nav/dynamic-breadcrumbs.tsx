@@ -89,7 +89,7 @@ export function DynamicBreadcrumbs({ className }: { className?: string }) {
               ) : (
                 <Link
                   to={breadcrumb.href!}
-                  className="text-[16px] font-medium transition-colors hover:text-foreground"
+                  className="hover:text-foreground text-[16px] font-medium transition-colors"
                 >
                   {breadcrumb.name}
                 </Link>

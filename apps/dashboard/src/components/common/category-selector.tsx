@@ -118,7 +118,7 @@ export function CategorySelector({
         </Button>
       </PopoverTrigger>
       <PopoverContent
-        className="w-(--radix-popover-trigger-width) max-h-[min(400px,80vh)] p-0"
+        className="max-h-[min(400px,80vh)] w-(--radix-popover-trigger-width) p-0"
         align="start"
       >
         <Command shouldFilter>
@@ -128,7 +128,7 @@ export function CategorySelector({
             placeholder="Search categories..."
             disabled={disabled || isCreating}
           />
-          <CommandList className="max-h-[300px] overflow-y-auto overflow-x-hidden">
+          <CommandList className="max-h-[300px] overflow-x-hidden overflow-y-auto">
             <CommandEmpty className="p-2">
               {canCreate ? (
                 <Button

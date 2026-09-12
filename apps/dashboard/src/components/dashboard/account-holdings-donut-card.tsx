@@ -83,7 +83,7 @@ export function AccountHoldingsDonutCard({ holdings, className }: AccountHolding
           <CardTitle className="text-lg font-normal">Spread</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-1 items-center justify-center py-12">
-          <p className="text-sm text-muted-foreground">No holdings</p>
+          <p className="text-muted-foreground text-sm">No holdings</p>
         </CardContent>
       </Card>
     );
@@ -102,7 +102,7 @@ export function AccountHoldingsDonutCard({ holdings, className }: AccountHolding
                 <ChartTooltipContent
                   hideLabel
                   hideIndicator
-                  className="min-w-[220px] rounded-xl border-border/60 bg-background/95 p-3 shadow-2xl backdrop-blur"
+                  className="border-border/60 bg-background/95 min-w-[220px] rounded-xl p-3 shadow-2xl backdrop-blur"
                   formatter={(value, name) => {
                     const numericValue = Number(value);
                     const share = totalValue > 0 ? (numericValue / totalValue) * 100 : 0;
@@ -116,18 +116,18 @@ export function AccountHoldingsDonutCard({ holdings, className }: AccountHolding
                     return (
                       <div className="flex w-full items-start justify-between gap-3">
                         <div className="min-w-0">
-                          <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                          <p className="text-muted-foreground text-[11px] tracking-wide uppercase">
                             Asset
                           </p>
-                          <p className="truncate text-sm font-medium text-foreground">
+                          <p className="text-foreground truncate text-sm font-medium">
                             {String(name)}
                           </p>
                         </div>
                         <div className="text-right">
-                          <p className="font-mono text-sm font-semibold tabular-nums text-foreground">
+                          <p className="text-foreground font-mono text-sm font-semibold tabular-nums">
                             {formattedValue}
                           </p>
-                          <p className="text-xs text-muted-foreground">{share.toFixed(1)}%</p>
+                          <p className="text-muted-foreground text-xs">{share.toFixed(1)}%</p>
                         </div>
                       </div>
                     );

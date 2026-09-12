@@ -8,11 +8,13 @@ function getOpenApiDocumentUrl(): string {
 }
 
 export const openapi = createOpenAPI({
-  input: async () => {
-    const url = getOpenApiDocumentUrl();
-    const res = await fetch(url);
-    const spec = await res.json();
-    spec.servers = [{ url: process.env.NEXT_PUBLIC_API_URL }, { url: "http://localhost:3000" }];
-    return { default: spec };
+  input: {
+    default: async () => {
+      const url = getOpenApiDocumentUrl();
+      const res = await fetch(url);
+      const spec = await res.json();
+      spec.servers = [{ url: process.env.NEXT_PUBLIC_API_URL }, { url: "http://localhost:3000" }];
+      return spec;
+    },
   },
 });

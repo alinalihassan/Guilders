@@ -26,7 +26,7 @@ function AccountsPage() {
   return (
     <div className="py-4">
       <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-foreground">Accounts</h1>
+        <h1 className="text-foreground text-2xl font-semibold">Accounts</h1>
         <Button onClick={() => openAddAccount()} size="sm">
           <Plus className="h-4 w-4" />
           Add Account
@@ -68,12 +68,12 @@ function AccountsPage() {
       ) : error ? (
         <Card className="p-6">
           <div className="flex flex-col items-center justify-center gap-4 text-center">
-            <div className="rounded-full bg-destructive/10 p-3">
-              <XCircle className="h-6 w-6 text-destructive" />
+            <div className="bg-destructive/10 rounded-full p-3">
+              <XCircle className="text-destructive h-6 w-6" />
             </div>
             <div className="space-y-2">
               <h4 className="font-medium">Failed to load accounts</h4>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 There was an error loading your accounts. Please try again later.
               </p>
             </div>

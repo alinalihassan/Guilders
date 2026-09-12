@@ -51,7 +51,7 @@ export function CategoryColorSelector({
           <span className="size-2.5 rounded-full" style={{ backgroundColor: normalizedValue }} />
         </button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto border-border p-2" align="start" onKeyDown={handleKeyDown}>
+      <PopoverContent className="border-border w-auto p-2" align="start" onKeyDown={handleKeyDown}>
         <div className="flex flex-wrap items-center gap-1.5">
           {PRESET_COLORS.map((color) => {
             const isSelected = normalizedValue.toLowerCase() === color.toLowerCase();

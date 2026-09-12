@@ -85,7 +85,7 @@ export function AccountSelector({
         </Button>
       </PopoverTrigger>
       <PopoverContent
-        className="w-(--radix-popover-trigger-width) max-h-[min(400px,80vh)] p-0"
+        className="max-h-[min(400px,80vh)] w-(--radix-popover-trigger-width) p-0"
         align="start"
       >
         <Command shouldFilter={false}>
@@ -95,7 +95,7 @@ export function AccountSelector({
             placeholder="Search accounts..."
             disabled={disabled}
           />
-          <CommandList className="max-h-[300px] overflow-y-auto overflow-x-hidden">
+          <CommandList className="max-h-[300px] overflow-x-hidden overflow-y-auto">
             <CommandEmpty className="p-2">No accounts found.</CommandEmpty>
             <CommandGroup>
               {isLoading ? (

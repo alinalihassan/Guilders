@@ -204,7 +204,7 @@ export function AccountForm() {
             description="Account settings: email, default currency and time format."
           >
             {profileError ? (
-              <p className="text-sm text-destructive">
+              <p className="text-destructive text-sm">
                 {userError
                   ? "Error loading user data. Please try again later."
                   : "Error loading currencies. Please try again later."}
@@ -354,7 +354,7 @@ export function AccountForm() {
               <AlertDialogDescription>
                 This action cannot be undone. This will:
               </AlertDialogDescription>
-              <ul className="mt-2 list-inside list-disc text-sm text-muted-foreground">
+              <ul className="text-muted-foreground mt-2 list-inside list-disc text-sm">
                 <li>Permanently delete your account</li>
                 <li>Remove all your connections to financial institutions</li>
                 <li>Delete all your stored data</li>

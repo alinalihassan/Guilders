@@ -242,7 +242,7 @@ export function AdvisorChat({ chatId, initialMessages }: AdvisorChatProps) {
               return (
                 <div
                   key={key}
-                  className="flex items-center gap-2 rounded-xl border border-dashed px-3 py-2 text-sm text-muted-foreground"
+                  className="text-muted-foreground flex items-center gap-2 rounded-xl border border-dashed px-3 py-2 text-sm"
                 >
                   <Loader2 className="size-4 shrink-0 animate-spin" aria-hidden />
                   <span>Preparing stock card...</span>
@@ -263,7 +263,7 @@ export function AdvisorChat({ chatId, initialMessages }: AdvisorChatProps) {
         <Card className="space-y-3 border-2 p-4">
           {limits?.tier === "pro" ? (
             <>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 You&apos;ve used all your Pro AI Advisor messages for this week.
               </p>
               <Button
@@ -276,7 +276,7 @@ export function AdvisorChat({ chatId, initialMessages }: AdvisorChatProps) {
             </>
           ) : (
             <>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 You&apos;ve used all your AI Advisor messages for this week. Upgrade to Pro for
                 more.
               </p>
@@ -290,13 +290,13 @@ export function AdvisorChat({ chatId, initialMessages }: AdvisorChatProps) {
           )}
         </Card>
       ) : (
-        <div className="flex flex-col gap-2 rounded-xl border border-border/70 bg-muted/40 p-2 transition-colors focus-within:border-border focus-within:bg-muted/60">
+        <div className="border-border/70 bg-muted/40 focus-within:border-border focus-within:bg-muted/60 flex flex-col gap-2 rounded-xl border p-2 transition-colors">
           <textarea
             value={inputText}
             onKeyDown={onKeyDown}
             onChange={(e) => setInputText(e.target.value)}
             placeholder="Ask anything..."
-            className="max-h-64 min-h-16 w-full resize-none bg-transparent px-3 py-2 text-sm outline-none placeholder:text-muted-foreground"
+            className="placeholder:text-muted-foreground max-h-64 min-h-16 w-full resize-none bg-transparent px-3 py-2 text-sm outline-none"
           />
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-1">
@@ -363,7 +363,7 @@ export function AdvisorChat({ chatId, initialMessages }: AdvisorChatProps) {
   if (isLoading || billingConfigPending) {
     return (
       <div className="flex flex-1 items-center justify-center">
-        <Loader2 className="size-8 animate-spin text-muted-foreground" aria-label="Loading" />
+        <Loader2 className="text-muted-foreground size-8 animate-spin" aria-label="Loading" />
       </div>
     );
   }
@@ -383,7 +383,7 @@ export function AdvisorChat({ chatId, initialMessages }: AdvisorChatProps) {
                     className={isUser ? "flex justify-end" : "flex items-start gap-3"}
                   >
                     {!isUser ? (
-                      <div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border bg-background text-xs">
+                      <div className="bg-background mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border text-xs">
                         ✦
                       </div>
                     ) : null}
@@ -393,7 +393,7 @@ export function AdvisorChat({ chatId, initialMessages }: AdvisorChatProps) {
                           <AssistantMessageText message={message} />
                         </div>
                       ) : isUser ? (
-                        <div className="rounded-2xl bg-primary px-4 py-2.5 text-sm text-primary-foreground">
+                        <div className="bg-primary text-primary-foreground rounded-2xl px-4 py-2.5 text-sm">
                           <div className="whitespace-pre-wrap">{getMessageText(message)}</div>
                         </div>
                       ) : null}
@@ -405,7 +405,7 @@ export function AdvisorChat({ chatId, initialMessages }: AdvisorChatProps) {
                           <CopyButton
                             value={getMessageText(message)}
                             size="sm"
-                            className="h-7 w-7 text-muted-foreground"
+                            className="text-muted-foreground h-7 w-7"
                           />
                           {CHAT_AI_ICONS.map((icon) => {
                             const Icon = icon.icon;
@@ -414,7 +414,7 @@ export function AdvisorChat({ chatId, initialMessages }: AdvisorChatProps) {
                                 key={icon.label}
                                 size="icon"
                                 variant="ghost"
-                                className="h-7 w-7 text-muted-foreground"
+                                className="text-muted-foreground h-7 w-7"
                                 onClick={() => handleActionClick(icon.label, index)}
                                 type="button"
                               >
@@ -431,10 +431,10 @@ export function AdvisorChat({ chatId, initialMessages }: AdvisorChatProps) {
               })}
               {isGenerating ? (
                 <div className="flex items-start gap-3">
-                  <div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border bg-background text-xs">
+                  <div className="bg-background mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border text-xs">
                     ✦
                   </div>
-                  <div className="flex w-full items-center gap-2 py-0.5 text-sm text-muted-foreground">
+                  <div className="text-muted-foreground flex w-full items-center gap-2 py-0.5 text-sm">
                     <Loader2 className="size-4 shrink-0 animate-spin" aria-hidden />
                     <span>Thinking...</span>
                   </div>
@@ -445,17 +445,17 @@ export function AdvisorChat({ chatId, initialMessages }: AdvisorChatProps) {
         ) : (
           <div className="flex min-h-0 flex-1 flex-col items-center justify-center px-6 py-8">
             <div className="flex flex-col items-center">
-              <h2 className="max-w-[16rem] text-center text-xl font-semibold leading-tight tracking-tight">
+              <h2 className="max-w-[16rem] text-center text-xl leading-tight font-semibold tracking-tight">
                 Your advisor is here to help. Just ask.
               </h2>
-              <ul className="mt-8 flex w-full max-w-sm flex-col gap-5 text-sm text-muted-foreground">
+              <ul className="text-muted-foreground mt-8 flex w-full max-w-sm flex-col gap-5 text-sm">
                 {EMPTY_STATE_POINTS.map(({ icon: Icon, text }) => (
                   <li key={text} className="flex items-start gap-3">
                     <span
-                      className="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted"
+                      className="bg-muted flex size-9 shrink-0 items-center justify-center rounded-full"
                       aria-hidden
                     >
-                      <Icon className="size-5 text-foreground/70" />
+                      <Icon className="text-foreground/70 size-5" />
                     </span>
                     <span className="leading-snug">{text}</span>
                   </li>
@@ -465,14 +465,14 @@ export function AdvisorChat({ chatId, initialMessages }: AdvisorChatProps) {
           </div>
         )}
       </div>
-      <div className="shrink-0 space-y-1 bg-card px-3 py-3">
+      <div className="bg-card shrink-0 space-y-1 px-3 py-3">
         {limits != null && (
-          <p className="text-center text-xs text-muted-foreground">
+          <p className="text-muted-foreground text-center text-xs">
             {limits.remaining} of {limits.limit} messages left this week
           </p>
         )}
         {renderComposer()}
-        <p className="text-center text-xs text-muted-foreground">
+        <p className="text-muted-foreground text-center text-xs">
           AI responses are informational only and are not financial advice.
         </p>
       </div>

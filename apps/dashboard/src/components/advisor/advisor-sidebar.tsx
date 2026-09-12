@@ -169,15 +169,15 @@ export function AdvisorSidebar() {
           </PopoverTrigger>
           <PopoverContent className="w-[360px] p-0" align="start" sideOffset={6}>
             <div className="border-b px-3 py-2">
-              <p className="text-xs font-medium text-muted-foreground">Conversations</p>
+              <p className="text-muted-foreground text-xs font-medium">Conversations</p>
             </div>
             <ScrollArea className="max-h-72">
               {loadingList ? (
                 <div className="flex items-center justify-center py-6">
-                  <Loader2 className="size-4 animate-spin text-muted-foreground" />
+                  <Loader2 className="text-muted-foreground size-4 animate-spin" />
                 </div>
               ) : !conversations || conversations.length === 0 ? (
-                <p className="py-6 text-center text-sm text-muted-foreground">
+                <p className="text-muted-foreground py-6 text-center text-sm">
                   No conversations yet
                 </p>
               ) : (
@@ -193,7 +193,7 @@ export function AdvisorSidebar() {
                       )}
                     >
                       <span className="min-w-0 flex-1 truncate">{conv.title}</span>
-                      <span className="shrink-0 text-xs text-muted-foreground">
+                      <span className="text-muted-foreground shrink-0 text-xs">
                         {formatDistanceToNow(new Date(conv.updated_at), { addSuffix: true })}
                       </span>
                     </button>
@@ -233,7 +233,7 @@ export function AdvisorSidebar() {
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
         {!currentChatId ? (
           <div className="flex flex-1 items-center justify-center">
-            <Loader2 className="size-6 animate-spin text-muted-foreground" />
+            <Loader2 className="text-muted-foreground size-6 animate-spin" />
           </div>
         ) : (
           <AdvisorChat key={chatKey} chatId={currentChatId} initialMessages={initialMessages} />

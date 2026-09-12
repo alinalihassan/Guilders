@@ -99,7 +99,7 @@ export function DocumentPreviewDialog({
           </div>
         </div>
 
-        <div className="relative min-h-[60vh] flex-1 overflow-auto bg-muted/30 p-4">
+        <div className="bg-muted/30 relative min-h-[60vh] flex-1 overflow-auto p-4">
           {isImage && (
             <img
               src={fileUrl}
@@ -118,7 +118,7 @@ export function DocumentPreviewDialog({
             />
           )}
           {!isImage && !isPdf && (
-            <div className="flex h-48 items-center justify-center text-sm text-muted-foreground">
+            <div className="text-muted-foreground flex h-48 items-center justify-center text-sm">
               Preview not available for this file type.
             </div>
           )}
@@ -173,12 +173,12 @@ function PdfPreview({
         onLoadError={onDocumentLoadError}
       >
         {errorMessage ? (
-          <div className="flex min-h-[40vh] items-center justify-center text-sm text-destructive">
+          <div className="text-destructive flex min-h-[40vh] items-center justify-center text-sm">
             {errorMessage}
           </div>
         ) : loading ? (
           <div className="flex min-h-[40vh] items-center justify-center">
-            <Loader2 className="size-8 animate-spin text-muted-foreground" />
+            <Loader2 className="text-muted-foreground size-8 animate-spin" />
           </div>
         ) : null}
         {!errorMessage && (
@@ -193,7 +193,7 @@ function PdfPreview({
         )}
       </Document>
       {numPages !== null && numPages > 1 && (
-        <div className="flex items-center gap-2 rounded-md border bg-background px-3 py-1.5">
+        <div className="bg-background flex items-center gap-2 rounded-md border px-3 py-1.5">
           <Button
             type="button"
             variant="ghost"
@@ -204,7 +204,7 @@ function PdfPreview({
           >
             Previous
           </Button>
-          <span className="text-sm text-muted-foreground">
+          <span className="text-muted-foreground text-sm">
             {pageNumber} / {numPages}
           </span>
           <Button

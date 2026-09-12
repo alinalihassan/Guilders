@@ -106,7 +106,7 @@ export function StockCard({
     <Link
       to="/accounts/$id"
       params={{ id: String(accountId) }}
-      className="block w-full rounded-2xl border border-border/70 bg-card text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className="border-border/70 bg-card focus-visible:ring-ring block w-full rounded-2xl border text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md focus-visible:ring-2 focus-visible:outline-none"
     >
       <div className="space-y-4 p-4">
         <div className="flex items-center justify-between gap-3">
@@ -117,26 +117,26 @@ export function StockCard({
                 alt={accountName}
                 width={36}
                 height={36}
-                className="rounded-full border bg-background/70"
+                className="bg-background/70 rounded-full border"
               />
             ) : (
-              <div className="rounded-full border bg-background/70 p-2 text-muted-foreground">
+              <div className="bg-background/70 text-muted-foreground rounded-full border p-2">
                 <AccountFallbackIcon subtype={subtype} size={20} />
               </div>
             )}
             <div>
-              <p className="text-xs uppercase tracking-wide text-muted-foreground">{accountName}</p>
-              <h3 className="text-lg font-semibold leading-tight">{symbol}</h3>
+              <p className="text-muted-foreground text-xs tracking-wide uppercase">{accountName}</p>
+              <h3 className="text-lg leading-tight font-semibold">{symbol}</h3>
             </div>
           </div>
-          <span className="rounded-full bg-muted px-2 py-1 text-xs font-medium text-muted-foreground">
+          <span className="bg-muted text-muted-foreground rounded-full px-2 py-1 text-xs font-medium">
             {currency}
           </span>
         </div>
 
-        <div className="rounded-xl bg-muted/40 p-3">
-          <p className="text-xs text-muted-foreground">Current value</p>
-          <p className="mt-1 text-2xl font-semibold leading-none">{formattedCurrentValue}</p>
+        <div className="bg-muted/40 rounded-xl p-3">
+          <p className="text-muted-foreground text-xs">Current value</p>
+          <p className="mt-1 text-2xl leading-none font-semibold">{formattedCurrentValue}</p>
           {formattedPercentChange ? (
             <p
               className={cn(

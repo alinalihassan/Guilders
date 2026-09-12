@@ -2,7 +2,7 @@ import type { CreateDocumentResponse } from "@guilders/api/types";
 import { FileText, Loader2, Upload, X } from "lucide-react";
 import * as React from "react";
 import { Suspense, useState } from "react";
-import Dropzone, { type DropEvent, type DropzoneProps, type FileRejection } from "react-dropzone";
+import Dropzone, { type DropzoneProps, type FileRejection } from "react-dropzone";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -15,7 +15,7 @@ const PdfThumbnailLazy = React.lazy(() =>
 
 const PdfThumbnailFallback = () => (
   <div className="flex size-full items-center justify-center">
-    <Loader2 className="size-5 animate-spin text-muted-foreground" />
+    <Loader2 className="text-muted-foreground size-5 animate-spin" />
   </div>
 );
 
@@ -108,7 +108,7 @@ export function FileUploader({
   );
 
   const onDrop = React.useCallback(
-    (acceptedFiles: File[], rejectedFiles: FileRejection[], _: DropEvent) => {
+    (acceptedFiles: File[], rejectedFiles: FileRejection[]) => {
       if (rejectedFiles.length > 0) {
         const firstError = rejectedFiles[0]?.errors[0];
         if (firstError?.code === "file-too-large") {
@@ -199,7 +199,7 @@ export function FileUploader({
           })}
           {isLoadingDocuments && documents.length === 0 && (
             <div className="col-span-3 flex items-center justify-center py-4">
-              <Loader2 className="size-5 animate-spin text-muted-foreground" />
+              <Loader2 className="text-muted-foreground size-5 animate-spin" />
             </div>
           )}
         </div>
@@ -236,8 +236,8 @@ export function FileUploader({
       {previewDocument && getFileUrl && (
         <Suspense
           fallback={
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80">
-              <Loader2 className="size-8 animate-spin text-muted-foreground" />
+            <div className="bg-background/80 fixed inset-0 z-50 flex items-center justify-center">
+              <Loader2 className="text-muted-foreground size-8 animate-spin" />
             </div>
           }
         >
@@ -266,10 +266,10 @@ function DropzoneContent({
   if (isDragActive) {
     return (
       <div className="flex flex-col items-center justify-center gap-2">
-        <div className="rounded-full border border-dashed border-primary/50 p-2">
-          <Upload className="size-5 text-primary" aria-hidden="true" />
+        <div className="border-primary/50 rounded-full border border-dashed p-2">
+          <Upload className="text-primary size-5" aria-hidden="true" />
         </div>
-        <p className="text-sm font-medium text-primary">Drop files here</p>
+        <p className="text-primary text-sm font-medium">Drop files here</p>
       </div>
     );
   }
@@ -277,8 +277,8 @@ function DropzoneContent({
   if (compact) {
     return (
       <div className="flex items-center gap-2">
-        <Upload className="size-4 text-muted-foreground" aria-hidden="true" />
-        <p className="text-sm text-muted-foreground">Add more files</p>
+        <Upload className="text-muted-foreground size-4" aria-hidden="true" />
+        <p className="text-muted-foreground text-sm">Add more files</p>
       </div>
     );
   }
@@ -286,13 +286,13 @@ function DropzoneContent({
   return (
     <div className="flex flex-col items-center justify-center gap-2">
       <div className="rounded-full border border-dashed p-3">
-        <Upload className="size-6 text-muted-foreground" aria-hidden="true" />
+        <Upload className="text-muted-foreground size-6" aria-hidden="true" />
       </div>
       <div className="flex flex-col gap-px">
-        <p className="text-sm font-medium text-muted-foreground">
+        <p className="text-muted-foreground text-sm font-medium">
           Drag and drop files, or click to browse
         </p>
-        <p className="text-xs text-muted-foreground/70">
+        <p className="text-muted-foreground/70 text-xs">
           PDF, JPEG, PNG, WebP, HEIC up to {formatBytes(maxSize)}
         </p>
       </div>
@@ -346,7 +346,7 @@ function ExistingDocumentTile({
     <div
       role="button"
       tabIndex={0}
-      className="group relative flex cursor-pointer flex-col overflow-hidden rounded-lg border bg-muted/30 transition hover:border-foreground/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+      className="group bg-muted/30 hover:border-foreground/20 focus-visible:ring-ring relative flex cursor-pointer flex-col overflow-hidden rounded-lg border transition focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
       onClick={handleView}
       onKeyDown={handleKeyDown}
       aria-label={`View ${document.name}`}
@@ -355,13 +355,13 @@ function ExistingDocumentTile({
         {isImage && fileUrl ? (
           <img src={fileUrl} alt={document.name} className="size-full object-cover" />
         ) : isPdf && fileUrl ? (
-          <div className="flex size-full items-center justify-center overflow-hidden bg-muted">
+          <div className="bg-muted flex size-full items-center justify-center overflow-hidden">
             <Suspense fallback={<PdfThumbnailFallback />}>
               <PdfThumbnailLazy file={fileUrl} width={200} className="relative" />
             </Suspense>
           </div>
         ) : (
-          <div className="flex size-full items-center justify-center bg-muted">
+          <div className="bg-muted flex size-full items-center justify-center">
             <FileText className="size-10 text-red-500/70" />
           </div>
         )}
@@ -370,7 +370,7 @@ function ExistingDocumentTile({
           type="button"
           variant="secondary"
           size="icon"
-          className="absolute right-1 top-1 size-6 opacity-0 shadow-sm transition group-hover:opacity-100"
+          className="absolute top-1 right-1 size-6 opacity-0 shadow-sm transition group-hover:opacity-100"
           onClick={handleRemove}
           disabled={isRemoving}
           aria-label={isRemoving ? `Removing ${document.name}` : `Remove file ${document.name}`}
@@ -385,7 +385,7 @@ function ExistingDocumentTile({
 
       <div className="px-2 py-1.5">
         <p className="truncate text-xs font-medium">{document.name}</p>
-        <p className="text-[10px] text-muted-foreground">{formatBytes(document.size)}</p>
+        <p className="text-muted-foreground text-[10px]">{formatBytes(document.size)}</p>
       </div>
     </div>
   );
@@ -416,7 +416,7 @@ function UploadingFileTile({ file, isUploading, onRemove }: UploadingFileTilePro
   };
 
   return (
-    <div className="group relative flex flex-col overflow-hidden rounded-lg border bg-muted/30">
+    <div className="group bg-muted/30 relative flex flex-col overflow-hidden rounded-lg border">
       <div className="relative aspect-square w-full overflow-hidden">
         {isImage && previewUrl ? (
           <img
@@ -448,7 +448,7 @@ function UploadingFileTile({ file, isUploading, onRemove }: UploadingFileTilePro
 
         {isUploading && (
           <div className="absolute inset-0 flex items-center justify-center">
-            <Loader2 className="size-6 animate-spin text-foreground" />
+            <Loader2 className="text-foreground size-6 animate-spin" />
           </div>
         )}
 
@@ -457,7 +457,7 @@ function UploadingFileTile({ file, isUploading, onRemove }: UploadingFileTilePro
             type="button"
             variant="secondary"
             size="icon"
-            className="absolute right-1 top-1 size-6 opacity-0 shadow-sm transition group-hover:opacity-100"
+            className="absolute top-1 right-1 size-6 opacity-0 shadow-sm transition group-hover:opacity-100"
             onClick={handleRemove}
             aria-label={`Remove file ${file.name}`}
           >
@@ -468,7 +468,7 @@ function UploadingFileTile({ file, isUploading, onRemove }: UploadingFileTilePro
 
       <div className="px-2 py-1.5">
         <p className="truncate text-xs font-medium">{file.name}</p>
-        <p className="text-[10px] text-muted-foreground">{formatBytes(file.size)}</p>
+        <p className="text-muted-foreground text-[10px]">{formatBytes(file.size)}</p>
       </div>
     </div>
   );

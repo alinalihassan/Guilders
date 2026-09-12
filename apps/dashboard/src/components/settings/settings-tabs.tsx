@@ -62,7 +62,7 @@ export function SettingsTabs({ className, items, ...props }: SettingsTabsProps) 
             {pathname === item.href && (
               <motion.div
                 layoutId="activeTab"
-                className="absolute inset-x-0 bottom-0 -mb-1 h-0.5 bg-primary"
+                className="bg-primary absolute inset-x-0 bottom-0 -mb-1 h-0.5"
                 transition={{
                   type: "spring",
                   stiffness: 400,

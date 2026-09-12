@@ -32,8 +32,8 @@ export function PdfThumbnail({ file, width = 200, className }: PdfThumbnailProps
   return (
     <div className={className}>
       {!loaded && (
-        <div className="absolute inset-0 z-10 flex items-center justify-center bg-muted">
-          <Loader2 className="size-5 animate-spin text-muted-foreground" />
+        <div className="bg-muted absolute inset-0 z-10 flex items-center justify-center">
+          <Loader2 className="text-muted-foreground size-5 animate-spin" />
         </div>
       )}
       <Document file={fileSource} loading={null} error={null} onLoadError={() => setError(true)}>

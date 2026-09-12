@@ -54,9 +54,9 @@ export function NetWorthCategories() {
         (categories.positive.length === 0 && categories.negative.length === 0 ? (
           <div className="flex shrink-0 items-center justify-center rounded-md py-8">
             <div className="mx-auto flex flex-col items-center justify-center text-center">
-              <WalletCards className="h-10 w-10 text-muted-foreground" />
+              <WalletCards className="text-muted-foreground h-10 w-10" />
               <h3 className="mt-4 text-lg font-semibold">No categories to show</h3>
-              <p className="mb-4 mt-2 text-sm text-muted-foreground">
+              <p className="text-muted-foreground mt-2 mb-4 text-sm">
                 Add some accounts to see your net worth breakdown.
               </p>
             </div>
@@ -65,7 +65,7 @@ export function NetWorthCategories() {
           <>
             {categories.positive.length > 0 && (
               <>
-                <h3 className="text-md mb-2 font-medium text-foreground/80">Assets</h3>
+                <h3 className="text-md text-foreground/80 mb-2 font-medium">Assets</h3>
                 <div className="mb-2 flex">
                   {categories.positive.map((category, index) => {
                     const percentage = ((category.value / positiveSum) * 100).toFixed(0);
@@ -95,7 +95,7 @@ export function NetWorthCategories() {
                         <span className="text-sm font-light">
                           {getCategoryDisplayName(category.name)}
                         </span>
-                        <span className="ml-auto text-sm font-light text-foreground/60">
+                        <span className="text-foreground/60 ml-auto text-sm font-light">
                           {percentage}%
                         </span>
                       </div>
@@ -107,7 +107,7 @@ export function NetWorthCategories() {
 
             {categories.negative.length > 0 && (
               <>
-                <h3 className="text-md mb-2 font-medium text-foreground/80">Liabilities</h3>
+                <h3 className="text-md text-foreground/80 mb-2 font-medium">Liabilities</h3>
                 <div className="mb-2 flex">
                   {categories.negative.map((category, index) => {
                     const percentage = ((Math.abs(category.value) / negativeSum) * 100).toFixed(0);
@@ -138,7 +138,7 @@ export function NetWorthCategories() {
                         <span className="text-sm font-light">
                           {getCategoryDisplayName(category.name)}
                         </span>
-                        <span className="ml-auto text-sm font-light text-foreground/60">
+                        <span className="text-foreground/60 ml-auto text-sm font-light">
                           {percentage}%
                         </span>
                       </div>

@@ -234,7 +234,7 @@ export function EditAccountDialog() {
               />
               <div>
                 <h2 className="text-lg font-semibold">{account.name}</h2>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   {account.institution_connection_id ? "Connected Account" : "Manual Account"}
                 </p>
               </div>
@@ -242,7 +242,7 @@ export function EditAccountDialog() {
           )}
 
           {isSyncedAccount && (
-            <div className="mt-4 rounded-md bg-muted p-4 text-sm text-muted-foreground">
+            <div className="bg-muted text-muted-foreground mt-4 rounded-md p-4 text-sm">
               This account is managed by an external connection. Some fields cannot be edited.
             </div>
           )}
@@ -257,7 +257,7 @@ export function EditAccountDialog() {
                 <Button
                   type="button"
                   variant="outline"
-                  className="ml-auto border-yellow-500 text-yellow-500 hover:bg-yellow-500/10 hover:text-foreground"
+                  className="hover:text-foreground ml-auto border-yellow-500 text-yellow-500 hover:bg-yellow-500/10"
                   onClick={handleFixConnection}
                   disabled={isReconnecting}
                 >
@@ -497,7 +497,7 @@ export function EditAccountDialog() {
                   </AccordionItem>
                 </Accordion>
 
-                <div className="absolute bottom-0 left-0 right-0 flex items-center justify-between border-t bg-card p-4">
+                <div className="bg-card absolute right-0 bottom-0 left-0 flex items-center justify-between border-t p-4">
                   <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
                     <TooltipProvider>
                       <Tooltip>

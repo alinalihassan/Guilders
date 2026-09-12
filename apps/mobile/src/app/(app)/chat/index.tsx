@@ -350,17 +350,15 @@ export default function ChatScreen() {
         "Hi! I'm your AI financial assistant. I can help you understand your spending, track your net worth, and answer questions about your finances. What would you like to know?",
       timestamp: new Date(),
     },
-    ...messages.map(
-      (msg): Message => ({
-        id: msg.id,
-        role: msg.role as "user" | "assistant",
-        content: msg.parts
-          .filter((part) => part.type === "text")
-          .map((part) => part.text)
-          .join(""),
-        timestamp: new Date(),
-      }),
-    ),
+    ...messages.map((msg): Message => ({
+      id: msg.id,
+      role: msg.role as "user" | "assistant",
+      content: msg.parts
+        .filter((part) => part.type === "text")
+        .map((part) => part.text)
+        .join(""),
+      timestamp: new Date(),
+    })),
   ];
 
   return (

@@ -224,7 +224,7 @@ export function CommandMenu() {
                       />
                       <div className="flex flex-col justify-center">
                         <span className="text-md">{institution.name}</span>
-                        <span className="text-xs leading-3 text-muted-foreground">
+                        <span className="text-muted-foreground text-xs leading-3">
                           {institution.country
                             ? countriesMap?.[institution.country] || "Global"
                             : "Global"}{" "}

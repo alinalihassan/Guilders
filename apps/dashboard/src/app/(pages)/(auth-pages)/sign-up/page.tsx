@@ -43,13 +43,13 @@ function Signup() {
 
   return (
     <div className="w-full max-w-sm">
-      <div className="rounded-lg border bg-card px-6 py-6 text-card-foreground shadow-sm">
+      <div className="bg-card text-card-foreground rounded-lg border px-6 py-6 shadow-sm">
         <div className="mb-4 flex flex-col items-center">
           <img src="/assets/logo/logo_filled_rounded.svg" alt="" width={64} height={64} />
         </div>
 
         <h1 className="text-center text-2xl font-bold">Create Account</h1>
-        <p className="text-center text-muted-foreground">Sign up to get started</p>
+        <p className="text-muted-foreground text-center">Sign up to get started</p>
 
         <form className="mt-4 flex flex-col gap-4" action={handleSubmit}>
           <div className="grid gap-4">
@@ -74,21 +74,21 @@ function Signup() {
             </SubmitButton>
           </div>
 
-          <p className="text-center text-xs text-muted-foreground">
+          <p className="text-muted-foreground text-center text-xs">
             By continuing to sign up, you agree to our
             <br />
-            <Link to="/terms-of-service" className="font-medium text-primary hover:underline">
+            <Link to="/terms-of-service" className="text-primary font-medium hover:underline">
               Terms of Service
             </Link>{" "}
             and{" "}
-            <Link to="/privacy-policy" className="font-medium text-primary hover:underline">
+            <Link to="/privacy-policy" className="text-primary font-medium hover:underline">
               Privacy Policy
             </Link>
           </p>
 
-          <div className="flex justify-center gap-1 text-xs text-muted-foreground">
+          <div className="text-muted-foreground flex justify-center gap-1 text-xs">
             <p>Already have an account?</p>
-            <Link to="/login" className="font-medium text-primary hover:underline">
+            <Link to="/login" className="text-primary font-medium hover:underline">
               Sign in
             </Link>
           </div>

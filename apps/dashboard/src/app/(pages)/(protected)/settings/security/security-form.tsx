@@ -243,7 +243,7 @@ export function SecurityForm() {
             ))}
           </div>
         ) : passkeys.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No passkeys registered yet.</p>
+          <p className="text-muted-foreground text-sm">No passkeys registered yet.</p>
         ) : (
           <div className="space-y-4">
             {passkeys.map((passkey) => (
@@ -255,7 +255,7 @@ export function SecurityForm() {
                   <p className="truncate text-sm font-medium">
                     {passkey.name || "Unnamed passkey"}
                   </p>
-                  <p className="truncate text-xs text-muted-foreground">{passkey.id}</p>
+                  <p className="text-muted-foreground truncate text-xs">{passkey.id}</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <Button

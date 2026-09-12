@@ -100,7 +100,7 @@ export function AddLinkedAccountDialog() {
             />
           </div>
 
-          <p className="text-sm text-muted-foreground">
+          <p className="text-muted-foreground text-sm">
             {!billingReady ? (
               <>Checking subscription status…</>
             ) : isSubscribed ? (

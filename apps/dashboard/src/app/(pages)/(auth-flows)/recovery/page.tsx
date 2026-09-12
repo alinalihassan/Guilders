@@ -71,13 +71,13 @@ function RecoveryPage() {
 
   return (
     <div className="w-full max-w-sm">
-      <div className="rounded-lg border bg-card px-6 py-6 text-card-foreground shadow-sm">
+      <div className="bg-card text-card-foreground rounded-lg border px-6 py-6 shadow-sm">
         <div className="mb-4 flex flex-col items-center">
           <img src="/assets/logo/logo_filled_rounded.svg" alt="logo" width={64} height={64} />
         </div>
 
         <h1 className="text-center text-2xl font-bold">Reset Password</h1>
-        <p className="text-center text-muted-foreground">Please enter your new password</p>
+        <p className="text-muted-foreground text-center">Please enter your new password</p>
 
         <form className="mt-4 flex flex-col gap-4" action={handleSubmit}>
           <div className="grid gap-4">

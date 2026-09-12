@@ -23,7 +23,7 @@ export function SearchBar() {
     >
       <Search className="h-4 w-4 shrink-0 md:mr-2" />
       <span className="hidden md:inline-flex">Search...</span>
-      <kbd className="ml-auto hidden h-5 items-center rounded border border-border bg-background px-1.5 font-[inherit] text-[0.750rem] font-medium text-muted-foreground/70 md:inline-flex">
+      <kbd className="border-border bg-background text-muted-foreground/70 ml-auto hidden h-5 items-center rounded border px-1.5 font-[inherit] text-[0.750rem] font-medium md:inline-flex">
         ⌘K
       </kbd>
     </Button>

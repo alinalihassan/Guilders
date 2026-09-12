@@ -154,13 +154,13 @@ function LoginForm({
 
   return (
     <div className="w-full max-w-sm">
-      <div className="rounded-lg border bg-card px-6 py-6 text-card-foreground shadow-sm">
+      <div className="bg-card text-card-foreground rounded-lg border px-6 py-6 shadow-sm">
         <div className="mb-4 flex flex-col items-center">
           <img src="/assets/logo/logo_filled_rounded.svg" alt="" width={64} height={64} />
         </div>
 
         <h1 className="text-center text-2xl font-bold">Sign In</h1>
-        <p className="text-center text-muted-foreground">Please sign in to continue</p>
+        <p className="text-muted-foreground text-center">Please sign in to continue</p>
 
         <form className="mt-4 flex flex-col gap-4" action={handleSubmit}>
           <div className="grid gap-4">
@@ -254,7 +254,7 @@ function LoginForm({
                   <div className="flex items-center justify-between">
                     <Label htmlFor="password">Password</Label>
                     <Link
-                      className="text-xs leading-[14px] text-muted-foreground hover:text-foreground"
+                      className="text-muted-foreground hover:text-foreground text-xs leading-[14px]"
                       to="/forgot-password"
                     >
                       Forgot Password?
@@ -293,9 +293,9 @@ function LoginForm({
 
           <FormMessage message={message} />
 
-          <div className="flex justify-center gap-1 text-sm text-muted-foreground">
+          <div className="text-muted-foreground flex justify-center gap-1 text-sm">
             <p>Don't have an account?</p>
-            <Link to="/sign-up" className="font-medium text-primary hover:underline">
+            <Link to="/sign-up" className="text-primary font-medium hover:underline">
               Sign up
             </Link>
           </div>
@@ -308,16 +308,16 @@ function LoginForm({
 function LoginSkeleton() {
   return (
     <div className="w-full max-w-sm">
-      <div className="animate-pulse rounded-lg border bg-card px-6 py-6 shadow-sm">
+      <div className="bg-card animate-pulse rounded-lg border px-6 py-6 shadow-sm">
         <div className="mb-4 flex flex-col items-center">
-          <div className="h-16 w-16 rounded-full bg-muted" />
+          <div className="bg-muted h-16 w-16 rounded-full" />
         </div>
-        <div className="mb-2 h-8 rounded bg-muted" />
-        <div className="mx-auto mb-4 h-4 w-3/4 rounded bg-muted" />
+        <div className="bg-muted mb-2 h-8 rounded" />
+        <div className="bg-muted mx-auto mb-4 h-4 w-3/4 rounded" />
         <div className="space-y-4">
-          <div className="h-10 rounded bg-muted" />
-          <div className="h-10 rounded bg-muted" />
-          <div className="h-10 rounded bg-muted" />
+          <div className="bg-muted h-10 rounded" />
+          <div className="bg-muted h-10 rounded" />
+          <div className="bg-muted h-10 rounded" />
         </div>
       </div>
     </div>

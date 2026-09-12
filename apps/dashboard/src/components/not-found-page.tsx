@@ -8,14 +8,14 @@ export function NotFoundPage() {
     <div className="flex min-h-[80vh] flex-col items-center justify-center px-4">
       <div className="flex flex-col items-center gap-6 text-center">
         <div className="flex items-center gap-3">
-          <span className="font-mono text-8xl font-semibold tabular-nums text-muted-foreground">
+          <span className="text-muted-foreground font-mono text-8xl font-semibold tabular-nums">
             404
           </span>
-          <SearchX className="h-12 w-12 text-muted-foreground" aria-hidden />
+          <SearchX className="text-muted-foreground h-12 w-12" aria-hidden />
         </div>
         <div className="space-y-2">
-          <h1 className="text-2xl font-semibold text-foreground">Page not found</h1>
-          <p className="max-w-sm text-muted-foreground">
+          <h1 className="text-foreground text-2xl font-semibold">Page not found</h1>
+          <p className="text-muted-foreground max-w-sm">
             This page doesn't exist or you don't have access to it. Head back to the dashboard to
             continue.
           </p>

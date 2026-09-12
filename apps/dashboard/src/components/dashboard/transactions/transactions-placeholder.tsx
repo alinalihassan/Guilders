@@ -9,10 +9,10 @@ export function TransactionsEmptyPlaceholder({ accountId }: { accountId?: number
   return (
     <div className="flex shrink-0 items-center justify-center rounded-md p-4">
       <div className="mx-auto flex flex-col items-center justify-center text-center">
-        <ReceiptEuro className="h-10 w-10 text-muted-foreground" />
+        <ReceiptEuro className="text-muted-foreground h-10 w-10" />
 
         <h3 className="mt-4 text-lg font-semibold">No transactions</h3>
-        <p className="mb-4 mt-2 text-sm text-muted-foreground">
+        <p className="text-muted-foreground mt-2 mb-4 text-sm">
           You have not added any transactions.
         </p>
 

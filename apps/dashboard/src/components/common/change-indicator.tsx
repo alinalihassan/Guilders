@@ -21,7 +21,7 @@ export function ChangeIndicator({
 
   if (change.value === 0) {
     return (
-      <div className="text-sm text-muted-foreground">
+      <div className="text-muted-foreground text-sm">
         No change{periodLabel ? ` vs ${periodLabel}` : ""}
       </div>
     );

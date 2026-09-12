@@ -67,7 +67,7 @@ export function SubscriptionForm() {
           </div>
         </div>
         {isTrialing ? (
-          <p className="text-sm text-muted-foreground">
+          <p className="text-muted-foreground text-sm">
             Your trial ends on{" "}
             {trialEnd?.toLocaleDateString("en-US", {
               year: "numeric",
@@ -76,7 +76,7 @@ export function SubscriptionForm() {
             })}
           </p>
         ) : isSubscribed ? (
-          <p className="text-sm text-muted-foreground">
+          <p className="text-muted-foreground text-sm">
             Your subscription will renew on{" "}
             {periodEnd?.toLocaleDateString("en-US", {
               year: "numeric",
@@ -87,7 +87,7 @@ export function SubscriptionForm() {
         ) : (
           <div className="flex flex-col gap-1.5">
             <p className="text-sm font-medium">€7.99/month after your trial ends</p>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               Cancel anytime. No credit card required.
             </p>
           </div>
@@ -126,7 +126,7 @@ export function SubscriptionForm() {
           </Button>
         )}
         {!billingEnabledResolved && (
-          <p className="text-sm text-muted-foreground">
+          <p className="text-muted-foreground text-sm">
             Billing is not configured on this server. All features are included.
           </p>
         )}

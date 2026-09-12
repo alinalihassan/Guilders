@@ -21,7 +21,7 @@ export function SettingsHeader() {
   const { isScrolled } = useMainScroll();
 
   return (
-    <div className="z-10 border-b border-border bg-card py-1">
+    <div className="border-border bg-card z-10 border-b py-1">
       <div className="px-4 md:px-6">
         <SettingsTabs items={SETTINGS_TAB_ITEMS} />
         <div

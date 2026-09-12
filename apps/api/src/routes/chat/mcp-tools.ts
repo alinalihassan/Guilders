@@ -1,5 +1,5 @@
 import { tool } from "ai";
-import * as z from "zod/v4";
+import * as z from "zod";
 
 import { McpScope } from "../../mcp/scopes";
 import { mcpTools } from "../../mcp/tools";
@@ -14,11 +14,11 @@ export function getMcpToolsOverview(readOnly: boolean): string {
   return tools.map((t) => `- **${t.name}**: ${t.description}`).join("\n");
 }
 
-/** AI SDK content block for tool result: text, media (image), or file-data (blob required). */
+/** AI SDK content block for tool result: text, image-data, or file. */
 type ToolResultContentBlock =
   | { type: "text"; text: string }
-  | { type: "media"; data: string; mediaType: string }
-  | { type: "file-data"; data: string; mediaType: string };
+  | { type: "image-data"; data: string; mediaType: string }
+  | { type: "file"; data: string; mediaType: string };
 
 function mcpContentToModelOutput(
   content: McpContentBlock[],
@@ -40,13 +40,13 @@ function mcpContentToModelOutput(
       value.push({ type: "text", text: block.text });
     } else if (block.type === "image") {
       value.push({
-        type: "media",
+        type: "image-data",
         data: block.data,
         mediaType: block.mimeType,
       });
     } else if ("blob" in block.resource) {
       value.push({
-        type: "file-data",
+        type: "file",
         data: block.resource.blob,
         mediaType: block.resource.mimeType ?? "application/octet-stream",
       });
@@ -75,14 +75,12 @@ export function buildChatTools(userId: string, readOnly: boolean) {
     tools[mcpTool.name] = tool({
       description: mcpTool.description,
       inputSchema: schema,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      execute: async (input: any) => {
-        const result = await mcpTool.handler(input as Record<string, unknown>, context);
-        return result;
+      execute: async (input: Record<string, unknown>) => {
+        return mcpTool.handler(input, context);
       },
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      toModelOutput: ({ output }: { output: any }) => mcpContentToModelOutput(output.content),
-    });
+      toModelOutput: ({ output }: { output: { content: McpContentBlock[] } }) =>
+        mcpContentToModelOutput(output.content),
+    } as never);
   }
 
   return tools;

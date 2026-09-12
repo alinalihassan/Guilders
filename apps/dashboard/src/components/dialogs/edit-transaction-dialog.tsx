@@ -168,7 +168,7 @@ export function EditTransactionDialog() {
               />
               <div>
                 <h2 className="text-lg font-semibold">{currentAccount.name}</h2>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   {currentAccount.institution_connection_id
                     ? "Connected Account"
                     : "Manual Account"}
@@ -181,7 +181,7 @@ export function EditTransactionDialog() {
             <form onSubmit={handleSubmit} className="mt-6">
               <div className="space-y-4 pb-8">
                 {isSyncedTransaction && (
-                  <div className="rounded-md bg-muted p-4 text-sm text-muted-foreground">
+                  <div className="bg-muted text-muted-foreground rounded-md p-4 text-sm">
                     This transaction is managed by an external connection. It cannot be edited.
                   </div>
                 )}
@@ -365,7 +365,7 @@ export function EditTransactionDialog() {
                 </Accordion>
               </div>
 
-              <div className="absolute bottom-0 left-0 right-0 flex items-center justify-between border-t bg-card p-4">
+              <div className="bg-card absolute right-0 bottom-0 left-0 flex items-center justify-between border-t p-4">
                 <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
                   <TooltipProvider>
                     <Tooltip>

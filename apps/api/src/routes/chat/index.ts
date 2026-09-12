@@ -5,7 +5,7 @@ import {
   createUIMessageStream,
   createUIMessageStreamResponse,
   generateText,
-  stepCountIs,
+  isStepCount,
   streamText,
   type UIMessage,
 } from "ai";
@@ -193,24 +193,19 @@ export const chatRoutes = new Elysia({
         const today = new Date().toISOString().slice(0, 10);
         const systemContent = buildSystemContent(today, body.readOnly);
 
-        const modelMessages = [
-          {
-            role: "system" as const,
-            content: systemContent,
-          },
-          ...(await convertToModelMessages(inputMessages)),
-        ];
+        const modelMessages = await convertToModelMessages(inputMessages);
 
         const ai = workersai();
 
         const result = streamText({
           model: ai("google-ai-studio/gemini-2.5-flash"),
+          instructions: systemContent,
           messages: modelMessages,
           tools: {
             ...chatTools,
             showStockCard,
           },
-          stopWhen: stepCountIs(10),
+          stopWhen: isStepCount(10),
           onError(error) {
             console.error("Chat streamText error:", error);
           },

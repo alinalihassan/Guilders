@@ -48,14 +48,14 @@ export function CategoryColorIconSelector({
         </button>
       </PopoverTrigger>
       <PopoverContent
-        className="w-auto max-w-[min(90vw,320px)] border-border p-3"
+        className="border-border w-auto max-w-[min(90vw,320px)] p-3"
         align="start"
         onKeyDown={handleKeyDown}
       >
         <div className="space-y-3">
           {/* Color — same grid size/count as icons */}
           <div>
-            <p className="mb-1.5 text-xs font-medium text-foreground">Color</p>
+            <p className="text-foreground mb-1.5 text-xs font-medium">Color</p>
             <div className="grid grid-cols-7 gap-1 p-1">
               {PRESET_COLORS.map((color) => {
                 const isSelected = normalizedColor.toLowerCase() === color.toLowerCase();
@@ -83,7 +83,7 @@ export function CategoryColorIconSelector({
 
           {/* Icon — same grid as colors */}
           <div>
-            <p className="mb-1.5 text-xs font-medium text-foreground">Icon</p>
+            <p className="text-foreground mb-1.5 text-xs font-medium">Icon</p>
             <div className="grid grid-cols-7 gap-1 p-1">
               {ICON_OPTIONS.map((opt) => {
                 const isSelected = effectiveIcon === opt.value;

@@ -49,13 +49,13 @@ function OnboardingPage() {
 
   return (
     <div className="w-full max-w-sm">
-      <div className="rounded-lg border bg-card px-6 py-6 text-card-foreground shadow-sm">
+      <div className="bg-card text-card-foreground rounded-lg border px-6 py-6 shadow-sm">
         <div className="mb-4 flex flex-col items-center">
           <img src="/assets/logo/logo_filled_rounded.svg" alt="" width={64} height={64} />
         </div>
 
         <h1 className="text-center text-2xl font-bold">Welcome to Guilders!</h1>
-        <p className="text-center text-muted-foreground">Please set your password to continue</p>
+        <p className="text-muted-foreground text-center">Please set your password to continue</p>
 
         <form onSubmit={handleSubmit(onSubmit)} className="mt-4 flex flex-col gap-4">
           <div className="grid gap-4">
@@ -69,7 +69,7 @@ function OnboardingPage() {
                 {...register("password")}
               />
               {errors.password && (
-                <p className="text-sm text-destructive">{errors.password.message}</p>
+                <p className="text-destructive text-sm">{errors.password.message}</p>
               )}
             </div>
 
@@ -83,7 +83,7 @@ function OnboardingPage() {
                 {...register("confirmPassword")}
               />
               {errors.confirmPassword && (
-                <p className="text-sm text-destructive">{errors.confirmPassword.message}</p>
+                <p className="text-destructive text-sm">{errors.confirmPassword.message}</p>
               )}
             </div>
 

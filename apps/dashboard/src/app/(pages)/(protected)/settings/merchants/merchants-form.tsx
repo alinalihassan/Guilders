@@ -47,7 +47,7 @@ export function MerchantsForm() {
   return (
     <div className="space-y-6">
       <div className="space-y-2">
-        <div className="flex flex-wrap items-center gap-3 rounded-lg border border-border/60 bg-muted/20 px-3 py-2.5">
+        <div className="border-border/60 bg-muted/20 flex flex-wrap items-center gap-3 rounded-lg border px-3 py-2.5">
           <Input
             value={newMerchantName}
             onChange={(e) => setNewMerchantName(e.target.value)}
@@ -71,14 +71,14 @@ export function MerchantsForm() {
             Array.from({ length: 5 }).map((_, i) => (
               <div
                 key={i}
-                className="flex items-center gap-3 rounded-lg border border-border/60 px-3 py-2.5"
+                className="border-border/60 flex items-center gap-3 rounded-lg border px-3 py-2.5"
               >
                 <Skeleton className="h-8 w-8 rounded-full" />
                 <Skeleton className="h-5 w-32" />
               </div>
             ))
           ) : merchants?.length === 0 ? (
-            <div className="py-4 text-center text-sm text-muted-foreground">
+            <div className="text-muted-foreground py-4 text-center text-sm">
               No merchants found.
             </div>
           ) : (
@@ -170,27 +170,27 @@ function MerchantRow({ merchant }: { merchant: Merchant }) {
           onChange={handleFileChange}
         />
         {isUploading ? (
-          <div className="flex size-8 items-center justify-center rounded-full border bg-muted">
-            <Loader2 className="size-4 animate-spin text-muted-foreground" />
+          <div className="bg-muted flex size-8 items-center justify-center rounded-full border">
+            <Loader2 className="text-muted-foreground size-4 animate-spin" />
           </div>
         ) : merchant.logo_url ? (
           <>
             <img
               src={merchant.logo_url}
               alt={merchant.name}
-              className="flex size-8 items-center justify-center rounded-full border bg-muted object-cover transition-opacity group-hover:opacity-50"
+              className="bg-muted flex size-8 items-center justify-center rounded-full border object-cover transition-opacity group-hover:opacity-50"
             />
             <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100">
-              <Upload className="size-3.5 text-foreground drop-shadow-md" />
+              <Upload className="text-foreground size-3.5 drop-shadow-md" />
             </div>
           </>
         ) : (
           <>
-            <div className="flex size-8 items-center justify-center rounded-full border bg-muted font-medium text-muted-foreground transition-opacity group-hover:opacity-50">
+            <div className="bg-muted text-muted-foreground flex size-8 items-center justify-center rounded-full border font-medium transition-opacity group-hover:opacity-50">
               {initial}
             </div>
             <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100">
-              <Upload className="size-3.5 text-foreground" />
+              <Upload className="text-foreground size-3.5" />
             </div>
           </>
         )}
@@ -203,7 +203,7 @@ function MerchantRow({ merchant }: { merchant: Merchant }) {
           onChange={(e) => setNameDraft(e.target.value)}
           onBlur={saveName}
           onKeyDown={handleNameKeyDown}
-          className="ml-[-3px] h-7 min-w-[8rem] max-w-[14rem] shrink-0 pl-0.5 text-sm font-medium"
+          className="ml-[-3px] h-7 max-w-[14rem] min-w-[8rem] shrink-0 pl-0.5 text-sm font-medium"
           autoFocus
         />
       ) : (
@@ -213,7 +213,7 @@ function MerchantRow({ merchant }: { merchant: Merchant }) {
             setNameDraft(merchant.name);
             setIsEditingName(true);
           }}
-          className="min-w-0 flex-1 truncate text-left text-sm font-medium text-foreground hover:underline"
+          className="text-foreground min-w-0 flex-1 truncate text-left text-sm font-medium hover:underline"
         >
           {merchant.name}
         </button>
@@ -225,7 +225,7 @@ function MerchantRow({ merchant }: { merchant: Merchant }) {
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 text-muted-foreground hover:text-destructive"
+              className="text-muted-foreground hover:text-destructive h-8 w-8"
               disabled={isRemoving}
               aria-label={`Delete merchant ${merchant.name}`}
             >

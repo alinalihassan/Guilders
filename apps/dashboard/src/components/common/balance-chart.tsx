@@ -65,8 +65,8 @@ function PointTooltip({
   const arrow = diff > 0 ? "\u2191" : diff < 0 ? "\u2193" : "";
 
   return (
-    <div className="rounded-lg border border-border bg-background px-3 py-2 text-sm shadow-md">
-      <div className="mb-1 text-xs text-muted-foreground">{formatDateLabel(point.date)}</div>
+    <div className="border-border bg-background rounded-lg border px-3 py-2 text-sm shadow-md">
+      <div className="text-muted-foreground mb-1 text-xs">{formatDateLabel(point.date)}</div>
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-1.5">
           <span

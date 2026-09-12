@@ -101,7 +101,7 @@ function TransactionsPage() {
           )}
           onClick={() => searchInputRef.current?.focus()}
         >
-          <Search className="ml-2 h-4 w-4 shrink-0 text-muted-foreground" />
+          <Search className="text-muted-foreground ml-2 h-4 w-4 shrink-0" />
           <input
             ref={searchInputRef}
             type="text"
@@ -126,7 +126,7 @@ function TransactionsPage() {
   return (
     <div className="space-y-4 py-4">
       <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-foreground">Transactions</h1>
+        <h1 className="text-foreground text-2xl font-semibold">Transactions</h1>
         <Button onClick={() => openAddTransaction({})} size="sm">
           <Plus className="h-4 w-4" />
           Add Transaction
@@ -202,7 +202,7 @@ function TransactionsPage() {
             </div>
           ) : !filteredTransactions || filteredTransactions.length === 0 ? (
             searchQuery ? (
-              <div className="py-8 text-center text-muted-foreground">
+              <div className="text-muted-foreground py-8 text-center">
                 No transactions found matching "{searchQuery}"
               </div>
             ) : (

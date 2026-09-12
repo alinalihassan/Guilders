@@ -30,7 +30,7 @@ export function TransactionItem({ transaction, merchant }: TransactionItemProps)
 
   return (
     <div
-      className="flex cursor-pointer items-center justify-between rounded-lg p-2 hover:bg-secondary"
+      className="hover:bg-secondary flex cursor-pointer items-center justify-between rounded-lg p-2"
       onClick={() => open({ transaction })}
     >
       <div className="flex items-center gap-3 overflow-hidden">
@@ -39,18 +39,18 @@ export function TransactionItem({ transaction, merchant }: TransactionItemProps)
             <img
               src={merchant.logo_url}
               alt={merchant.name}
-              className="flex size-8 items-center justify-center rounded-full border bg-muted object-cover"
+              className="bg-muted flex size-8 items-center justify-center rounded-full border object-cover"
             />
           ) : (
-            <div className="flex size-8 items-center justify-center rounded-full border bg-muted font-medium text-muted-foreground">
+            <div className="bg-muted text-muted-foreground flex size-8 items-center justify-center rounded-full border font-medium">
               {initial}
             </div>
           )}
         </div>
         <div className="flex flex-col overflow-hidden">
-          <p className="truncate text-sm font-medium text-foreground">{displayName}</p>
+          <p className="text-foreground truncate text-sm font-medium">{displayName}</p>
           {secondaryName && secondaryName !== displayName && (
-            <p className="truncate text-xs text-muted-foreground">{secondaryName}</p>
+            <p className="text-muted-foreground truncate text-xs">{secondaryName}</p>
           )}
         </div>
       </div>
@@ -74,7 +74,7 @@ export function TransactionItem({ transaction, merchant }: TransactionItemProps)
               }}
             />
           </p>
-          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+          <div className="text-muted-foreground flex items-center gap-1 text-xs">
             <span>{new Date(transaction.timestamp).toLocaleDateString()}</span>
             <span className="hidden sm:inline">•</span>
             <span className="hidden sm:inline">{timeStr}</span>

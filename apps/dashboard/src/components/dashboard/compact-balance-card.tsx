@@ -108,7 +108,7 @@ export function CompactBalanceCard({
     <Card className={className}>
       <CardContent className="flex gap-4 p-6">
         <div className="flex-1">
-          <h3 className="mb-1 text-sm font-medium text-muted-foreground">{title}</h3>
+          <h3 className="text-muted-foreground mb-1 text-sm font-medium">{title}</h3>
           <NumberFlow
             value={totalValue}
             format={{ style: "currency", currency: userCurrency }}

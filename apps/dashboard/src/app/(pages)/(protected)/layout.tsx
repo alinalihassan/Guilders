@@ -52,7 +52,7 @@ function ProtectedLayout() {
           advisorOpen && "gap-3",
         )}
       >
-        <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+        <div className="border-border bg-card flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-xl border shadow-sm">
           <AppTopBar scrolled={isScrolled && !isSettings} />
           <MainScrollProvider isScrolled={isScrolled}>
             {isSettings && <SettingsHeader />}
@@ -75,7 +75,7 @@ function ProtectedLayout() {
         >
           {advisorOpen && (
             <div
-              className="flex h-full min-h-0 min-w-[400px] flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm"
+              className="border-border bg-card flex h-full min-h-0 min-w-[400px] flex-col overflow-hidden rounded-xl border shadow-sm"
               style={{ width: ADVISOR_SIDEBAR_WIDTH }}
             >
               <AdvisorSidebar />

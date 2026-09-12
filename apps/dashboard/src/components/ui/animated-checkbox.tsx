@@ -74,7 +74,7 @@ export function AnimatedCheckbox({
             : "bg-transparent border-muted-foreground/40 hover:border-muted-foreground/60",
         )}
       >
-        <svg viewBox="0 0 20 20" className="size-full text-background">
+        <svg viewBox="0 0 20 20" className="text-background size-full">
           <motion.path
             d="M 0 4.5 L 3.182 8 L 10 0"
             fill="transparent"
@@ -109,7 +109,7 @@ export function AnimatedCheckbox({
             {title}
           </span>
           <motion.div
-            className="absolute left-0 top-1/2 h-[1.5px] -translate-y-1/2 bg-muted-foreground"
+            className="bg-muted-foreground absolute top-1/2 left-0 h-[1.5px] -translate-y-1/2"
             initial={{
               width: (isControlled ? controlledChecked : defaultChecked) ? "100%" : 0,
               opacity: (isControlled ? controlledChecked : defaultChecked) ? 1 : 0,

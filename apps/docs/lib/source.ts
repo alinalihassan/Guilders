@@ -1,4 +1,4 @@
-import { type InferPageType, loader, multiple, source as createSource } from "fumadocs-core/source";
+import { type InferPageType, loader, multiple } from "fumadocs-core/source";
 import { lucideIconsPlugin } from "fumadocs-core/source/lucide-icons";
 import { docs } from "fumadocs-mdx:collections/server";
 import { openapiPlugin, openapiSource } from "fumadocs-openapi/server";
@@ -12,10 +12,7 @@ async function getOpenApiPages() {
       groupBy: "tag",
     });
   } catch {
-    return createSource({
-      pages: [],
-      metas: [],
-    });
+    return { files: [] };
   }
 }
 
@@ -67,11 +64,15 @@ export async function getLLMText(page: InferPageType<typeof source>) {
     return JSON.stringify(page.data.getSchema().bundled, null, 2);
   }
 
-  if (!hasGetText(page.data)) return `# ${page.data.title}`;
+  const title =
+    typeof page.data === "object" && page.data && "title" in page.data
+      ? String(page.data.title)
+      : "Untitled";
+  if (!hasGetText(page.data)) return `# ${title}`;
 
   const processed = await page.data.getText("processed");
 
-  return `# ${page.data.title}
+  return `# ${title}
 
 ${processed}`;
 }

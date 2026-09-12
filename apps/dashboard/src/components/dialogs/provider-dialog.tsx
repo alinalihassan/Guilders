@@ -61,23 +61,28 @@ export function ProviderDialog() {
 
     const handleMessageEvent = (e: MessageEvent) => {
       if (isTeller && e.origin === TELLER_ORIGIN) {
-        // oxlint-disable-next-line typescript/no-explicit-any: TODO
-        let data: any;
+        let data: unknown;
         try {
           data = typeof e.data === "string" ? JSON.parse(e.data) : e.data;
         } catch {
           return;
         }
-        if (data?.namespace !== "teller-connect") return;
+        if (!data || typeof data !== "object") return;
+        const payload = data as {
+          namespace?: string;
+          event?: string;
+          data?: { accessToken?: string; enrollment?: { id?: string } };
+        };
+        if (payload.namespace !== "teller-connect") return;
 
-        if (data.event === "exit") {
+        if (payload.event === "exit") {
           close();
           return;
         }
 
-        if (data.event === "success") {
-          const accessToken = data.data?.accessToken;
-          const enrollmentId = data.data?.enrollment?.id;
+        if (payload.event === "success") {
+          const accessToken = payload.data?.accessToken;
+          const enrollmentId = payload.data?.enrollment?.id;
           const callbackUrl = new URL(providerData.redirectUri).searchParams.get("callback");
 
           if (iframeRef.current && callbackUrl && accessToken && enrollmentId) {

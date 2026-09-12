@@ -291,23 +291,19 @@ export function TransactionsSankey({
 
     // Create nodes array: name = stable unique key, label = display name, kind = income/expense/neutral
     const nodes: SankeyNode[] = [
-      ...incomeArray.map(
-        (catKey): SankeyNode => ({
-          name: `income:${catKey}`,
-          label: keyToLabel.get(catKey) ?? "Uncategorized",
-          kind: "income",
-          value: categoryTotals.get(`${catKey} (Income)`) || 0,
-        }),
-      ),
+      ...incomeArray.map((catKey): SankeyNode => ({
+        name: `income:${catKey}`,
+        label: keyToLabel.get(catKey) ?? "Uncategorized",
+        kind: "income",
+        value: categoryTotals.get(`${catKey} (Income)`) || 0,
+      })),
       { name: "__center__", label: "Income", kind: "neutral", value: 0 },
-      ...expenseArray.map(
-        (catKey): SankeyNode => ({
-          name: `expense:${catKey}`,
-          label: keyToLabel.get(catKey) ?? "Uncategorized",
-          kind: "expense",
-          value: categoryTotals.get(`${catKey} (Expense)`) || 0,
-        }),
-      ),
+      ...expenseArray.map((catKey): SankeyNode => ({
+        name: `expense:${catKey}`,
+        label: keyToLabel.get(catKey) ?? "Uncategorized",
+        kind: "expense",
+        value: categoryTotals.get(`${catKey} (Expense)`) || 0,
+      })),
     ];
 
     // Create indices maps (by categoryKey)

@@ -133,14 +133,14 @@ function OAuthConsentForm() {
     const Icon = group.icon;
 
     return (
-      <div key={key} className="rounded-md border bg-muted/40 p-4">
+      <div key={key} className="bg-muted/40 rounded-md border p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-2.5">
-            <Icon className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+            <Icon className="text-primary mt-0.5 h-4 w-4 shrink-0" />
             <span className="text-sm font-medium">{group.label}</span>
           </div>
           {opts.alwaysOn ? (
-            <span className="shrink-0 text-xs text-muted-foreground">Required</span>
+            <span className="text-muted-foreground shrink-0 text-xs">Required</span>
           ) : (
             <AnimatedCheckbox
               checked={opts.checked}
@@ -149,10 +149,10 @@ function OAuthConsentForm() {
             />
           )}
         </div>
-        <ul className="pl-6.5 mt-2.5 grid gap-1.5 text-sm text-muted-foreground">
+        <ul className="text-muted-foreground mt-2.5 grid gap-1.5 pl-6.5 text-sm">
           {group.capabilities.map((cap) => (
             <li key={cap} className="flex items-center gap-2">
-              <span className="h-1 w-1 shrink-0 rounded-full bg-muted-foreground/50" />
+              <span className="bg-muted-foreground/50 h-1 w-1 shrink-0 rounded-full" />
               {cap}
             </li>
           ))}
@@ -163,7 +163,7 @@ function OAuthConsentForm() {
 
   return (
     <div className="w-full max-w-xl">
-      <Card className="border bg-card shadow-md">
+      <Card className="bg-card border shadow-md">
         <CardHeader className="space-y-3">
           <div className="flex flex-col items-center">
             <img src="/assets/logo/logo_filled_rounded.svg" alt="" width={64} height={64} />
@@ -171,7 +171,7 @@ function OAuthConsentForm() {
           <div className="space-y-1 text-center">
             <CardTitle className="text-2xl">Authorize Access</CardTitle>
             <CardDescription>
-              <span className="font-medium text-foreground">{clientName?.trim() || clientId}</span>{" "}
+              <span className="text-foreground font-medium">{clientName?.trim() || clientId}</span>{" "}
               is requesting access to your Guilders account.
             </CardDescription>
           </div>
@@ -179,10 +179,10 @@ function OAuthConsentForm() {
 
         <CardContent className="space-y-4">
           {clientUri && (
-            <div className="rounded-md border bg-muted/40 p-3">
+            <div className="bg-muted/40 rounded-md border p-3">
               <div className="flex items-center gap-2 text-sm">
-                <ShieldCheck className="h-4 w-4 text-primary" />
-                <span className="break-all text-xs text-muted-foreground">{clientUri}</span>
+                <ShieldCheck className="text-primary h-4 w-4" />
+                <span className="text-muted-foreground text-xs break-all">{clientUri}</span>
               </div>
             </div>
           )}
@@ -201,14 +201,14 @@ function OAuthConsentForm() {
 
           <div className="space-y-2">
             {!writeEnabled && (
-              <div className="flex items-start gap-2 rounded-md border border-primary/20 bg-primary/5 p-3">
-                <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
-                <p className="text-xs font-medium text-primary">
+              <div className="border-primary/20 bg-primary/5 flex items-start gap-2 rounded-md border p-3">
+                <Info className="text-primary mt-0.5 h-3.5 w-3.5 shrink-0" />
+                <p className="text-primary text-xs font-medium">
                   Write access is disabled — the app will only be able to read your data.
                 </p>
               </div>
             )}
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               You can revoke this access at any time from your account settings.
             </p>
           </div>
@@ -239,7 +239,7 @@ function OAuthConsentForm() {
 function OAuthConsentSkeleton() {
   return (
     <div className="w-full max-w-xl">
-      <Card className="animate-pulse border bg-card shadow-md">
+      <Card className="bg-card animate-pulse border shadow-md">
         <CardHeader>
           <img
             src="/assets/logo/logo_filled_rounded.svg"
@@ -248,14 +248,14 @@ function OAuthConsentSkeleton() {
             height={64}
             className="mx-auto opacity-30"
           />
-          <div className="mx-auto h-6 w-64 rounded bg-muted" />
-          <div className="mx-auto h-4 w-72 rounded bg-muted" />
+          <div className="bg-muted mx-auto h-6 w-64 rounded" />
+          <div className="bg-muted mx-auto h-4 w-72 rounded" />
         </CardHeader>
         <CardContent className="space-y-3">
-          <div className="h-16 rounded bg-muted" />
-          <div className="h-24 rounded bg-muted" />
-          <div className="h-24 rounded bg-muted" />
-          <div className="h-10 rounded bg-muted" />
+          <div className="bg-muted h-16 rounded" />
+          <div className="bg-muted h-24 rounded" />
+          <div className="bg-muted h-24 rounded" />
+          <div className="bg-muted h-10 rounded" />
         </CardContent>
       </Card>
     </div>
