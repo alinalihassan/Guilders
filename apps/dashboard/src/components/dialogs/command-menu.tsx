@@ -3,7 +3,7 @@ import { useRouter } from "@tanstack/react-router";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { CommandLoading } from "cmdk";
 import { Banknote, Landmark, Link2, SquarePen } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 
 import {
   CommandDialog,
@@ -72,6 +72,9 @@ export function CommandMenu() {
   const currentPage = pages[pages.length - 1];
 
   const parentRef = useRef<HTMLDivElement>(null);
+  const keyboardNavRef = useRef(false);
+  const pointerLockTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const [pointerLocked, setPointerLocked] = useState(false);
 
   const allInstitutions = institutions ?? [];
   const filteredInstitutions = allInstitutions.filter((institution) => {
@@ -89,17 +92,25 @@ export function CommandMenu() {
   const virtualizer = useVirtualizer({
     count: filteredInstitutions.length,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => 48,
-    overscan: 5,
+    estimateSize: () => 64,
+    overscan: 8,
   });
 
-  useEffect(() => {
-    if (currentPage !== "add-synced-account") return;
-    const idx = filteredInstitutions.findIndex((i) => i.id.toString() === value);
+  const lockPointerSelection = () => {
+    if (!pointerLocked) setPointerLocked(true);
+    clearTimeout(pointerLockTimerRef.current);
+    pointerLockTimerRef.current = setTimeout(() => setPointerLocked(false), 150);
+  };
+
+  const handleValueChange = (next: string) => {
+    setValue(next);
+    if (!keyboardNavRef.current) return;
+    keyboardNavRef.current = false;
+    const idx = filteredInstitutions.findIndex((institution) => institution.id.toString() === next);
     if (idx >= 0) {
       virtualizer.scrollToIndex(idx, { align: "auto" });
     }
-  }, [value, filteredInstitutions, currentPage, virtualizer]);
+  };
 
   const handleOpenChange = (_open: boolean) => {
     if (!_open) {
@@ -111,6 +122,10 @@ export function CommandMenu() {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "ArrowDown" || e.key === "ArrowUp" || e.key === "Home" || e.key === "End") {
+      keyboardNavRef.current = true;
+    }
+
     // Handle backspace when search is empty
     if (e.key === "Backspace" && !search) {
       e.preventDefault();
@@ -140,7 +155,8 @@ export function CommandMenu() {
       commandProps={{
         onKeyDown: handleKeyDown,
         shouldFilter: currentPage !== "add-synced-account",
-        ...(currentPage === "add-synced-account" && { value, onValueChange: setValue }),
+        disablePointerSelection: currentPage === "add-synced-account" && pointerLocked,
+        ...(currentPage === "add-synced-account" && { value, onValueChange: handleValueChange }),
       }}
     >
       <CommandInput
@@ -148,7 +164,10 @@ export function CommandMenu() {
         onValueChange={setSearch}
         placeholder="Type a command or search..."
       />
-      <CommandList ref={parentRef}>
+      <CommandList
+        ref={parentRef}
+        onScroll={currentPage === "add-synced-account" ? lockPointerSelection : undefined}
+      >
         <CommandEmpty>No results found.</CommandEmpty>
         {!currentPage && (
           <>
@@ -203,6 +222,8 @@ export function CommandMenu() {
                 return (
                   <CommandItem
                     key={institution.id}
+                    ref={virtualizer.measureElement}
+                    data-index={virtualItem.index}
                     value={institution.id.toString()}
                     onSelect={() => handleAddLinkedAccount(institution)}
                     style={{
