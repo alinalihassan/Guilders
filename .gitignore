@@ -13,8 +13,10 @@ dist/
 .env
 .env*
 !.env.example
-.dev.vars*
-!.dev.vars.example
+!.env.production.example
+.dev.vars
+.dev.vars.*
+.new-secrets
 
 # Next.js
 .next/

@@ -10,13 +10,7 @@ const EnvSchema = z.object({
 
   // Auth & secrets
   BETTER_AUTH_SECRET: z.string(),
-
-  // Cloudflare
-  CLOUDFLARE_ACCOUNT_ID: z.string(),
-  CLOUDFLARE_AI_GATEWAY: z.string(),
-  CLOUDFLARE_AI_GATEWAY_TOKEN: z.string(),
-  CLOUDFLARE_R2_ACCESS_KEY: z.string(),
-  CLOUDFLARE_R2_SECRET_KEY: z.string(),
+  BETTER_AUTH_API_KEY: z.string().optional(),
 
   // Stripe
   STRIPE_PRO_PRICE_ID: z.string().optional(),
@@ -54,7 +48,7 @@ const EnvSchema = z.object({
 
 export type EnvConfig = z.infer<typeof EnvSchema>;
 
-/** Wrangler/.env copies of .env.example send optional keys as "". Treat those as unset. */
+/** Wrangler and bun both load apps/api/.env. Empty optional keys are treated as unset. */
 function envWithEmptyAsUnset(source: NodeJS.ProcessEnv): Record<string, string | undefined> {
   return Object.fromEntries(
     Object.entries(source).map(([key, value]) => [key, value === "" ? undefined : value]),

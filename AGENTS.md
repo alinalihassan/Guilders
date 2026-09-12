@@ -22,7 +22,7 @@ guilders-elysia/
 │   ├── dashboard/     TanStack Start + Vite web dashboard
 │   ├── docs/          Fumadocs documentation site
 │   ├── website/       Astro marketing site
-│   └── mobile/        Expo / React Native mobile app
+│   └── mobile/        Expo / React Native mobile app (ignore unless asked)
 ├── packages/
 │   ├── transactional/ React Email templates
 │   └── tsconfig/      Shared TypeScript configs
@@ -38,8 +38,8 @@ guilders-elysia/
 | ------------- | ------------------------------------------------------------------------------------------- |
 | API Framework | Elysia 1.4 (Bun runtime, Cloudflare Workers adapter)                                        |
 | Database      | PostgreSQL (Neon serverless) via Drizzle ORM                                                |
-| Auth          | Better Auth (session cookies, bearer tokens, passkeys, API keys, OAuth provider)            |
-| AI            | Vercel AI SDK via Cloudflare AI Gateway                                                     |
+| Auth          | Better Auth (session cookies, bearer, passkeys, API keys, OAuth) + dash plugin              |
+| AI            | Vercel AI SDK via Workers AI binding (`env.AI`) and AI Gateway id `guilders-ai-gateway`     |
 | MCP           | `@modelcontextprotocol/sdk` — OAuth-authenticated                                           |
 | Dashboard     | TanStack Start + Vite, React 19, Tailwind CSS, shadcn/ui, Recharts, Zustand, TanStack Query |
 | Mobile        | Expo 55, React Native 0.83, Expo Router                                                     |
@@ -77,20 +77,46 @@ Provider  (e.g. SaltEdge, SnapTrade)
 
 Schema files live in `apps/api/src/db/schema/`:
 
-| File              | Tables                                                                |
-| ----------------- | --------------------------------------------------------------------- |
-| `auth.ts`         | user, session, user_account, apikey, twoFactor, passkey, OAuth tables |
-| `accounts.ts`     | account                                                               |
-| `transactions.ts` | transaction                                                           |
-| `categories.ts`   | category                                                              |
-| `providers.ts`    | provider, institution, provider_connection, institution_connection    |
-| `currencies.ts`   | currency, rate                                                        |
-| `countries.ts`    | country                                                               |
-| `documents.ts`    | documents                                                             |
-| `webhooks.ts`     | webhook                                                               |
-| `relations.ts`    | Drizzle relation definitions                                          |
+| File              | Tables                                                                                                       |
+| ----------------- | ------------------------------------------------------------------------------------------------------------ |
+| `auth.ts`         | user (incl. `lastActiveAt` for dash), session, user_account, apikey, twoFactor, passkey, OAuth, subscription |
+| `accounts.ts`     | account                                                                                                      |
+| `transactions.ts` | transaction                                                                                                  |
+| `categories.ts`   | category                                                                                                     |
+| `providers.ts`    | provider, institution, provider_connection, institution_connection                                           |
+| `currencies.ts`   | currency, rate                                                                                               |
+| `countries.ts`    | country                                                                                                      |
+| `documents.ts`    | documents                                                                                                    |
+| `webhooks.ts`     | webhook                                                                                                      |
+| `relations.ts`    | Drizzle relation definitions                                                                                 |
 
-Migrations: `apps/api/drizzle/`
+### Database, Docker, and migrations
+
+Local Postgres is `docker-compose.yml` at the repo root (`postgres:17-alpine`, `guilders` / `postgres` / `postgres`, port 5432).
+
+```bash
+bun run db:up          # docker compose up -d
+bun run db:migrate     # apply Drizzle CLI migrations
+bun run db:init        # seed currencies, countries, providers, institutions, rates
+bun run db:studio      # drizzle-kit studio
+bun run db:reset       # wipe the volume, migrate, re-seed
+bun run db:down        # docker compose down (data kept)
+bun run auth:generate  # regenerate Better Auth tables in src/db/schema/auth.ts
+bun run db:generate    # create a new migration from schema changes
+```
+
+These are also defined on `@guilders/api` (`apps/api/package.json`).
+
+**Never write or edit SQL migrations by hand.** The only allowed path is the Drizzle CLI:
+
+1. Change schema in `apps/api/src/db/schema/` (or run `bun run auth:generate` after Better Auth plugin/config changes).
+2. Review `auth.ts` after `auth:generate` — restore app-specific columns (`currency`, `timeFormat`, `stripeCustomerId`) and the `subscription` table if the CLI dropped them (it skips Stripe when Stripe env vars are unset).
+3. `bun run db:generate` — drizzle-kit writes `apps/api/drizzle/<timestamp>_<name>/migration.sql`.
+4. `bun run db:migrate` to apply.
+
+Do not add files under `apps/api/drizzle/` yourself. Do not paste SQL into new migration folders. If a generate step is wrong, fix the TypeScript schema and generate again.
+
+Production database is Neon (`DATABASE_URL`). Auth is Better Auth with the Drizzle adapter — there is no Supabase client, RLS, or `packages/database`.
 
 ## API Endpoints
 
@@ -148,13 +174,15 @@ Handled by Better Auth (`apps/api/src/lib/auth.tsx`).
 
 **Supported methods:** email/password, passkeys (WebAuthn), API keys, two-factor authentication, OAuth.
 
-**Plugins:** `@better-auth/passkey`, `@better-auth/stripe`, `@better-auth/expo`, `@better-auth/oauth-provider`.
+**Plugins:** `@better-auth/infra` `dash()` (hosted admin dashboard + activity tracking), `@better-auth/passkey`, `@better-auth/stripe`, `@better-auth/expo`, `@better-auth/oauth-provider`.
+
+The dashboard auth client (`apps/dashboard/src/lib/auth-client.ts`) includes `dashClient()` from `@better-auth/infra/client`. Set `BETTER_AUTH_API_KEY` to connect `dash()` to Better Auth Infrastructure.
 
 The auth middleware at `apps/api/src/middleware/auth.ts` is an Elysia plugin that protects routes.
 
 ## AI Features
 
-- **Chat endpoint** (`apps/api/src/routes/chat/`): streams responses via Vercel AI SDK through Cloudflare AI Gateway.
+- **Chat endpoint** (`apps/api/src/routes/chat/`): streams responses via Vercel AI SDK through the Workers `AI` binding (`gateway: { id: "guilders-ai-gateway" }`). No AI Gateway token.
 - **Financial context** (`apps/api/src/routes/chat/utils.ts`): injects accounts, transactions, and categories into the system prompt.
 - **Dashboard advisor** (sidebar in the TanStack Start protected layout): React chat UI via `@ai-sdk/react` in `apps/dashboard/src/components/advisor/`.
 - **Mobile chat** (`apps/mobile/src/app/(app)/chat/`): streaming chat with markdown rendering.
@@ -198,6 +226,7 @@ Queue: `guilders-webhook-events` (Cloudflare Queues, max batch 10, 5 retries, DL
 
 ## Implementation Notes for Agents
 
+0. **Ignore `apps/mobile`** unless the user explicitly asks to work on it (env, features, bugs, deploys). Do not update mobile clients, Expo env, or mobile docs as part of API/dashboard work.
 1. **Accounts are the primary entity** — fetch accounts for the home view, not institution connections.
 2. **Transactions belong to accounts** — always show which account a transaction belongs to.
 3. **Synced vs manual** — check `institution_connection_id` to determine if an account is synced.
@@ -206,6 +235,7 @@ Queue: `guilders-webhook-events` (Cloudflare Queues, max batch 10, 5 retries, DL
 6. **Eden treaty** — the dashboard uses `@elysiajs/eden` for end-to-end type-safe API calls.
 7. **React 19 compiler** — the dashboard uses `babel-plugin-react-compiler`; avoid manual `useMemo`/`useCallback` where the compiler handles it.
 8. **Formatting** — ALWAYS run `bun format` after making any code changes to ensure the codebase remains consistently formatted.
+9. **Schema changes** — only via Drizzle CLI (`bun run db:generate`). Never hand-write migration SQL. After Better Auth plugin changes, run `bun run auth:generate` first, then `db:generate`.
 
 ### Common Patterns
 
@@ -252,19 +282,19 @@ POST /api/transaction
 - **Backend / scripts:** Use `process.env` for environment variables (API, db scripts, CLI scripts). This avoids having to determine whether code is used indirectly by scripts (e.g. db code used by `drizzle.config.ts` or migrations).
 - **Frontend:** For dashboard (and other frontend) code that needs env vars, **t3 env is preferred** (`@t3-oss/env-nextjs` or equivalent t3 env setup). You can use `process.env` as well, but t3 env gives validated, typed access and makes which variables are exposed to the client explicit.
 
-**API:** See `apps/api/.env.example` for the full list. Worker bindings and secrets are defined in `wrangler.jsonc` / dashboard; types in `apps/api/worker-configuration.d.ts`.
+**API:** One local file: `apps/api/.env` (see `.env.example`). Wrangler 4 loads `.env` into the Worker during `wrangler dev`. Bun scripts use `--env-file=.env`. **Do not create `.dev.vars`** — if it exists, Wrangler ignores `.env`. Production secrets live in Cloudflare (`bun run deploy:secrets` uploads `.env.production`). Types in `apps/api/worker-configuration.d.ts`.
 
-| Group             | Variables                                                                                                                               |
-| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| **Database**      | `DATABASE_URL` (PostgreSQL connection string)                                                                                           |
-| **URLs**          | `BACKEND_URL`, `DASHBOARD_URL`                                                                                                          |
-| **Secrets**       | `GUILDERS_SECRET` (provider state verification), `BETTER_AUTH_SECRET`                                                                   |
-| **Payments**      | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`                                                                                            |
-| **Email**         | None (Workers `EMAIL` binding — Cloudflare Email Sending). From: `noreply@guilders.app`                                                 |
-| **Cloudflare**    | `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_AI_GATEWAY`, `CLOUDFLARE_AI_GATEWAY_TOKEN`, `CLOUDFLARE_R2_ACCESS_KEY`, `CLOUDFLARE_R2_SECRET_KEY` |
-| **Bindings**      | `EMAIL` (send_email), `PUBLIC_BUCKET` (R2), `USER_BUCKET` (R2), `WEBHOOK_QUEUE` (Queue)                                                 |
-| **Dev tunnels**   | `NGROK_TOKEN`, `NGROK_URL` (optional, for provider callbacks)                                                                           |
-| **SnapTrade**     | `SNAPTRADE_CLIENT_ID`, `SNAPTRADE_CLIENT_SECRET`                                                                                        |
-| **SaltEdge**      | `SALTEDGE_APP_ID`, `SALTEDGE_SECRET`                                                                                                    |
-| **EnableBanking** | `ENABLEBANKING_CLIENT_ID`, `ENABLEBANKING_CLIENT_PRIVATE_KEY`                                                                           |
-| **Teller**        | `TELLER_APPLICATION_ID`, `TELLER_PRIVATE_KEY`, `TELLER_ENVIRONMENT`, `TELLER_WEBHOOK_SECRET`                                            |
+| Group             | Variables                                                                                                                                |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| **Database**      | `DATABASE_URL` (PostgreSQL connection string)                                                                                            |
+| **URLs**          | `BACKEND_URL`, `DASHBOARD_URL`                                                                                                           |
+| **Secrets**       | `GUILDERS_SECRET` (provider state verification), `BETTER_AUTH_SECRET`, `BETTER_AUTH_API_KEY` (optional, Better Auth Infrastructure dash) |
+| **Payments**      | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`                                                                                             |
+| **Email**         | None (Workers `EMAIL` binding — Cloudflare Email Sending). From: `noreply@guilders.app`                                                  |
+| **Cloudflare**    | None in the Worker. `CLOUDFLARE_ACCOUNT_ID` + `CLOUDFLARE_API_TOKEN` are GitHub Actions secrets for deploy. R2 is `USER_BUCKET`.         |
+| **Bindings**      | `AI` (Workers AI), `EMAIL` (send_email), `USER_BUCKET` (R2), `WEBHOOK_QUEUE` (Queue)                                                     |
+| **Dev tunnels**   | `NGROK_TOKEN`, `NGROK_URL` (optional, for provider callbacks)                                                                            |
+| **SnapTrade**     | `SNAPTRADE_CLIENT_ID`, `SNAPTRADE_CLIENT_SECRET`                                                                                         |
+| **SaltEdge**      | `SALTEDGE_APP_ID`, `SALTEDGE_SECRET`                                                                                                     |
+| **EnableBanking** | `ENABLEBANKING_CLIENT_ID`, `ENABLEBANKING_CLIENT_PRIVATE_KEY`                                                                            |
+| **Teller**        | `TELLER_APPLICATION_ID`, `TELLER_PRIVATE_KEY`, `TELLER_ENVIRONMENT`, `TELLER_WEBHOOK_SECRET`                                             |

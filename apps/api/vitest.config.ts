@@ -53,11 +53,6 @@ export default defineConfig({
     "process.env.STRIPE_SECRET_KEY": JSON.stringify("FAKE_STRIPE_SECRET_PLACEHOLDER"),
     "process.env.STRIPE_PRO_PRICE_ID": JSON.stringify("FAKE_STRIPE_PRICE_ID_PLACEHOLDER"),
     "process.env.STRIPE_WEBHOOK_SECRET": JSON.stringify("FAKE_STRIPE_WEBHOOK_SECRET_PLACEHOLDER"),
-    "process.env.CLOUDFLARE_ACCOUNT_ID": JSON.stringify("test-account-id"),
-    "process.env.CLOUDFLARE_AI_GATEWAY": JSON.stringify("test-gateway"),
-    "process.env.CLOUDFLARE_AI_GATEWAY_TOKEN": JSON.stringify("test-gateway-token"),
-    "process.env.CLOUDFLARE_R2_ACCESS_KEY": JSON.stringify("test-r2-access"),
-    "process.env.CLOUDFLARE_R2_SECRET_KEY": JSON.stringify("test-r2-secret"),
     "process.env.NODE_ENV": JSON.stringify("development"),
   },
 });
