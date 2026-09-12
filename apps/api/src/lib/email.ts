@@ -13,7 +13,7 @@ function parseFromAddress(value: string | undefined): EmailAddress {
 
   const named = raw.match(/^(.*)<([^>]+)>$/);
   const email = named?.[2]?.trim();
-  if (email) {
+  if (named && email) {
     return {
       name: named[1]?.trim() || DEFAULT_FROM_NAME,
       email,
