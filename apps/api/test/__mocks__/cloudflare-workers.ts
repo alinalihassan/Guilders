@@ -49,6 +49,12 @@ export const env = {
   },
 };
 
+const waitUntilPromises: Promise<unknown>[] = [];
+
 export function waitUntil(promise: Promise<unknown>): void {
-  promise.catch(() => {});
+  waitUntilPromises.push(promise);
+}
+
+export async function flushWaitUntil(): Promise<void> {
+  await Promise.all(waitUntilPromises.splice(0));
 }
