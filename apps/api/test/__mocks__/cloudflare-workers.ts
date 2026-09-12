@@ -17,6 +17,9 @@ export class WorkflowEntrypoint {
 }
 
 export const env = {
+  EMAIL: {
+    send: async () => ({ messageId: "email_test_mock" }),
+  },
   USER_BUCKET: {
     put: async () => undefined,
     get: async () => null,

@@ -11,8 +11,9 @@ const EnvSchema = z.object({
   // Auth & secrets
   BETTER_AUTH_SECRET: z.string(),
 
-  // Email (Resend)
-  RESEND_API_KEY: z.string(),
+  // Email (Cloudflare Email Sending). Sender must be on an onboarded domain.
+  // The Worker send_email binding is `EMAIL` in wrangler.jsonc — not an env var.
+  EMAIL_FROM: z.string().optional(),
 
   // Cloudflare
   CLOUDFLARE_ACCOUNT_ID: z.string(),

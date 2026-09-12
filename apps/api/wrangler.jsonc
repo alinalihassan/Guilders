@@ -53,6 +53,11 @@
       "bucket_name": "guilders-user-bucket",
     },
   ],
+  "send_email": [
+    {
+      "name": "EMAIL",
+    },
+  ],
   "ratelimits": [
     {
       "name": "RATE_LIMIT",

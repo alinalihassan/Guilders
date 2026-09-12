@@ -53,7 +53,7 @@ export default defineConfig({
     "process.env.STRIPE_SECRET_KEY": JSON.stringify("FAKE_STRIPE_SECRET_PLACEHOLDER"),
     "process.env.STRIPE_PRO_PRICE_ID": JSON.stringify("FAKE_STRIPE_PRICE_ID_PLACEHOLDER"),
     "process.env.STRIPE_WEBHOOK_SECRET": JSON.stringify("FAKE_STRIPE_WEBHOOK_SECRET_PLACEHOLDER"),
-    "process.env.RESEND_API_KEY": JSON.stringify("FAKE_RESEND_API_KEY_PLACEHOLDER"),
+    "process.env.EMAIL_FROM": JSON.stringify("Guilders <noreply@guilders.app>"),
     "process.env.CLOUDFLARE_ACCOUNT_ID": JSON.stringify("test-account-id"),
     "process.env.CLOUDFLARE_AI_GATEWAY": JSON.stringify("test-gateway"),
     "process.env.CLOUDFLARE_AI_GATEWAY_TOKEN": JSON.stringify("test-gateway-token"),

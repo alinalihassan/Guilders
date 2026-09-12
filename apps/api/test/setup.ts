@@ -71,14 +71,9 @@ vi.mock("stripe", () => {
   };
 });
 
-vi.mock("resend", () => {
-  class MockResend {
-    emails = {
-      send: vi.fn().mockResolvedValue({ id: "email_test_mock" }),
-    };
-  }
-  return { Resend: MockResend };
-});
+vi.mock("@react-email/render", () => ({
+  render: vi.fn().mockResolvedValue("<html><body>test email</body></html>"),
+}));
 
 await initPgliteDb();
 

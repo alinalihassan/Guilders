@@ -9,12 +9,13 @@ declare namespace Cloudflare {
   interface Env {
     USER_BUCKET: R2Bucket;
     WEBHOOK_QUEUE: Queue;
+    EMAIL: SendEmail;
     RATE_LIMIT: RateLimit;
     DATABASE_URL: string;
     BACKEND_URL: string;
     DASHBOARD_URL: string;
     BETTER_AUTH_SECRET: string;
-    RESEND_API_KEY: string;
+    EMAIL_FROM: string;
     CLOUDFLARE_ACCOUNT_ID: string;
     CLOUDFLARE_AI_GATEWAY: string;
     CLOUDFLARE_AI_GATEWAY_TOKEN: string;
@@ -49,7 +50,7 @@ declare namespace NodeJS {
       | "BACKEND_URL"
       | "DASHBOARD_URL"
       | "BETTER_AUTH_SECRET"
-      | "RESEND_API_KEY"
+      | "EMAIL_FROM"
       | "CLOUDFLARE_ACCOUNT_ID"
       | "CLOUDFLARE_AI_GATEWAY"
       | "CLOUDFLARE_AI_GATEWAY_TOKEN"
