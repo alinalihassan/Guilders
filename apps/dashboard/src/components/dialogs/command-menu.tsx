@@ -116,8 +116,6 @@ export function CommandMenu() {
     if (!_open) {
       close();
       setSearch("");
-      // Reset pages after a short delay to allow for closing animation
-      setTimeout(() => update({ pages: [] }), 80);
     }
   };
 
@@ -136,15 +134,9 @@ export function CommandMenu() {
       }
     } else if (e.key === "Escape") {
       e.preventDefault();
-      if (pages.length > 0) {
-        setSearch("");
-        update({
-          pages: pages.slice(0, -1),
-        });
-      } else {
-        setSearch("");
-        close();
-      }
+      e.stopPropagation();
+      setSearch("");
+      close();
     }
   };
 
