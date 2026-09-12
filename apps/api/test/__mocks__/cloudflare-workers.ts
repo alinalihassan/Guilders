@@ -28,6 +28,9 @@ export const env = {
     send: async () => undefined,
     sendBatch: async () => undefined,
   },
+  EMAIL: {
+    send: async () => ({ messageId: "email_test_mock" }),
+  },
   CHAT_RATE_LIMITER: {
     idFromName: () => ({}),
     get: () => ({

@@ -11,9 +11,6 @@ const EnvSchema = z.object({
   // Auth & secrets
   BETTER_AUTH_SECRET: z.string(),
 
-  // Email (Resend)
-  RESEND_API_KEY: z.string(),
-
   // Cloudflare
   CLOUDFLARE_ACCOUNT_ID: z.string(),
   CLOUDFLARE_AI_GATEWAY: z.string(),
