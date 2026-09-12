@@ -44,7 +44,7 @@ guilders-elysia/
 | Dashboard     | TanStack Start + Vite, React 19, Tailwind CSS, shadcn/ui, Recharts, Zustand, TanStack Query |
 | Mobile        | Expo 55, React Native 0.83, Expo Router                                                     |
 | Docs          | Fumadocs 16 (Next.js), OpenAPI integration                                                  |
-| Email         | Resend + React Email                                                                        |
+| Email         | Cloudflare Email Sending + React Email                                                      |
 | Payments      | Stripe (via Better Auth Stripe plugin)                                                      |
 | Storage       | Cloudflare R2 (public + per-user buckets)                                                   |
 | Providers     | SaltEdge (open banking), SnapTrade (brokerages)                                             |
@@ -260,9 +260,9 @@ POST /api/transaction
 | **URLs**          | `BACKEND_URL`, `DASHBOARD_URL`                                                                                                          |
 | **Secrets**       | `GUILDERS_SECRET` (provider state verification), `BETTER_AUTH_SECRET`                                                                   |
 | **Payments**      | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`                                                                                            |
-| **Email**         | `RESEND_API_KEY`                                                                                                                        |
+| **Email**         | None (Workers `EMAIL` binding — Cloudflare Email Sending). From: `noreply@guilders.app`                                                 |
 | **Cloudflare**    | `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_AI_GATEWAY`, `CLOUDFLARE_AI_GATEWAY_TOKEN`, `CLOUDFLARE_R2_ACCESS_KEY`, `CLOUDFLARE_R2_SECRET_KEY` |
-| **Bindings**      | `PUBLIC_BUCKET` (R2), `USER_BUCKET` (R2), `WEBHOOK_QUEUE` (Queue)                                                                       |
+| **Bindings**      | `EMAIL` (send_email), `PUBLIC_BUCKET` (R2), `USER_BUCKET` (R2), `WEBHOOK_QUEUE` (Queue)                                                 |
 | **Dev tunnels**   | `NGROK_TOKEN`, `NGROK_URL` (optional, for provider callbacks)                                                                           |
 | **SnapTrade**     | `SNAPTRADE_CLIENT_ID`, `SNAPTRADE_CLIENT_SECRET`                                                                                        |
 | **SaltEdge**      | `SALTEDGE_APP_ID`, `SALTEDGE_SECRET`                                                                                                    |

@@ -15,7 +15,7 @@ import { Stripe } from "stripe";
 import * as authSchema from "../db/schema/auth";
 import { seedDefaultCategoriesForUser } from "./categories";
 import { createDb, type Database } from "./db";
-import { resend } from "./resend";
+import { sendEmail } from "./email";
 import { enqueueUserDeleteCleanupJobs } from "./user-delete-cleanup";
 
 /**
@@ -109,8 +109,7 @@ export function createAuth(db?: Database) {
       // Required to send the verification email
       sendVerificationEmail: async ({ user, url }) => {
         waitUntil(
-          resend.emails.send({
-            from: "Guilders <noreply@guilders.app>",
+          sendEmail({
             to: user.email,
             subject: "Verify your new email",
             react: (
@@ -128,8 +127,7 @@ export function createAuth(db?: Database) {
       enabled: true,
       sendResetPassword: async ({ user, url }) => {
         waitUntil(
-          resend.emails.send({
-            from: "Guilders <noreply@guilders.app>",
+          sendEmail({
             to: user.email,
             subject: "Reset your password",
             react: (

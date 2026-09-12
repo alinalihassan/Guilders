@@ -47,6 +47,12 @@
       },
     ],
   },
+  "send_email": [
+    {
+      "name": "EMAIL",
+      "allowed_sender_addresses": ["noreply@guilders.app"],
+    },
+  ],
   "r2_buckets": [
     {
       "binding": "USER_BUCKET",

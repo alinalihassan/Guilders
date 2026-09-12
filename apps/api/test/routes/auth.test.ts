@@ -1,5 +1,7 @@
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { env } from "cloudflare:workers";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
+import { flushWaitUntil } from "../__mocks__/cloudflare-workers";
 import { authedFetch, resetTestDb, selfFetch, signUpTestUser, uniqueTestEmail } from "../helpers";
 
 describe("Authentication", () => {
@@ -58,6 +60,34 @@ describe("Authentication", () => {
     it("GET /api/category without auth returns 401", async () => {
       const res = await selfFetch("/api/category");
       expect(res.status).toBe(401);
+    });
+  });
+
+  describe("password reset", () => {
+    it("sends a reset email through the EMAIL binding", async () => {
+      const send = vi.spyOn(env.EMAIL, "send");
+
+      const res = await selfFetch("/api/auth/request-password-reset", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: testEmail,
+          redirectTo: "http://localhost:3002/recovery",
+        }),
+      });
+
+      expect(res.status).toBe(200);
+      await flushWaitUntil();
+
+      expect(send).toHaveBeenCalledWith(
+        expect.objectContaining({
+          from: { email: "noreply@guilders.app", name: "Guilders" },
+          to: testEmail,
+          subject: "Reset your password",
+          html: expect.stringContaining("Reset your password"),
+          text: expect.stringContaining("RESET YOUR PASSWORD"),
+        }),
+      );
     });
   });
 });
