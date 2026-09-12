@@ -243,17 +243,11 @@ Local services: website `http://localhost:3001`, API `http://localhost:3000`, da
 
 **Database.** Prefer `bun run db:query -- "SELECT id, email FROM \"user\" LIMIT 10"` (runs `psql` in `guilders-postgres`). `bun run db:studio` opens Drizzle Studio. Do not guess connection strings — local is `postgresql://postgres:postgres@localhost:5433/guilders` (host 5433 so it does not collide with other local Postgres).
 
-**Email and magic links.** Wrangler does not deliver real mail. `sendEmail` writes `.local/mail/*.html` plus `.local/mail/latest.json` (`to`, `subject`, `links`). After a password reset or email change:
+**Email and magic links.** Leave the `EMAIL` binding local (no `remote: true`). No mailbox setup. Wrangler logs `[wrangler:info] send_email` and writes HTML/text under `apps/api/.wrangler/tmp/email/` — open that file and use the reset/verify URL. Production: Gmail MCP.
 
-```bash
-bun run mail:latest          # JSON: recipient, subject, links
-bun run mail:open            # prints the first http(s) link — open it in the browser
-bun run mail:list            # all captured messages
-```
+**Wrangler.** `apps/api` `bun run dev` needs Wrangler 4.131+. The `AI` binding must stay `"remote": true` (Workers AI has no local simulator). 4.71 fails to create that preview session.
 
-Production mail to a real inbox: use the Gmail MCP (`search_threads` / `get_message`) and click links from the HTML.
-
-**Known local user.** After the API is up: `bun run agent:user` creates `agent@guilders.test` / `agent-agent-agent` and prints the login URL. Sign-up does not require email verification.
+**Known local user.** After the API is up: `bun run agent:user` creates `agent@guilders.test` / `agent-agent-agent`. Sign-up does not require email verification.
 
 ### Common Patterns
 

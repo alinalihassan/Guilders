@@ -1,22 +1,36 @@
 ---
 title: Guilders API Overview
-description: Core concepts, API model, and integration guide
+description: Use the hosted Guilders API with an API key, or run your own instance
 ---
 
-Guilders API powers accounts, transactions, synced institution connections, and auth-backed access for web and mobile clients.
+The Guilders API lets you read and write accounts, transactions, categories, and connections — the same data the dashboard uses.
+
+You can call the **hosted API** at [api.guilders.app](https://api.guilders.app) with an API key from your Guilders account, or point the same API at a **self-hosted** instance.
 
 ## Documentation Sections
 
 <Cards>
-  <Card title="API Models" href="/models" />
   <Card title="Using the API" href="/using-the-api" />
-  <Card title="Core Concepts" href="/concepts" />
-  <Card title="Self Hosting" href="/self-hosting" />
   <Card title="OpenAPI Reference" href="/api-reference" />
+  <Card title="API Models" href="/models" />
+  <Card title="Core Concepts" href="/concepts" />
+  <Card title="Webhooks" href="/webhooks" />
+  <Card title="Self Hosting" href="/self-hosting" />
 </Cards>
 
 ## Quick Start
 
-1. Run the API server.
-2. Set `API_URL` for this docs app.
-3. Open `/api-reference` to browse live OpenAPI routes.
+Most people use the live server. You do not need to run anything locally.
+
+1. Sign in at [dashboard.guilders.app](https://dashboard.guilders.app).
+2. Open **Settings → Developer** and generate an API key. Copy it immediately — it is shown only once.
+3. Call the hosted API with the `x-api-key` header:
+
+```bash
+curl https://api.guilders.app/api/account \
+  -H "x-api-key: $GUILDERS_API_KEY"
+```
+
+4. Browse routes in the [OpenAPI reference](/api-reference) (or [api.guilders.app/openapi](https://api.guilders.app/openapi)).
+
+Self-hosting the stack is optional. If you run your own API, use that origin instead of `https://api.guilders.app` and create a key on your instance. See [Self Hosting](/self-hosting).

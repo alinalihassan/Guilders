@@ -1,34 +1,34 @@
 ---
 title: Self Hosting
-description: Run the docs app against your own Guilders API environment
+description: Run your own Guilders API and use the same API keys against it
 ---
 
-## Environment Variables
+Self-hosting is optional. If you only want to read and write data on the live product, create an API key and call [api.guilders.app](https://api.guilders.app). See [Using the API](/using-the-api).
 
-Set the API origin for OpenAPI ingestion:
+## What you get
 
-```bash
-API_URL=http://localhost:3000
-```
+A self-hosted instance exposes the same REST API, OpenAPI spec, API keys, and webhooks. Clients should use your origin instead of `https://api.guilders.app`.
 
-The docs app loads your OpenAPI schema from:
+## Local development
 
-`$API_URL/openapi/json`
-
-## Local Run
+From the [GitHub repo](https://github.com/alinalihassan/Guilders):
 
 ```bash
 bun install
-bun run dev --filter docs
+cp apps/api/.env.example apps/api/.env
+bun run db:up
+bun run db:migrate && bun run db:init
 ```
 
-Then visit:
+Then start the API (`cd apps/api && bun run dev`) at `http://localhost:3000`. Create a user, open **Settings → Developer**, and generate a key the same way as on the hosted dashboard.
 
-- `/` for written documentation.
-- `/api-reference` for generated OpenAPI pages.
+```bash
+curl http://localhost:3000/api/account \
+  -H "x-api-key: $GUILDERS_API_KEY"
+```
 
-## Deployment Notes
+OpenAPI for a local API lives at `http://localhost:3000/openapi`.
 
-- Host docs app as a separate Next.js service.
-- Point `API_URL` to your production API base URL.
-- Ensure CORS and auth policies allow your docs domain for interactive API testing.
+## Production
+
+Deploy the API Worker and dashboard. Point API clients at your public origin instead of `https://api.guilders.app`. Keep API keys and webhook secrets out of source control.

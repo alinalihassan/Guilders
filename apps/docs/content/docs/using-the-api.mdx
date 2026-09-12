@@ -1,36 +1,61 @@
 ---
 title: Using the API
-description: Authentication, request patterns, and common endpoint usage
+description: Authenticate with an API key and call common endpoints
 ---
+
+## Hosted vs self-hosted
+
+|                     | Base URL                                      |
+| ------------------- | --------------------------------------------- |
+| Hosted (default)    | `https://api.guilders.app`                    |
+| Self-hosted / local | Your API origin, e.g. `http://localhost:3000` |
+
+The rest of this page uses the hosted URL. Swap the host if you run your own server.
 
 ## Authentication
 
-All endpoints require authenticated access:
+For scripts, agents, and third-party apps, create an API key in the dashboard under **Settings → Developer**, then send it on every request:
 
-- Web: Better Auth session cookie.
-- Mobile and external clients: `Authorization: Bearer <token>`.
-- Some workflows may use `x-api-key` where defined in security schemes.
+```http
+x-api-key: <your-api-key>
+```
+
+The dashboard itself uses a Better Auth session cookie. Some clients also send `Authorization: Bearer <token>`. All three are valid; API keys are the intended path for the hosted API.
 
 ## Core Endpoints
 
-- `GET /api/account` to list all user accounts.
-- `POST /api/account` to create manual accounts.
-- `GET /api/transaction` to list transactions (recommended descending by date).
-- `POST /api/transaction` to create manual transactions.
-- `GET /api/account/:id/transaction` for account-scoped history.
+- `GET /api/account` — list all accounts for the authenticated user.
+- `POST /api/account` — create a manual account.
+- `GET /api/transaction` — list transactions (newest first).
+- `POST /api/transaction` — create a manual transaction.
+- `GET /api/account/:id/transaction` — transactions for one account.
 
 ## Example Requests
 
 ```bash
-curl "$API_URL/api/account" \
-  -H "Authorization: Bearer $TOKEN"
+curl https://api.guilders.app/api/account \
+  -H "x-api-key: $GUILDERS_API_KEY"
 ```
 
 ```bash
-curl "$API_URL/api/transaction?limit=20" \
-  -H "Authorization: Bearer $TOKEN"
+curl "https://api.guilders.app/api/transaction?limit=20" \
+  -H "x-api-key: $GUILDERS_API_KEY"
+```
+
+```bash
+curl https://api.guilders.app/api/account \
+  -X POST \
+  -H "x-api-key: $GUILDERS_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Emergency Cash",
+    "type": "asset",
+    "subtype": "depository",
+    "value": "5000",
+    "currency": "USD"
+  }'
 ```
 
 ## OpenAPI Explorer
 
-Use the live reference at `/api-reference` for request/response schema details, parameters, and try-it-out workflows.
+Use the [OpenAPI reference](/api-reference) for schemas, parameters, and try-it-out. The same spec is also served at [api.guilders.app/openapi](https://api.guilders.app/openapi).

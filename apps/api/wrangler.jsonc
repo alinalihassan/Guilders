@@ -9,6 +9,7 @@
   "compatibility_flags": ["nodejs_compat"],
   "ai": {
     "binding": "AI",
+    "remote": true,
   },
   "dev": {
     "port": 3000,
