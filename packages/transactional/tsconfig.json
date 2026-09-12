@@ -6,5 +6,5 @@
     "jsx": "react-jsx"
   },
   "include": ["."],
-  "exclude": ["node_modules", "dist", "build"]
+  "exclude": ["node_modules", "dist", "build", "scripts", ".react-email"]
 }
