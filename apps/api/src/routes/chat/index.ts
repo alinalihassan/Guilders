@@ -14,6 +14,7 @@ import { and, eq } from "drizzle-orm";
 import { Hono } from "hono";
 import { createWorkersAI } from "workers-ai-provider";
 import { google } from "workers-ai-provider/google";
+import { openai } from "workers-ai-provider/openai";
 
 import { conversation } from "../../db/schema/conversations";
 import { getChatLimitConfig } from "../../lib/chat-limits";
@@ -36,7 +37,7 @@ const workersai = () =>
   createWorkersAI({
     binding: env.AI,
     gateway: { id: "guilders-ai-gateway" },
-    providers: [google],
+    providers: [openai, google],
   });
 
 function buildSystemContent(today: string, readOnly: boolean): string {

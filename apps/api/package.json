@@ -13,7 +13,7 @@
     "format:check": "oxfmt --check .",
     "typecheck": "tsc --noEmit",
     "cf-typegen": "wrangler types",
-    "ngrok": "bun --env-file=.env __ngrok-command",
+    "ngrok": "bun --env-file=.env scripts/start-ngrok.ts",
     "auth:generate": "bun --env-file=.env x auth generate --config better-auth.config.ts --output src/db/schema/auth.ts -y",
     "db:generate": "bun --env-file=.env drizzle-kit generate --config drizzle.config.ts",
     "db:migrate": "bun --env-file=.env drizzle-kit migrate --config drizzle.config.ts",
@@ -21,11 +21,11 @@
     "db:init": "bun --env-file=.env scripts/init-db.ts",
     "db:reset": "docker compose -f ../../docker-compose.yml down -v && docker compose -f ../../docker-compose.yml up -d --wait && bun run db:migrate && bun run db:init",
     "db:query": "bun scripts/db-query.ts",
-    "agent:user": "bun --env-file=.env scripts/seed-agent-user.ts",
-    "__ngrok-command": "ngrok http 3000 --authtoken=$NGROK_AUTHTOKEN --url=${NGROK_URL}"
+    "agent:user": "bun --env-file=.env scripts/seed-agent-user.ts"
   },
   "dependencies": {
     "@ai-sdk/google": "^4.0.69",
+    "@ai-sdk/openai": "^4.0.66",
     "@better-auth/api-key": "catalog:",
     "@better-auth/cimd": "catalog:",
     "@better-auth/drizzle-adapter": "catalog:",

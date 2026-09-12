@@ -16,6 +16,7 @@ const EnvSchema = z.object({
   STRIPE_PRO_PRICE_ID: z.string().optional(),
   STRIPE_SECRET_KEY: z.string().optional(),
   STRIPE_WEBHOOK_SECRET: z.string().optional(),
+  PRO_FEATURES_FREE_FOR_ALL: z.string().optional(),
 
   // Providers
   GUILDERS_SECRET: z.string().optional(),

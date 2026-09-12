@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useSyncExternalStore } from "react";
 
 interface NumberFlowProps {
   value: number;
@@ -9,22 +9,28 @@ interface NumberFlowProps {
 
 function NumberFlowStatic({ value, format, className, style }: NumberFlowProps) {
   return (
-    <span className={className} style={style}>
+    <span className={className} style={style} suppressHydrationWarning>
       {new Intl.NumberFormat(undefined, format).format(value)}
     </span>
   );
 }
 
-// Prevent @number-flow/react from being evaluated during SSR where HTMLElement is unavailable
-const NumberFlowLazy = lazy(() =>
-  typeof HTMLElement !== "undefined"
-    ? import("@number-flow/react")
-    : (Promise.resolve({
-        default: NumberFlowStatic,
-      }) as Promise<{ default: typeof NumberFlowStatic }>),
-);
+const NumberFlowLazy = lazy(() => import("@number-flow/react"));
+
+function useIsClient() {
+  return useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
+}
 
 export default function NumberFlow(props: NumberFlowProps) {
+  const isClient = useIsClient();
+  if (!isClient) {
+    return <NumberFlowStatic {...props} />;
+  }
+
   return (
     <Suspense fallback={<NumberFlowStatic {...props} />}>
       <NumberFlowLazy {...props} />

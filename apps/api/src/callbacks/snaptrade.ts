@@ -24,6 +24,7 @@ const HANDLED_EVENTS = new Set<SnapTradeEventType>([
   "ACCOUNT_TRANSACTIONS_UPDATED",
   "ACCOUNT_HOLDINGS_UPDATED",
   "ACCOUNT_REMOVED",
+  "USER_DELETED",
 ]);
 
 export async function handleSnapTradeCallback(request: Request, env: Env): Promise<Response> {

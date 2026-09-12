@@ -1,6 +1,8 @@
+import { eq } from "drizzle-orm";
+
 import { providerConnection } from "../../db/schema/provider-connections";
 import type { InsertTransaction } from "../../db/schema/transactions";
-import { createDb } from "../../lib/db";
+import { createDb, type Database } from "../../lib/db";
 import type {
   AccountParams,
   ConnectionParams,
@@ -16,9 +18,46 @@ import type {
 } from "../types";
 import { getSnapTradeClient } from "./client";
 
-function getErrorMessage(error: unknown, fallback: string): string {
-  if (error instanceof Error && error.message) return error.message;
+function getErrorStatus(error: unknown): number | undefined {
+  if (typeof error !== "object" || error === null) return undefined;
 
+  const candidate = error as {
+    status?: unknown;
+    response?: { status?: unknown; data?: unknown };
+    cause?: { status?: unknown; response?: { status?: unknown } };
+    message?: unknown;
+  };
+
+  if (typeof candidate.response?.status === "number") return candidate.response.status;
+  if (typeof candidate.status === "number") return candidate.status;
+  if (typeof candidate.cause?.response?.status === "number") return candidate.cause.response.status;
+  if (typeof candidate.cause?.status === "number") return candidate.cause.status;
+
+  if (typeof candidate.message === "string") {
+    const match = candidate.message.match(/status code (\d+)/i);
+    if (match) return Number(match[1]);
+  }
+
+  return undefined;
+}
+
+function getResponseDetail(data: unknown): string | undefined {
+  if (typeof data === "string" && data.length > 0) return data;
+  if (typeof data !== "object" || data === null) return undefined;
+
+  for (const key of ["message", "detail", "error"] as const) {
+    const value = (data as Record<string, unknown>)[key];
+    if (typeof value === "string" && value.length > 0) return value;
+  }
+
+  try {
+    return JSON.stringify(data);
+  } catch {
+    return undefined;
+  }
+}
+
+function getErrorMessage(error: unknown, fallback: string): string {
   if (typeof error === "object" && error !== null) {
     const maybeError = error as {
       response?: {
@@ -29,27 +68,27 @@ function getErrorMessage(error: unknown, fallback: string): string {
     };
 
     const status = maybeError.response?.status;
-    const responseData = maybeError.response?.data;
-
-    if (typeof responseData === "string")
-      return status
-        ? `SnapTrade error ${status}: ${responseData}`
-        : `SnapTrade error: ${responseData}`;
-
-    if (
-      typeof responseData === "object" &&
-      responseData !== null &&
-      "message" in responseData &&
-      typeof (responseData as { message?: unknown }).message === "string"
-    ) {
-      const message = (responseData as { message: string }).message;
-      return status ? `SnapTrade error ${status}: ${message}` : `SnapTrade error: ${message}`;
+    const detail = getResponseDetail(maybeError.response?.data);
+    if (detail) {
+      return status ? `SnapTrade error ${status}: ${detail}` : `SnapTrade error: ${detail}`;
     }
 
     if (maybeError.message) return maybeError.message;
   }
 
+  if (error instanceof Error && error.message) return error.message;
   return fallback;
+}
+
+function isStaleSnapTradeUserError(error: unknown): boolean {
+  const status = getErrorStatus(error);
+  if (status === 401 || status === 403) return true;
+  const message = getErrorMessage(error, "").toLowerCase();
+  return (
+    message.includes("usersecret") ||
+    message.includes("user not found") ||
+    message.includes("status code 401")
+  );
 }
 
 export class SnapTradeProvider implements IProvider {
@@ -138,6 +177,50 @@ export class SnapTradeProvider implements IProvider {
     }
   }
 
+  private async registerAndStoreSecret(
+    db: Database,
+    providerId: number,
+    userId: string,
+    options?: { resetRemote?: boolean },
+  ): Promise<{ success: true; userSecret: string } | { success: false; error: string }> {
+    if (options?.resetRemote) {
+      await this.deregisterUser(userId);
+    }
+
+    let result = await this.registerUser(userId);
+    if (!result.success || !result.data?.userSecret) {
+      await this.deregisterUser(userId);
+      result = await this.registerUser(userId);
+    }
+
+    if (!result.success || !result.data?.userSecret) {
+      return {
+        success: false,
+        error: result.error || "Failed to register user with provider",
+      };
+    }
+
+    const userSecret = result.data.userSecret;
+    const existing = await db.query.providerConnection.findFirst({
+      where: { provider_id: providerId, user_id: userId },
+    });
+
+    if (existing) {
+      await db
+        .update(providerConnection)
+        .set({ secret: userSecret, updated_at: new Date() })
+        .where(eq(providerConnection.id, existing.id));
+    } else {
+      await db.insert(providerConnection).values({
+        provider_id: providerId,
+        user_id: userId,
+        secret: userSecret,
+      });
+    }
+
+    return { success: true, userSecret };
+  }
+
   async connect(params: ConnectionParams): Promise<ConnectResult> {
     const client = getSnapTradeClient();
     if (!client) return { success: false, error: "SnapTrade is not configured." };
@@ -158,21 +241,9 @@ export class SnapTradeProvider implements IProvider {
       let userSecret = providerConn?.secret;
 
       if (!userSecret) {
-        const registerResult = await this.registerUser(params.userId);
-        if (!registerResult.success || !registerResult.data?.userSecret) {
-          return {
-            success: false,
-            error: registerResult.error || "Failed to register user with provider",
-          };
-        }
-
-        await db.insert(providerConnection).values({
-          provider_id: providerRecord.id,
-          user_id: params.userId,
-          secret: registerResult.data.userSecret,
-        });
-
-        userSecret = registerResult.data.userSecret;
+        const stored = await this.registerAndStoreSecret(db, providerRecord.id, params.userId);
+        if (!stored.success) return stored;
+        userSecret = stored.userSecret;
       }
 
       const institutionRecord = await db.query.institution.findFirst({
@@ -191,12 +262,32 @@ export class SnapTradeProvider implements IProvider {
         return { success: false, error: "Institution not found" };
       }
 
-      const response = await client.authentication.loginSnapTradeUser({
-        userId: params.userId,
-        userSecret,
-        broker: brokerage.slug,
-        reconnect: params.connectionId,
-      });
+      let response;
+      try {
+        response = await client.authentication.loginSnapTradeUser({
+          userId: params.userId,
+          userSecret,
+          broker: brokerage.slug,
+          reconnect: params.connectionId,
+        });
+      } catch (error) {
+        if (!isStaleSnapTradeUserError(error)) throw error;
+
+        console.warn("[SnapTrade] stale user secret, re-registering", {
+          userId: params.userId,
+        });
+        const stored = await this.registerAndStoreSecret(db, providerRecord.id, params.userId, {
+          resetRemote: true,
+        });
+        if (!stored.success) return stored;
+
+        response = await client.authentication.loginSnapTradeUser({
+          userId: params.userId,
+          userSecret: stored.userSecret,
+          broker: brokerage.slug,
+          reconnect: params.connectionId,
+        });
+      }
 
       if (!response.data || !("redirectURI" in response.data) || !response.data.redirectURI) {
         return { success: false, error: "Failed to generate redirect URL" };

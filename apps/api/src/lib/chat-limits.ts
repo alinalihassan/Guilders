@@ -14,6 +14,16 @@ export function isStripeConfigured(): boolean {
   return !!(process.env.STRIPE_SECRET_KEY && process.env.STRIPE_PRO_PRICE_ID);
 }
 
+export function areProFeaturesFreeForAll(): boolean {
+  const value = process.env.PRO_FEATURES_FREE_FOR_ALL?.trim().toLowerCase();
+  return value === "true" || value === "1" || value === "yes";
+}
+
+/** Stripe is configured and Pro is not unlocked for everyone. */
+export function isBillingEnabled(): boolean {
+  return isStripeConfigured() && !areProFeaturesFreeForAll();
+}
+
 export type ChatLimitConfig = {
   isPro: boolean;
   limit: number;
@@ -23,11 +33,11 @@ export type ChatLimitConfig = {
 
 /**
  * Resolve tier and rate limit for a user.
- * - If Stripe is not configured → Pro (higher limit).
- * - If Stripe is configured → Pro only when user has active/trialing subscription.
+ * - If billing is not enforced → Pro (higher limit).
+ * - If billing is enforced → Pro only when user has active/trialing subscription.
  */
 export async function getChatLimitConfig(userId: string): Promise<ChatLimitConfig> {
-  const billingEnabled = isStripeConfigured();
+  const billingEnabled = isBillingEnabled();
   if (!billingEnabled) {
     return {
       isPro: true,

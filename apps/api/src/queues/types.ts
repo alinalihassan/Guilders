@@ -11,7 +11,8 @@ export type SnapTradeEventType =
   | "ACCOUNT_TRANSACTIONS_INITIAL_UPDATE"
   | "ACCOUNT_TRANSACTIONS_UPDATED"
   | "ACCOUNT_HOLDINGS_UPDATED"
-  | "ACCOUNT_REMOVED";
+  | "ACCOUNT_REMOVED"
+  | "USER_DELETED";
 
 export type SnapTradeWebhookPayload = {
   userId: string;
