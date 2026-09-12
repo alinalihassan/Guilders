@@ -7,7 +7,7 @@ import {
   uniqueIndex,
   varchar,
 } from "drizzle-orm/pg-core";
-import { createInsertSchema, createSelectSchema } from "drizzle-orm/typebox-legacy";
+import { createInsertSchema, createSelectSchema } from "drizzle-orm/zod";
 
 import { DEFAULT_CATEGORY_COLOR } from "../../lib/constants";
 import { user } from "./auth";

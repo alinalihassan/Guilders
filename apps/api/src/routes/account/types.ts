@@ -1,4 +1,4 @@
-import { t } from "elysia";
+import { z } from "zod";
 
 import { insertAccountSchema } from "../../db/schema/accounts";
 import type { Account as DbAccount, InsertAccount } from "../../db/schema/accounts";
@@ -7,7 +7,6 @@ import type { InstitutionConnection } from "../../db/schema/institution-connecti
 import type { Institution } from "../../db/schema/institutions";
 import type { Provider } from "../../db/schema/providers";
 
-// Subtype to type mapping
 export const subtypeToType: Record<string, string> = {
   [AccountSubtypeEnum.depository]: AccountTypeEnum.asset,
   [AccountSubtypeEnum.brokerage]: AccountTypeEnum.asset,
@@ -19,18 +18,14 @@ export const subtypeToType: Record<string, string> = {
   [AccountSubtypeEnum.stock]: AccountTypeEnum.asset,
 };
 
-export const idParamSchema = t.Object({
-  id: t.Number(),
+export const createAccountSchema = insertAccountSchema.omit({
+  id: true,
+  user_id: true,
+  created_at: true,
+  updated_at: true,
+  locked_attributes: true,
 });
-
-export const createAccountSchema = t.Omit(insertAccountSchema, [
-  "id",
-  "user_id",
-  "created_at",
-  "updated_at",
-  "locked_attributes",
-]);
-export const updateAccountSchema = t.Partial(createAccountSchema);
+export const updateAccountSchema = createAccountSchema.partial();
 
 export type Account = DbAccount & {
   institutionConnection?:
@@ -48,3 +43,8 @@ export type CreateAccount = Omit<
 >;
 
 export type UpdateAccount = Partial<CreateAccount>;
+
+export const dateRangeQuerySchema = z.object({
+  from: z.iso.date().optional(),
+  to: z.iso.date().optional(),
+});

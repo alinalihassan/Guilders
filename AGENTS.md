@@ -16,9 +16,9 @@ Guilders is an open-source, self-hostable personal finance platform. It aggregat
 ## Monorepo Structure
 
 ```
-guilders-elysia/
+guilders/
 ├── apps/
-│   ├── api/           Elysia API on Cloudflare Workers
+│   ├── api/           Hono API on Cloudflare Workers
 │   ├── dashboard/     TanStack Start + Vite web dashboard
 │   ├── docs/          Fumadocs documentation site
 │   ├── website/       Astro marketing site
@@ -36,7 +36,7 @@ guilders-elysia/
 
 | Layer         | Technology                                                                                  |
 | ------------- | ------------------------------------------------------------------------------------------- |
-| API Framework | Elysia 1.4 (Bun runtime, Cloudflare Workers adapter)                                        |
+| API Framework | Hono 4 (Cloudflare Workers) + Zod 4 Standard Schema validation + Hono RPC                   |
 | Database      | PostgreSQL (Neon serverless) via Drizzle ORM                                                |
 | Auth          | Better Auth (session cookies, bearer, passkeys, API keys, OAuth) + dash plugin              |
 | AI            | Vercel AI SDK via Workers AI binding (`env.AI`) and AI Gateway id `guilders-ai-gateway`     |
@@ -162,7 +162,7 @@ All routes live under `/api` (see `apps/api/src/routes/`).
 
 ### OpenAPI
 
-The API self-documents via `@elysiajs/openapi`. Auth uses either:
+The API self-documents via `hono-openapi` + Scalar (`/openapi` and `/openapi/json`). Auth uses either:
 
 - `x-api-key` header (API key)
 - `Authorization: Bearer <token>` (JWT)
@@ -178,7 +178,7 @@ Handled by Better Auth (`apps/api/src/lib/auth.tsx`).
 
 The dashboard auth client (`apps/dashboard/src/lib/auth-client.ts`) includes `dashClient()` from `@better-auth/infra/client`. Set `BETTER_AUTH_API_KEY` to connect `dash()` to Better Auth Infrastructure.
 
-The auth middleware at `apps/api/src/middleware/auth.ts` is an Elysia plugin that protects routes.
+The auth middleware at `apps/api/src/middleware/auth.ts` is a Hono `requireAuth` middleware that protects routes.
 
 ## AI Features
 
@@ -232,7 +232,7 @@ Queue: `guilders-webhook-events` (Cloudflare Queues, max batch 10, 5 retries, DL
 3. **Synced vs manual** — check `institution_connection_id` to determine if an account is synced.
 4. **Use the Better Auth client** for all requests; it handles authentication automatically.
 5. **Currency handling** — accounts have their own currency; consider conversion for net-worth totals.
-6. **Eden treaty** — the dashboard uses `@elysiajs/eden` for end-to-end type-safe API calls.
+6. **Hono RPC** — the dashboard uses `hc<App>()` from `hono/client` for end-to-end type-safe API calls (`api.account.$get()`, `api.account[":id"].$get({ param })`).
 7. **React 19 compiler** — the dashboard uses `babel-plugin-react-compiler`; avoid manual `useMemo`/`useCallback` where the compiler handles it.
 8. **Formatting** — ALWAYS run `bun format` after making any code changes to ensure the codebase remains consistently formatted.
 9. **Schema changes** — only via Drizzle CLI (`bun run db:generate`). Never hand-write migration SQL. After Better Auth plugin changes, run `bun run auth:generate` first, then `db:generate`.

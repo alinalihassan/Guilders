@@ -1,51 +1,54 @@
 import { env } from "cloudflare:workers";
 import { and, asc, eq, inArray } from "drizzle-orm";
-import { Elysia, status, t } from "elysia";
+import { Hono } from "hono";
+import { z } from "zod";
 
 import { document } from "../../db/schema/documents";
 import type { DocumentEntityTypeEnum } from "../../db/schema/enums";
-import { insertMerchantSchema, merchant, selectMerchantSchema } from "../../db/schema/merchants";
+import { merchant, selectMerchantSchema } from "../../db/schema/merchants";
 import { cleanupEntityDocuments } from "../../lib/cleanup-documents";
-import { authPlugin } from "../../middleware/auth";
+import { documented, idParamSchema, jsonError, successSchema, validate } from "../../lib/http";
+import { requireAuth, type AuthEnv } from "../../middleware/auth";
 import { errorSchema } from "../../utils/error";
-import { createMerchantSchema, merchantIdParamSchema } from "./types";
+import { createMerchantSchema } from "./types";
 
-export const merchantRoutes = new Elysia({
-  prefix: "/merchant",
-  detail: {
-    tags: ["Merchants"],
-    security: [{ apiKeyAuth: [] }, { bearerAuth: [] }],
-  },
-})
-  .use(authPlugin)
-  .model({
-    Merchant: selectMerchantSchema,
-    CreateMerchant: insertMerchantSchema,
-  })
+export const merchantRoutes = new Hono<AuthEnv>()
+  .use(requireAuth)
   .get(
-    "",
-    async ({ user, db }) => {
+    "/",
+    documented({
+      tags: ["Merchants"],
+      summary: "Get merchants",
+      description: "Retrieve all merchants for the authenticated user.",
+      responses: { 200: z.array(selectMerchantSchema) },
+    }),
+    async (c) => {
+      const user = c.get("user");
+      const db = c.get("db");
       const merchants = await db.query.merchant.findMany({
         where: { user_id: user.id },
         orderBy: (m) => asc(m.name),
       });
-      return merchants;
-    },
-    {
-      auth: true,
-      response: t.Array(t.Ref("#/components/schemas/Merchant")),
-      detail: {
-        summary: "Get merchants",
-        description: "Retrieve all merchants for the authenticated user.",
-      },
+      return c.json(merchants, 200);
     },
   )
   .post(
-    "",
-    async ({ body, user, db }) => {
+    "/",
+    documented({
+      tags: ["Merchants"],
+      summary: "Create merchant",
+      description: "Create a new merchant for the authenticated user",
+      responses: { 200: selectMerchantSchema, 400: errorSchema, 500: errorSchema },
+    }),
+    validate("json", createMerchantSchema),
+    async (c) => {
+      const body = c.req.valid("json");
+      const user = c.get("user");
+      const db = c.get("db");
+
       const normalizedName = body.name.trim();
       if (!normalizedName) {
-        return status(400, { error: "Merchant name is required" });
+        return jsonError(c, 400, "Merchant name is required");
       }
 
       const existingMerchant = await db.query.merchant.findFirst({
@@ -56,7 +59,7 @@ export const merchantRoutes = new Elysia({
       });
 
       if (existingMerchant) {
-        return existingMerchant;
+        return c.json(existingMerchant, 200);
       }
 
       const [newMerchant] = await db
@@ -72,45 +75,49 @@ export const merchantRoutes = new Elysia({
         .returning();
 
       if (!newMerchant) {
-        return status(500, { error: "Failed to create merchant" });
+        return jsonError(c, 500, "Failed to create merchant");
       }
 
-      return newMerchant;
-    },
-    {
-      auth: true,
-      body: createMerchantSchema,
-      response: {
-        200: "Merchant",
-        400: errorSchema,
-        500: errorSchema,
-      },
-      detail: {
-        summary: "Create merchant",
-        description: "Create a new merchant for the authenticated user",
-      },
+      return c.json(newMerchant, 200);
     },
   )
   .put(
     "/:id",
-    async ({ params, body, user, db }) => {
+    documented({
+      tags: ["Merchants"],
+      summary: "Update merchant",
+      description: "Update a merchant for the authenticated user",
+      responses: {
+        200: selectMerchantSchema,
+        400: errorSchema,
+        404: errorSchema,
+        500: errorSchema,
+      },
+    }),
+    validate("param", idParamSchema),
+    validate("json", createMerchantSchema),
+    async (c) => {
+      const { id } = c.req.valid("param");
+      const body = c.req.valid("json");
+      const user = c.get("user");
+      const db = c.get("db");
+
       const existingMerchant = await db.query.merchant.findFirst({
         where: {
-          id: params.id,
+          id,
           user_id: user.id,
         },
       });
 
       if (!existingMerchant) {
-        return status(404, { error: "Merchant not found" });
+        return jsonError(c, 404, "Merchant not found");
       }
 
       const normalizedName = body.name.trim();
       if (!normalizedName) {
-        return status(400, { error: "Merchant name is required" });
+        return jsonError(c, 400, "Merchant name is required");
       }
 
-      // If the logo is being updated, clean up old logo
       const newLogoUrl = body.logo_url;
       if (newLogoUrl && newLogoUrl !== existingMerchant.logo_url) {
         let newDocId: number | null = null;
@@ -126,7 +133,7 @@ export const merchantRoutes = new Elysia({
             and(
               eq(document.user_id, user.id),
               eq(document.entity_type, "merchant" as DocumentEntityTypeEnum),
-              eq(document.entity_id, params.id),
+              eq(document.entity_id, id),
             ),
           );
 
@@ -151,62 +158,44 @@ export const merchantRoutes = new Elysia({
           website_url: body.website_url ?? existingMerchant.website_url,
           updated_at: new Date(),
         })
-        .where(and(eq(merchant.id, params.id), eq(merchant.user_id, user.id)))
+        .where(and(eq(merchant.id, id), eq(merchant.user_id, user.id)))
         .returning();
 
       if (!updatedMerchant) {
-        return status(500, { error: "Failed to update merchant" });
+        return jsonError(c, 500, "Failed to update merchant");
       }
 
-      return updatedMerchant;
-    },
-    {
-      auth: true,
-      params: merchantIdParamSchema,
-      body: createMerchantSchema,
-      response: {
-        200: "Merchant",
-        400: errorSchema,
-        404: errorSchema,
-        500: errorSchema,
-      },
-      detail: {
-        summary: "Update merchant",
-        description: "Update a merchant for the authenticated user",
-      },
+      return c.json(updatedMerchant, 200);
     },
   )
   .delete(
     "/:id",
-    async ({ params, user, db }) => {
+    documented({
+      tags: ["Merchants"],
+      summary: "Delete merchant",
+      description: "Delete a merchant for the authenticated user",
+      responses: { 200: successSchema, 404: errorSchema },
+    }),
+    validate("param", idParamSchema),
+    async (c) => {
+      const { id } = c.req.valid("param");
+      const user = c.get("user");
+      const db = c.get("db");
+
       const existingMerchant = await db.query.merchant.findFirst({
         where: {
-          id: params.id,
+          id,
           user_id: user.id,
         },
       });
 
       if (!existingMerchant) {
-        return status(404, { error: "Merchant not found" });
+        return jsonError(c, 404, "Merchant not found");
       }
 
-      await cleanupEntityDocuments(db, user.id, "merchant", params.id);
-      await db
-        .delete(merchant)
-        .where(and(eq(merchant.id, params.id), eq(merchant.user_id, user.id)));
+      await cleanupEntityDocuments(db, user.id, "merchant", id);
+      await db.delete(merchant).where(and(eq(merchant.id, id), eq(merchant.user_id, user.id)));
 
-      return { success: true };
-    },
-    {
-      auth: true,
-      params: merchantIdParamSchema,
-      response: {
-        200: t.Object({ success: t.Boolean() }),
-        404: errorSchema,
-      },
-      detail: {
-        summary: "Delete merchant",
-        description: "Delete a merchant for the authenticated user",
-      },
+      return c.json({ success: true }, 200);
     },
   );

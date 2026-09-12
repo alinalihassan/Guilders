@@ -1,38 +1,38 @@
-import { t } from "elysia";
+import { z } from "zod";
 
-export const connectionResultSchema = t.Object({
-  redirectURI: t.String(),
-  type: t.Union([t.Literal("redirect"), t.Literal("popup")]),
+export const connectionResultSchema = z.object({
+  redirectURI: z.string(),
+  type: z.enum(["redirect", "popup"]),
 });
 
-export const refreshResultSchema = t.Object({
-  success: t.Boolean(),
-  redirectURI: t.Optional(t.String()),
-  type: t.Optional(t.Union([t.Literal("redirect"), t.Literal("popup")])),
+export const refreshResultSchema = z.object({
+  success: z.boolean(),
+  redirectURI: z.string().optional(),
+  type: z.enum(["redirect", "popup"]).optional(),
 });
 
-export const providerOnlySchema = t.Object({
-  provider_id: t.String(),
+export const providerOnlySchema = z.object({
+  provider_id: z.string(),
 });
 
-export const createConnectionSchema = t.Object({
-  provider_id: t.String(),
-  institution_id: t.String(),
+export const createConnectionSchema = z.object({
+  provider_id: z.string(),
+  institution_id: z.string(),
 });
 
-export const reconnectSchema = t.Object({
-  provider_id: t.String(),
-  institution_id: t.String(),
-  account_id: t.String(),
+export const reconnectSchema = z.object({
+  provider_id: z.string(),
+  institution_id: z.string(),
+  account_id: z.string(),
 });
 
-export const refreshSchema = t.Object({
-  provider_id: t.String(),
-  connection_id: t.String(),
+export const refreshSchema = z.object({
+  provider_id: z.string(),
+  connection_id: z.string(),
 });
 
-export const syncSchema = t.Object({
-  account_id: t.String(),
+export const syncSchema = z.object({
+  account_id: z.string(),
 });
 
 export type ConnectionResponse = {

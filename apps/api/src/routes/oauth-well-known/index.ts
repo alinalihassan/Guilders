@@ -2,7 +2,7 @@ import {
   oauthProviderAuthServerMetadata,
   oauthProviderOpenIdConfigMetadata,
 } from "@better-auth/oauth-provider";
-import { Elysia } from "elysia";
+import { Hono } from "hono";
 
 import { createAuth } from "../../lib/auth";
 import { getOauthResourceClient } from "../../lib/oauth-resource-client";
@@ -37,18 +37,18 @@ const getProtectedResourceResponse = async () => {
   });
 };
 
-export const oauthWellKnownRoutes = new Elysia({ detail: { hide: true } })
-  .get("/.well-known/oauth-authorization-server", async ({ request }) => {
-    return withCors(await getAuthHandler()(request));
+export const oauthWellKnownRoutes = new Hono()
+  .get("/.well-known/oauth-authorization-server", async (c) => {
+    return withCors(await getAuthHandler()(c.req.raw));
   })
-  .get("/.well-known/oauth-authorization-server/api/auth", async ({ request }) => {
-    return withCors(await getAuthHandler()(request));
+  .get("/.well-known/oauth-authorization-server/api/auth", async (c) => {
+    return withCors(await getAuthHandler()(c.req.raw));
   })
-  .get("/.well-known/openid-configuration", async ({ request }) => {
-    return withCors(await getOpenIdHandler()(request));
+  .get("/.well-known/openid-configuration", async (c) => {
+    return withCors(await getOpenIdHandler()(c.req.raw));
   })
-  .get("/api/auth/.well-known/openid-configuration", async ({ request }) => {
-    return withCors(await getOpenIdHandler()(request));
+  .get("/api/auth/.well-known/openid-configuration", async (c) => {
+    return withCors(await getOpenIdHandler()(c.req.raw));
   })
   .get("/.well-known/oauth-protected-resource", getProtectedResourceResponse)
   .get("/.well-known/oauth-protected-resource/mcp", getProtectedResourceResponse);

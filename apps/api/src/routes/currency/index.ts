@@ -1,60 +1,44 @@
-import { Elysia, status, t } from "elysia";
+import { Hono } from "hono";
+import { z } from "zod";
 
 import { selectCurrencySchema } from "../../db/schema/currencies";
-import { authPlugin } from "../../middleware/auth";
+import { codeParamSchema, documented, jsonError, validate } from "../../lib/http";
+import { requireAuth, type AuthEnv } from "../../middleware/auth";
 import { errorSchema } from "../../utils/error";
-import { currencyCodeParamSchema } from "./types";
 
-export const currencyRoutes = new Elysia({
-  prefix: "/currency",
-  detail: {
-    tags: ["Currencies"],
-    security: [{ apiKeyAuth: [] }, { bearerAuth: [] }],
-  },
-})
-  .use(authPlugin)
-  .model({
-    Currency: selectCurrencySchema,
-  })
+export const currencyRoutes = new Hono<AuthEnv>()
+  .use(requireAuth)
   .get(
-    "",
-    async ({ db }) => {
-      return db.query.currency.findMany();
-    },
-    {
-      auth: true,
-      response: t.Array(t.Ref("#/components/schemas/Currency")),
-      detail: {
-        summary: "Get all currencies",
-        description: "Retrieve a list of all supported currencies",
-      },
+    "/",
+    documented({
+      tags: ["Currencies"],
+      summary: "Get all currencies",
+      description: "Retrieve a list of all supported currencies",
+      responses: { 200: z.array(selectCurrencySchema) },
+    }),
+    async (c) => {
+      const db = c.get("db");
+      return c.json(await db.query.currency.findMany(), 200);
     },
   )
   .get(
     "/:code",
-    async ({ params, db }) => {
+    documented({
+      tags: ["Currencies"],
+      summary: "Get currency by code",
+      description: "Retrieve a specific currency by its ISO code",
+      responses: { 200: selectCurrencySchema, 404: errorSchema },
+    }),
+    validate("param", codeParamSchema),
+    async (c) => {
+      const { code } = c.req.valid("param");
+      const db = c.get("db");
       const result = await db.query.currency.findFirst({
-        where: {
-          code: params.code,
-        },
+        where: { code },
       });
-
       if (!result) {
-        return status(404, { error: "Currency not found" });
+        return jsonError(c, 404, "Currency not found");
       }
-
-      return result;
-    },
-    {
-      auth: true,
-      params: currencyCodeParamSchema,
-      response: {
-        200: "Currency",
-        404: errorSchema,
-      },
-      detail: {
-        summary: "Get currency by code",
-        description: "Retrieve a specific currency by its ISO code",
-      },
+      return c.json(result, 200);
     },
   );

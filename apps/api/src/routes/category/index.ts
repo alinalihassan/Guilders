@@ -1,51 +1,59 @@
 import { waitUntil } from "cloudflare:workers";
 import { and, asc, eq } from "drizzle-orm";
-import { Elysia, status, t } from "elysia";
+import { Hono } from "hono";
+import { z } from "zod";
 
-import { category, insertCategorySchema, selectCategorySchema } from "../../db/schema/categories";
+import { category, selectCategorySchema } from "../../db/schema/categories";
+import { documented, idParamSchema, jsonError, successSchema, validate } from "../../lib/http";
 import { deliverUserWebhookEvents } from "../../lib/user-webhooks";
 import { isValidIconName } from "../../lib/valid-icon-name";
-import { authPlugin } from "../../middleware/auth";
+import { requireAuth, type AuthEnv } from "../../middleware/auth";
 import { errorSchema } from "../../utils/error";
-import { categoryIdParamSchema, createCategorySchema } from "./types";
+import { createCategorySchema } from "./types";
 
-export const categoryRoutes = new Elysia({
-  prefix: "/category",
-  detail: {
-    tags: ["Categories"],
-    security: [{ apiKeyAuth: [] }, { bearerAuth: [] }],
-  },
-})
-  .use(authPlugin)
-  .model({
-    Category: selectCategorySchema,
-    CreateCategory: insertCategorySchema,
-  })
+export const categoryRoutes = new Hono<AuthEnv>()
+  .use(requireAuth)
   .get(
-    "",
-    async ({ user, db }) => {
+    "/",
+    documented({
+      tags: ["Categories"],
+      summary: "Get categories",
+      description:
+        "Retrieve all categories for the authenticated user. Build a tree client-side using parent_id if needed.",
+      responses: { 200: z.array(selectCategorySchema) },
+    }),
+    async (c) => {
+      const user = c.get("user");
+      const db = c.get("db");
       const categories = await db.query.category.findMany({
         where: { user_id: user.id },
-        orderBy: (c) => asc(c.name),
+        orderBy: (cat) => asc(cat.name),
       });
-      return categories;
-    },
-    {
-      auth: true,
-      response: t.Array(t.Ref("#/components/schemas/Category")),
-      detail: {
-        summary: "Get categories",
-        description:
-          "Retrieve all categories for the authenticated user. Build a tree client-side using parent_id if needed.",
-      },
+      return c.json(categories, 200);
     },
   )
   .post(
-    "",
-    async ({ body, user, db }) => {
+    "/",
+    documented({
+      tags: ["Categories"],
+      summary: "Create category",
+      description: "Create a new category for the authenticated user",
+      responses: {
+        200: selectCategorySchema,
+        400: errorSchema,
+        404: errorSchema,
+        500: errorSchema,
+      },
+    }),
+    validate("json", createCategorySchema),
+    async (c) => {
+      const body = c.req.valid("json");
+      const user = c.get("user");
+      const db = c.get("db");
+
       const normalizedName = body.name.trim();
       if (!normalizedName) {
-        return status(400, { error: "Category name is required" });
+        return jsonError(c, 400, "Category name is required");
       }
 
       if (body.parent_id) {
@@ -57,7 +65,7 @@ export const categoryRoutes = new Elysia({
         });
 
         if (!parentCategory) {
-          return status(404, { error: "Parent category not found" });
+          return jsonError(c, 404, "Parent category not found");
         }
       }
 
@@ -69,12 +77,12 @@ export const categoryRoutes = new Elysia({
       });
 
       if (existingCategory) {
-        return existingCategory;
+        return c.json(existingCategory, 200);
       }
 
       const normalizedIcon = body.icon === "" || body.icon == null ? null : body.icon;
       if (normalizedIcon != null && !isValidIconName(normalizedIcon)) {
-        return status(400, { error: "Invalid category icon name" });
+        return jsonError(c, 400, "Invalid category icon name");
       }
 
       const [newCategory] = await db
@@ -92,56 +100,60 @@ export const categoryRoutes = new Elysia({
         .returning();
 
       if (!newCategory) {
-        return status(500, { error: "Failed to create category" });
+        return jsonError(c, 500, "Failed to create category");
       }
 
       waitUntil(
         deliverUserWebhookEvents(db, user.id, "category.created", { category: newCategory }),
       );
 
-      return newCategory;
-    },
-    {
-      auth: true,
-      body: createCategorySchema,
-      response: {
-        200: "Category",
-        400: errorSchema,
-        404: errorSchema,
-        500: errorSchema,
-      },
-      detail: {
-        summary: "Create category",
-        description: "Create a new category for the authenticated user",
-      },
+      return c.json(newCategory, 200);
     },
   )
   .put(
     "/:id",
-    async ({ params, body, user, db }) => {
+    documented({
+      tags: ["Categories"],
+      summary: "Update category",
+      description: "Update a category for the authenticated user",
+      responses: {
+        200: selectCategorySchema,
+        400: errorSchema,
+        404: errorSchema,
+        500: errorSchema,
+      },
+    }),
+    validate("param", idParamSchema),
+    validate("json", createCategorySchema),
+    async (c) => {
+      const { id } = c.req.valid("param");
+      const body = c.req.valid("json");
+      const user = c.get("user");
+      const db = c.get("db");
+
       const existingCategory = await db.query.category.findFirst({
         where: {
-          id: params.id,
+          id,
           user_id: user.id,
         },
       });
 
       if (!existingCategory) {
-        return status(404, { error: "Category not found" });
+        return jsonError(c, 404, "Category not found");
       }
 
       const normalizedName = body.name.trim();
       if (!normalizedName) {
-        return status(400, { error: "Category name is required" });
+        return jsonError(c, 400, "Category name is required");
       }
 
-      if (body.parent_id && body.parent_id === params.id) {
-        return status(400, { error: "Category cannot be its own parent" });
+      if (body.parent_id && body.parent_id === id) {
+        return jsonError(c, 400, "Category cannot be its own parent");
       }
 
       const iconInput = body.icon === "" ? null : body.icon;
       if (iconInput != null && !isValidIconName(iconInput)) {
-        return status(400, { error: "Invalid category icon name" });
+        return jsonError(c, 400, "Invalid category icon name");
       }
       const iconToSet = iconInput === undefined ? existingCategory.icon : iconInput;
 
@@ -155,52 +167,48 @@ export const categoryRoutes = new Elysia({
           classification: body.classification ?? existingCategory.classification,
           updated_at: new Date(),
         })
-        .where(and(eq(category.id, params.id), eq(category.user_id, user.id)))
+        .where(and(eq(category.id, id), eq(category.user_id, user.id)))
         .returning();
 
       if (!updatedCategory) {
-        return status(500, { error: "Failed to update category" });
+        return jsonError(c, 500, "Failed to update category");
       }
 
       waitUntil(
         deliverUserWebhookEvents(db, user.id, "category.updated", { category: updatedCategory }),
       );
 
-      return updatedCategory;
-    },
-    {
-      auth: true,
-      params: categoryIdParamSchema,
-      body: createCategorySchema,
-      response: {
-        200: "Category",
-        400: errorSchema,
-        404: errorSchema,
-        500: errorSchema,
-      },
-      detail: {
-        summary: "Update category",
-        description: "Update a category for the authenticated user",
-      },
+      return c.json(updatedCategory, 200);
     },
   )
   .delete(
     "/:id",
-    async ({ params, user, db }) => {
+    documented({
+      tags: ["Categories"],
+      summary: "Delete category",
+      description: "Delete a category for the authenticated user",
+      responses: { 200: successSchema, 400: errorSchema, 404: errorSchema },
+    }),
+    validate("param", idParamSchema),
+    async (c) => {
+      const { id } = c.req.valid("param");
+      const user = c.get("user");
+      const db = c.get("db");
+
       const existingCategory = await db.query.category.findFirst({
         where: {
-          id: params.id,
+          id,
           user_id: user.id,
         },
       });
 
       if (!existingCategory) {
-        return status(404, { error: "Category not found" });
+        return jsonError(c, 404, "Category not found");
       }
 
       const inUseTransaction = await db.query.transaction.findFirst({
         where: {
-          category_id: params.id,
+          category_id: id,
           account: {
             user_id: user.id,
           },
@@ -208,7 +216,7 @@ export const categoryRoutes = new Elysia({
       });
 
       if (inUseTransaction) {
-        return status(400, { error: "Category is in use by existing transactions" });
+        return jsonError(c, 400, "Category is in use by existing transactions");
       }
 
       await db.transaction(async (tx) => {
@@ -218,30 +226,15 @@ export const categoryRoutes = new Elysia({
             parent_id: null,
             updated_at: new Date(),
           })
-          .where(and(eq(category.user_id, user.id), eq(category.parent_id, params.id)));
+          .where(and(eq(category.user_id, user.id), eq(category.parent_id, id)));
 
-        await tx
-          .delete(category)
-          .where(and(eq(category.id, params.id), eq(category.user_id, user.id)));
+        await tx.delete(category).where(and(eq(category.id, id), eq(category.user_id, user.id)));
       });
 
       waitUntil(
         deliverUserWebhookEvents(db, user.id, "category.deleted", { category: existingCategory }),
       );
 
-      return { success: true };
-    },
-    {
-      auth: true,
-      params: categoryIdParamSchema,
-      response: {
-        200: t.Object({ success: t.Boolean() }),
-        400: errorSchema,
-        404: errorSchema,
-      },
-      detail: {
-        summary: "Delete category",
-        description: "Delete a category for the authenticated user",
-      },
+      return c.json({ success: true }, 200);
     },
   );

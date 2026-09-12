@@ -11,18 +11,24 @@ import {
 } from "ai";
 import { env } from "cloudflare:workers";
 import { and, eq } from "drizzle-orm";
-import { Elysia, status, t } from "elysia";
+import { Hono } from "hono";
 import { createWorkersAI } from "workers-ai-provider";
 import { google } from "workers-ai-provider/google";
 
 import { conversation } from "../../db/schema/conversations";
 import { getChatLimitConfig } from "../../lib/chat-limits";
 import { createDb } from "../../lib/db";
-import { authPlugin } from "../../middleware/auth";
+import { documented, jsonError, validate } from "../../lib/http";
+import { requireAuth, type AuthEnv } from "../../middleware/auth";
 import { errorSchema } from "../../utils/error";
 import { showStockCard, GENERATIVE_UI_TOOLS_OVERVIEW } from "./generative-ui-tools";
 import { buildChatTools, getMcpToolsOverview } from "./mcp-tools";
-import { chatRequestSchema, FINANCIAL_ADVISOR_PROMPT } from "./types";
+import {
+  chatLimitsResponseSchema,
+  chatRateLimitErrorSchema,
+  chatRequestSchema,
+  FINANCIAL_ADVISOR_PROMPT,
+} from "./types";
 
 const generateMessageId = createIdGenerator({ prefix: "msg", size: 16 });
 
@@ -52,48 +58,47 @@ ${uiSection}
 Current date (use when the user says "today", "now", or similar): ${today}.`;
 }
 
-const chatLimitsResponseSchema = t.Object({
-  limit: t.Number(),
-  used: t.Number(),
-  remaining: t.Number(),
-  resetAt: t.Union([t.Number(), t.Null()]),
-  tier: t.Union([t.Literal("free"), t.Literal("pro")]),
-});
-
-export const chatRoutes = new Elysia({
-  prefix: "/chat",
-  detail: {
-    tags: ["Chat"],
-    security: [{ apiKeyAuth: [] }, { bearerAuth: [] }],
-    hide: true,
-  },
-})
-  .use(authPlugin)
+export const chatRoutes = new Hono<AuthEnv>()
+  .use(requireAuth)
   .get(
     "/limits",
-    async ({ user }) => {
+    documented({
+      tags: ["Chat"],
+      hide: true,
+      summary: "Get chat rate limit status",
+      description: "Returns remaining message count and tier for the AI Advisor chat.",
+      responses: { 200: chatLimitsResponseSchema, 401: errorSchema },
+    }),
+    async (c) => {
+      const user = c.get("user");
       const config = await getChatLimitConfig(user.id);
       if (!env.CHAT_RATE_LIMITER) {
-        return {
-          limit: config.limit,
-          used: 0,
-          remaining: config.limit,
-          resetAt: null,
-          tier: config.tier,
-        };
+        return c.json(
+          {
+            limit: config.limit,
+            used: 0,
+            remaining: config.limit,
+            resetAt: null,
+            tier: config.tier,
+          },
+          200,
+        );
       }
       const id = env.CHAT_RATE_LIMITER.idFromName("chat:" + user.id);
       const stub = env.CHAT_RATE_LIMITER.get(id);
       const url = `https://do/status?limit=${config.limit}&periodSeconds=${config.periodSeconds}`;
       const res = await stub.fetch(url);
       if (!res.ok) {
-        return {
-          limit: config.limit,
-          used: 0,
-          remaining: config.limit,
-          resetAt: null,
-          tier: config.tier,
-        };
+        return c.json(
+          {
+            limit: config.limit,
+            used: 0,
+            remaining: config.limit,
+            resetAt: null,
+            tier: config.tier,
+          },
+          200,
+        );
       }
       const data = (await res.json()) as {
         used: number;
@@ -101,29 +106,39 @@ export const chatRoutes = new Elysia({
         limit: number;
         resetAt: number | null;
       };
-      return {
-        limit: data.limit,
-        used: data.used,
-        remaining: data.remaining,
-        resetAt: data.resetAt,
-        tier: config.tier,
-      };
-    },
-    {
-      auth: true,
-      response: {
-        200: chatLimitsResponseSchema,
-        401: errorSchema,
-      },
-      detail: {
-        summary: "Get chat rate limit status",
-        description: "Returns remaining message count and tier for the AI Advisor chat.",
-      },
+      return c.json(
+        {
+          limit: data.limit,
+          used: data.used,
+          remaining: data.remaining,
+          resetAt: data.resetAt,
+          tier: config.tier,
+        },
+        200,
+      );
     },
   )
   .post(
     "/",
-    async ({ body, user, set }) => {
+    documented({
+      tags: ["Chat"],
+      hide: true,
+      summary: "Chat with AI financial advisor",
+      description:
+        "Stream a chat conversation with the AI financial advisor. Send messages and receive streaming responses based on your financial data.",
+      responses: {
+        400: errorSchema,
+        401: errorSchema,
+        404: errorSchema,
+        429: chatRateLimitErrorSchema,
+        500: errorSchema,
+      },
+    }),
+    validate("json", chatRequestSchema),
+    async (c) => {
+      const body = c.req.valid("json");
+      const user = c.get("user");
+
       try {
         const persistenceMode = !!(body.id && body.message);
         let inputMessages: UIMessage[];
@@ -134,23 +149,21 @@ export const chatRoutes = new Elysia({
             where: { id: body.id!, user_id: user.id },
           });
           if (!chat) {
-            return status(404, { error: "Conversation not found" });
+            return jsonError(c, 404, "Conversation not found");
           }
           const previousMessages = (chat.messages ?? []) as UIMessage[];
           inputMessages = [...previousMessages, body.message as UIMessage];
         } else {
           inputMessages =
             Array.isArray(body.messages) && body.messages.length > 0
-              ? body.messages
+              ? (body.messages as UIMessage[])
               : body.message
-                ? [body.message]
+                ? [body.message as UIMessage]
                 : [];
         }
 
         if (inputMessages.length === 0) {
-          return status(400, {
-            error: "No chat messages were provided.",
-          });
+          return jsonError(c, 400, "No chat messages were provided.");
         }
 
         if (env.CHAT_RATE_LIMITER) {
@@ -166,7 +179,7 @@ export const chatRoutes = new Elysia({
             }),
           });
           if (!res.ok) {
-            return status(500, { error: "Rate limit check failed" });
+            return jsonError(c, 500, "Rate limit check failed");
           }
           const data = (await res.json()) as {
             allowed: boolean;
@@ -175,17 +188,21 @@ export const chatRoutes = new Elysia({
           };
           if (!data.allowed) {
             if (data.resetAt != null) {
-              set.headers["Retry-After"] = String(
-                Math.max(1, data.resetAt - Math.floor(Date.now() / 1000)),
+              c.header(
+                "Retry-After",
+                String(Math.max(1, data.resetAt - Math.floor(Date.now() / 1000))),
               );
             }
-            return status(429, {
-              error: "chat_rate_limit_exceeded",
-              message:
-                "You have used all your AI Advisor messages for this week. Upgrade to Pro for more.",
-              remaining: 0,
-              resetAt: data.resetAt,
-            });
+            return c.json(
+              {
+                error: "chat_rate_limit_exceeded",
+                message:
+                  "You have used all your AI Advisor messages for this week. Upgrade to Pro for more.",
+                remaining: 0,
+                resetAt: data.resetAt,
+              },
+              429,
+            );
           }
         }
 
@@ -298,31 +315,11 @@ export const chatRoutes = new Elysia({
         });
       } catch (error) {
         console.error("Chat error:", error);
-        return status(500, {
-          error: error instanceof Error ? error.message : "An unknown error occurred",
-        });
+        return jsonError(
+          c,
+          500,
+          error instanceof Error ? error.message : "An unknown error occurred",
+        );
       }
-    },
-    {
-      auth: true,
-      body: chatRequestSchema,
-      response: {
-        200: t.Any(),
-        400: errorSchema,
-        401: errorSchema,
-        404: errorSchema,
-        429: t.Object({
-          error: t.String(),
-          message: t.Optional(t.String()),
-          remaining: t.Optional(t.Number()),
-          resetAt: t.Optional(t.Union([t.Number(), t.Null()])),
-        }),
-        500: errorSchema,
-      },
-      detail: {
-        summary: "Chat with AI financial advisor",
-        description:
-          "Stream a chat conversation with the AI financial advisor. Send messages and receive streaming responses based on your financial data.",
-      },
     },
   );

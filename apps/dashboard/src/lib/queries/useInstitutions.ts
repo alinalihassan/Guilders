@@ -1,7 +1,7 @@
 import type { Institution } from "@guilders/api/types";
 import { useQuery } from "@tanstack/react-query";
 
-import { api, edenError } from "@/lib/api";
+import { api, rpcJson } from "@/lib/api";
 
 import { useAccounts } from "./useAccounts";
 import { useInstitutionConnection } from "./useInstitutionConnection";
@@ -11,11 +11,7 @@ const queryKey = ["institutions"] as const;
 export function useInstitutions() {
   return useQuery<Institution[], Error>({
     queryKey,
-    queryFn: async () => {
-      const { data, error } = await api.institution.get();
-      if (error) throw new Error(edenError(error));
-      return (data ?? []) as Institution[];
-    },
+    queryFn: async () => rpcJson<Institution[]>(await api.institution.$get()),
   });
 }
 

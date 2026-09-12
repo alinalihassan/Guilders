@@ -1,5 +1,3 @@
-import { openapi } from "@elysiajs/openapi";
-
 import packageJson from "../../../../package.json";
 
 const descriptionText = `
@@ -52,75 +50,54 @@ const countryText = `
 Countries are a reference list with ISO 3166 codes and names. They are used for addresses, region or locale selection, and provider or institution metadata (e.g. which country a bank or connection belongs to).
 `;
 
-export const getOpenAPI = () => {
-  return openapi({
-    documentation: {
-      info: {
-        title: "Guilders API Reference",
-        version: packageJson.version,
-        description: descriptionText,
+export const openApiDocumentation = {
+  info: {
+    title: "Guilders API Reference",
+    version: packageJson.version,
+    description: descriptionText,
+  },
+  tags: [
+    { name: "Accounts", description: accountText },
+    { name: "Transactions", description: transactionText },
+    { name: "Categories", description: categoryText },
+    {
+      name: "Connections",
+      description: "Provider connection flow: create, reconnect, refresh, sync.",
+    },
+    { name: "Providers", description: "Financial data providers (e.g. open banking, brokerages)." },
+    { name: "Institutions", description: "Banks and institutions available through providers." },
+    { name: "Provider Connections", description: "User's connections to providers." },
+    {
+      name: "Institution Connections",
+      description: "Per-institution connection state and accounts.",
+    },
+    { name: "Balance History", description: "Net worth and per-account balance over time." },
+    { name: "Conversations", description: "Chat conversation list and metadata." },
+    { name: "Currencies", description: currencyText },
+    { name: "Rates", description: rateText },
+    { name: "Countries", description: countryText },
+    { name: "Documents", description: "Document upload, metadata, and download." },
+    { name: "Webhook", description: "Webhook endpoints and event delivery config." },
+  ],
+  components: {
+    securitySchemes: {
+      apiKeyAuth: {
+        type: "apiKey" as const,
+        in: "header" as const,
+        name: "x-api-key",
       },
-      tags: [
-        {
-          name: "Accounts",
-          description: accountText,
-        },
-        {
-          name: "Transactions",
-          description: transactionText,
-        },
-        { name: "Categories", description: categoryText },
-        {
-          name: "Connections",
-          description: "Provider connection flow: create, reconnect, refresh, sync.",
-        },
-        {
-          name: "Providers",
-          description: "Financial data providers (e.g. open banking, brokerages).",
-        },
-        {
-          name: "Institutions",
-          description: "Banks and institutions available through providers.",
-        },
-        { name: "Provider Connections", description: "User's connections to providers." },
-        {
-          name: "Institution Connections",
-          description: "Per-institution connection state and accounts.",
-        },
-        { name: "Balance History", description: "Net worth and per-account balance over time." },
-        { name: "Conversations", description: "Chat conversation list and metadata." },
-        { name: "Currencies", description: currencyText },
-        { name: "Rates", description: rateText },
-        { name: "Countries", description: countryText },
-        { name: "Documents", description: "Document upload, metadata, and download." },
-        { name: "Webhook", description: "Webhook endpoints and event delivery config." },
-      ],
-      components: {
-        securitySchemes: {
-          apiKeyAuth: {
-            type: "apiKey",
-            in: "header",
-            name: "x-api-key",
-          },
-          bearerAuth: {
-            type: "http",
-            scheme: "bearer",
-            bearerFormat: "JWT",
-          },
-        },
+      bearerAuth: {
+        type: "http" as const,
+        scheme: "bearer",
+        bearerFormat: "JWT",
       },
     },
-    // @ts-expect-error - Scalar types are not inferred correctly
-    scalar: {
-      hideClientButton: true,
-      telemetry: false,
-      hideDarkModeToggle: true,
-      customCss: `
-        /* Hide "Powered by Scalar" block in sidebar */
-        div.darklight-reference.border-sidebar-border { display: none !important; }
-        div.border-sidebar-border:has(a[href="https://www.scalar.com"]) { display: none !important; }
-        a[href="https://www.scalar.com"] { display: none !important; }
-      `,
-    },
-  });
+  },
 };
+
+export const scalarThemeCss = `
+  /* Hide "Powered by Scalar" block in sidebar */
+  div.darklight-reference.border-sidebar-border { display: none !important; }
+  div.border-sidebar-border:has(a[href="https://www.scalar.com"]) { display: none !important; }
+  a[href="https://www.scalar.com"] { display: none !important; }
+`;

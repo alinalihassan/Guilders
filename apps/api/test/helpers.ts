@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import type { MaybePromise } from "elysia/types";
+type MaybePromise<T> = T | Promise<T>;
 
 import { app } from "../src/app";
 import { getAuth } from "../src/lib/auth";

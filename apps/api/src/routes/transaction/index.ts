@@ -1,36 +1,36 @@
 import { waitUntil } from "cloudflare:workers";
 import { eq } from "drizzle-orm";
-import { Elysia, status, t } from "elysia";
+import { Hono } from "hono";
+import { z } from "zod";
 
 import { account } from "../../db/schema/accounts";
-import {
-  insertTransactionSchema,
-  selectTransactionSchema,
-  transaction,
-} from "../../db/schema/transactions";
+import { selectTransactionSchema, transaction } from "../../db/schema/transactions";
 import { cleanupEntityDocuments } from "../../lib/cleanup-documents";
+import { documented, idParamSchema, jsonError, successSchema, validate } from "../../lib/http";
 import { filterLockedUpdate } from "../../lib/locked-attributes";
 import { deliverUserWebhookEvents } from "../../lib/user-webhooks";
-import { authPlugin } from "../../middleware/auth";
+import { requireAuth, type AuthEnv } from "../../middleware/auth";
 import { errorSchema } from "../../utils/error";
-import { transactionIdParamSchema, transactionQuerySchema } from "./types";
+import { createTransactionSchema, transactionQuerySchema } from "./types";
 
-export const transactionRoutes = new Elysia({
-  prefix: "/transaction",
-  detail: {
-    tags: ["Transactions"],
-    security: [{ apiKeyAuth: [] }, { bearerAuth: [] }],
-  },
-})
-  .use(authPlugin)
-  .model({
-    Transaction: selectTransactionSchema,
-    CreateTransaction: insertTransactionSchema,
-  })
+export const transactionRoutes = new Hono<AuthEnv>()
+  .use(requireAuth)
   .get(
-    "",
-    async ({ user, query, db }) => {
-      return await db.query.transaction.findMany({
+    "/",
+    documented({
+      tags: ["Transactions"],
+      summary: "Get all transactions",
+      description:
+        "Retrieve all transactions for the authenticated user, optionally filtered by account",
+      responses: { 200: z.array(selectTransactionSchema) },
+    }),
+    validate("query", transactionQuerySchema),
+    async (c) => {
+      const query = c.req.valid("query");
+      const user = c.get("user");
+      const db = c.get("db");
+
+      const rows = await db.query.transaction.findMany({
         where: {
           account_id: query.accountId,
           account: {
@@ -39,22 +39,29 @@ export const transactionRoutes = new Elysia({
         },
         orderBy: (transactions, { desc }) => desc(transactions.timestamp),
       });
-    },
-    {
-      auth: true,
-      query: transactionQuerySchema,
-      response: t.Array(t.Ref("#/components/schemas/Transaction")),
-      detail: {
-        summary: "Get all transactions",
-        description:
-          "Retrieve all transactions for the authenticated user, optionally filtered by account",
-      },
+
+      return c.json(rows, 200);
     },
   )
   .post(
-    "",
-    async ({ body, user, db }) => {
-      // Verify the account belongs to the user
+    "/",
+    documented({
+      tags: ["Transactions"],
+      summary: "Create transaction",
+      description: "Create a new transaction and update the associated account balance",
+      responses: {
+        200: selectTransactionSchema,
+        400: errorSchema,
+        404: errorSchema,
+        500: errorSchema,
+      },
+    }),
+    validate("json", createTransactionSchema),
+    async (c) => {
+      const body = c.req.valid("json");
+      const user = c.get("user");
+      const db = c.get("db");
+
       const accountResult = await db.query.account.findFirst({
         where: {
           id: body.account_id,
@@ -63,13 +70,15 @@ export const transactionRoutes = new Elysia({
       });
 
       if (!accountResult) {
-        return status(404, { error: "Account not found" });
+        return jsonError(c, 404, "Account not found");
       }
 
       if (body.currency !== accountResult.currency) {
-        return status(400, {
-          error: `Transaction currency (${body.currency}) must match account currency (${accountResult.currency})`,
-        });
+        return jsonError(
+          c,
+          400,
+          `Transaction currency (${body.currency}) must match account currency (${accountResult.currency})`,
+        );
       }
 
       const amount = parseFloat(body.amount.toString());
@@ -83,7 +92,7 @@ export const transactionRoutes = new Elysia({
         });
 
         if (!categoryResult) {
-          return status(404, { error: "Category not found" });
+          return jsonError(c, 404, "Category not found");
         }
       }
 
@@ -96,11 +105,10 @@ export const transactionRoutes = new Elysia({
         });
 
         if (!merchantResult) {
-          return status(404, { error: "Merchant not found" });
+          return jsonError(c, 404, "Merchant not found");
         }
       }
 
-      // Update account value
       const currentValue = parseFloat(accountResult.value.toString());
       const newValue = currentValue + amount;
 
@@ -110,7 +118,6 @@ export const transactionRoutes = new Elysia({
           .set({ value: newValue.toString(), updated_at: new Date() })
           .where(eq(account.id, body.account_id));
 
-        // Create transaction
         const [transactionResult] = await tx
           .insert(transaction)
           .values({
@@ -130,7 +137,7 @@ export const transactionRoutes = new Elysia({
       });
 
       if (!newTransaction) {
-        return status(500, { error: "Failed to create transaction" });
+        return jsonError(c, 500, "Failed to create transaction");
       }
 
       waitUntil(
@@ -139,29 +146,26 @@ export const transactionRoutes = new Elysia({
         }),
       );
 
-      return newTransaction;
-    },
-    {
-      auth: true,
-      body: insertTransactionSchema,
-      response: {
-        200: "Transaction",
-        400: errorSchema,
-        404: errorSchema,
-        500: errorSchema,
-      },
-      detail: {
-        summary: "Create transaction",
-        description: "Create a new transaction and update the associated account balance",
-      },
+      return c.json(newTransaction, 200);
     },
   )
   .get(
     "/:id",
-    async ({ params, user, db }) => {
+    documented({
+      tags: ["Transactions"],
+      summary: "Get transaction by ID",
+      description: "Retrieve a specific transaction by its ID",
+      responses: { 200: selectTransactionSchema, 404: errorSchema },
+    }),
+    validate("param", idParamSchema),
+    async (c) => {
+      const { id } = c.req.valid("param");
+      const user = c.get("user");
+      const db = c.get("db");
+
       const transactionResult = await db.query.transaction.findFirst({
         where: {
-          id: params.id,
+          id,
           account: {
             user_id: user.id,
           },
@@ -169,31 +173,37 @@ export const transactionRoutes = new Elysia({
       });
 
       if (!transactionResult) {
-        return status(404, { error: "Transaction not found" });
+        return jsonError(c, 404, "Transaction not found");
       }
 
-      return transactionResult;
-    },
-    {
-      auth: true,
-      params: transactionIdParamSchema,
-      response: {
-        200: "Transaction",
-        404: errorSchema,
-      },
-      detail: {
-        summary: "Get transaction by ID",
-        description: "Retrieve a specific transaction by its ID",
-      },
+      return c.json(transactionResult, 200);
     },
   )
   .put(
     "/:id",
-    async ({ params, body, user, db }) => {
-      // Get existing transaction first so lock filtering can run against it.
+    documented({
+      tags: ["Transactions"],
+      summary: "Update transaction",
+      description: "Update a transaction and adjust the associated account balance",
+      responses: {
+        200: selectTransactionSchema,
+        400: errorSchema,
+        409: errorSchema,
+        404: errorSchema,
+        500: errorSchema,
+      },
+    }),
+    validate("param", idParamSchema),
+    validate("json", createTransactionSchema),
+    async (c) => {
+      const { id } = c.req.valid("param");
+      const body = c.req.valid("json");
+      const user = c.get("user");
+      const db = c.get("db");
+
       const existingTransaction = await db.query.transaction.findFirst({
         where: {
-          id: params.id,
+          id,
           account: {
             user_id: user.id,
           },
@@ -201,7 +211,7 @@ export const transactionRoutes = new Elysia({
       });
 
       if (!existingTransaction) {
-        return status(404, { error: "Transaction not found" });
+        return jsonError(c, 404, "Transaction not found");
       }
 
       const { allowed, blocked } = filterLockedUpdate(
@@ -211,13 +221,15 @@ export const transactionRoutes = new Elysia({
 
       if (blocked.length > 0) {
         console.warn("[Transaction] blocked locked attribute update", {
-          transactionId: params.id,
+          transactionId: id,
           userId: user.id,
           blockedFields: blocked,
         });
-        return status(409, {
-          error: `Cannot update locked attributes: ${blocked.map(String).join(", ")}`,
-        });
+        return jsonError(
+          c,
+          409,
+          `Cannot update locked attributes: ${blocked.map(String).join(", ")}`,
+        );
       }
       const unlockedBody = allowed as typeof body;
 
@@ -236,7 +248,6 @@ export const transactionRoutes = new Elysia({
       const effectiveProviderTransactionId =
         unlockedBody.provider_transaction_id ?? existingTransaction.provider_transaction_id;
 
-      // Verify the target account belongs to the user.
       const targetAccount = await db.query.account.findFirst({
         where: {
           id: effectiveAccountId,
@@ -245,13 +256,15 @@ export const transactionRoutes = new Elysia({
       });
 
       if (!targetAccount) {
-        return status(404, { error: "Account not found" });
+        return jsonError(c, 404, "Account not found");
       }
 
       if (effectiveCurrency !== targetAccount.currency) {
-        return status(400, {
-          error: `Transaction currency (${effectiveCurrency}) must match account currency (${targetAccount.currency})`,
-        });
+        return jsonError(
+          c,
+          400,
+          `Transaction currency (${effectiveCurrency}) must match account currency (${targetAccount.currency})`,
+        );
       }
 
       if (effectiveCategoryId) {
@@ -263,7 +276,7 @@ export const transactionRoutes = new Elysia({
         });
 
         if (!categoryResult) {
-          return status(404, { error: "Category not found" });
+          return jsonError(c, 404, "Category not found");
         }
       }
 
@@ -276,11 +289,10 @@ export const transactionRoutes = new Elysia({
         });
 
         if (!merchantResult) {
-          return status(404, { error: "Merchant not found" });
+          return jsonError(c, 404, "Merchant not found");
         }
       }
 
-      // Calculate value adjustment
       const oldTransactionAmount = parseFloat(existingTransaction.amount.toString());
       const newTransactionAmount = parseFloat(effectiveAmount.toString());
       const amountDiff = newTransactionAmount - oldTransactionAmount;
@@ -288,13 +300,11 @@ export const transactionRoutes = new Elysia({
       const newAccountValue = currentAccountValue + amountDiff;
 
       const updatedTransaction = await db.transaction(async (tx) => {
-        // Update account value
         await tx
           .update(account)
           .set({ value: newAccountValue.toString(), updated_at: new Date() })
           .where(eq(account.id, effectiveAccountId));
 
-        // Update transaction
         const [updatedTransactionResult] = await tx
           .update(transaction)
           .set({
@@ -309,14 +319,14 @@ export const transactionRoutes = new Elysia({
             documents: effectiveDocuments,
             updated_at: new Date(),
           })
-          .where(eq(transaction.id, params.id))
+          .where(eq(transaction.id, id))
           .returning();
 
         return updatedTransactionResult;
       });
 
       if (!updatedTransaction) {
-        return status(500, { error: "Failed to update transaction" });
+        return jsonError(c, 500, "Failed to update transaction");
       }
 
       waitUntil(
@@ -325,31 +335,26 @@ export const transactionRoutes = new Elysia({
         }),
       );
 
-      return updatedTransaction;
-    },
-    {
-      auth: true,
-      params: transactionIdParamSchema,
-      body: insertTransactionSchema,
-      response: {
-        200: "Transaction",
-        400: errorSchema,
-        409: errorSchema,
-        404: errorSchema,
-        500: errorSchema,
-      },
-      detail: {
-        summary: "Update transaction",
-        description: "Update a transaction and adjust the associated account balance",
-      },
+      return c.json(updatedTransaction, 200);
     },
   )
   .delete(
     "/:id",
-    async ({ params, user, db }) => {
+    documented({
+      tags: ["Transactions"],
+      summary: "Delete transaction",
+      description: "Delete a transaction and revert the associated account balance",
+      responses: { 200: successSchema, 404: errorSchema, 500: errorSchema },
+    }),
+    validate("param", idParamSchema),
+    async (c) => {
+      const { id } = c.req.valid("param");
+      const user = c.get("user");
+      const db = c.get("db");
+
       const existingTransaction = await db.query.transaction.findFirst({
         where: {
-          id: params.id,
+          id,
           account: {
             user_id: user.id,
           },
@@ -357,10 +362,9 @@ export const transactionRoutes = new Elysia({
       });
 
       if (!existingTransaction) {
-        return status(404, { error: "Transaction not found" });
+        return jsonError(c, 404, "Transaction not found");
       }
 
-      // Get account for balance update
       const accountResult = await db.query.account.findFirst({
         where: {
           id: existingTransaction.account_id,
@@ -368,16 +372,14 @@ export const transactionRoutes = new Elysia({
       });
 
       if (!accountResult) {
-        return status(404, { error: "Associated account not found" });
+        return jsonError(c, 404, "Associated account not found");
       }
 
-      const targetAccount = accountResult;
       const amount = parseFloat(existingTransaction.amount.toString());
-
-      const currentValue = parseFloat(targetAccount.value.toString());
+      const currentValue = parseFloat(accountResult.value.toString());
       const newValue = currentValue - amount;
 
-      await cleanupEntityDocuments(db, user.id, "transaction", params.id);
+      await cleanupEntityDocuments(db, user.id, "transaction", id);
 
       await db.transaction(async (tx) => {
         await tx
@@ -385,7 +387,7 @@ export const transactionRoutes = new Elysia({
           .set({ value: newValue.toString(), updated_at: new Date() })
           .where(eq(account.id, existingTransaction.account_id));
 
-        await tx.delete(transaction).where(eq(transaction.id, params.id));
+        await tx.delete(transaction).where(eq(transaction.id, id));
       });
 
       waitUntil(
@@ -394,19 +396,6 @@ export const transactionRoutes = new Elysia({
         }),
       );
 
-      return { success: true };
-    },
-    {
-      auth: true,
-      params: transactionIdParamSchema,
-      response: {
-        200: t.Object({ success: t.Boolean() }),
-        404: errorSchema,
-        500: errorSchema,
-      },
-      detail: {
-        summary: "Delete transaction",
-        description: "Delete a transaction and revert the associated account balance",
-      },
+      return c.json({ success: true }, 200);
     },
   );

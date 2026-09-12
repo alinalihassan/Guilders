@@ -1,65 +1,49 @@
-import { Elysia, status, t } from "elysia";
+import { Hono } from "hono";
+import { z } from "zod";
 
 import { selectInstitutionSchema } from "../../db/schema/institutions";
-import { authPlugin } from "../../middleware/auth";
+import { documented, idParamSchema, jsonError, validate } from "../../lib/http";
+import { requireAuth, type AuthEnv } from "../../middleware/auth";
 import { errorSchema } from "../../utils/error";
-import { institutionIdParamSchema } from "./types";
 
-export const institutionRoutes = new Elysia({
-  prefix: "/institution",
-  detail: {
-    tags: ["Institutions"],
-    security: [{ apiKeyAuth: [] }, { bearerAuth: [] }],
-  },
-})
-  .use(authPlugin)
-  .model({
-    Institution: selectInstitutionSchema,
-  })
+export const institutionRoutes = new Hono<AuthEnv>()
+  .use(requireAuth)
   .get(
-    "",
-    async ({ db }) => {
-      return db.query.institution.findMany({
-        where: {
-          enabled: true,
-        },
-      });
-    },
-    {
-      auth: true,
-      response: t.Array(t.Ref("#/components/schemas/Institution")),
-      detail: {
-        summary: "Get all institutions",
-        description: "Retrieve a list of all enabled financial institutions",
-      },
+    "/",
+    documented({
+      tags: ["Institutions"],
+      summary: "Get all institutions",
+      description: "Retrieve a list of all enabled financial institutions",
+      responses: { 200: z.array(selectInstitutionSchema) },
+    }),
+    async (c) => {
+      const db = c.get("db");
+      return c.json(
+        await db.query.institution.findMany({
+          where: { enabled: true },
+        }),
+        200,
+      );
     },
   )
   .get(
     "/:id",
-    async ({ params, db }) => {
+    documented({
+      tags: ["Institutions"],
+      summary: "Get institution by ID",
+      description: "Retrieve a specific institution by its ID",
+      responses: { 200: selectInstitutionSchema, 404: errorSchema },
+    }),
+    validate("param", idParamSchema),
+    async (c) => {
+      const { id } = c.req.valid("param");
+      const db = c.get("db");
       const result = await db.query.institution.findFirst({
-        where: {
-          id: params.id,
-          enabled: true,
-        },
+        where: { id, enabled: true },
       });
-
       if (!result) {
-        return status(404, { error: "Institution not found" });
+        return jsonError(c, 404, "Institution not found");
       }
-
-      return result;
-    },
-    {
-      auth: true,
-      params: institutionIdParamSchema,
-      response: {
-        200: "Institution",
-        404: errorSchema,
-      },
-      detail: {
-        summary: "Get institution by ID",
-        description: "Retrieve a specific institution by its ID",
-      },
+      return c.json(result, 200);
     },
   );

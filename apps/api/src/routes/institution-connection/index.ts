@@ -1,47 +1,40 @@
 import { and, eq, inArray } from "drizzle-orm";
-import { Elysia, status, t } from "elysia";
+import { Hono } from "hono";
+import { z } from "zod";
 
-import {
-  institutionConnection,
-  selectInstitutionConnectionSchema,
-} from "../../db/schema/institution-connections";
+import { institutionConnection } from "../../db/schema/institution-connections";
 import { institution } from "../../db/schema/institutions";
 import { providerConnection } from "../../db/schema/provider-connections";
-import { authPlugin } from "../../middleware/auth";
+import { documented, idParamSchema, jsonError, validate } from "../../lib/http";
+import { requireAuth, type AuthEnv } from "../../middleware/auth";
 import { errorSchema } from "../../utils/error";
-import {
-  institutionConnectionIdParamSchema,
-  institutionConnectionWithRelationsSchema,
-} from "./types";
+import { institutionConnectionWithRelationsSchema } from "./types";
 
-export const institutionConnectionRoutes = new Elysia({
-  prefix: "/institution-connection",
-  detail: {
-    tags: ["Institution Connections"],
-    security: [{ apiKeyAuth: [] }, { bearerAuth: [] }],
-  },
-})
-  .use(authPlugin)
-  .model({
-    InstitutionConnection: selectInstitutionConnectionSchema,
-  })
+export const institutionConnectionRoutes = new Hono<AuthEnv>()
+  .use(requireAuth)
   .get(
-    "",
-    async ({ user, db }) => {
-      // First get user's provider connections
+    "/",
+    documented({
+      tags: ["Institution Connections"],
+      summary: "Get all institution connections",
+      description:
+        "Retrieve all institution connections for the authenticated user with institution and provider details",
+      responses: { 200: z.array(institutionConnectionWithRelationsSchema) },
+    }),
+    async (c) => {
+      const user = c.get("user");
+      const db = c.get("db");
+
       const userProviderConnections = await db.query.providerConnection.findMany({
-        where: {
-          user_id: user.id,
-        },
+        where: { user_id: user.id },
       });
 
       const providerConnectionIds = userProviderConnections.map((pc) => pc.id);
 
       if (providerConnectionIds.length === 0) {
-        return [];
+        return c.json([], 200);
       }
 
-      // Get institution connections for these provider connections
       const connections = await db
         .select({
           institutionConnection: institutionConnection,
@@ -56,44 +49,45 @@ export const institutionConnectionRoutes = new Elysia({
         )
         .where(inArray(institutionConnection.provider_connection_id, providerConnectionIds));
 
-      return connections.map((c) => ({
-        id: c.institutionConnection.id,
-        institution_id: c.institutionConnection.institution_id,
-        provider_connection_id: c.institutionConnection.provider_connection_id,
-        connection_id: c.institutionConnection.connection_id,
-        broken: c.institutionConnection.broken,
-        created_at: c.institutionConnection.created_at,
-        institution: c.institution,
-        provider_connection: c.provider_connection,
-      }));
-    },
-    {
-      auth: true,
-      response: t.Array(institutionConnectionWithRelationsSchema),
-      detail: {
-        summary: "Get all institution connections",
-        description:
-          "Retrieve all institution connections for the authenticated user with institution and provider details",
-      },
+      return c.json(
+        connections.map((row) => ({
+          id: row.institutionConnection.id,
+          institution_id: row.institutionConnection.institution_id,
+          provider_connection_id: row.institutionConnection.provider_connection_id,
+          connection_id: row.institutionConnection.connection_id,
+          broken: row.institutionConnection.broken,
+          created_at: row.institutionConnection.created_at,
+          institution: row.institution,
+          provider_connection: row.provider_connection,
+        })),
+        200,
+      );
     },
   )
   .get(
     "/:id",
-    async ({ params, user, db }) => {
-      // First get user's provider connections
+    documented({
+      tags: ["Institution Connections"],
+      summary: "Get institution connection by ID",
+      description: "Retrieve a specific institution connection by its ID with details",
+      responses: { 200: institutionConnectionWithRelationsSchema, 404: errorSchema },
+    }),
+    validate("param", idParamSchema),
+    async (c) => {
+      const { id } = c.req.valid("param");
+      const user = c.get("user");
+      const db = c.get("db");
+
       const userProviderConnections = await db.query.providerConnection.findMany({
-        where: {
-          user_id: user.id,
-        },
+        where: { user_id: user.id },
       });
 
       const providerConnectionIds = userProviderConnections.map((pc) => pc.id);
 
       if (providerConnectionIds.length === 0) {
-        return status(404, { error: "Institution connection not found" });
+        return jsonError(c, 404, "Institution connection not found");
       }
 
-      // Get specific institution connection
       const result = await db
         .select({
           institutionConnection: institutionConnection,
@@ -108,38 +102,29 @@ export const institutionConnectionRoutes = new Elysia({
         )
         .where(
           and(
-            eq(institutionConnection.id, params.id),
+            eq(institutionConnection.id, id),
             inArray(institutionConnection.provider_connection_id, providerConnectionIds),
           ),
         );
 
       if (result.length === 0 || !result[0]) {
-        return status(404, { error: "Institution connection not found" });
+        return jsonError(c, 404, "Institution connection not found");
       }
 
-      const c = result[0];
+      const row = result[0];
 
-      return {
-        id: c.institutionConnection.id,
-        institution_id: c.institutionConnection.institution_id,
-        provider_connection_id: c.institutionConnection.provider_connection_id,
-        connection_id: c.institutionConnection.connection_id,
-        broken: c.institutionConnection.broken,
-        created_at: c.institutionConnection.created_at,
-        institution: c.institution,
-        provider_connection: c.provider_connection,
-      };
-    },
-    {
-      auth: true,
-      params: institutionConnectionIdParamSchema,
-      response: {
-        200: institutionConnectionWithRelationsSchema,
-        404: errorSchema,
-      },
-      detail: {
-        summary: "Get institution connection by ID",
-        description: "Retrieve a specific institution connection by its ID with details",
-      },
+      return c.json(
+        {
+          id: row.institutionConnection.id,
+          institution_id: row.institutionConnection.institution_id,
+          provider_connection_id: row.institutionConnection.provider_connection_id,
+          connection_id: row.institutionConnection.connection_id,
+          broken: row.institutionConnection.broken,
+          created_at: row.institutionConnection.created_at,
+          institution: row.institution,
+          provider_connection: row.provider_connection,
+        },
+        200,
+      );
     },
   );

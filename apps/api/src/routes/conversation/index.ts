@@ -1,21 +1,61 @@
 import { and, desc, eq } from "drizzle-orm";
-import { Elysia, status, t } from "elysia";
+import { Hono } from "hono";
+import { z } from "zod";
 
 import { conversation } from "../../db/schema/conversations";
-import { authPlugin } from "../../middleware/auth";
+import {
+  documented,
+  jsonError,
+  stringIdParamSchema,
+  successSchema,
+  validate,
+} from "../../lib/http";
+import { requireAuth, type AuthEnv } from "../../middleware/auth";
 import { errorSchema } from "../../utils/error";
 
-export const conversationRoutes = new Elysia({
-  prefix: "/conversation",
-  detail: {
-    tags: ["Conversations"],
-    security: [{ apiKeyAuth: [] }, { bearerAuth: [] }],
-  },
-})
-  .use(authPlugin)
+const conversationListItemSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  created_at: z.union([z.string(), z.date()]),
+  updated_at: z.union([z.string(), z.date()]),
+});
+
+const conversationSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  messages: z.array(z.unknown()),
+  created_at: z.union([z.string(), z.date()]),
+  updated_at: z.union([z.string(), z.date()]),
+});
+
+const createConversationResponseSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+});
+
+const renameConversationSchema = z.object({
+  title: z.string().min(1).max(200),
+});
+
+const renamedConversationSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  updated_at: z.union([z.string(), z.date()]),
+});
+
+export const conversationRoutes = new Hono<AuthEnv>()
+  .use(requireAuth)
   .get(
-    "",
-    async ({ user, db }) => {
+    "/",
+    documented({
+      tags: ["Conversations"],
+      summary: "List conversations",
+      description: "List the authenticated user's conversations, most recent first.",
+      responses: { 200: z.array(conversationListItemSchema) },
+    }),
+    async (c) => {
+      const user = c.get("user");
+      const db = c.get("db");
       const rows = await db
         .select({
           id: conversation.id,
@@ -27,88 +67,62 @@ export const conversationRoutes = new Elysia({
         .where(eq(conversation.user_id, user.id))
         .orderBy(desc(conversation.updated_at))
         .limit(50);
-      return rows;
-    },
-    {
-      auth: true,
-      response: {
-        200: t.Array(
-          t.Object({
-            id: t.String(),
-            title: t.String(),
-            created_at: t.Date(),
-            updated_at: t.Date(),
-          }),
-        ),
-      },
-      detail: {
-        summary: "List conversations",
-        description: "List the authenticated user's conversations, most recent first.",
-      },
+      return c.json(rows, 200);
     },
   )
   .get(
     "/last",
-    async ({ user, db }) => {
+    documented({
+      tags: ["Conversations"],
+      summary: "Get last conversation",
+      description: "Get the most recently updated conversation for the authenticated user.",
+      responses: { 200: conversationSchema, 404: errorSchema },
+    }),
+    async (c) => {
+      const user = c.get("user");
+      const db = c.get("db");
       const row = await db.query.conversation.findFirst({
         where: { user_id: user.id },
-        orderBy: (c) => desc(c.updated_at),
+        orderBy: (conv) => desc(conv.updated_at),
       });
-      if (!row) return status(404, { error: "No conversations found" });
-      return row;
-    },
-    {
-      auth: true,
-      response: {
-        200: t.Object({
-          id: t.String(),
-          title: t.String(),
-          messages: t.Array(t.Any()),
-          created_at: t.Date(),
-          updated_at: t.Date(),
-        }),
-        404: errorSchema,
-      },
-      detail: {
-        summary: "Get last conversation",
-        description: "Get the most recently updated conversation for the authenticated user.",
-      },
+      if (!row) return jsonError(c, 404, "No conversations found");
+      return c.json(row, 200);
     },
   )
   .get(
     "/:id",
-    async ({ params, user, db }) => {
+    documented({
+      tags: ["Conversations"],
+      summary: "Get conversation",
+      description: "Get a single conversation by ID.",
+      responses: { 200: conversationSchema, 404: errorSchema },
+    }),
+    validate("param", stringIdParamSchema),
+    async (c) => {
+      const { id } = c.req.valid("param");
+      const user = c.get("user");
+      const db = c.get("db");
       const row = await db.query.conversation.findFirst({
         where: {
-          id: params.id,
+          id,
           user_id: user.id,
         },
       });
-      if (!row) return status(404, { error: "Conversation not found" });
-      return row;
-    },
-    {
-      auth: true,
-      params: t.Object({ id: t.String() }),
-      response: {
-        200: t.Object({
-          id: t.String(),
-          title: t.String(),
-          messages: t.Array(t.Any()),
-          created_at: t.Date(),
-          updated_at: t.Date(),
-        }),
-        404: errorSchema,
-      },
-      detail: {
-        summary: "Get conversation",
-        description: "Get a single conversation by ID.",
-      },
+      if (!row) return jsonError(c, 404, "Conversation not found");
+      return c.json(row, 200);
     },
   )
   .post(
-    "",
-    async ({ user, db }) => {
+    "/",
+    documented({
+      tags: ["Conversations"],
+      summary: "Create conversation",
+      description: "Create a new empty conversation.",
+      responses: { 200: createConversationResponseSchema, 500: errorSchema },
+    }),
+    async (c) => {
+      const user = c.get("user");
+      const db = c.get("db");
       const id = crypto.randomUUID();
       const [row] = await db
         .insert(conversation)
@@ -118,72 +132,58 @@ export const conversationRoutes = new Elysia({
         })
         .returning({ id: conversation.id, title: conversation.title });
 
-      if (!row) return status(500, { error: "Failed to create conversation" });
-      return row;
-    },
-    {
-      auth: true,
-      response: {
-        200: t.Object({ id: t.String(), title: t.String() }),
-        500: errorSchema,
-      },
-      detail: {
-        summary: "Create conversation",
-        description: "Create a new empty conversation.",
-      },
+      if (!row) return jsonError(c, 500, "Failed to create conversation");
+      return c.json(row, 200);
     },
   )
   .patch(
     "/:id",
-    async ({ params, body, user, db }) => {
+    documented({
+      tags: ["Conversations"],
+      summary: "Rename conversation",
+      description: "Update the title of a conversation.",
+      responses: { 200: renamedConversationSchema, 404: errorSchema },
+    }),
+    validate("param", stringIdParamSchema),
+    validate("json", renameConversationSchema),
+    async (c) => {
+      const { id } = c.req.valid("param");
+      const body = c.req.valid("json");
+      const user = c.get("user");
+      const db = c.get("db");
       const [updated] = await db
         .update(conversation)
         .set({ title: body.title, updated_at: new Date() })
-        .where(and(eq(conversation.id, params.id), eq(conversation.user_id, user.id)))
+        .where(and(eq(conversation.id, id), eq(conversation.user_id, user.id)))
         .returning({
           id: conversation.id,
           title: conversation.title,
           updated_at: conversation.updated_at,
         });
 
-      if (!updated) return status(404, { error: "Conversation not found" });
-      return updated;
-    },
-    {
-      auth: true,
-      params: t.Object({ id: t.String() }),
-      body: t.Object({ title: t.String({ minLength: 1, maxLength: 200 }) }),
-      response: {
-        200: t.Object({ id: t.String(), title: t.String(), updated_at: t.Date() }),
-        404: errorSchema,
-      },
-      detail: {
-        summary: "Rename conversation",
-        description: "Update the title of a conversation.",
-      },
+      if (!updated) return jsonError(c, 404, "Conversation not found");
+      return c.json(updated, 200);
     },
   )
   .delete(
     "/:id",
-    async ({ params, user, db }) => {
+    documented({
+      tags: ["Conversations"],
+      summary: "Delete conversation",
+      description: "Delete a conversation.",
+      responses: { 200: successSchema, 404: errorSchema },
+    }),
+    validate("param", stringIdParamSchema),
+    async (c) => {
+      const { id } = c.req.valid("param");
+      const user = c.get("user");
+      const db = c.get("db");
       const [deleted] = await db
         .delete(conversation)
-        .where(and(eq(conversation.id, params.id), eq(conversation.user_id, user.id)))
+        .where(and(eq(conversation.id, id), eq(conversation.user_id, user.id)))
         .returning({ id: conversation.id });
 
-      if (!deleted) return status(404, { error: "Conversation not found" });
-      return { success: true };
-    },
-    {
-      auth: true,
-      params: t.Object({ id: t.String() }),
-      response: {
-        200: t.Object({ success: t.Boolean() }),
-        404: errorSchema,
-      },
-      detail: {
-        summary: "Delete conversation",
-        description: "Delete a conversation.",
-      },
+      if (!deleted) return jsonError(c, 404, "Conversation not found");
+      return c.json({ success: true }, 200);
     },
   );

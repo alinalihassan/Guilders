@@ -1,6 +1,6 @@
-import { t } from "elysia";
+import { z } from "zod";
 
-/** Webhook list item (no secret). Dates may be Date (Eden inferred) or string (JSON). */
+/** Webhook list item (no secret). Dates may be Date or string (JSON). */
 export type Webhook = {
   id: string;
   url: string;
@@ -11,32 +11,23 @@ export type Webhook = {
 
 export type WebhookCreateResponse = Webhook & { secret: string };
 
-export const webhookIdParamSchema = t.Object({
-  id: t.String({ minLength: 1, maxLength: 255 }),
+export const createWebhookSchema = z.object({
+  url: z.string().min(1),
 });
 
-export const createWebhookSchema = t.Object({
-  url: t.String({ minLength: 1 }),
+export const updateWebhookSchema = z.object({
+  url: z.string().min(1).optional(),
+  enabled: z.boolean().optional(),
 });
 
-export const updateWebhookSchema = t.Object({
-  url: t.Optional(t.String({ minLength: 1 })),
-  enabled: t.Optional(t.Boolean()),
+export const webhookListItemSchema = z.object({
+  id: z.string(),
+  url: z.string(),
+  enabled: z.boolean(),
+  created_at: z.union([z.string(), z.date()]),
+  updated_at: z.union([z.string(), z.date()]),
 });
 
-export const webhookListItemSchema = t.Object({
-  id: t.String(),
-  url: t.String(),
-  enabled: t.Boolean(),
-  created_at: t.Date(),
-  updated_at: t.Date(),
-});
-
-export const webhookCreateResponseSchema = t.Object({
-  id: t.String(),
-  url: t.String(),
-  enabled: t.Boolean(),
-  created_at: t.Date(),
-  updated_at: t.Date(),
-  secret: t.String(),
+export const webhookCreateResponseSchema = webhookListItemSchema.extend({
+  secret: z.string(),
 });

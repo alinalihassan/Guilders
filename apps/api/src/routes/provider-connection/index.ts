@@ -1,65 +1,51 @@
-import { Elysia, status, t } from "elysia";
+import { Hono } from "hono";
+import { z } from "zod";
 
 import { selectProviderConnectionSchema } from "../../db/schema/provider-connections";
-import { authPlugin } from "../../middleware/auth";
+import { documented, idParamSchema, jsonError, validate } from "../../lib/http";
+import { requireAuth, type AuthEnv } from "../../middleware/auth";
 import { errorSchema } from "../../utils/error";
-import { providerConnectionIdParamSchema } from "./types";
 
-export const providerConnectionRoutes = new Elysia({
-  prefix: "/provider-connection",
-  detail: {
-    tags: ["Provider Connections"],
-    security: [{ apiKeyAuth: [] }, { bearerAuth: [] }],
-  },
-})
-  .use(authPlugin)
-  .model({
-    ProviderConnection: selectProviderConnectionSchema,
-  })
+export const providerConnectionRoutes = new Hono<AuthEnv>()
+  .use(requireAuth)
   .get(
-    "",
-    async ({ user, db }) => {
-      return db.query.providerConnection.findMany({
-        where: {
-          user_id: user.id,
-        },
-      });
-    },
-    {
-      auth: true,
-      response: t.Array(t.Ref("#/components/schemas/ProviderConnection")),
-      detail: {
-        summary: "Get all provider connections",
-        description: "Retrieve all provider connections for the authenticated user",
-      },
+    "/",
+    documented({
+      tags: ["Provider Connections"],
+      summary: "Get all provider connections",
+      description: "Retrieve all provider connections for the authenticated user",
+      responses: { 200: z.array(selectProviderConnectionSchema) },
+    }),
+    async (c) => {
+      const user = c.get("user");
+      const db = c.get("db");
+      return c.json(
+        await db.query.providerConnection.findMany({
+          where: { user_id: user.id },
+        }),
+        200,
+      );
     },
   )
   .get(
     "/:id",
-    async ({ params, user, db }) => {
+    documented({
+      tags: ["Provider Connections"],
+      summary: "Get provider connection by ID",
+      description: "Retrieve a specific provider connection by its ID",
+      responses: { 200: selectProviderConnectionSchema, 404: errorSchema },
+    }),
+    validate("param", idParamSchema),
+    async (c) => {
+      const { id } = c.req.valid("param");
+      const user = c.get("user");
+      const db = c.get("db");
       const result = await db.query.providerConnection.findFirst({
-        where: {
-          id: params.id,
-          user_id: user.id,
-        },
+        where: { id, user_id: user.id },
       });
-
       if (!result) {
-        return status(404, { error: "Provider connection not found" });
+        return jsonError(c, 404, "Provider connection not found");
       }
-
-      return result;
-    },
-    {
-      auth: true,
-      params: providerConnectionIdParamSchema,
-      response: {
-        200: t.Ref("#/components/schemas/ProviderConnection"),
-        404: errorSchema,
-      },
-      detail: {
-        summary: "Get provider connection by ID",
-        description: "Retrieve a specific provider connection by its ID",
-      },
+      return c.json(result, 200);
     },
   );

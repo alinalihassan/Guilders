@@ -176,15 +176,14 @@ export function AccountForm() {
   async function handleDownloadData() {
     setIsExporting(true);
     try {
-      const { data, error, response } = await api.export.get();
+      const res = await api.export.$get();
 
-      if (error || data == null || !response) {
+      if (!res.ok) {
         toast.error("Export failed");
         return;
       }
 
-      // Eden parses binary into data (body already consumed); build blob from data, filename from response headers
-      const blob = data instanceof Blob ? data : new Blob([data as unknown as ArrayBuffer]);
+      const blob = await res.blob();
       downloadFile(blob, "guilders-export.zip");
 
       toast.success("Your data has been downloaded.");

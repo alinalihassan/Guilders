@@ -2,18 +2,14 @@ import type { Merchant, MerchantInsert } from "@guilders/api/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-import { api, edenError } from "../api";
+import { api, rpcJson } from "../api";
 
 export const queryKey = ["merchants"] as const;
 
 export function useMerchants() {
   return useQuery({
     queryKey,
-    queryFn: async (): Promise<Merchant[]> => {
-      const { data, error } = await api.merchant.get();
-      if (error) throw new Error(edenError(error));
-      return (data ?? []) as Merchant[];
-    },
+    queryFn: async (): Promise<Merchant[]> => rpcJson<Merchant[]>(await api.merchant.$get()),
   });
 }
 
@@ -31,9 +27,7 @@ export function useAddMerchant() {
         logo_url: payload.logo_url ?? undefined,
         website_url: payload.website_url ?? undefined,
       };
-      const { data, error } = await api.merchant.post(body);
-      if (error) throw new Error(edenError(error));
-      return data as Merchant;
+      return rpcJson<Merchant>(await api.merchant.$post({ json: body }));
     },
     onError: (error) => {
       console.error("Failed to add merchant:", error);
@@ -62,9 +56,12 @@ export function useUpdateMerchant() {
         logo_url: merchant.logo_url ?? undefined,
         website_url: merchant.website_url ?? undefined,
       };
-      const { data, error } = await api.merchant({ id }).put(body);
-      if (error) throw new Error(edenError(error));
-      return data as Merchant;
+      return rpcJson<Merchant>(
+        await api.merchant[":id"].$put({
+          param: { id: String(id) },
+          json: body,
+        }),
+      );
     },
     onError: (error) => {
       console.error("Failed to update merchant:", error);
@@ -83,8 +80,7 @@ export function useRemoveMerchant() {
   const queryClient = useQueryClient();
   return useMutation<number, Error, number>({
     mutationFn: async (merchantId) => {
-      const { error } = await api.merchant({ id: merchantId }).delete();
-      if (error) throw new Error(edenError(error));
+      await rpcJson(await api.merchant[":id"].$delete({ param: { id: String(merchantId) } }));
       return merchantId;
     },
     onError: (error) => {

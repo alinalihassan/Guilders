@@ -1,5 +1,5 @@
 import { index, pgTable, serial, varchar } from "drizzle-orm/pg-core";
-import { createInsertSchema, createSelectSchema } from "drizzle-orm/typebox-legacy";
+import { createInsertSchema, createSelectSchema } from "drizzle-orm/zod";
 
 export const provider = pgTable(
   "provider",

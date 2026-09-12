@@ -1,7 +1,7 @@
 import type { ChatLimits } from "@guilders/api/types";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { api, edenError } from "@/lib/api";
+import { api, rpcJson } from "@/lib/api";
 import { authClient } from "@/lib/auth-client";
 
 export const chatLimitsKey = ["chat", "limits"] as const;
@@ -27,11 +27,7 @@ export function useChatLimits() {
 
   return useQuery({
     queryKey,
-    queryFn: async (): Promise<ChatLimits> => {
-      const { data, error } = await api.chat.limits.get();
-      if (error) throw new Error(edenError(error));
-      return data;
-    },
+    queryFn: async (): Promise<ChatLimits> => rpcJson<ChatLimits>(await api.chat.limits.$get()),
     enabled: !!viewerId,
   });
 }

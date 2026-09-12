@@ -1,28 +1,19 @@
-import { createSelectSchema } from "drizzle-orm/typebox-legacy";
-import { t } from "elysia";
+import { createSelectSchema } from "drizzle-orm/zod";
+import { z } from "zod";
 
 import { document } from "../../db/schema/documents";
 
 export const selectDocumentSchema = createSelectSchema(document);
 
-export const createDocumentSchema = t.Object({
-  file: t.File({
-    maxSize: "10m",
-    type: ["image/jpeg", "image/png", "image/webp", "image/heic", "application/pdf"],
-  }),
-  entity_type: t.Union([t.Literal("account"), t.Literal("transaction"), t.Literal("merchant")]),
-  entity_id: t.Numeric(),
+export const createDocumentSchema = z.object({
+  file: z.instanceof(File),
+  entity_type: z.enum(["account", "transaction", "merchant"]),
+  entity_id: z.coerce.number(),
 });
 
-export const documentIdParamSchema = t.Object({
-  id: t.Numeric(),
-});
-
-export const documentQuerySchema = t.Object({
-  entity_type: t.Optional(
-    t.Union([t.Literal("account"), t.Literal("transaction"), t.Literal("merchant")]),
-  ),
-  entity_id: t.Optional(t.Numeric()),
+export const documentQuerySchema = z.object({
+  entity_type: z.enum(["account", "transaction", "merchant"]).optional(),
+  entity_id: z.coerce.number().optional(),
 });
 
 const ALLOWED_MIME_TYPES = new Set([

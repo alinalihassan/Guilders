@@ -1,5 +1,5 @@
 import { eq } from "drizzle-orm";
-import { Elysia } from "elysia";
+import { Hono } from "hono";
 
 import { oauthClient } from "../../db/schema/auth";
 import { createDb } from "../../lib/db";
@@ -34,16 +34,16 @@ const appendClientDisplayParams = async (searchParams: URLSearchParams) => {
   return enriched;
 };
 
-export const oauthPagesRoutes = new Elysia({ detail: { hide: true } })
-  .get("/oauth/sign-in", async ({ request }) => {
-    const url = new URL(request.url);
+export const oauthPagesRoutes = new Hono()
+  .get("/oauth/sign-in", async (c) => {
+    const url = new URL(c.req.url);
     const searchParams = await appendClientDisplayParams(url.searchParams);
     const query = searchParams.toString();
-    return Response.redirect(buildDashboardUrl("/oauth/sign-in", query), 302);
+    return c.redirect(buildDashboardUrl("/oauth/sign-in", query), 302);
   })
-  .get("/oauth/consent", async ({ request }) => {
-    const url = new URL(request.url);
+  .get("/oauth/consent", async (c) => {
+    const url = new URL(c.req.url);
     const searchParams = await appendClientDisplayParams(url.searchParams);
     const query = searchParams.toString();
-    return Response.redirect(buildDashboardUrl("/oauth/consent", query), 302);
+    return c.redirect(buildDashboardUrl("/oauth/consent", query), 302);
   });

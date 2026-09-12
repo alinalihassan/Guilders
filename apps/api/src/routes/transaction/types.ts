@@ -1,13 +1,17 @@
-import { t } from "elysia";
+import { z } from "zod";
 
+import { insertTransactionSchema } from "../../db/schema/transactions";
 import type { InsertTransaction, Transaction as DbTransaction } from "../../db/schema/transactions";
 
-export const transactionQuerySchema = t.Object({
-  accountId: t.Optional(t.Number()),
+export const transactionQuerySchema = z.object({
+  accountId: z.coerce.number().int().optional(),
 });
 
-export const transactionIdParamSchema = t.Object({
-  id: t.Number(),
+export const createTransactionSchema = insertTransactionSchema.omit({
+  id: true,
+  created_at: true,
+  updated_at: true,
+  locked_attributes: true,
 });
 
 export type Transaction = DbTransaction;

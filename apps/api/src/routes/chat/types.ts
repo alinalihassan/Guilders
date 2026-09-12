@@ -1,4 +1,4 @@
-import { t } from "elysia";
+import { z } from "zod";
 
 /**
  * Base system prompt for the financial advisor. Tool lists are injected at runtime
@@ -21,11 +21,26 @@ export const FINANCIAL_ADVISOR_PROMPT = `You are a helpful financial advisor ass
 ## Permission levels
 - Use only the tools listed in this conversation. When you have create/update/delete tools available, use them when the user asks you to change their data.`;
 
-export const chatRequestSchema = t.Object({
-  id: t.Optional(t.String()),
-  messages: t.Optional(t.Array(t.Any())),
-  message: t.Optional(t.Any()),
-  readOnly: t.Boolean({ default: true }),
+export const chatRequestSchema = z.object({
+  id: z.string().optional(),
+  messages: z.array(z.unknown()).optional(),
+  message: z.unknown().optional(),
+  readOnly: z.boolean().default(true),
+});
+
+export const chatLimitsResponseSchema = z.object({
+  limit: z.number(),
+  used: z.number(),
+  remaining: z.number(),
+  resetAt: z.number().nullable(),
+  tier: z.enum(["free", "pro"]),
+});
+
+export const chatRateLimitErrorSchema = z.object({
+  error: z.string(),
+  message: z.string().optional(),
+  remaining: z.number().optional(),
+  resetAt: z.number().nullable().optional(),
 });
 
 /** Response shape for GET /api/chat/limits (AI Advisor rate limit status). */

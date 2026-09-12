@@ -1,5 +1,5 @@
 import { index, pgTable, varchar } from "drizzle-orm/pg-core";
-import { createInsertSchema, createSelectSchema } from "drizzle-orm/typebox-legacy";
+import { createInsertSchema, createSelectSchema } from "drizzle-orm/zod";
 
 import { currency } from "./currencies";
 

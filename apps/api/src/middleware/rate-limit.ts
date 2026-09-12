@@ -1,5 +1,5 @@
 import { env } from "cloudflare:workers";
-import { Elysia } from "elysia";
+import { createMiddleware } from "hono/factory";
 
 export const RATE_LIMIT_PERIOD_SECONDS = 60;
 
@@ -12,34 +12,31 @@ async function hashApiKey(apiKey: string): Promise<string> {
   return hex.slice(0, 16);
 }
 
-function rateLimitExceededResponse(): Response {
-  return new Response(
-    JSON.stringify({
-      error: "rate_limit_exceeded",
-      message: "Too many requests",
-    }),
-    {
-      status: 429,
-      headers: {
-        "Content-Type": "application/json",
-        "Retry-After": String(RATE_LIMIT_PERIOD_SECONDS),
+export const apiKeyRateLimit = createMiddleware(async (c, next) => {
+  const rateLimit = env.RATE_LIMIT;
+  if (rateLimit == null) {
+    await next();
+    return;
+  }
+
+  const apiKey = c.req.header("x-api-key");
+  if (!apiKey) {
+    await next();
+    return;
+  }
+
+  const key = "apikey:" + (await hashApiKey(apiKey));
+  const { success } = await rateLimit.limit({ key });
+  if (!success) {
+    c.header("Retry-After", String(RATE_LIMIT_PERIOD_SECONDS));
+    return c.json(
+      {
+        error: "rate_limit_exceeded",
+        message: "Too many requests",
       },
-    },
-  );
-}
+      429,
+    );
+  }
 
-export const rateLimitPlugin = new Elysia({ name: "rate-limit" }).onBeforeHandle(
-  async ({ request }) => {
-    const rateLimit = env.RATE_LIMIT;
-    if (rateLimit == null) return;
-
-    const apiKey = request.headers.get("x-api-key");
-    if (!apiKey) return;
-
-    const key = "apikey:" + (await hashApiKey(apiKey));
-    const { success } = await rateLimit.limit({ key });
-    if (!success) {
-      return rateLimitExceededResponse();
-    }
-  },
-);
+  await next();
+});

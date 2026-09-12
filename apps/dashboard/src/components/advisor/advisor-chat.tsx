@@ -152,8 +152,8 @@ export function AdvisorChat({ chatId, initialMessages }: AdvisorChatProps) {
     titleRefreshed.current = true;
     void (async () => {
       try {
-        const { data } = await api.conversation({ id: chatId }).get();
-        const conv = data as { title?: string } | null;
+        const res = await api.conversation[":id"].$get({ param: { id: chatId } });
+        const conv = res.ok ? ((await res.json()) as { title?: string }) : null;
         if (conv?.title && conv.title !== "New chat") {
           setSessionTitle(conv.title);
           queryClient.invalidateQueries({ queryKey: conversationsKey });

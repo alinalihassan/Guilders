@@ -1,5 +1,7 @@
-import { t } from "elysia";
+import { z } from "zod";
 
-export const errorSchema = t.Object({
-  error: t.String(),
+export const errorSchema = z.object({
+  error: z.string(),
 });
+
+export type ErrorBody = z.infer<typeof errorSchema>;

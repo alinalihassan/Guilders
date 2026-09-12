@@ -8,7 +8,7 @@ import {
   uniqueIndex,
   varchar,
 } from "drizzle-orm/pg-core";
-import { createInsertSchema, createSelectSchema } from "drizzle-orm/typebox-legacy";
+import { createInsertSchema, createSelectSchema } from "drizzle-orm/zod";
 
 import { institution } from "./institutions";
 import { providerConnection } from "./provider-connections";

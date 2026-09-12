@@ -1,27 +1,19 @@
-import { t } from "elysia";
-import type { Static } from "elysia";
-
 const BASE_URL = "https://api.frankfurter.dev/v1";
 
-// Response schemas
-const ratesResponseSchema = t.Object({
-  base: t.String(),
-  date: t.String(),
-  rates: t.Record(t.String(), t.Number()),
-});
+type RatesResponse = {
+  base: string;
+  date: string;
+  rates: Record<string, number>;
+};
 
-const timeseriesResponseSchema = t.Object({
-  base: t.String(),
-  start_date: t.String(),
-  end_date: t.String(),
-  rates: t.Record(t.String(), t.Record(t.String(), t.Number())),
-});
+type TimeseriesResponse = {
+  base: string;
+  start_date: string;
+  end_date: string;
+  rates: Record<string, Record<string, number>>;
+};
 
-const currenciesResponseSchema = t.Record(t.String(), t.String());
-
-type RatesResponse = Static<typeof ratesResponseSchema>;
-type TimeseriesResponse = Static<typeof timeseriesResponseSchema>;
-type CurrenciesResponse = Static<typeof currenciesResponseSchema>;
+type CurrenciesResponse = Record<string, string>;
 
 export class FrankfurterClient {
   private async fetch<T>(endpoint: string, params: Record<string, string> = {}) {

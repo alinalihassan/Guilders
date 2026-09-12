@@ -1,5 +1,5 @@
 import { index, pgTable, serial, timestamp, uniqueIndex, varchar, text } from "drizzle-orm/pg-core";
-import { createInsertSchema, createSelectSchema } from "drizzle-orm/typebox-legacy";
+import { createInsertSchema, createSelectSchema } from "drizzle-orm/zod";
 
 import { user } from "./auth";
 

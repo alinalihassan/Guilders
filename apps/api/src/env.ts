@@ -55,11 +55,8 @@ function envWithEmptyAsUnset(source: NodeJS.ProcessEnv): Record<string, string |
   );
 }
 
-/**
- * Elysia plugin that validates environment variables at startup.
- * Use: app.use(env())
- */
-export function env() {
+/** Validate environment variables at startup. Skipped under Vitest. */
+export function validateEnv() {
   if (process.env.VITEST === "true") {
     return;
   }
@@ -70,6 +67,4 @@ export function env() {
     const issues = result.error.issues.map((i) => `  ${i.path.join(".")}: ${i.message}`).join("\n");
     throw new Error(`Environment validation failed:\n${issues}`);
   }
-
-  return false;
 }

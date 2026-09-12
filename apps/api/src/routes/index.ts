@@ -1,9 +1,10 @@
-import { Elysia } from "elysia";
+import { Hono } from "hono";
+import { describeRoute } from "hono-openapi";
 
 import { createAuth } from "../lib/auth";
-import { rateLimitPlugin } from "../middleware/rate-limit";
+import { apiKeyRateLimit } from "../middleware/rate-limit";
 import { accountRoutes } from "./account";
-import { accountBalanceHistoryRoutes, balanceHistoryRoutes } from "./balance-history";
+import { balanceHistoryRoutes } from "./balance-history";
 import { billingRoutes } from "./billing";
 import { categoryRoutes } from "./category";
 import { chatRoutes } from "./chat";
@@ -22,26 +23,25 @@ import { rateRoutes } from "./rate";
 import { transactionRoutes } from "./transaction";
 import { webhookRoutes } from "./webhook";
 
-export const api = new Elysia({ prefix: "/api" })
-  .use(rateLimitPlugin)
-  .all("/auth/*", (context) => createAuth().handler(context.request), { detail: { hide: true } })
-  .use(accountRoutes)
-  .use(billingRoutes)
-  .use(accountBalanceHistoryRoutes)
-  .use(balanceHistoryRoutes)
-  .use(categoryRoutes)
-  .use(chatRoutes)
-  .use(connectionsRoutes)
-  .use(conversationRoutes)
-  .use(countryRoutes)
-  .use(currencyRoutes)
-  .use(documentRoutes)
-  .use(exportRoutes)
-  .use(merchantRoutes)
-  .use(rateRoutes)
-  .use(providerRoutes)
-  .use(institutionRoutes)
-  .use(providerConnectionRoutes)
-  .use(institutionConnectionRoutes)
-  .use(transactionRoutes)
-  .use(webhookRoutes);
+export const api = new Hono()
+  .use(apiKeyRateLimit)
+  .all("/auth/*", describeRoute({ hide: true }), (c) => createAuth().handler(c.req.raw))
+  .route("/account", accountRoutes)
+  .route("/billing", billingRoutes)
+  .route("/balance-history", balanceHistoryRoutes)
+  .route("/category", categoryRoutes)
+  .route("/chat", chatRoutes)
+  .route("/connections", connectionsRoutes)
+  .route("/conversation", conversationRoutes)
+  .route("/country", countryRoutes)
+  .route("/currency", currencyRoutes)
+  .route("/document", documentRoutes)
+  .route("/export", exportRoutes)
+  .route("/merchant", merchantRoutes)
+  .route("/rate", rateRoutes)
+  .route("/provider", providerRoutes)
+  .route("/institution", institutionRoutes)
+  .route("/provider-connection", providerConnectionRoutes)
+  .route("/institution-connection", institutionConnectionRoutes)
+  .route("/transaction", transactionRoutes)
+  .route("/webhook", webhookRoutes);

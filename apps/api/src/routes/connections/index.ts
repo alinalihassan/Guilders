@@ -1,11 +1,13 @@
 import { and, eq } from "drizzle-orm";
-import { Elysia, status, t } from "elysia";
+import { Hono } from "hono";
+import { z } from "zod";
 
 import { institutionConnection } from "../../db/schema/institution-connections";
 import { providerConnection } from "../../db/schema/provider-connections";
 import { cleanupInstitutionConnectionDocuments } from "../../lib/cleanup-documents";
+import { documented, jsonError, successSchema, validate } from "../../lib/http";
 import { syncAccountData } from "../../lib/sync-connection-data";
-import { authPlugin } from "../../middleware/auth";
+import { requireAuth, type AuthEnv } from "../../middleware/auth";
 import { getProvider } from "../../providers";
 import type { ProviderName } from "../../providers/types";
 import { errorSchema } from "../../utils/error";
@@ -20,32 +22,42 @@ import {
 } from "./types";
 import { parseId } from "./utils";
 
-export const connectionsRoutes = new Elysia({
-  prefix: "/connections",
-  detail: {
-    tags: ["Connections"],
-    security: [{ apiKeyAuth: [] }, { bearerAuth: [] }],
-  },
-})
-  .use(authPlugin)
+export const connectionsRoutes = new Hono<AuthEnv>()
+  .use(requireAuth)
   .post(
-    "",
-    async ({ body, user, db }) => {
+    "/",
+    documented({
+      tags: ["Connections"],
+      summary: "Create provider connection",
+      description: "Start provider connection flow for an institution",
+      responses: {
+        200: connectionResultSchema,
+        400: errorSchema,
+        404: errorSchema,
+        500: errorSchema,
+      },
+    }),
+    validate("json", createConnectionSchema),
+    async (c) => {
+      const body = c.req.valid("json");
+      const user = c.get("user");
+      const db = c.get("db");
+
       const providerId = parseId(body.provider_id);
       const institutionId = parseId(body.institution_id);
       if (!providerId || !institutionId) {
-        return status(400, { error: "Invalid provider_id or institution_id" });
+        return jsonError(c, 400, "Invalid provider_id or institution_id");
       }
 
       const providerRecord = await db.query.provider.findFirst({
         where: { id: providerId },
       });
-      if (!providerRecord) return status(404, { error: "Provider not found" });
+      if (!providerRecord) return jsonError(c, 404, "Provider not found");
 
       const institutionRecord = await db.query.institution.findFirst({
         where: { id: institutionId },
       });
-      if (!institutionRecord) return status(404, { error: "Institution not found" });
+      if (!institutionRecord) return jsonError(c, 404, "Institution not found");
 
       try {
         const provider = getProvider(providerRecord.name as ProviderName);
@@ -61,54 +73,54 @@ export const connectionsRoutes = new Elysia({
             institutionId: institutionRecord.id,
             error: result.error,
           });
-          return status(500, {
-            error: result.error || "Failed to create connection",
-          });
+          return jsonError(c, 500, result.error || "Failed to create connection");
         }
 
-        return result.data;
+        return c.json(result.data, 200);
       } catch (error) {
-        return status(500, {
-          error: error instanceof Error ? error.message : "Failed to create connection",
-        });
+        return jsonError(
+          c,
+          500,
+          error instanceof Error ? error.message : "Failed to create connection",
+        );
       }
     },
-    {
-      auth: true,
-      body: createConnectionSchema,
-      response: {
+  )
+  .post(
+    "/reconnect",
+    documented({
+      tags: ["Connections"],
+      summary: "Reconnect provider connection",
+      description: "Start provider reconnect flow for an existing account",
+      responses: {
         200: connectionResultSchema,
         400: errorSchema,
         404: errorSchema,
         500: errorSchema,
       },
-      detail: {
-        summary: "Create provider connection",
-        description: "Start provider connection flow for an institution",
-      },
-    },
-  )
-  .post(
-    "/reconnect",
-    async ({ body, user, db }) => {
+    }),
+    validate("json", reconnectSchema),
+    async (c) => {
+      const body = c.req.valid("json");
+      const user = c.get("user");
+      const db = c.get("db");
+
       const providerId = parseId(body.provider_id);
       const institutionId = parseId(body.institution_id);
       const accountId = parseId(body.account_id);
       if (!providerId || !institutionId || !accountId) {
-        return status(400, {
-          error: "Invalid provider_id, institution_id or account_id",
-        });
+        return jsonError(c, 400, "Invalid provider_id, institution_id or account_id");
       }
 
       const providerRecord = await db.query.provider.findFirst({
         where: { id: providerId },
       });
-      if (!providerRecord) return status(404, { error: "Provider not found" });
+      if (!providerRecord) return jsonError(c, 404, "Provider not found");
 
       const institutionRecord = await db.query.institution.findFirst({
         where: { id: institutionId },
       });
-      if (!institutionRecord) return status(404, { error: "Institution not found" });
+      if (!institutionRecord) return jsonError(c, 404, "Institution not found");
 
       const accountRecord = await db.query.account.findFirst({
         where: {
@@ -117,16 +129,14 @@ export const connectionsRoutes = new Elysia({
         },
       });
       if (!accountRecord?.institution_connection_id) {
-        return status(404, {
-          error: "No existing connection found for account",
-        });
+        return jsonError(c, 404, "No existing connection found for account");
       }
 
       const existingConnection = await db.query.institutionConnection.findFirst({
         where: { id: accountRecord.institution_connection_id },
       });
       if (!existingConnection?.connection_id) {
-        return status(404, { error: "No existing connection found" });
+        return jsonError(c, 404, "No existing connection found");
       }
 
       try {
@@ -138,46 +148,44 @@ export const connectionsRoutes = new Elysia({
         });
 
         if (!result.success || !result.data?.redirectURI) {
-          return status(500, {
-            error: result.error || "Failed to reconnect connection",
-          });
+          return jsonError(c, 500, result.error || "Failed to reconnect connection");
         }
 
-        return result.data;
+        return c.json(result.data, 200);
       } catch (error) {
-        return status(500, {
-          error: error instanceof Error ? error.message : "Failed to reconnect connection",
-        });
+        return jsonError(
+          c,
+          500,
+          error instanceof Error ? error.message : "Failed to reconnect connection",
+        );
       }
-    },
-    {
-      auth: true,
-      body: reconnectSchema,
-      response: {
-        200: connectionResultSchema,
-        400: errorSchema,
-        404: errorSchema,
-        500: errorSchema,
-      },
-      detail: {
-        summary: "Reconnect provider connection",
-        description: "Start provider reconnect flow for an existing account",
-      },
     },
   )
   .post(
     "/refresh",
-    async ({ body, user, db }) => {
+    documented({
+      tags: ["Connections"],
+      summary: "Refresh provider connection",
+      description:
+        "Trigger provider-side auth refresh. May return a redirectURI for re-authentication.",
+      responses: { 200: refreshResultSchema, 400: errorSchema, 404: errorSchema, 500: errorSchema },
+    }),
+    validate("json", refreshSchema),
+    async (c) => {
+      const body = c.req.valid("json");
+      const user = c.get("user");
+      const db = c.get("db");
+
       const providerId = parseId(body.provider_id);
       const institutionConnectionId = parseId(body.connection_id);
       if (!providerId || !institutionConnectionId) {
-        return status(400, { error: "Invalid provider_id or connection_id" });
+        return jsonError(c, 400, "Invalid provider_id or connection_id");
       }
 
       const providerRecord = await db.query.provider.findFirst({
         where: { id: providerId },
       });
-      if (!providerRecord) return status(404, { error: "Provider not found" });
+      if (!providerRecord) return jsonError(c, 404, "Provider not found");
 
       const providerConn = await db.query.providerConnection.findFirst({
         where: {
@@ -186,7 +194,7 @@ export const connectionsRoutes = new Elysia({
         },
       });
       if (!providerConn) {
-        return status(404, { error: "No existing provider connection found" });
+        return jsonError(c, 404, "No existing provider connection found");
       }
 
       const connectionRecord = await db.query.institutionConnection.findFirst({
@@ -196,54 +204,58 @@ export const connectionsRoutes = new Elysia({
         },
       });
       if (!connectionRecord?.connection_id) {
-        return status(404, { error: "Institution connection not found" });
+        return jsonError(c, 404, "Institution connection not found");
       }
 
       try {
         const provider = getProvider(providerRecord.name as ProviderName);
         const result = await provider.refreshConnection(connectionRecord.connection_id);
         if (!result.success) {
-          return status(500, {
-            error: result.error || "Failed to refresh connection",
-          });
+          return jsonError(c, 500, result.error || "Failed to refresh connection");
         }
-        return {
-          success: true,
-          redirectURI: result.data?.redirectURI,
-          type: result.data?.type,
-        };
+        return c.json(
+          {
+            success: true,
+            redirectURI: result.data?.redirectURI,
+            type: result.data?.type,
+          },
+          200,
+        );
       } catch (error) {
-        return status(500, {
-          error: error instanceof Error ? error.message : "Failed to refresh connection",
-        });
+        return jsonError(
+          c,
+          500,
+          error instanceof Error ? error.message : "Failed to refresh connection",
+        );
       }
-    },
-    {
-      auth: true,
-      body: refreshSchema,
-      response: {
-        200: refreshResultSchema,
-        400: errorSchema,
-        404: errorSchema,
-        500: errorSchema,
-      },
-      detail: {
-        summary: "Refresh provider connection",
-        description:
-          "Trigger provider-side auth refresh. May return a redirectURI for re-authentication.",
-      },
     },
   )
   .post(
     "/register",
-    async ({ body, user, db }) => {
+    documented({
+      tags: ["Connections"],
+      summary: "Register provider user",
+      description: "Create or update provider user secret for the current user",
+      responses: {
+        200: z.object({ secret: z.string() }),
+        400: errorSchema,
+        404: errorSchema,
+        500: errorSchema,
+      },
+    }),
+    validate("json", providerOnlySchema),
+    async (c) => {
+      const body = c.req.valid("json");
+      const user = c.get("user");
+      const db = c.get("db");
+
       const providerId = parseId(body.provider_id);
-      if (!providerId) return status(400, { error: "Invalid provider_id" });
+      if (!providerId) return jsonError(c, 400, "Invalid provider_id");
 
       const providerRecord = await db.query.provider.findFirst({
         where: { id: providerId },
       });
-      if (!providerRecord) return status(404, { error: "Provider not found" });
+      if (!providerRecord) return jsonError(c, 404, "Provider not found");
 
       try {
         const provider = getProvider(providerRecord.name as ProviderName);
@@ -254,9 +266,7 @@ export const connectionsRoutes = new Elysia({
             userId: user.id,
             error: result.error,
           });
-          return status(500, {
-            error: result.error || "Failed to register with provider",
-          });
+          return jsonError(c, 500, result.error || "Failed to register with provider");
         }
 
         const existing = await db.query.providerConnection.findFirst({
@@ -276,38 +286,37 @@ export const connectionsRoutes = new Elysia({
           });
         }
 
-        return { secret: result.data.userSecret };
+        return c.json({ secret: result.data.userSecret }, 200);
       } catch (error) {
-        return status(500, {
-          error: error instanceof Error ? error.message : "Failed to register provider",
-        });
+        return jsonError(
+          c,
+          500,
+          error instanceof Error ? error.message : "Failed to register provider",
+        );
       }
-    },
-    {
-      auth: true,
-      body: providerOnlySchema,
-      response: {
-        200: t.Object({ secret: t.String() }),
-        400: errorSchema,
-        404: errorSchema,
-        500: errorSchema,
-      },
-      detail: {
-        summary: "Register provider user",
-        description: "Create or update provider user secret for the current user",
-      },
     },
   )
   .post(
     "/deregister",
-    async ({ body, user, db }) => {
+    documented({
+      tags: ["Connections"],
+      summary: "Deregister provider user",
+      description: "Remove provider user and local connection records",
+      responses: { 200: successSchema, 400: errorSchema, 404: errorSchema, 500: errorSchema },
+    }),
+    validate("json", providerOnlySchema),
+    async (c) => {
+      const body = c.req.valid("json");
+      const user = c.get("user");
+      const db = c.get("db");
+
       const providerId = parseId(body.provider_id);
-      if (!providerId) return status(400, { error: "Invalid provider_id" });
+      if (!providerId) return jsonError(c, 400, "Invalid provider_id");
 
       const providerRecord = await db.query.provider.findFirst({
         where: { id: providerId },
       });
-      if (!providerRecord) return status(404, { error: "Provider not found" });
+      if (!providerRecord) return jsonError(c, 404, "Provider not found");
 
       const existing = await db.query.providerConnection.findFirst({
         where: {
@@ -315,15 +324,13 @@ export const connectionsRoutes = new Elysia({
           provider_id: providerId,
         },
       });
-      if (!existing) return { success: true };
+      if (!existing) return c.json({ success: true }, 200);
 
       try {
         const provider = getProvider(providerRecord.name as ProviderName);
         const result = await provider.deregisterUser(user.id);
         if (!result.success) {
-          return status(500, {
-            error: result.error || "Failed to deregister provider user",
-          });
+          return jsonError(c, 500, result.error || "Failed to deregister provider user");
         }
 
         const connectionsToDelete = await db.query.institutionConnection.findMany({
@@ -331,7 +338,7 @@ export const connectionsRoutes = new Elysia({
         });
 
         await Promise.all(
-          connectionsToDelete.map((c) => cleanupInstitutionConnectionDocuments(db, c.id)),
+          connectionsToDelete.map((conn) => cleanupInstitutionConnectionDocuments(db, conn.id)),
         );
 
         await db
@@ -347,64 +354,51 @@ export const connectionsRoutes = new Elysia({
             ),
           );
 
-        return { success: true };
+        return c.json({ success: true }, 200);
       } catch (error) {
-        return status(500, {
-          error: error instanceof Error ? error.message : "Failed to deregister provider user",
-        });
+        return jsonError(
+          c,
+          500,
+          error instanceof Error ? error.message : "Failed to deregister provider user",
+        );
       }
-    },
-    {
-      auth: true,
-      body: providerOnlySchema,
-      response: {
-        200: t.Object({ success: t.Boolean() }),
-        400: errorSchema,
-        404: errorSchema,
-        500: errorSchema,
-      },
-      detail: {
-        summary: "Deregister provider user",
-        description: "Remove provider user and local connection records",
-      },
     },
   )
   .post(
     "/sync",
-    async ({ body, user, db }) => {
+    documented({
+      tags: ["Connections"],
+      summary: "Sync account data",
+      description: "Pull latest balance and transactions for a single account",
+      responses: { 200: successSchema, 400: errorSchema, 404: errorSchema, 500: errorSchema },
+    }),
+    validate("json", syncSchema),
+    async (c) => {
+      const body = c.req.valid("json");
+      const user = c.get("user");
+      const db = c.get("db");
+
       const accountId = parseId(body.account_id);
       if (!accountId) {
-        return status(400, { error: "Invalid account_id" });
+        return jsonError(c, 400, "Invalid account_id");
       }
 
       const accountRecord = await db.query.account.findFirst({
         where: { id: accountId, user_id: user.id },
       });
       if (!accountRecord?.institution_connection_id) {
-        return status(404, { error: "Synced account not found" });
+        return jsonError(c, 404, "Synced account not found");
       }
 
       try {
         await syncAccountData(accountId);
-        return { success: true };
+        return c.json({ success: true }, 200);
       } catch (error) {
-        return status(500, {
-          error: error instanceof Error ? error.message : "Failed to sync account data",
-        });
+        return jsonError(
+          c,
+          500,
+          error instanceof Error ? error.message : "Failed to sync account data",
+        );
       }
-    },
-    {
-      auth: true,
-      body: syncSchema,
-      response: {
-        200: t.Object({ success: t.Boolean() }),
-        400: errorSchema,
-        404: errorSchema,
-        500: errorSchema,
-      },
-      detail: {
-        summary: "Sync account data",
-        description: "Pull latest balance and transactions for a single account",
-      },
     },
   );

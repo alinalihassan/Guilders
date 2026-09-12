@@ -1,7 +1,7 @@
 import type { CreateDocumentResponse, DocumentEntityType } from "@guilders/api/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { api, edenError } from "@/lib/api";
+import { api, rpcJson } from "@/lib/api";
 import { clientEnv } from "@/lib/env";
 
 interface UseFilesOptions {
@@ -19,11 +19,11 @@ export function useFiles({ entityType, entityId, onSuccess }: UseFilesOptions) {
     queryKey,
     queryFn: async () => {
       if (!entityId) return [];
-      const { data, error } = await api.document.get({
-        query: { entity_type: entityType, entity_id: entityId },
-      });
-      if (error) throw new Error(edenError(error));
-      return (data ?? []) as CreateDocumentResponse[];
+      return rpcJson<CreateDocumentResponse[]>(
+        await api.document.$get({
+          query: { entity_type: entityType, entity_id: String(entityId) },
+        }),
+      );
     },
     enabled: entityId > 0,
   });
@@ -33,14 +33,17 @@ export function useFiles({ entityType, entityId, onSuccess }: UseFilesOptions) {
       const uploadedFiles: CreateDocumentResponse[] = [];
 
       for (const file of files) {
-        const { data, error } = await api.document.post({
-          entity_id: entityId,
-          entity_type: entityType,
-          file,
-        });
-        if (error) throw new Error(edenError(error));
-        uploadedFiles.push(data as CreateDocumentResponse);
-        onSuccess?.(data as CreateDocumentResponse);
+        const data = await rpcJson<CreateDocumentResponse>(
+          await api.document.$post({
+            form: {
+              entity_id: String(entityId),
+              entity_type: entityType,
+              file,
+            },
+          }),
+        );
+        uploadedFiles.push(data);
+        onSuccess?.(data);
       }
 
       return uploadedFiles;
@@ -59,8 +62,7 @@ export function useFiles({ entityType, entityId, onSuccess }: UseFilesOptions) {
 
   const { mutateAsync: deleteFile, isPending: isDeleting } = useMutation({
     mutationFn: async (id: number) => {
-      const { error } = await api.document({ id }).delete();
-      if (error) throw new Error(edenError(error));
+      await rpcJson(await api.document[":id"].$delete({ param: { id: String(id) } }));
       return id;
     },
     onSuccess: (deletedId) => {

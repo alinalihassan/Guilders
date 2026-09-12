@@ -2,20 +2,15 @@ import type { ConnectionResponse } from "@guilders/api/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-import { api, edenError } from "@/lib/api";
+import { api, rpcJson } from "@/lib/api";
 
 import { queryKey as accountQueryKey } from "./useAccounts";
 import { queryKey as transactionQueryKey } from "./useTransactions";
 
 export function useRegisterConnection() {
   return useMutation({
-    mutationFn: async (providerId: string) => {
-      const { data, error } = await api.connections.register.post({
-        provider_id: providerId,
-      });
-      if (error) throw new Error(edenError(error));
-      return data;
-    },
+    mutationFn: async (providerId: string) =>
+      rpcJson(await api.connections.register.$post({ json: { provider_id: providerId } })),
     onError: (error) => {
       console.error("Failed to register connection:", error);
       toast.error("Failed to register connection", {
@@ -28,13 +23,8 @@ export function useRegisterConnection() {
 export function useDeregisterConnection() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (providerId: string) => {
-      const { data, error } = await api.connections.deregister.post({
-        provider_id: providerId,
-      });
-      if (error) throw new Error(edenError(error));
-      return data;
-    },
+    mutationFn: async (providerId: string) =>
+      rpcJson(await api.connections.deregister.$post({ json: { provider_id: providerId } })),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: accountQueryKey });
       queryClient.invalidateQueries({ queryKey: transactionQueryKey });
@@ -56,14 +46,15 @@ export function useCreateConnection() {
     }: {
       providerId: string;
       institutionId: string;
-    }): Promise<ConnectionResponse> => {
-      const { data, error } = await api.connections.post({
-        provider_id: providerId,
-        institution_id: institutionId,
-      });
-      if (error) throw new Error(edenError(error));
-      return data as ConnectionResponse;
-    },
+    }): Promise<ConnectionResponse> =>
+      rpcJson<ConnectionResponse>(
+        await api.connections.$post({
+          json: {
+            provider_id: providerId,
+            institution_id: institutionId,
+          },
+        }),
+      ),
     onError: (error) => {
       console.error("Failed to create connection:", error);
       toast.error("Failed to create connection", {
@@ -83,15 +74,16 @@ export function useReconnectConnection() {
       providerId: string;
       institutionId: string;
       accountId: string;
-    }): Promise<ConnectionResponse> => {
-      const { data, error } = await api.connections.reconnect.post({
-        provider_id: providerId,
-        institution_id: institutionId,
-        account_id: accountId,
-      });
-      if (error) throw new Error(edenError(error));
-      return data as ConnectionResponse;
-    },
+    }): Promise<ConnectionResponse> =>
+      rpcJson<ConnectionResponse>(
+        await api.connections.reconnect.$post({
+          json: {
+            provider_id: providerId,
+            institution_id: institutionId,
+            account_id: accountId,
+          },
+        }),
+      ),
     onError: (error) => {
       console.error("Failed to reconnect:", error);
       toast.error("Failed to reconnect", {
@@ -109,14 +101,15 @@ export function useRefreshConnection() {
     }: {
       providerId: string;
       connectionId: string;
-    }) => {
-      const { data, error } = await api.connections.refresh.post({
-        provider_id: providerId,
-        connection_id: connectionId,
-      });
-      if (error) throw new Error(edenError(error));
-      return data;
-    },
+    }) =>
+      rpcJson(
+        await api.connections.refresh.$post({
+          json: {
+            provider_id: providerId,
+            connection_id: connectionId,
+          },
+        }),
+      ),
     onError: (error) => {
       console.error("Failed to refresh connection:", error);
       toast.error("Failed to refresh connection", {
@@ -131,10 +124,7 @@ export function useSyncAccount() {
 
   return useMutation({
     mutationFn: async ({ accountId }: { accountId: string }): Promise<void> => {
-      const { error } = await api.connections.sync.post({
-        account_id: accountId,
-      });
-      if (error) throw new Error(edenError(error));
+      await rpcJson(await api.connections.sync.$post({ json: { account_id: accountId } }));
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: accountQueryKey });

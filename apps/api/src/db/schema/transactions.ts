@@ -1,4 +1,3 @@
-import { Type } from "@sinclair/typebox";
 import {
   index,
   integer,
@@ -10,7 +9,8 @@ import {
   timestamp,
   varchar,
 } from "drizzle-orm/pg-core";
-import { createInsertSchema, createSelectSchema } from "drizzle-orm/typebox-legacy";
+import { createInsertSchema, createSelectSchema } from "drizzle-orm/zod";
+import { z } from "zod";
 
 import { account } from "./accounts";
 import { category } from "./categories";
@@ -67,5 +67,5 @@ export type InsertTransaction = typeof transaction.$inferInsert;
 
 export const selectTransactionSchema = createSelectSchema(transaction);
 export const insertTransactionSchema = createInsertSchema(transaction, {
-  timestamp: Type.String({ format: "date-time" }),
+  timestamp: z.iso.datetime(),
 });

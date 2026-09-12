@@ -15,7 +15,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useDialog } from "@/hooks/useDialog";
-import { edenError } from "@/lib/api";
+import { rpcErrorMessage } from "@/lib/api";
 import {
   conversationsKey,
   useConversation,
@@ -115,7 +115,7 @@ export function AdvisorSidebar() {
           try {
             await renameConversation.mutateAsync({ id: currentChatId, title: newTitle });
           } catch (err) {
-            console.error("Failed to rename conversation:", edenError(err));
+            console.error("Failed to rename conversation:", rpcErrorMessage(err));
           }
         }
       },
@@ -147,7 +147,7 @@ export function AdvisorSidebar() {
             });
           }
         } catch (err) {
-          console.error("Failed to delete conversation:", edenError(err));
+          console.error("Failed to delete conversation:", rpcErrorMessage(err));
           return;
         }
       },

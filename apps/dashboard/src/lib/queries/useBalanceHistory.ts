@@ -1,7 +1,7 @@
 import type { BalanceSnapshot, NetWorthSnapshot } from "@guilders/api/types";
 import { useQueries, useQuery } from "@tanstack/react-query";
 
-import { api, edenError } from "../api";
+import { api, rpcJson } from "../api";
 
 export type { BalanceSnapshot, NetWorthSnapshot };
 
@@ -48,12 +48,13 @@ async function fetchAccountBalanceHistory(
   period: Period,
 ): Promise<BalanceSnapshot[]> {
   const range = periodToDateRange(period);
-  const { data, error } = await api.account({ id: accountId })["balance-history"].get({
-    query: range,
-  });
-  if (error) throw new Error(edenError(error));
-  const snapshots = (data as { snapshots?: BalanceSnapshot[] }).snapshots;
-  return Array.isArray(snapshots) ? snapshots : [];
+  const data = await rpcJson<{ snapshots?: BalanceSnapshot[] }>(
+    await api.account[":id"]["balance-history"].$get({
+      param: { id: String(accountId) },
+      query: range,
+    }),
+  );
+  return Array.isArray(data.snapshots) ? data.snapshots : [];
 }
 
 export function useBalanceHistory(accountId: number | undefined, period: Period = "1M") {
@@ -85,9 +86,10 @@ export function useNetWorthHistory(period: Period | undefined) {
   return useQuery<NetWorthSnapshot[], Error>({
     queryKey: netWorthHistoryKey(period ?? "1M"),
     queryFn: async () => {
-      const { data, error } = await api["balance-history"].get({ query: range });
-      if (error) throw new Error(edenError(error));
-      return (data as { snapshots: NetWorthSnapshot[] }).snapshots;
+      const data = await rpcJson<{ snapshots: NetWorthSnapshot[] }>(
+        await api["balance-history"].$get({ query: range }),
+      );
+      return data.snapshots;
     },
     enabled: !!period,
   });

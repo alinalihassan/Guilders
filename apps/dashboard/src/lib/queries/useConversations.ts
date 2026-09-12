@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { UIMessage } from "ai";
 
-import { api, edenError } from "../api";
+import { api, rpcJson } from "../api";
 
 type ConversationListItem = {
   id: string;
@@ -22,11 +22,7 @@ export const lastConversationKey = ["conversations", "last"] as const;
 export function useConversations(enabled = true) {
   return useQuery<ConversationListItem[], Error>({
     queryKey: conversationsKey,
-    queryFn: async () => {
-      const { data, error } = await api.conversation.get();
-      if (error) throw new Error(edenError(error));
-      return (data ?? []) as ConversationListItem[];
-    },
+    queryFn: async () => rpcJson<ConversationListItem[]>(await api.conversation.$get()),
     enabled,
   });
 }
@@ -35,9 +31,9 @@ export function useLastConversation() {
   return useQuery<ConversationFull | null, Error>({
     queryKey: lastConversationKey,
     queryFn: async () => {
-      const { data, error } = await api.conversation.last.get();
-      if (error || !data) return null;
-      return data as ConversationFull;
+      const res = await api.conversation.last.$get();
+      if (!res.ok) return null;
+      return (await res.json()) as unknown as ConversationFull;
     },
   });
 }
@@ -46,9 +42,9 @@ export function useConversation(id: string | null) {
   return useQuery<ConversationFull | null, Error>({
     queryKey: [...conversationsKey, id],
     queryFn: async () => {
-      const { data, error } = await api.conversation({ id: id! }).get();
-      if (error || !data) return null;
-      return data as ConversationFull;
+      const res = await api.conversation[":id"].$get({ param: { id: id! } });
+      if (!res.ok) return null;
+      return (await res.json()) as unknown as ConversationFull;
     },
     enabled: !!id,
   });
@@ -57,11 +53,7 @@ export function useConversation(id: string | null) {
 export function useCreateConversation() {
   const queryClient = useQueryClient();
   return useMutation<ConversationFull, Error>({
-    mutationFn: async () => {
-      const { data, error } = await api.conversation.post();
-      if (error) throw new Error(edenError(error));
-      return data as ConversationFull;
-    },
+    mutationFn: async () => rpcJson<ConversationFull>(await api.conversation.$post()),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: conversationsKey });
     },
@@ -72,8 +64,7 @@ export function useDeleteConversation() {
   const queryClient = useQueryClient();
   return useMutation<void, Error, string>({
     mutationFn: async (id) => {
-      const { error } = await api.conversation({ id }).delete();
-      if (error) throw new Error(edenError(error));
+      await rpcJson(await api.conversation[":id"].$delete({ param: { id } }));
     },
     onSuccess: (_data, id) => {
       queryClient.removeQueries({ queryKey: [...conversationsKey, id] });
@@ -86,8 +77,7 @@ export function useRenameConversation() {
   const queryClient = useQueryClient();
   return useMutation<void, Error, { id: string; title: string }>({
     mutationFn: async ({ id, title }) => {
-      const { error } = await api.conversation({ id }).patch({ title });
-      if (error) throw new Error(edenError(error));
+      await rpcJson(await api.conversation[":id"].$patch({ param: { id }, json: { title } }));
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: conversationsKey });

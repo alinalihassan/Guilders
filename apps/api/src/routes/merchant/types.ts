@@ -1,15 +1,11 @@
-import { t } from "elysia";
+import { z } from "zod";
 
 import type { InsertMerchant, Merchant as DbMerchant } from "../../db/schema/merchants";
 
-export const merchantIdParamSchema = t.Object({
-  id: t.Numeric({ description: "Merchant ID" }),
-});
-
-export const createMerchantSchema = t.Object({
-  name: t.String({ description: "Merchant name" }),
-  logo_url: t.Optional(t.Union([t.String({ description: "Merchant logo URL" }), t.Null()])),
-  website_url: t.Optional(t.Union([t.String({ description: "Merchant website URL" }), t.Null()])),
+export const createMerchantSchema = z.object({
+  name: z.string(),
+  logo_url: z.string().nullable().optional(),
+  website_url: z.string().nullable().optional(),
 });
 
 export type Merchant = DbMerchant;

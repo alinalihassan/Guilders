@@ -1,58 +1,44 @@
-import { Elysia, status, t } from "elysia";
+import { Hono } from "hono";
+import { z } from "zod";
 
 import { selectProviderSchema } from "../../db/schema/providers";
-import { authPlugin } from "../../middleware/auth";
+import { documented, idParamSchema, jsonError, validate } from "../../lib/http";
+import { requireAuth, type AuthEnv } from "../../middleware/auth";
 import { errorSchema } from "../../utils/error";
-import { providerIdParamSchema } from "./types";
 
-export const providerRoutes = new Elysia({
-  prefix: "/provider",
-  detail: {
-    tags: ["Providers"],
-    security: [{ apiKeyAuth: [] }, { bearerAuth: [] }],
-  },
-})
-  .use(authPlugin)
-  .model({
-    Provider: selectProviderSchema,
-  })
+export const providerRoutes = new Hono<AuthEnv>()
+  .use(requireAuth)
   .get(
-    "",
-    async ({ db }) => {
-      return db.query.provider.findMany();
-    },
-    {
-      auth: true,
-      response: t.Array(t.Ref("#/components/schemas/Provider")),
-      detail: {
-        summary: "Get all providers",
-        description: "Retrieve a list of all financial data providers",
-      },
+    "/",
+    documented({
+      tags: ["Providers"],
+      summary: "Get all providers",
+      description: "Retrieve a list of all financial data providers",
+      responses: { 200: z.array(selectProviderSchema) },
+    }),
+    async (c) => {
+      const db = c.get("db");
+      return c.json(await db.query.provider.findMany(), 200);
     },
   )
   .get(
     "/:id",
-    async ({ params, db }) => {
+    documented({
+      tags: ["Providers"],
+      summary: "Get provider by ID",
+      description: "Retrieve a specific provider by its ID",
+      responses: { 200: selectProviderSchema, 404: errorSchema },
+    }),
+    validate("param", idParamSchema),
+    async (c) => {
+      const { id } = c.req.valid("param");
+      const db = c.get("db");
       const result = await db.query.provider.findFirst({
-        where: {
-          id: params.id,
-        },
+        where: { id },
       });
       if (!result) {
-        return status(404, { error: "Provider not found" });
+        return jsonError(c, 404, "Provider not found");
       }
-      return result;
-    },
-    {
-      auth: true,
-      params: providerIdParamSchema,
-      response: {
-        200: "Provider",
-        404: errorSchema,
-      },
-      detail: {
-        summary: "Get provider by ID",
-        description: "Retrieve a specific provider by its ID",
-      },
+      return c.json(result, 200);
     },
   );
