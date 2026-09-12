@@ -4,6 +4,8 @@ import { ArrowRightLeft, Briefcase, LayoutDashboard, LogOut, Settings } from "lu
 export interface NavItem {
   name: string;
   href?: string;
+  /** Navigation target. Defaults to `href`. Use when `href` is a prefix (e.g. Settings). */
+  to?: string;
   icon: LucideIcon;
   onClick?: () => void;
   breadcrumb?: {
@@ -32,6 +34,6 @@ export const mainNavigation: NavItem[] = [
 ];
 
 export const bottomNavigation: NavItem[] = [
-  { name: "Settings", href: "/settings", icon: Settings },
+  { name: "Settings", href: "/settings", to: "/settings/account", icon: Settings },
   { name: "Log Out", icon: LogOut },
 ];

@@ -41,11 +41,17 @@ export function CompactBalanceCard({
     if (!allLoaded) return [];
 
     const dateMap = new Map<string, number>();
-    for (const query of historyQueries) {
-      if (!query.data) continue;
-      const { currency: accountCurrency, snapshots } = query.data;
+    for (const [index, query] of historyQueries.entries()) {
+      const snapshots = query.data;
+      const account = accounts[index];
+      if (!account || !Array.isArray(snapshots)) continue;
       for (const snap of snapshots) {
-        const converted = convertToUserCurrency(snap.balance, accountCurrency, rates, userCurrency);
+        const converted = convertToUserCurrency(
+          snap.balance,
+          account.currency,
+          rates,
+          userCurrency,
+        );
         const dateKey = typeof snap.date === "string" ? snap.date : String(snap.date);
         dateMap.set(dateKey, (dateMap.get(dateKey) ?? 0) + converted);
       }
@@ -54,7 +60,7 @@ export function CompactBalanceCard({
     return Array.from(dateMap.entries())
       .toSorted(([a], [b]) => a.localeCompare(b))
       .map(([date, val]) => ({ date, value: val }));
-  }, [allLoaded, historyQueries, rates, userCurrency]);
+  }, [allLoaded, historyQueries, accounts, rates, userCurrency]);
 
   const hasData = chartData.length >= 2;
 

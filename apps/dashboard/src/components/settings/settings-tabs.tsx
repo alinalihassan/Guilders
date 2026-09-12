@@ -33,8 +33,11 @@ const getIcon = (title: string): React.ReactNode => {
   }
 };
 
+const normalizePath = (path: string) => path.replace(/\/$/, "") || "/";
+
 export function SettingsTabs({ className, items, ...props }: SettingsTabsProps) {
   const { pathname } = useLocation();
+  const currentPath = normalizePath(pathname);
 
   return (
     <ScrollArea>
@@ -52,14 +55,14 @@ export function SettingsTabs({ className, items, ...props }: SettingsTabsProps) 
             className={cn(
               "flex items-center px-3 py-2 text-sm font-medium relative transition-colors rounded-md",
               "hover:bg-accent hover:text-foreground",
-              pathname === item.href
+              currentPath === normalizePath(item.href)
                 ? "text-foreground"
                 : "text-muted-foreground hover:text-foreground",
             )}
           >
             {getIcon(item.title)}
             {item.title}
-            {pathname === item.href && (
+            {currentPath === normalizePath(item.href) && (
               <motion.div
                 layoutId="activeTab"
                 className="bg-primary absolute inset-x-0 bottom-0 -mb-1 h-0.5"

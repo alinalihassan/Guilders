@@ -37,12 +37,6 @@ export const balanceHistoryKey = (accountId: number, period: Period) =>
 
 export const netWorthHistoryKey = (period: Period) => ["net-worth-history", period] as const;
 
-export type AccountBalanceHistoryResult = {
-  accountId: number;
-  currency: string;
-  snapshots: BalanceSnapshot[];
-};
-
 async function fetchAccountBalanceHistory(
   accountId: number,
   period: Period,
@@ -69,16 +63,12 @@ export function useBalanceHistories(
   accounts: { id: number; currency: string }[],
   period: Period = "1M",
 ) {
-  const queries = useQueries({
+  return useQueries({
     queries: accounts.map((account) => ({
       queryKey: balanceHistoryKey(account.id, period),
-      queryFn: async (): Promise<AccountBalanceHistoryResult> => {
-        const snapshots = await fetchAccountBalanceHistory(account.id, period);
-        return { accountId: account.id, currency: account.currency, snapshots };
-      },
+      queryFn: () => fetchAccountBalanceHistory(account.id, period),
     })),
   });
-  return queries;
 }
 
 export function useNetWorthHistory(period: Period | undefined) {
@@ -86,10 +76,10 @@ export function useNetWorthHistory(period: Period | undefined) {
   return useQuery<NetWorthSnapshot[], Error>({
     queryKey: netWorthHistoryKey(period ?? "1M"),
     queryFn: async () => {
-      const data = await rpcJson<{ snapshots: NetWorthSnapshot[] }>(
+      const data = await rpcJson<{ snapshots?: NetWorthSnapshot[] }>(
         await api["balance-history"].$get({ query: range }),
       );
-      return data.snapshots;
+      return Array.isArray(data.snapshots) ? data.snapshots : [];
     },
     enabled: !!period,
   });

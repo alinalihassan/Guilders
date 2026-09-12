@@ -16,7 +16,12 @@ interface NavItemProps {
 
 const NavItem = ({ item, pathname }: NavItemProps) => {
   const href = item.href;
-  const isActive = href ? pathname === href : false;
+  const to = item.to ?? href;
+  const isActive = href
+    ? href === "/"
+      ? pathname === "/"
+      : pathname === href || pathname.startsWith(`${href}/`)
+    : false;
 
   return (
     <li>
@@ -24,7 +29,7 @@ const NavItem = ({ item, pathname }: NavItemProps) => {
         <TooltipTrigger asChild>
           {href ? (
             <Link
-              to={href}
+              to={to!}
               className={cn(
                 "flex items-center justify-center rounded-md text-sm transition-colors relative",
                 "hover:text-accent-foreground",

@@ -29,7 +29,7 @@ export function UserButton() {
       <DropdownMenuContent align="end" className="w-48">
         <DropdownMenuLabel>Account</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => router.navigate({ to: "/settings" })}>
+        <DropdownMenuItem onClick={() => router.navigate({ to: "/settings/account" })}>
           Settings
         </DropdownMenuItem>
         <DropdownMenuSeparator />
