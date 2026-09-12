@@ -19,8 +19,9 @@ Guilders is an open-source, self-hostable personal finance platform. It aggregat
 guilders-elysia/
 ├── apps/
 │   ├── api/           Elysia API on Cloudflare Workers
-│   ├── dashboard/     Next.js 16 web dashboard
+│   ├── dashboard/     TanStack Start + Vite web dashboard
 │   ├── docs/          Fumadocs documentation site
+│   ├── website/       Astro marketing site
 │   └── mobile/        Expo / React Native mobile app
 ├── packages/
 │   ├── transactional/ React Email templates
@@ -33,20 +34,20 @@ guilders-elysia/
 
 ## Tech Stack
 
-| Layer         | Technology                                                                       |
-| ------------- | -------------------------------------------------------------------------------- |
-| API Framework | Elysia 1.4 (Bun runtime, Cloudflare Workers adapter)                             |
-| Database      | PostgreSQL (Neon serverless) via Drizzle ORM                                     |
-| Auth          | Better Auth (session cookies, bearer tokens, passkeys, API keys, OAuth provider) |
-| AI            | Vercel AI SDK via Cloudflare AI Gateway                                          |
-| MCP           | `@modelcontextprotocol/sdk` — OAuth-authenticated                                |
-| Dashboard     | Next.js 16, React 19, Tailwind CSS, shadcn/ui, Recharts, Zustand, TanStack Query |
-| Mobile        | Expo 55, React Native 0.83, Expo Router                                          |
-| Docs          | Fumadocs 16 (Next.js), OpenAPI integration                                       |
-| Email         | Resend + React Email                                                             |
-| Payments      | Stripe (via Better Auth Stripe plugin)                                           |
-| Storage       | Cloudflare R2 (public + per-user buckets)                                        |
-| Providers     | SaltEdge (open banking), SnapTrade (brokerages)                                  |
+| Layer         | Technology                                                                                  |
+| ------------- | ------------------------------------------------------------------------------------------- |
+| API Framework | Elysia 1.4 (Bun runtime, Cloudflare Workers adapter)                                        |
+| Database      | PostgreSQL (Neon serverless) via Drizzle ORM                                                |
+| Auth          | Better Auth (session cookies, bearer tokens, passkeys, API keys, OAuth provider)            |
+| AI            | Vercel AI SDK via Cloudflare AI Gateway                                                     |
+| MCP           | `@modelcontextprotocol/sdk` — OAuth-authenticated                                           |
+| Dashboard     | TanStack Start + Vite, React 19, Tailwind CSS, shadcn/ui, Recharts, Zustand, TanStack Query |
+| Mobile        | Expo 55, React Native 0.83, Expo Router                                                     |
+| Docs          | Fumadocs 16 (Next.js), OpenAPI integration                                                  |
+| Email         | Resend + React Email                                                                        |
+| Payments      | Stripe (via Better Auth Stripe plugin)                                                      |
+| Storage       | Cloudflare R2 (public + per-user buckets)                                                   |
+| Providers     | SaltEdge (open banking), SnapTrade (brokerages)                                             |
 
 ## Data Model
 
@@ -155,7 +156,7 @@ The auth middleware at `apps/api/src/middleware/auth.ts` is an Elysia plugin tha
 
 - **Chat endpoint** (`apps/api/src/routes/chat/`): streams responses via Vercel AI SDK through Cloudflare AI Gateway.
 - **Financial context** (`apps/api/src/routes/chat/utils.ts`): injects accounts, transactions, and categories into the system prompt.
-- **Dashboard advisor** (sidebar in protected layout): React chat UI via `@ai-sdk/react` in `apps/dashboard/src/components/advisor/`.
+- **Dashboard advisor** (sidebar in the TanStack Start protected layout): React chat UI via `@ai-sdk/react` in `apps/dashboard/src/components/advisor/`.
 - **Mobile chat** (`apps/mobile/src/app/(app)/chat/`): streaming chat with markdown rendering.
 
 ## MCP Server
@@ -227,7 +228,7 @@ POST /api/account
   "name": "Emergency Cash",
   "type": "asset",
   "subtype": "depository",
-  "value": 5000,
+  "value": "5000",
   "currency": "USD"
 }
 ```
@@ -238,11 +239,11 @@ POST /api/account
 POST /api/transaction
 {
   "account_id": 123,
-  "amount": -150.00,
+  "amount": "-150.00",
   "currency": "USD",
-  "date": "2026-02-19",
+  "timestamp": "2026-02-19T00:00:00.000Z",
   "description": "Grocery shopping",
-  "category": "food"
+  "category_id": 1
 }
 ```
 

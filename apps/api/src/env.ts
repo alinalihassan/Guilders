@@ -57,6 +57,13 @@ const EnvSchema = z.object({
 
 export type EnvConfig = z.infer<typeof EnvSchema>;
 
+/** Wrangler/.env copies of .env.example send optional keys as "". Treat those as unset. */
+function envWithEmptyAsUnset(source: NodeJS.ProcessEnv): Record<string, string | undefined> {
+  return Object.fromEntries(
+    Object.entries(source).map(([key, value]) => [key, value === "" ? undefined : value]),
+  );
+}
+
 /**
  * Elysia plugin that validates environment variables at startup.
  * Use: app.use(env())
@@ -66,7 +73,7 @@ export function env() {
     return;
   }
 
-  const result = EnvSchema.safeParse(process.env);
+  const result = EnvSchema.safeParse(envWithEmptyAsUnset(process.env));
 
   if (!result.success) {
     const issues = result.error.issues.map((i) => `  ${i.path.join(".")}: ${i.message}`).join("\n");
