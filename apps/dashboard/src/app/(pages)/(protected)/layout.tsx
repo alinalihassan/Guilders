@@ -29,6 +29,7 @@ export const Route = createFileRoute("/(pages)/(protected)")({
 function ProtectedLayout() {
   const advisorOpen = useStore((state) => state.advisorOpen);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [scrollElement, setScrollElement] = useState<HTMLElement | null>(null);
   const mainRef = useRef<HTMLElement>(null);
   const resolvedPathname = useRouterState({ select: (s) => s.resolvedLocation.pathname });
   const isSettings = resolvedPathname.startsWith("/settings");
@@ -56,9 +57,12 @@ function ProtectedLayout() {
           {isSettings ? (
             <Outlet />
           ) : (
-            <MainScrollProvider isScrolled={isScrolled}>
+            <MainScrollProvider isScrolled={isScrolled} scrollElement={scrollElement}>
               <main
-                ref={mainRef}
+                ref={(element) => {
+                  mainRef.current = element;
+                  setScrollElement((current) => (current === element ? current : element));
+                }}
                 className="flex flex-1 flex-col overflow-auto px-4 md:px-6"
                 onScroll={handleMainScroll}
               >

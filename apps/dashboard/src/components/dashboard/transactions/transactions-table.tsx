@@ -4,16 +4,21 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useMerchants } from "@/lib/queries/useMerchants";
 import { useTransactions } from "@/lib/queries/useTransactions";
 
-import { TransactionItem } from "./transaction-item";
 import { TransactionsEmptyPlaceholder } from "./transactions-placeholder";
+import { TransactionsVirtualList } from "./transactions-virtual-list";
 
 export function TransactionsTable({ accountId }: { accountId?: number }) {
   const { data: transactions, isLoading, error } = useTransactions(accountId);
   const { data: merchants } = useMerchants();
   const merchantsById = useMemo(() => new Map(merchants?.map((m) => [m.id, m]) ?? []), [merchants]);
+  const sortedTransactions = transactions
+    ? transactions.toSorted(
+        (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
+      )
+    : [];
 
   return (
-    <div className="space-y-2">
+    <div className="h-full min-h-0">
       {isLoading ? (
         <div className="space-y-2">
           {[...Array(4)].map((_, index) => (
@@ -27,19 +32,11 @@ export function TransactionsTable({ accountId }: { accountId?: number }) {
       ) : transactions.length === 0 ? (
         <TransactionsEmptyPlaceholder accountId={accountId} />
       ) : (
-        transactions
-          .toSorted((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-          .map((transaction) => (
-            <TransactionItem
-              key={transaction.id}
-              transaction={transaction}
-              merchant={
-                transaction.merchant_id != null
-                  ? merchantsById.get(transaction.merchant_id)
-                  : undefined
-              }
-            />
-          ))
+        <TransactionsVirtualList
+          transactions={sortedTransactions}
+          merchantsById={merchantsById}
+          className="h-full max-h-[min(70vh,40rem)]"
+        />
       )}
     </div>
   );

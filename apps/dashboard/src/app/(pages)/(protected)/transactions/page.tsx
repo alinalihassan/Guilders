@@ -2,10 +2,10 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Filter, Plus, Search } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 
-import { TransactionItem } from "@/components/dashboard/transactions/transaction-item";
 import { TransactionsCard } from "@/components/dashboard/transactions/transactions-card";
 import { TransactionsEmptyPlaceholder } from "@/components/dashboard/transactions/transactions-placeholder";
 import { TransactionsSankey } from "@/components/dashboard/transactions/transactions-sankey";
+import { TransactionsVirtualList } from "@/components/dashboard/transactions/transactions-virtual-list";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import NumberFlow from "@/components/ui/number-flow";
@@ -209,19 +209,13 @@ function TransactionsPage() {
               <TransactionsEmptyPlaceholder />
             )
           ) : (
-            filteredTransactions
-              .toSorted((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-              .map((transaction) => (
-                <TransactionItem
-                  key={transaction.id}
-                  transaction={transaction}
-                  merchant={
-                    transaction.merchant_id != null
-                      ? merchantsById.get(transaction.merchant_id)
-                      : undefined
-                  }
-                />
-              ))
+            <TransactionsVirtualList
+              scroll="page"
+              transactions={filteredTransactions.toSorted(
+                (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
+              )}
+              merchantsById={merchantsById}
+            />
           )}
         </div>
       </TransactionsCard>
