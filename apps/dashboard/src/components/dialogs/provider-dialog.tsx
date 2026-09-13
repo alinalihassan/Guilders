@@ -123,7 +123,7 @@ export function ProviderDialog() {
           }
         }
       } else {
-        const allowedOrigins = [clientEnv.VITE_API_URL, clientEnv.VITE_NGROK_URL]
+        const allowedOrigins = [clientEnv.VITE_API_URL, clientEnv.VITE_DEV_TUNNEL_URL]
           .filter((url): url is string => Boolean(url))
           .map((url) => new URL(url).origin);
 

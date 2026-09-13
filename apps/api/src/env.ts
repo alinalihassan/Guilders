@@ -21,9 +21,8 @@ const EnvSchema = z.object({
   // Providers
   GUILDERS_SECRET: z.string().optional(),
 
-  // Ngrok / tunnels
-  NGROK_TOKEN: z.string().optional(),
-  NGROK_URL: z.string().url().optional(),
+  // Cloudflare Tunnel (local provider callbacks)
+  DEV_TUNNEL_URL: z.string().url().optional(),
 
   // SnapTrade
   SNAPTRADE_CLIENT_ID: z.string().optional(),

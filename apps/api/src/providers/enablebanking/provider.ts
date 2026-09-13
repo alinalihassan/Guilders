@@ -1,6 +1,7 @@
 import { AccountSubtypeEnum, AccountTypeEnum } from "../../db/schema/enums";
 import type { InsertTransaction } from "../../db/schema/transactions";
 import { createDb } from "../../lib/db";
+import { getProviderCallbackBaseUrl } from "../callback-url";
 import { signState } from "../state";
 import type {
   AccountParams,
@@ -174,9 +175,8 @@ export class EnableBankingProvider implements IProvider {
       const decoded = decodeInstitutionId(inst.provider_institution_id);
       if (!decoded) return { success: false, error: "Invalid institution ID format" };
 
-      const backendUrl =
-        process.env.NODE_ENV === "development" ? process.env.NGROK_URL : process.env.BACKEND_URL;
-      if (!backendUrl) return { success: false, error: "BACKEND_URL not configured" };
+      const backendUrl = getProviderCallbackBaseUrl();
+      if (!backendUrl) return { success: false, error: "Provider callback URL is not configured." };
 
       const secret = process.env.GUILDERS_SECRET;
       if (!secret)
@@ -233,9 +233,8 @@ export class EnableBankingProvider implements IProvider {
       const decoded = decodeInstitutionId(instConn.institution.provider_institution_id);
       if (!decoded) return { success: false, error: "Invalid institution ID format" };
 
-      const backendUrl =
-        process.env.NODE_ENV === "development" ? process.env.NGROK_URL : process.env.BACKEND_URL;
-      if (!backendUrl) return { success: false, error: "BACKEND_URL not configured" };
+      const backendUrl = getProviderCallbackBaseUrl();
+      if (!backendUrl) return { success: false, error: "Provider callback URL is not configured." };
 
       const secret = process.env.GUILDERS_SECRET;
       if (!secret)

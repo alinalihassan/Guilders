@@ -21,8 +21,7 @@ declare namespace Cloudflare {
     STRIPE_PRO_PRICE_ID: string;
     STRIPE_SECRET_KEY: string;
     STRIPE_WEBHOOK_SECRET: string;
-    NGROK_TOKEN: string;
-    NGROK_URL: string;
+    DEV_TUNNEL_URL: string;
     SNAPTRADE_CLIENT_ID: string;
     SNAPTRADE_CLIENT_SECRET: string;
     SALTEDGE_APP_ID: string;
@@ -53,8 +52,7 @@ declare namespace NodeJS {
       | "STRIPE_PRO_PRICE_ID"
       | "STRIPE_SECRET_KEY"
       | "STRIPE_WEBHOOK_SECRET"
-      | "NGROK_TOKEN"
-      | "NGROK_URL"
+      | "DEV_TUNNEL_URL"
       | "SNAPTRADE_CLIENT_ID"
       | "SNAPTRADE_CLIENT_SECRET"
       | "SALTEDGE_APP_ID"

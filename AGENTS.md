@@ -249,6 +249,8 @@ Local services: website `http://localhost:3001`, API `http://localhost:3000`, da
 
 **Wrangler.** `apps/api` `bun run dev` needs Wrangler 4.131+. The `AI` binding must stay `"remote": true` (Workers AI has no local simulator). 4.71 fails to create that preview session.
 
+**Provider callbacks.** Banks cannot reach `localhost:3000`. Run `cd apps/api && bun run tunnel` so `https://local-dev.guilders.app` forwards to Wrangler. Set `DEV_TUNNEL_URL` and dashboard `VITE_DEV_TUNNEL_URL` to that origin. Do not put Cloudflare Access on this hostname.
+
 **Known local user.** After the API is up: `bun run agent:user` creates `agent@guilders.test` / `agent-agent-agent`. Sign-up does not require email verification.
 
 **MCP Inspector.** Use the CLI against a running API (`:3000`) and dashboard (`:3002`). Pin `protocolEra` to `modern` — Inspector defaults to legacy `initialize` (`2025-11-25`), which `/mcp` rejects with `-32022`. Prefer the CLI over the web UI: Better Auth DCR accepts Inspector’s loopback callback only for `application_type: native` (CLI), not web.
@@ -330,7 +332,7 @@ POST /api/transaction
 | **Email**         | None (Workers `EMAIL` binding — Cloudflare Email Sending). From: `noreply@guilders.app`                                                  |
 | **Cloudflare**    | None in the Worker. `CLOUDFLARE_ACCOUNT_ID` + `CLOUDFLARE_API_TOKEN` are GitHub Actions secrets for deploy. R2 is `USER_BUCKET`.         |
 | **Bindings**      | `AI` (Workers AI), `EMAIL` (send_email), `USER_BUCKET` (R2), `WEBHOOK_QUEUE` (Queue)                                                     |
-| **Dev tunnels**   | `NGROK_TOKEN`, `NGROK_URL` (optional, for provider callbacks)                                                                            |
+| **Dev tunnels**   | `DEV_TUNNEL_URL` (optional; Cloudflare Tunnel `local-dev` → `https://local-dev.guilders.app`)                                            |
 | **SnapTrade**     | `SNAPTRADE_CLIENT_ID`, `SNAPTRADE_CLIENT_SECRET`                                                                                         |
 | **SaltEdge**      | `SALTEDGE_APP_ID`, `SALTEDGE_SECRET`                                                                                                     |
 | **EnableBanking** | `ENABLEBANKING_CLIENT_ID`, `ENABLEBANKING_CLIENT_PRIVATE_KEY`                                                                            |
