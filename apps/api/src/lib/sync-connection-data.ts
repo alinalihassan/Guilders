@@ -5,6 +5,7 @@ import { AccountSubtypeEnum, AccountTypeEnum } from "../db/schema/enums";
 import { transaction } from "../db/schema/transactions";
 import { getProvider } from "../providers";
 import { EnableBankingClient } from "../providers/enablebanking/client";
+import * as lunchFlowClient from "../providers/lunchflow/client";
 import { getSnapTradeClient } from "../providers/snaptrade/client";
 import * as tellerClient from "../providers/teller/client";
 import type { ProviderName } from "../providers/types";
@@ -25,6 +26,7 @@ export async function syncConnectionData(params: {
       break;
     case "EnableBanking":
     case "Teller":
+    case "LunchFlow":
       await syncPullBasedConnection(
         params.providerName,
         params.userId,
@@ -108,6 +110,23 @@ export async function syncAccountData(accountId: number): Promise<void> {
       await syncSnapTradeConnection(provConn.user_id, accountRecord.institution_connection_id!);
       return;
     }
+    case "LunchFlow": {
+      const secret = accountRecord.institutionConnection.providerConnection?.secret;
+      if (!secret) throw new Error("Lunch Flow API key not found");
+
+      try {
+        const balance = await lunchFlowClient.getAccountBalance(secret, providerAccountId);
+        if (balance) {
+          await db
+            .update(account)
+            .set({ value: balance.amount, updated_at: new Date() })
+            .where(eq(account.id, accountId));
+        }
+      } catch {
+        // Balance endpoint may not be available for all Lunch Flow accounts
+      }
+      break;
+    }
   }
 
   const provider = getProvider(providerName);
@@ -142,7 +161,7 @@ export async function syncAccountData(accountId: number): Promise<void> {
 }
 
 /**
- * Sync accounts and transactions for pull-based providers (EnableBanking, Teller).
+ * Sync accounts and transactions for pull-based providers (EnableBanking, Teller, LunchFlow).
  * Fetches accounts via the provider, upserts them, then syncs transactions per account.
  */
 async function syncPullBasedConnection(

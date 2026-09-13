@@ -21,6 +21,11 @@ const providers = [
     name: "Teller",
     logo_url: `${BACKEND_URL}/static/provider_logo/teller.svg`,
   },
+  {
+    id: 4,
+    name: "LunchFlow",
+    logo_url: `${BACKEND_URL}/static/provider_logo/lunchflow.svg`,
+  },
 ];
 
 export async function seedProviders() {

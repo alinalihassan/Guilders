@@ -47,7 +47,7 @@ guilders/
 | Email         | Cloudflare Email Sending + React Email                                                      |
 | Payments      | Stripe (via Better Auth Stripe plugin)                                                      |
 | Storage       | Cloudflare R2 (public + per-user buckets)                                                   |
-| Providers     | EnableBanking (open banking), SnapTrade (brokerages), Teller                                |
+| Providers     | EnableBanking (open banking), SnapTrade (brokerages), Teller, LunchFlow (BYO API key)       |
 
 ## Data Model
 
@@ -210,7 +210,7 @@ connect, reconnect, refreshConnection,
 getAccounts, getTransactions
 ```
 
-**Current providers:** EnableBanking (`apps/api/src/providers/enablebanking/`), SnapTrade (`apps/api/src/providers/snaptrade/`), Teller (`apps/api/src/providers/teller/`).
+**Current providers:** EnableBanking (`apps/api/src/providers/enablebanking/`), SnapTrade (`apps/api/src/providers/snaptrade/`), Teller (`apps/api/src/providers/teller/`), LunchFlow (`apps/api/src/providers/lunchflow/`, personal API key from Settings → Connections).
 
 The provider interface is designed so developers can add their own integrations — build a custom bank scraper, crypto exchange connector, or anything else that implements `IProvider`, and push data into Guilders via the API.
 
@@ -334,3 +334,4 @@ POST /api/transaction
 | **SnapTrade**     | `SNAPTRADE_CLIENT_ID`, `SNAPTRADE_CLIENT_SECRET`                                                                                                    |
 | **EnableBanking** | `ENABLEBANKING_CLIENT_ID`, `ENABLEBANKING_CLIENT_PRIVATE_KEY`                                                                                       |
 | **Teller**        | `TELLER_APPLICATION_ID`, `TELLER_PRIVATE_KEY`, `TELLER_ENVIRONMENT`, `TELLER_WEBHOOK_SECRET`                                                        |
+| **LunchFlow**     | Per-user personal API key on Settings → Connections (`provider_connection.secret`). `LUNCHFLOW_API_KEY` is optional local reference only.           |

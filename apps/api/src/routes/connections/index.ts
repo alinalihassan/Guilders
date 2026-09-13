@@ -9,9 +9,12 @@ import { documented, jsonError, successSchema, validate } from "../../lib/http";
 import { syncAccountData } from "../../lib/sync-connection-data";
 import { requireAuth, type AuthEnv } from "../../middleware/auth";
 import { getProvider } from "../../providers";
-import type { ProviderName } from "../../providers/types";
+import { connectLunchFlow, isInvalidLunchFlowKey } from "../../providers/lunchflow/connect";
+import { API_KEY_PROVIDERS, type ProviderName } from "../../providers/types";
 import { errorSchema } from "../../utils/error";
 import {
+  apiKeyConnectionResultSchema,
+  apiKeyConnectionSchema,
   connectionResultSchema,
   createConnectionSchema,
   providerOnlySchema,
@@ -360,6 +363,56 @@ export const connectionsRoutes = new Hono<AuthEnv>()
           c,
           500,
           error instanceof Error ? error.message : "Failed to deregister provider user",
+        );
+      }
+    },
+  )
+  .post(
+    "/api-key",
+    documented({
+      tags: ["Connections"],
+      summary: "Connect with a personal API key",
+      description: "Save a Lunch Flow API key and import accounts from that destination",
+      responses: {
+        200: apiKeyConnectionResultSchema,
+        400: errorSchema,
+        404: errorSchema,
+        500: errorSchema,
+      },
+    }),
+    validate("json", apiKeyConnectionSchema),
+    async (c) => {
+      const body = c.req.valid("json");
+      const user = c.get("user");
+      const db = c.get("db");
+
+      const providerId = parseId(body.provider_id);
+      if (!providerId) return jsonError(c, 400, "Invalid provider_id");
+
+      const providerRecord = await db.query.provider.findFirst({
+        where: { id: providerId },
+      });
+      if (!providerRecord) return jsonError(c, 404, "Provider not found");
+      if (!API_KEY_PROVIDERS.includes(providerRecord.name as ProviderName)) {
+        return jsonError(c, 400, "This provider does not accept an API key");
+      }
+
+      try {
+        const result = await connectLunchFlow({
+          userId: user.id,
+          providerId: providerRecord.id,
+          apiKey: body.api_key,
+          fallbackLogoUrl: providerRecord.logo_url,
+        });
+        return c.json({ success: true, ...result }, 200);
+      } catch (error) {
+        if (isInvalidLunchFlowKey(error)) {
+          return jsonError(c, 400, "Invalid Lunch Flow API key");
+        }
+        return jsonError(
+          c,
+          500,
+          error instanceof Error ? error.message : "Failed to connect Lunch Flow",
         );
       }
     },

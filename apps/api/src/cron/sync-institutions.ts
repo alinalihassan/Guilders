@@ -3,12 +3,18 @@ import { sql } from "drizzle-orm";
 import { institution } from "../db/schema/institutions";
 import { createDb } from "../lib/db";
 import { EnableBankingProvider } from "../providers/enablebanking/provider";
+import { LunchFlowProvider } from "../providers/lunchflow/provider";
 import { SnapTradeProvider } from "../providers/snaptrade/provider";
 import { TellerProvider } from "../providers/teller/provider";
 import type { IProvider } from "../providers/types";
 
 function getProviderAdapters(): IProvider[] {
-  return [new EnableBankingProvider(), new SnapTradeProvider(), new TellerProvider()];
+  return [
+    new EnableBankingProvider(),
+    new SnapTradeProvider(),
+    new TellerProvider(),
+    new LunchFlowProvider(),
+  ];
 }
 
 export async function syncInstitutions() {

@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { api, rpcJson } from "@/lib/api";
 
 import { queryKey as accountQueryKey } from "./useAccounts";
+import { queryKey as providerConnectionQueryKey } from "./useProviderConnections";
 import { queryKey as transactionQueryKey } from "./useTransactions";
 
 export function useRegisterConnection() {
@@ -14,6 +15,35 @@ export function useRegisterConnection() {
     onError: (error) => {
       console.error("Failed to register connection:", error);
       toast.error("Failed to register connection", {
+        description: error.message,
+      });
+    },
+  });
+}
+
+export function useConnectApiKey() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ providerId, apiKey }: { providerId: string; apiKey: string }) =>
+      rpcJson<{ success: boolean; accounts: number; institutions: number }>(
+        await api.connections["api-key"].$post({
+          json: { provider_id: providerId, api_key: apiKey },
+        }),
+      ),
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: providerConnectionQueryKey });
+      queryClient.invalidateQueries({ queryKey: accountQueryKey });
+      queryClient.invalidateQueries({ queryKey: transactionQueryKey });
+      toast.success("Lunch Flow connected", {
+        description:
+          result.accounts > 0
+            ? `Imported ${result.accounts} account${result.accounts === 1 ? "" : "s"}.`
+            : "API key saved. No active accounts were found yet.",
+      });
+    },
+    onError: (error) => {
+      console.error("Failed to connect Lunch Flow:", error);
+      toast.error("Failed to connect Lunch Flow", {
         description: error.message,
       });
     },

@@ -38,6 +38,10 @@ const EnvSchema = z.object({
   TELLER_ENVIRONMENT: z.string().optional(),
   TELLER_WEBHOOK_SECRET: z.string().optional(),
 
+  // Lunch Flow personal API key is stored per user on Connections.
+  // This env var is optional local reference only and is not used by the Worker.
+  LUNCHFLOW_API_KEY: z.string().optional(),
+
   // Runtime / test
   NODE_ENV: z.enum(["development", "production", "test"]).optional(),
 });

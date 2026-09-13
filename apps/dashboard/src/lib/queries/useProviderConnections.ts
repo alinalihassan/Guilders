@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import { api, rpcJson } from "@/lib/api";
 
-const queryKey = ["provider-connections"] as const;
+export const queryKey = ["provider-connections"] as const;
 
 export function useProviderConnections() {
   return useQuery<ProviderConnections, Error>({

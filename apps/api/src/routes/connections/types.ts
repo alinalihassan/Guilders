@@ -35,6 +35,17 @@ export const syncSchema = z.object({
   account_id: z.string(),
 });
 
+export const apiKeyConnectionSchema = z.object({
+  provider_id: z.string(),
+  api_key: z.string().trim().min(8).max(255),
+});
+
+export const apiKeyConnectionResultSchema = z.object({
+  success: z.boolean(),
+  accounts: z.number(),
+  institutions: z.number(),
+});
+
 export type ConnectionResponse = {
   redirectURI: string;
   type: "redirect" | "popup";
