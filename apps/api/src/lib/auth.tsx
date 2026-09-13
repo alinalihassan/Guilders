@@ -59,11 +59,18 @@ export function getAuthIssuer() {
   return `${process.env.BACKEND_URL}/api/auth`;
 }
 
+/** Cookie / WebAuthn rpID host. `guilders.app` stays apex; `api.guilders.app` becomes `guilders.app`. */
+function cookieRootDomain(hostname: string): string {
+  if (hostname === "localhost" || hostname.endsWith(".localhost")) return hostname;
+  const parts = hostname.split(".");
+  return parts.length > 2 ? parts.slice(-2).join(".") : hostname;
+}
+
 export function createAuth(db?: Database) {
   const authDb = db ?? createDb();
   const baseUrl = process.env.BACKEND_URL;
   const mcpResource = `${baseUrl}/mcp`;
-  const passkeyRpId = new URL(baseUrl).hostname;
+  const rootDomain = cookieRootDomain(new URL(baseUrl).hostname);
   const stripeAuth = stripePlugin();
 
   return betterAuth({
@@ -77,7 +84,7 @@ export function createAuth(db?: Database) {
     advanced: {
       crossSubDomainCookies: {
         enabled: true,
-        domain: new URL(baseUrl).hostname.replace(/^[^.]+\./, ""), // e.g. api.guilders.app -> guilders.app
+        domain: rootDomain,
       },
       backgroundTasks: {
         handler: (task: Promise<unknown>) => {
@@ -177,7 +184,7 @@ export function createAuth(db?: Database) {
       twoFactor(),
       jwt(),
       passkey({
-        rpID: passkeyRpId,
+        rpID: rootDomain,
         rpName: "Guilders",
       }),
       bearer(),
@@ -200,6 +207,7 @@ export function createAuth(db?: Database) {
     ],
     trustedOrigins: [
       new URL(process.env.DASHBOARD_URL).origin,
+      new URL(baseUrl).origin,
       // "guilders-mobile://",
       // ...(process.env.NODE_ENV === "development"
       //   ? [

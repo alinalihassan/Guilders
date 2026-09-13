@@ -18,7 +18,7 @@
   <a href="https://guilders.app">Website</a> ·
   <a href="https://dashboard.guilders.app">Dashboard</a> ·
   <a href="https://docs.guilders.app">Docs</a> ·
-  <a href="https://api.guilders.app/openapi">API</a>
+  <a href="https://guilders.app/openapi">API</a>
 </p>
 
 ---
@@ -105,17 +105,17 @@ The API is fully documented via OpenAPI and supports two authentication methods:
 Generate an API key from the dashboard settings and start making requests:
 
 ```bash
-curl https://api.guilders.app/api/account \
+curl https://guilders.app/api/account \
   -H "x-api-key: your-api-key"
 ```
 
-Full reference and more examples at [docs.guilders.app](https://docs.guilders.app) · [OpenAPI](https://api.guilders.app/openapi).
+Full reference and more examples at [docs.guilders.app](https://docs.guilders.app) · [OpenAPI](https://guilders.app/openapi).
 
 ## MCP (Model Context Protocol)
 
 Guilders exposes an MCP server so AI agents can access your financial data with your permission. Use it from Claude, Cursor, or any MCP-compatible client.
 
-**Endpoint:** `https://api.guilders.app/mcp`
+**Endpoint:** `https://guilders.app/mcp`
 
 Authenticates via OAuth — your AI agent requests access and you approve it through the dashboard.
 

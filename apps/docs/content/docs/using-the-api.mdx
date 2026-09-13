@@ -7,7 +7,7 @@ description: Authenticate with an API key and call common endpoints
 
 |                     | Base URL                                      |
 | ------------------- | --------------------------------------------- |
-| Hosted (default)    | `https://api.guilders.app`                    |
+| Hosted (default)    | `https://guilders.app`                        |
 | Self-hosted / local | Your API origin, e.g. `http://localhost:3000` |
 
 The rest of this page uses the hosted URL. Swap the host if you run your own server.
@@ -33,17 +33,17 @@ The dashboard itself uses a Better Auth session cookie. Some clients also send `
 ## Example Requests
 
 ```bash
-curl https://api.guilders.app/api/account \
+curl https://guilders.app/api/account \
   -H "x-api-key: $GUILDERS_API_KEY"
 ```
 
 ```bash
-curl "https://api.guilders.app/api/transaction?limit=20" \
+curl "https://guilders.app/api/transaction?limit=20" \
   -H "x-api-key: $GUILDERS_API_KEY"
 ```
 
 ```bash
-curl https://api.guilders.app/api/account \
+curl https://guilders.app/api/account \
   -X POST \
   -H "x-api-key: $GUILDERS_API_KEY" \
   -H "Content-Type: application/json" \
@@ -58,4 +58,4 @@ curl https://api.guilders.app/api/account \
 
 ## OpenAPI Explorer
 
-Use the [OpenAPI reference](/api-reference) for schemas, parameters, and try-it-out. The same spec is also served at [api.guilders.app/openapi](https://api.guilders.app/openapi).
+Use the [OpenAPI reference](/api-reference) for schemas, parameters, and try-it-out. The same spec is also served at [guilders.app/openapi](https://guilders.app/openapi).

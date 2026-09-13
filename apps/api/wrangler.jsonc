@@ -19,6 +19,13 @@
       "custom_domain": true,
       "pattern": "api.guilders.app",
     },
+    { "pattern": "guilders.app/api*", "zone_name": "guilders.app" },
+    { "pattern": "guilders.app/mcp*", "zone_name": "guilders.app" },
+    { "pattern": "guilders.app/callback*", "zone_name": "guilders.app" },
+    { "pattern": "guilders.app/oauth*", "zone_name": "guilders.app" },
+    { "pattern": "guilders.app/openapi*", "zone_name": "guilders.app" },
+    { "pattern": "guilders.app/.well-known*", "zone_name": "guilders.app" },
+    { "pattern": "guilders.app/static*", "zone_name": "guilders.app" },
   ],
   "placement": {
     "mode": "smart",

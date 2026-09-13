@@ -1,3 +1,5 @@
+import { createPrivateKey, sign, type KeyObject } from "node:crypto";
+
 import type {
   ASPSP,
   AccountResource,
@@ -19,19 +21,19 @@ function base64UrlEncode(data: unknown): string {
     .replace(/=+$/, "");
 }
 
-function pemToArrayBuffer(pem: string): ArrayBuffer {
-  const normalizedPem = pem.includes("\\n") ? pem.replace(/\\n/g, "\n") : pem;
-  const base64 = normalizedPem
-    .replace(/-----BEGIN PRIVATE KEY-----/, "")
-    .replace(/-----END PRIVATE KEY-----/, "")
-    .replace(/\s+/g, "");
-  const buffer = Buffer.from(base64, "base64");
-  const arrayBuffer = new ArrayBuffer(buffer.length);
-  const view = new Uint8Array(arrayBuffer);
-  for (let i = 0; i < buffer.length; i++) {
-    view[i] = buffer[i]!;
+/** Wrangler dotenv may keep quotes or `\\n` escapes; Node crypto accepts PEM text. */
+function normalizePem(pem: string): string {
+  let normalized = pem.trim();
+  if (
+    (normalized.startsWith('"') && normalized.endsWith('"')) ||
+    (normalized.startsWith("'") && normalized.endsWith("'"))
+  ) {
+    normalized = normalized.slice(1, -1);
   }
-  return arrayBuffer;
+  if (normalized.includes("\\n")) {
+    normalized = normalized.replace(/\\n/g, "\n");
+  }
+  return normalized.trim();
 }
 
 type RequestOptions = {
@@ -52,28 +54,19 @@ export class EnableBankingClient {
   private readonly baseUrl = "https://api.enablebanking.com";
   private jwt: string | null = null;
   private jwtExpiry = 0;
-  private cryptoKey: CryptoKey | null = null;
+  private signingKey: KeyObject | null = null;
 
   constructor(
     private readonly clientId: string,
     private readonly privateKey: string,
   ) {}
 
-  private async getCryptoKey(): Promise<CryptoKey> {
-    if (this.cryptoKey) return this.cryptoKey;
-
-    const keyBuffer = pemToArrayBuffer(this.privateKey);
-    this.cryptoKey = await crypto.subtle.importKey(
-      "pkcs8",
-      keyBuffer,
-      { name: "RSASSA-PKCS1-v1_5", hash: { name: "SHA-256" } },
-      false,
-      ["sign"],
-    );
-    return this.cryptoKey;
+  private getSigningKey(): KeyObject {
+    this.signingKey ??= createPrivateKey(normalizePem(this.privateKey));
+    return this.signingKey;
   }
 
-  private async generateJWT(): Promise<string> {
+  private generateJWT(): string {
     const now = Math.floor(Date.now() / 1000);
     if (this.jwt && this.jwtExpiry > now + 300) return this.jwt;
 
@@ -85,17 +78,14 @@ export class EnableBankingClient {
       exp: now + 3600,
     });
 
-    const data = new TextEncoder().encode(`${header}.${payload}`);
-    const key = await this.getCryptoKey();
-    const signatureBuffer = await crypto.subtle.sign({ name: "RSASSA-PKCS1-v1_5" }, key, data);
-
-    const signature = Buffer.from(new Uint8Array(signatureBuffer))
+    const data = `${header}.${payload}`;
+    const signature = sign("RSA-SHA256", Buffer.from(data), this.getSigningKey())
       .toString("base64")
       .replace(/\+/g, "-")
       .replace(/\//g, "_")
       .replace(/=+$/, "");
 
-    this.jwt = `${header}.${payload}.${signature}`;
+    this.jwt = `${data}.${signature}`;
     this.jwtExpiry = now + 3600;
     return this.jwt;
   }
@@ -104,7 +94,7 @@ export class EnableBankingClient {
     const { endpoint, returnType, dataField, options = {}, fetchAll = false } = config;
     const { method = "GET", body, searchParams } = options;
 
-    const jwt = await this.generateJWT();
+    const jwt = this.generateJWT();
     const url = new URL(endpoint, this.baseUrl);
 
     if (searchParams) {

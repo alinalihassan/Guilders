@@ -8,7 +8,7 @@ Guilders is an open-source, self-hostable personal finance platform. It aggregat
 
 | Service   | URL                            |
 | --------- | ------------------------------ |
-| API       | https://api.guilders.app       |
+| API       | https://guilders.app/api       |
 | Dashboard | https://dashboard.guilders.app |
 | Website   | https://guilders.app           |
 | Docs      | https://docs.guilders.app      |
@@ -326,7 +326,7 @@ POST /api/transaction
 | **Database**      | `DATABASE_URL` (PostgreSQL connection string)                                                                                            |
 | **URLs**          | `BACKEND_URL`, `DASHBOARD_URL`                                                                                                           |
 | **Secrets**       | `GUILDERS_SECRET` (provider state verification), `BETTER_AUTH_SECRET`, `BETTER_AUTH_API_KEY` (optional, Better Auth Infrastructure dash) |
-| **Payments**      | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRO_PRICE_ID`, `PRO_FEATURES_FREE_FOR_ALL` (optional; `true` unlocks Pro for all) |
+| **Payments**      | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRO_PRICE_ID`, `PRO_FEATURES_FREE_FOR_ALL` (optional; `true` unlocks Pro for all)  |
 | **Email**         | None (Workers `EMAIL` binding — Cloudflare Email Sending). From: `noreply@guilders.app`                                                  |
 | **Cloudflare**    | None in the Worker. `CLOUDFLARE_ACCOUNT_ID` + `CLOUDFLARE_API_TOKEN` are GitHub Actions secrets for deploy. R2 is `USER_BUCKET`.         |
 | **Bindings**      | `AI` (Workers AI), `EMAIL` (send_email), `USER_BUCKET` (R2), `WEBHOOK_QUEUE` (Queue)                                                     |

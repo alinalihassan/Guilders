@@ -5,7 +5,7 @@ description: Use the hosted Guilders API with an API key, or run your own instan
 
 The Guilders API lets you read and write accounts, transactions, categories, and connections — the same data the dashboard uses.
 
-You can call the **hosted API** at [api.guilders.app](https://api.guilders.app) with an API key from your Guilders account, or point the same API at a **self-hosted** instance.
+You can call the **hosted API** at [guilders.app](https://guilders.app) with an API key from your Guilders account, or point the same API at a **self-hosted** instance.
 
 ## Documentation Sections
 
@@ -27,10 +27,10 @@ Most people use the live server. You do not need to run anything locally.
 3. Call the hosted API with the `x-api-key` header:
 
 ```bash
-curl https://api.guilders.app/api/account \
+curl https://guilders.app/api/account \
   -H "x-api-key: $GUILDERS_API_KEY"
 ```
 
-4. Browse routes in the [OpenAPI reference](/api-reference) (or [api.guilders.app/openapi](https://api.guilders.app/openapi)).
+4. Browse routes in the [OpenAPI reference](/api-reference) (or [guilders.app/openapi](https://guilders.app/openapi)).
 
-Self-hosting the stack is optional. If you run your own API, use that origin instead of `https://api.guilders.app` and create a key on your instance. See [Self Hosting](/self-hosting).
+Self-hosting the stack is optional. If you run your own API, use that origin instead of `https://guilders.app` and create a key on your instance. See [Self Hosting](/self-hosting).
