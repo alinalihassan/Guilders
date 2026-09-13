@@ -1,5 +1,4 @@
 import type { Account } from "@guilders/api/types";
-import { useMemo } from "react";
 
 import { AccountItem } from "@/components/dashboard/accounts/account-item";
 import { AccountsEmptyPlaceholder } from "@/components/dashboard/accounts/accounts-placeholder";
@@ -17,33 +16,28 @@ export function AccountsTable({
 }: AccountsTableProps) {
   const { data: hookAccounts, isLoading: hookIsLoading, error } = useAccounts();
 
-  // Use prop values if provided, otherwise fall back to hook values
   const rawAccounts = propAccounts ?? hookAccounts;
   const accounts =
     propAccounts !== undefined
       ? rawAccounts
       : rawAccounts?.filter((a) => (a as { parent?: number | null }).parent == null);
-  const sortedAccounts = useMemo(
-    () =>
-      accounts
-        ? [...accounts].toSorted((a, b) => Math.abs(Number(b.value)) - Math.abs(Number(a.value)))
-        : accounts,
-    [accounts],
-  );
+  const sortedAccounts = accounts
+    ? [...accounts].toSorted((a, b) => Math.abs(Number(b.value)) - Math.abs(Number(a.value)))
+    : accounts;
   const isLoading = propIsLoading ?? hookIsLoading;
 
   return (
-    <div className="space-y-2">
+    <div className="flex flex-col">
       {isLoading ? (
-        <div className="space-y-2">
+        <div className="flex flex-col gap-2">
           {[...Array(4)].map((_, index) => (
-            <Skeleton key={index} className="mb-2 h-10 w-full" />
+            <Skeleton key={index} className="h-9 w-full" />
           ))}
         </div>
       ) : error && !propAccounts ? (
-        <div className="py-8 text-center">
-          <p className="mb-4">Error loading accounts. Please try again later.</p>
-        </div>
+        <p className="text-destructive py-8 text-center text-sm">
+          Could not load accounts. Please try again later.
+        </p>
       ) : sortedAccounts && sortedAccounts.length === 0 ? (
         <AccountsEmptyPlaceholder />
       ) : (

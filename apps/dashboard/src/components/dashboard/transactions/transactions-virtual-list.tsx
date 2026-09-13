@@ -42,9 +42,9 @@ export function TransactionsVirtualList({
   const virtualizer = useVirtualizer({
     count: transactions.length,
     getScrollElement: () => (usePageScroll ? scrollElement : listRef.current),
-    estimateSize: () => 64,
+    estimateSize: () => 56,
     overscan: 12,
-    gap: 8,
+    gap: 4,
     scrollMargin: usePageScroll ? scrollMargin : 0,
   });
 

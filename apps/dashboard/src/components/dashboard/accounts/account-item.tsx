@@ -1,5 +1,5 @@
 import type { Account } from "@guilders/api/types";
-import { useRouter } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { TriangleAlert } from "lucide-react";
 import { useState } from "react";
 
@@ -13,60 +13,55 @@ interface AccountItemProps {
 }
 
 export function AccountItem({ account }: AccountItemProps) {
-  const router = useRouter();
   const [imageError, setImageError] = useState(false);
   const accountValue = Number(account.value);
   const accountCost = Number(account.cost ?? 0);
-
-  const handleClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    router.navigate({ to: "/accounts/$id", params: { id: String(account.id) } });
-  };
-
-  const changePercentage =
-    account.cost !== null ? ((accountValue - accountCost) / accountCost) * 100 : 0;
+  const hasCost = account.cost !== null;
+  const valueChange = hasCost ? accountValue - accountCost : 0;
+  const changePercentage = hasCost && accountCost !== 0 ? (valueChange / accountCost) * 100 : 0;
 
   return (
-    <div
-      onClick={handleClick}
-      key={account.id}
-      className={
-        "hover:bg-secondary dark:hover:bg-secondary flex cursor-pointer items-center justify-between rounded-lg p-2"
-      }
+    <Link
+      to="/accounts/$id"
+      params={{ id: String(account.id) }}
+      className="hover:bg-muted/60 flex items-center justify-between rounded-lg px-1 py-2"
     >
-      <div className="flex items-center gap-4">
-        <AccountIcon
-          account={account}
-          width={32}
-          height={32}
-          hasImageError={imageError}
-          onImageError={() => setImageError(true)}
-        />
-        <div className="flex items-center gap-2">
-          <p className="font-medium">{account.name}</p>
+      <div className="flex min-w-0 items-center gap-3">
+        <div className="shrink-0">
+          <AccountIcon
+            account={account}
+            width={28}
+            height={28}
+            hasImageError={imageError}
+            onImageError={() => setImageError(true)}
+          />
+        </div>
+        <div className="flex min-w-0 items-center gap-1.5">
+          <p className="truncate text-sm">{account.name}</p>
           {account.institutionConnection?.broken && (
-            <TriangleAlert className="h-4 w-4 text-yellow-500" />
+            <TriangleAlert className="h-3.5 w-3.5 shrink-0 text-yellow-500" />
           )}
         </div>
       </div>
-      <div className="flex items-center gap-4">
-        <p className="font-medium">
-          <NumberFlow
-            value={accountValue}
-            format={{
-              style: "currency",
+      <div className="flex shrink-0 items-center gap-2.5 pl-3">
+        <NumberFlow
+          value={accountValue}
+          format={{
+            style: "currency",
+            currency: account.currency,
+          }}
+          className="font-mono text-sm tabular-nums"
+        />
+        {valueChange !== 0 && (
+          <ChangeBadge
+            change={{
+              value: valueChange,
+              percentage: changePercentage,
               currency: account.currency,
             }}
           />
-        </p>
-        <ChangeBadge
-          change={{
-            value: account.cost !== null ? accountValue - accountCost : 0,
-            percentage: changePercentage,
-            currency: account.currency,
-          }}
-        />
+        )}
       </div>
-    </div>
+    </Link>
   );
 }

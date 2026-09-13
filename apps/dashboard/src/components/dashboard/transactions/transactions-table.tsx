@@ -20,22 +20,22 @@ export function TransactionsTable({ accountId }: { accountId?: number }) {
   return (
     <div className="h-full min-h-0">
       {isLoading ? (
-        <div className="space-y-2">
+        <div className="flex flex-col gap-2">
           {[...Array(4)].map((_, index) => (
-            <Skeleton key={index} className="mb-2 h-10 w-full" />
+            <Skeleton key={index} className="h-9 w-full" />
           ))}
         </div>
       ) : error || !transactions ? (
-        <div className="py-8 text-center">
-          <p className="mb-4">Error loading transactions. Please try again later.</p>
-        </div>
+        <p className="text-destructive py-8 text-center text-sm">
+          Could not load transactions. Please try again later.
+        </p>
       ) : transactions.length === 0 ? (
         <TransactionsEmptyPlaceholder accountId={accountId} />
       ) : (
         <TransactionsVirtualList
           transactions={sortedTransactions}
           merchantsById={merchantsById}
-          className="h-full max-h-[min(70vh,40rem)]"
+          className="@container h-full max-h-[min(70vh,40rem)]"
         />
       )}
     </div>

@@ -4,8 +4,7 @@ import { ArrowRight } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { AccountsTable } from "@/components/dashboard/accounts/accounts-table";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 
@@ -22,23 +21,26 @@ export function AccountsCard({
   menuComponent,
   accounts,
 }: AccountsCardProps) {
-  const accountsMenu = (
-    <Link to="/accounts">
-      <Button variant="secondary">
-        View All
-        <ArrowRight className="ml-2 h-4 w-4" />
-      </Button>
-    </Link>
-  );
-
   return (
-    <Card className={cn("flex flex-col", className)}>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-        <CardTitle>{title}</CardTitle>
-        {menuComponent || accountsMenu}
-      </CardHeader>
-      <CardContent className="min-h-0 flex-1">
-        <ScrollArea className="h-full w-full">
+    <Card className={cn("flex flex-col shadow-none", className)}>
+      <CardContent className="flex h-full min-h-0 flex-col gap-5 p-6">
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-muted-foreground text-[11px] font-medium tracking-[0.16em] uppercase">
+            {title}
+          </p>
+          {menuComponent !== undefined ? (
+            menuComponent
+          ) : (
+            <Link
+              to="/accounts"
+              className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 text-xs font-medium"
+            >
+              View all
+              <ArrowRight className="h-3 w-3" />
+            </Link>
+          )}
+        </div>
+        <ScrollArea className="min-h-0 flex-1">
           <AccountsTable accounts={accounts} />
           <ScrollBar orientation="vertical" />
         </ScrollArea>
