@@ -1,9 +1,10 @@
 import type { Merchant, Transaction } from "@guilders/api/types";
 
 import { CategoryBadge } from "@/components/common/category-badge";
+import { MerchantLogo } from "@/components/common/merchant-logo";
 import NumberFlow from "@/components/ui/number-flow";
 import { useDialog } from "@/hooks/useDialog";
-import { useFormattedTime } from "@/lib/format-time";
+import { formatTransactionDate, isDateOnlyTimestamp, useFormattedTime } from "@/lib/format-time";
 import { useCategories } from "@/lib/queries/useCategories";
 import { buildCategoryLookup } from "@/lib/utils/category-tree";
 
@@ -19,12 +20,13 @@ export function TransactionItem({ transaction, merchant }: TransactionItemProps)
   const category =
     transaction.category_id != null ? categoryLookup.get(transaction.category_id) : undefined;
   const amount = Number(transaction.amount);
-  const timeStr = useFormattedTime(new Date(transaction.timestamp));
+  const timestamp = new Date(transaction.timestamp);
+  const dateOnly = isDateOnlyTimestamp(timestamp);
+  const timeStr = useFormattedTime(timestamp);
 
   const rawMerchantName = merchant?.name?.trim() ?? "";
   const rawDescription = transaction.description?.trim() ?? "";
   const displayName = rawMerchantName || rawDescription || "Unknown Transaction";
-  const initial = displayName.charAt(0).toUpperCase();
   const secondaryName =
     displayName === rawMerchantName ? rawDescription || undefined : rawMerchantName || undefined;
 
@@ -35,17 +37,7 @@ export function TransactionItem({ transaction, merchant }: TransactionItemProps)
     >
       <div className="flex items-center gap-3 overflow-hidden">
         <div className="shrink-0">
-          {merchant?.logo_url ? (
-            <img
-              src={merchant.logo_url}
-              alt={merchant.name}
-              className="bg-muted flex size-8 items-center justify-center rounded-full border object-cover"
-            />
-          ) : (
-            <div className="bg-muted text-muted-foreground flex size-8 items-center justify-center rounded-full border font-medium">
-              {initial}
-            </div>
-          )}
+          <MerchantLogo name={displayName} logoUrl={merchant?.logo_url} />
         </div>
         <div className="flex flex-col overflow-hidden">
           <p className="text-foreground truncate text-sm font-medium">{displayName}</p>
@@ -75,9 +67,13 @@ export function TransactionItem({ transaction, merchant }: TransactionItemProps)
             />
           </p>
           <div className="text-muted-foreground flex items-center gap-1 text-xs">
-            <span>{new Date(transaction.timestamp).toLocaleDateString()}</span>
-            <span className="hidden sm:inline">•</span>
-            <span className="hidden sm:inline">{timeStr}</span>
+            <span>{formatTransactionDate(timestamp)}</span>
+            {!dateOnly && (
+              <>
+                <span className="hidden sm:inline">•</span>
+                <span className="hidden sm:inline">{timeStr}</span>
+              </>
+            )}
           </div>
         </div>
       </div>

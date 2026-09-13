@@ -1,6 +1,6 @@
 import { AccountSubtypeEnum, AccountTypeEnum } from "../../db/schema/enums";
-import type { InsertTransaction } from "../../db/schema/transactions";
 import { createDb } from "../../lib/db";
+import { parseProviderTimestamp } from "../../lib/provider-timestamp";
 import { getProviderCallbackBaseUrl } from "../callback-url";
 import { signState } from "../state";
 import type {
@@ -12,6 +12,7 @@ import type {
   ProviderAccount,
   ProviderInstitution,
   ProviderName,
+  ProviderTransaction,
   RefreshConnectionResult,
   RegisterUserResult,
   TransactionParams,
@@ -312,7 +313,7 @@ export class EnableBankingProvider implements IProvider {
     return accounts;
   }
 
-  async getTransactions(params: TransactionParams): Promise<InsertTransaction[]> {
+  async getTransactions(params: TransactionParams): Promise<ProviderTransaction[]> {
     const config = getConfig();
     if (!config) return [];
     const client = this.createClient(config);
@@ -328,17 +329,23 @@ export class EnableBankingProvider implements IProvider {
       fetchAll: true,
     });
 
-    return transactions.map((t) => ({
-      account_id: accountRecord.id,
-      amount: String(
-        Number(t.transaction_amount.amount) * (t.credit_debit_indicator === "DBIT" ? -1 : 1),
-      ),
-      currency: t.transaction_amount.currency,
-      timestamp: new Date(
-        t.booking_date ?? t.value_date ?? t.transaction_date ?? new Date().toISOString(),
-      ),
-      description: t.remittance_information?.join(", ") ?? "",
-      provider_transaction_id: t.transaction_id ?? t.entry_reference ?? null,
-    }));
+    return transactions.map((t) => {
+      const description = t.remittance_information?.join(", ") ?? "";
+      return {
+        account_id: accountRecord.id,
+        amount: String(
+          Number(t.transaction_amount.amount) * (t.credit_debit_indicator === "DBIT" ? -1 : 1),
+        ),
+        currency: t.transaction_amount.currency,
+        timestamp:
+          parseProviderTimestamp(
+            t.booking_date ?? t.value_date ?? t.transaction_date ?? new Date().toISOString(),
+          ) ?? new Date(),
+        description,
+        provider_transaction_id: t.transaction_id ?? t.entry_reference ?? null,
+        merchant_name: t.remittance_information?.[0] ?? description,
+        provider_category: t.merchant_category_code ?? null,
+      };
+    });
   }
 }

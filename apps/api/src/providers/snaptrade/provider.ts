@@ -1,7 +1,6 @@
 import { eq } from "drizzle-orm";
 
 import { providerConnection } from "../../db/schema/provider-connections";
-import type { InsertTransaction } from "../../db/schema/transactions";
 import { createDb, type Database } from "../../lib/db";
 import type {
   AccountParams,
@@ -12,6 +11,7 @@ import type {
   ProviderAccount,
   ProviderInstitution,
   ProviderName,
+  ProviderTransaction,
   RefreshConnectionResult,
   RegisterUserResult,
   TransactionParams,
@@ -381,7 +381,7 @@ export class SnapTradeProvider implements IProvider {
     );
   }
 
-  async getTransactions(_params: TransactionParams): Promise<InsertTransaction[]> {
+  async getTransactions(_params: TransactionParams): Promise<ProviderTransaction[]> {
     throw new Error(
       "SnapTrade is a brokerage connector — it does not expose traditional transactions. Holdings are synced via webhooks.",
     );

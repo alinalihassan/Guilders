@@ -8,6 +8,10 @@ import {
   cleanupInstitutionConnectionDocuments,
 } from "../lib/cleanup-documents";
 import { createDb } from "../lib/db";
+import {
+  enqueueAccountEnrichment,
+  enrichAccountMerchantsWithAi,
+} from "../lib/enrich-transaction-ai";
 import { pullSnapTradeConnectionHoldings, syncSnapTradeHoldings } from "../lib/snaptrade-holdings";
 import { syncConnectionData } from "../lib/sync-connection-data";
 import { getProvider } from "../providers";
@@ -16,6 +20,7 @@ import type {
   ProviderUserCleanupEvent,
   SnapTradeWebhookEvent,
   TellerWebhookEvent,
+  TransactionEnrichmentEvent,
   UserFilesCleanupEvent,
   WebhookEvent,
 } from "./types";
@@ -47,6 +52,9 @@ export async function handleWebhookQueue(
           break;
         case "user-files-cleanup":
           await processUserFilesCleanupEvent(event, env);
+          break;
+        case "transaction-enrichment":
+          await processTransactionEnrichmentEvent(event);
           break;
         default:
           console.error("Unknown webhook source:", event);
@@ -334,4 +342,22 @@ async function handleTellerEnrollmentDisconnected(
   console.log("[Teller queue] enrollment marked as disconnected", {
     institutionConnectionId,
   });
+}
+
+async function processTransactionEnrichmentEvent(event: TransactionEnrichmentEvent): Promise<void> {
+  if (event.eventType !== "enrich-account") return;
+
+  const { userId, accountId } = event.payload;
+  const db = createDb();
+  const result = await enrichAccountMerchantsWithAi(db, userId, accountId);
+  console.log("[enrich] classified merchants", {
+    userId,
+    accountId,
+    classified: result.classified,
+    remaining: result.remaining,
+  });
+
+  if (result.remaining) {
+    await enqueueAccountEnrichment(userId, accountId);
+  }
 }

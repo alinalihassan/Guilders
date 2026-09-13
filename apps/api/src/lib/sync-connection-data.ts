@@ -8,8 +8,10 @@ import { EnableBankingClient } from "../providers/enablebanking/client";
 import * as lunchFlowClient from "../providers/lunchflow/client";
 import { getSnapTradeClient } from "../providers/snaptrade/client";
 import * as tellerClient from "../providers/teller/client";
-import type { ProviderName } from "../providers/types";
-import { createDb } from "./db";
+import type { ProviderName, ProviderTransaction } from "../providers/types";
+import { createDb, type Database } from "./db";
+import { enrichSyncedAccountTransactions, toInsertTransaction } from "./enrich-transaction";
+import { enqueueAccountEnrichment } from "./enrich-transaction-ai";
 import {
   SYNCED_ACCOUNT_LOCKED_ATTRIBUTES,
   SYNCED_TRANSACTION_LOCKED_ATTRIBUTES,
@@ -131,32 +133,15 @@ export async function syncAccountData(accountId: number): Promise<void> {
 
   const provider = getProvider(providerName);
   const providerTxns = await provider.getTransactions({ accountId: providerAccountId });
-
-  if (!providerTxns.length) return;
-
-  const existingTxnRows = await db
-    .select({ provider_transaction_id: transaction.provider_transaction_id })
-    .from(transaction)
-    .where(eq(transaction.account_id, accountId));
-
-  const knownIds = new Set(existingTxnRows.map((t) => t.provider_transaction_id).filter(Boolean));
-
-  const newTxns = providerTxns.filter(
-    (t) => t.provider_transaction_id && !knownIds.has(t.provider_transaction_id),
+  const { newTransactions } = await persistProviderTransactions(
+    db,
+    accountRecord.user_id,
+    accountId,
+    providerTxns,
   );
 
-  if (newTxns.length) {
-    await db.insert(transaction).values(
-      newTxns.map((t) => {
-        let currency = t.currency;
-        if (currency === "RUR") currency = "RUB";
-        return { ...t, currency, locked_attributes: SYNCED_TRANSACTION_LOCKED_ATTRIBUTES };
-      }),
-    );
-  }
-
   console.log(`[${providerName} sync] account ${accountId} synced`, {
-    newTransactions: newTxns.length,
+    newTransactions,
   });
 }
 
@@ -223,35 +208,7 @@ async function syncPullBasedConnection(
       const providerTxns = await provider.getTransactions({
         accountId: providerAcc.provider_account_id,
       });
-
-      if (!providerTxns.length) continue;
-
-      const existingTxnRows = await db
-        .select({ provider_transaction_id: transaction.provider_transaction_id })
-        .from(transaction)
-        .where(eq(transaction.account_id, accountId));
-
-      const knownIds = new Set(
-        existingTxnRows.map((t) => t.provider_transaction_id).filter(Boolean),
-      );
-
-      const newTxns = providerTxns.filter(
-        (t) => t.provider_transaction_id && !knownIds.has(t.provider_transaction_id),
-      );
-
-      if (newTxns.length) {
-        await db.insert(transaction).values(
-          newTxns.map((t) => {
-            let txnCurrency = t.currency;
-            if (txnCurrency === "RUR") txnCurrency = "RUB";
-            return {
-              ...t,
-              currency: txnCurrency,
-              locked_attributes: SYNCED_TRANSACTION_LOCKED_ATTRIBUTES,
-            };
-          }),
-        );
-      }
+      await persistProviderTransactions(db, userId, accountId, providerTxns);
     } catch (error) {
       console.error(
         `[${providerName} sync] Failed to sync transactions for account:`,
@@ -413,4 +370,60 @@ async function syncSnapTradeConnection(
   }
 
   console.log("[SnapTrade sync] complete", { userId, institutionConnectionId });
+}
+
+async function persistProviderTransactions(
+  db: Database,
+  userId: string,
+  accountId: number,
+  providerTxns: ProviderTransaction[],
+): Promise<{ newTransactions: number }> {
+  if (!providerTxns.length) return { newTransactions: 0 };
+
+  const existingTxnRows = await db
+    .select({ provider_transaction_id: transaction.provider_transaction_id })
+    .from(transaction)
+    .where(eq(transaction.account_id, accountId));
+
+  const knownIds = new Set(existingTxnRows.map((t) => t.provider_transaction_id).filter(Boolean));
+
+  const newTxns = providerTxns.filter(
+    (t) => t.provider_transaction_id && !knownIds.has(t.provider_transaction_id),
+  );
+
+  if (newTxns.length) {
+    await db.insert(transaction).values(
+      newTxns.map((t) => {
+        const row = toInsertTransaction(t);
+        let currency = row.currency;
+        if (currency === "RUR") currency = "RUB";
+        return {
+          ...row,
+          currency,
+          locked_attributes: SYNCED_TRANSACTION_LOCKED_ATTRIBUTES,
+        };
+      }),
+    );
+  }
+
+  await enrichSyncedAccountTransactions(
+    db,
+    userId,
+    accountId,
+    providerTxns.map((t) => ({
+      provider_transaction_id: t.provider_transaction_id,
+      merchant_name: t.merchant_name,
+      provider_category: t.provider_category,
+      description: t.description,
+      amount: t.amount,
+    })),
+  );
+
+  try {
+    await enqueueAccountEnrichment(userId, accountId);
+  } catch (error) {
+    console.error("[sync] failed to enqueue AI enrichment", { userId, accountId, error });
+  }
+
+  return { newTransactions: newTxns.length };
 }

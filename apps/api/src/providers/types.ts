@@ -38,6 +38,11 @@ export type ProviderAccount = InsertAccount & {
   user_id: string;
 };
 
+export type ProviderTransaction = InsertTransaction & {
+  merchant_name?: string | null;
+  provider_category?: string | null;
+};
+
 export type ConnectResult = {
   success: boolean;
   error?: string;
@@ -86,5 +91,5 @@ export interface IProvider {
   reconnect(params: ConnectionParams): Promise<ConnectResult>;
   refreshConnection(connectionId: string): Promise<RefreshConnectionResult>;
   getAccounts(params: AccountParams): Promise<ProviderAccount[]>;
-  getTransactions(params: TransactionParams): Promise<InsertTransaction[]>;
+  getTransactions(params: TransactionParams): Promise<ProviderTransaction[]>;
 }

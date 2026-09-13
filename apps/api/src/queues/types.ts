@@ -83,6 +83,15 @@ export type UserFilesCleanupEvent = {
   };
 };
 
+export type TransactionEnrichmentEvent = {
+  source: "transaction-enrichment";
+  eventType: "enrich-account";
+  payload: {
+    userId: string;
+    accountId: number;
+  };
+};
+
 // --- Union ---
 
 export type WebhookEvent =
@@ -90,4 +99,5 @@ export type WebhookEvent =
   | EnableBankingWebhookEvent
   | TellerWebhookEvent
   | ProviderUserCleanupEvent
-  | UserFilesCleanupEvent;
+  | UserFilesCleanupEvent
+  | TransactionEnrichmentEvent;

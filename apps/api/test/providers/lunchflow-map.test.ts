@@ -92,6 +92,7 @@ describe("lunchflow map", () => {
           currency: "EUR",
           date: "2026-01-15",
           merchant: "Cafe",
+          category: "dining",
           isPending: false,
         },
         {
@@ -111,7 +112,10 @@ describe("lunchflow map", () => {
       currency: "EUR",
       description: "Cafe",
       provider_transaction_id: "tx_1",
+      merchant_name: "Cafe",
+      provider_category: "dining",
     });
+    expect(mapped?.timestamp.toISOString()).toBe("2026-01-15T12:00:00.000Z");
     expect(mapLunchFlowTransaction(transactions[1]!, 1, "EUR")).toBeNull();
   });
 });

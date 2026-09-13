@@ -1,6 +1,6 @@
 import { AccountSubtypeEnum, AccountTypeEnum } from "../../db/schema/enums";
-import type { InsertTransaction } from "../../db/schema/transactions";
 import { createDb } from "../../lib/db";
+import { parseProviderTimestamp } from "../../lib/provider-timestamp";
 import { getProviderCallbackBaseUrl } from "../callback-url";
 import { signState } from "../state";
 import type {
@@ -12,6 +12,7 @@ import type {
   ProviderAccount,
   ProviderInstitution,
   ProviderName,
+  ProviderTransaction,
   RefreshConnectionResult,
   RegisterUserResult,
   TransactionParams,
@@ -280,7 +281,7 @@ export class TellerProvider implements IProvider {
     return accounts;
   }
 
-  async getTransactions(params: TransactionParams): Promise<InsertTransaction[]> {
+  async getTransactions(params: TransactionParams): Promise<ProviderTransaction[]> {
     const db = createDb();
 
     const accountRecord = await db.query.account.findFirst({
@@ -298,9 +299,11 @@ export class TellerProvider implements IProvider {
       account_id: accountRecord.id,
       amount: t.amount,
       currency: accountRecord.currency,
-      timestamp: new Date(t.date),
+      timestamp: parseProviderTimestamp(t.date) ?? new Date(t.date),
       description: t.description,
       provider_transaction_id: t.id,
+      merchant_name: t.details?.counterparty?.name ?? null,
+      provider_category: t.details?.category ?? null,
     }));
   }
 }

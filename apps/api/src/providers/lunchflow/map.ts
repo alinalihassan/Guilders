@@ -1,5 +1,6 @@
 import { AccountSubtypeEnum, AccountTypeEnum } from "../../db/schema/enums";
-import type { InsertTransaction } from "../../db/schema/transactions";
+import { parseProviderTimestamp } from "../../lib/provider-timestamp";
+import type { ProviderTransaction } from "../types";
 import type { LunchFlowAccount, LunchFlowBalance, LunchFlowTransaction } from "./types";
 
 export function slugifyInstitution(name: string): string {
@@ -157,6 +158,7 @@ export function parseLunchFlowTransactions(body: unknown): LunchFlowTransaction[
       date,
       merchant: asString(transaction.merchant ?? transaction.merchant_name),
       description: asString(transaction.description),
+      category: asString(transaction.category ?? transaction.merchant_category),
       pending: asBoolean(transaction.pending ?? transaction.isPending ?? transaction.is_pending),
     });
   }
@@ -167,17 +169,22 @@ export function mapLunchFlowTransaction(
   transaction: LunchFlowTransaction,
   accountId: number,
   fallbackCurrency: string,
-): InsertTransaction | null {
+): ProviderTransaction | null {
   if (transaction.pending) return null;
-  const timestamp = new Date(transaction.date);
-  if (Number.isNaN(timestamp.getTime())) return null;
+  const timestamp = parseProviderTimestamp(transaction.date);
+  if (!timestamp) return null;
+
+  const merchantName = transaction.merchant || transaction.description || null;
+  const description = transaction.description || transaction.merchant || "Transaction";
 
   return {
     account_id: accountId,
     amount: String(transaction.amount),
     currency: normalizeCurrency(transaction.currency ?? fallbackCurrency),
     timestamp,
-    description: transaction.merchant || transaction.description || "Transaction",
+    description,
     provider_transaction_id: transaction.id,
+    merchant_name: merchantName,
+    provider_category: transaction.category ?? null,
   };
 }

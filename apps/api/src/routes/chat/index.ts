@@ -12,11 +12,9 @@ import {
 import { env } from "cloudflare:workers";
 import { and, eq } from "drizzle-orm";
 import { Hono } from "hono";
-import { createWorkersAI } from "workers-ai-provider";
-import { google } from "workers-ai-provider/google";
-import { openai } from "workers-ai-provider/openai";
 
 import { conversation } from "../../db/schema/conversations";
+import { AI_GATEWAY_HEADERS, GEMINI_FLASH_MODEL, createGuildersAI } from "../../lib/ai";
 import { getChatLimitConfig } from "../../lib/chat-limits";
 import { createDb } from "../../lib/db";
 import { documented, jsonError, validate } from "../../lib/http";
@@ -32,13 +30,6 @@ import {
 } from "./types";
 
 const generateMessageId = createIdGenerator({ prefix: "msg", size: 16 });
-
-const workersai = () =>
-  createWorkersAI({
-    binding: env.AI,
-    gateway: { id: "guilders-ai-gateway" },
-    providers: [openai, google],
-  });
 
 function buildSystemContent(today: string, readOnly: boolean): string {
   const mcpSection = getMcpToolsOverview(readOnly);
@@ -213,10 +204,10 @@ export const chatRoutes = new Hono<AuthEnv>()
 
         const modelMessages = await convertToModelMessages(inputMessages);
 
-        const ai = workersai();
+        const ai = createGuildersAI();
 
         const result = streamText({
-          model: ai("google-ai-studio/gemini-2.5-flash"),
+          model: ai(GEMINI_FLASH_MODEL),
           instructions: systemContent,
           messages: modelMessages,
           tools: {
@@ -227,7 +218,7 @@ export const chatRoutes = new Hono<AuthEnv>()
           onError(error) {
             console.error("Chat streamText error:", error);
           },
-          headers: { "cf-aig-zdr": "true" },
+          headers: AI_GATEWAY_HEADERS,
         });
 
         if (persistenceMode) {
@@ -250,7 +241,7 @@ export const chatRoutes = new Hono<AuthEnv>()
             titlePromise = generateText({
               model: ai("@cf/meta/llama-4-scout-17b-16e-instruct"),
               prompt: `Generate a short title (max 6 words, no quotes, no punctuation at the end) for a conversation that starts with:\n"${userText}"`,
-              headers: { "cf-aig-zdr": "true" },
+              headers: AI_GATEWAY_HEADERS,
             })
               .then(({ text }) => text.trim() || null)
               .catch(() => null);

@@ -24,5 +24,6 @@ export type LunchFlowTransaction = {
   date: string;
   merchant?: string;
   description?: string;
+  category?: string;
   pending?: boolean;
 };

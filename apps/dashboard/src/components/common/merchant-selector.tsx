@@ -16,6 +16,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { useAddMerchant, useMerchants } from "@/lib/queries/useMerchants";
 import { cn } from "@/lib/utils";
 
+import { MerchantLogo } from "./merchant-logo";
+
 type MerchantSelectorProps = {
   value?: number;
   onChange: (value: number | undefined) => void;
@@ -25,30 +27,12 @@ type MerchantSelectorProps = {
 };
 
 function MerchantIcon({ merchant, className }: { merchant: Merchant; className?: string }) {
-  const initial = merchant.name.charAt(0).toUpperCase();
-
-  if (merchant.logo_url) {
-    return (
-      <img
-        src={merchant.logo_url}
-        alt={merchant.name}
-        className={cn(
-          "flex size-6 items-center justify-center rounded-full border bg-muted object-cover",
-          className,
-        )}
-      />
-    );
-  }
-
   return (
-    <div
-      className={cn(
-        "flex size-6 items-center justify-center rounded-full border bg-muted text-xs font-medium text-muted-foreground",
-        className,
-      )}
-    >
-      {initial}
-    </div>
+    <MerchantLogo
+      name={merchant.name}
+      logoUrl={merchant.logo_url}
+      className={cn("size-6 text-xs", className)}
+    />
   );
 }
 

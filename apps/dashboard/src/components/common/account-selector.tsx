@@ -1,5 +1,5 @@
 import type { Account } from "@guilders/api/types";
-import { Check, ChevronsUpDown } from "lucide-react";
+import { ChevronsUpDown } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { useAccounts } from "@/lib/queries/useAccounts";
 import { cn } from "@/lib/utils";
 
+import { AccountIcon } from "../dashboard/accounts/account-icon";
+
 type AccountSelectorProps = {
   value?: number;
   onChange: (value: number) => void;
@@ -28,6 +30,19 @@ type AccountSelectorProps = {
 
 function isTracked(account: Account): boolean {
   return !!account.institution_connection_id;
+}
+
+function SelectorAccountIcon({ account }: { account: Account }) {
+  const [hasImageError, setHasImageError] = useState(false);
+  return (
+    <AccountIcon
+      account={account}
+      width={24}
+      height={24}
+      hasImageError={hasImageError}
+      onImageError={() => setHasImageError(true)}
+    />
+  );
 }
 
 export function AccountSelector({
@@ -76,10 +91,13 @@ export function AccountSelector({
             className,
           )}
         >
-          <span className="truncate">
-            {selectedAccount
-              ? `${selectedAccount.name}${isTracked(selectedAccount) ? " (Connected)" : ""}`
-              : placeholder}
+          <span className="flex min-w-0 flex-1 items-center gap-2 text-left">
+            {selectedAccount && (
+              <span className="shrink-0">
+                <SelectorAccountIcon account={selectedAccount} />
+              </span>
+            )}
+            <span className="truncate">{selectedAccount?.name || placeholder}</span>
           </span>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
@@ -116,14 +134,12 @@ export function AccountSelector({
                       }}
                       disabled={isDisabled}
                     >
-                      <Check
-                        className={cn(
-                          "mr-2 h-4 w-4",
-                          value === account.id ? "opacity-100" : "opacity-0",
-                        )}
-                      />
-                      {account.name}
-                      {tracked && " (Connected)"}
+                      <span className="flex items-center gap-2 truncate">
+                        <span className="shrink-0">
+                          <SelectorAccountIcon account={account} />
+                        </span>
+                        <span className="truncate">{account.name}</span>
+                      </span>
                     </CommandItem>
                   );
                 })

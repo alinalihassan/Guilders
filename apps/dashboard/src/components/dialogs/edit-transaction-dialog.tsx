@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2, Trash2 } from "lucide-react";
+import { ChevronDown, Loader2, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -21,6 +21,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
   Form,
   FormControl,
@@ -33,17 +34,18 @@ import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useDialog } from "@/hooks/useDialog";
-import { useAccounts } from "@/lib/queries/useAccounts";
+import { isDateOnlyTimestamp } from "@/lib/format-time";
 import { useFiles } from "@/lib/queries/useFiles";
+import { useMerchants } from "@/lib/queries/useMerchants";
 import { useRemoveTransaction, useUpdateTransaction } from "@/lib/queries/useTransactions";
 
 import { AccountSelector } from "../common/account-selector";
 import { CategorySelector } from "../common/category-selector";
 import { DatePicker } from "../common/date-picker";
 import { FileUploader } from "../common/file-uploader";
+import { MerchantLogo } from "../common/merchant-logo";
 import { MerchantSelector } from "../common/merchant-selector";
 import { TimePicker } from "../common/time-picker";
-import { AccountIcon } from "../dashboard/accounts/account-icon";
 
 const formSchema = z.object({
   accountId: z.number({
@@ -68,14 +70,13 @@ export function EditTransactionDialog() {
   const { isOpen, data, close } = useDialog("editTransaction");
   const { mutate: updateTransaction, isPending: isUpdating } = useUpdateTransaction();
   const { mutate: deleteTransaction, isPending: isDeleting } = useRemoveTransaction();
-  const { data: accounts } = useAccounts();
+  const { data: merchants } = useMerchants();
   const { documents, isLoadingDocuments, uploadFile, deleteFile, getFileUrl, isUploading } =
     useFiles({
       entityType: "transaction",
       entityId: data?.transaction?.id ?? 0,
     });
 
-  const currentAccount = accounts?.find((account) => account.id === data?.transaction?.account_id);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const form = useForm<FormSchema>({
@@ -109,10 +110,22 @@ export function EditTransactionDialog() {
     }
   }, [data?.transaction, form]);
 
+  const merchantId = form.watch("merchantId");
+  const formDescription = form.watch("description");
+
   if (!data?.transaction) return null;
   const { transaction } = data;
 
   const isSyncedTransaction = !!transaction.provider_transaction_id;
+  const isDateOnly = isDateOnlyTimestamp(new Date(transaction.timestamp));
+  const bankDescription = transaction.description?.trim() ?? "";
+  const headerMerchant =
+    merchantId != null ? merchants?.find((merchant) => merchant.id === merchantId) : undefined;
+  const merchantName = headerMerchant?.name?.trim() ?? "";
+  const description = (isSyncedTransaction ? bankDescription : formDescription)?.trim() ?? "";
+  const headerTitle = merchantName || description || "Transaction";
+  const headerSubtitle =
+    merchantName && description && merchantName !== description ? description : undefined;
 
   const handleSubmit = form.handleSubmit((formData) => {
     const updatedTransaction = {
@@ -157,33 +170,45 @@ export function EditTransactionDialog() {
         <div className="flex-1 overflow-y-auto p-6">
           <SheetTitle className="hidden">Edit Transaction</SheetTitle>
 
-          {currentAccount && (
-            <div className="flex items-center space-x-4 border-b pb-6">
-              <AccountIcon
-                account={currentAccount}
-                width={40}
-                height={40}
-                hasImageError={false}
-                onImageError={() => {}}
-              />
-              <div>
-                <h2 className="text-lg font-semibold">{currentAccount.name}</h2>
-                <p className="text-muted-foreground text-sm">
-                  {currentAccount.institution_connection_id
-                    ? "Connected Account"
-                    : "Manual Account"}
-                </p>
-              </div>
+          <div className="flex items-center space-x-4 border-b pb-6">
+            <MerchantLogo
+              key={`${headerMerchant?.id ?? "none"}-${headerMerchant?.logo_url ?? ""}`}
+              name={headerTitle}
+              logoUrl={headerMerchant?.logo_url}
+              className="size-10 text-base"
+            />
+            <div className="min-w-0">
+              <h2 className="truncate text-lg font-semibold">{headerTitle}</h2>
+              {headerSubtitle && (
+                <p className="text-muted-foreground truncate text-sm">{headerSubtitle}</p>
+              )}
             </div>
-          )}
+          </div>
 
           <Form {...form}>
             <form onSubmit={handleSubmit} className="mt-6">
               <div className="space-y-4 pb-8">
                 {isSyncedTransaction && (
                   <div className="bg-muted text-muted-foreground rounded-md p-4 text-sm">
-                    This transaction is managed by an external connection. It cannot be edited.
+                    Amount, date, and description come from the connection. You can set merchant and
+                    category.
                   </div>
+                )}
+
+                {isSyncedTransaction && bankDescription && (
+                  <Collapsible key={transaction.id} className="space-y-2">
+                    <CollapsibleTrigger
+                      type="button"
+                      className="text-muted-foreground hover:text-foreground group mx-auto flex items-center gap-1 text-sm"
+                    >
+                      <ChevronDown className="size-4" />
+                      <span className="group-data-[state=closed]:hidden">Hide bank details</span>
+                      <span className="group-data-[state=open]:hidden">Show bank details</span>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <Input value={bankDescription} disabled readOnly />
+                    </CollapsibleContent>
+                  </Collapsible>
                 )}
 
                 <div className="grid grid-cols-2 gap-4">
@@ -226,23 +251,21 @@ export function EditTransactionDialog() {
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="description"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Description</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="Enter description"
-                            {...field}
-                            disabled={isSyncedTransaction}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  {!isSyncedTransaction && (
+                    <FormField
+                      control={form.control}
+                      name="description"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Description</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Enter description" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
 
                   <FormField
                     control={form.control}
@@ -254,7 +277,6 @@ export function EditTransactionDialog() {
                           <MerchantSelector
                             value={field.value}
                             onChange={field.onChange}
-                            disabled={isSyncedTransaction}
                             placeholder="Select or add merchant"
                           />
                         </FormControl>
@@ -262,9 +284,7 @@ export function EditTransactionDialog() {
                       </FormItem>
                     )}
                   />
-                </div>
 
-                <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
                     name="categoryId"
@@ -284,7 +304,6 @@ export function EditTransactionDialog() {
                             <CategorySelector
                               value={field.value}
                               onChange={field.onChange}
-                              disabled={isSyncedTransaction}
                               placeholder="Select or add category"
                               classification={classification}
                             />
@@ -302,7 +321,7 @@ export function EditTransactionDialog() {
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className={`grid gap-4 ${isDateOnly ? "grid-cols-1" : "grid-cols-2"}`}>
                           <div className="space-y-2">
                             <FormLabel>Date</FormLabel>
                             <DatePicker
@@ -312,14 +331,16 @@ export function EditTransactionDialog() {
                               preserveTime={true}
                             />
                           </div>
-                          <div className="space-y-2">
-                            <FormLabel>Time</FormLabel>
-                            <TimePicker
-                              date={field.value}
-                              onDateChange={field.onChange}
-                              disabled={isSyncedTransaction}
-                            />
-                          </div>
+                          {!isDateOnly && (
+                            <div className="space-y-2">
+                              <FormLabel>Time</FormLabel>
+                              <TimePicker
+                                date={field.value}
+                                onDateChange={field.onChange}
+                                disabled={isSyncedTransaction}
+                              />
+                            </div>
+                          )}
                         </div>
                       </FormControl>
                       <FormMessage />
@@ -412,7 +433,7 @@ export function EditTransactionDialog() {
                     </AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>
-                <Button type="submit" disabled={isUpdating || isDeleting || isSyncedTransaction}>
+                <Button type="submit" disabled={isUpdating || isDeleting}>
                   {isUpdating ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />

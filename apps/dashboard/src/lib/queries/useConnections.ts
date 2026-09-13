@@ -5,6 +5,8 @@ import { toast } from "sonner";
 import { api, rpcJson } from "@/lib/api";
 
 import { queryKey as accountQueryKey } from "./useAccounts";
+import { queryKey as categoryQueryKey } from "./useCategories";
+import { queryKey as merchantQueryKey } from "./useMerchants";
 import { queryKey as providerConnectionQueryKey } from "./useProviderConnections";
 import { queryKey as transactionQueryKey } from "./useTransactions";
 
@@ -158,6 +160,9 @@ export function useSyncAccount() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: accountQueryKey });
+      queryClient.invalidateQueries({ queryKey: transactionQueryKey });
+      queryClient.invalidateQueries({ queryKey: merchantQueryKey });
+      queryClient.invalidateQueries({ queryKey: categoryQueryKey });
       toast.success("Account data synced");
     },
     onError: (error) => {

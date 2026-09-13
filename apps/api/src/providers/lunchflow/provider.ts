@@ -1,4 +1,3 @@
-import type { InsertTransaction } from "../../db/schema/transactions";
 import { createDb } from "../../lib/db";
 import type {
   AccountParams,
@@ -9,6 +8,7 @@ import type {
   ProviderAccount,
   ProviderInstitution,
   ProviderName,
+  ProviderTransaction,
   RefreshConnectionResult,
   RegisterUserResult,
   TransactionParams,
@@ -114,7 +114,7 @@ export class LunchFlowProvider implements IProvider {
     return accounts;
   }
 
-  async getTransactions(params: TransactionParams): Promise<InsertTransaction[]> {
+  async getTransactions(params: TransactionParams): Promise<ProviderTransaction[]> {
     const db = createDb();
     const accountRecord = await db.query.account.findFirst({
       where: { provider_account_id: params.accountId },
@@ -134,6 +134,6 @@ export class LunchFlowProvider implements IProvider {
       .map((transaction) =>
         mapLunchFlowTransaction(transaction, accountRecord.id, accountRecord.currency),
       )
-      .filter((transaction): transaction is InsertTransaction => transaction !== null);
+      .filter((transaction): transaction is ProviderTransaction => transaction !== null);
   }
 }

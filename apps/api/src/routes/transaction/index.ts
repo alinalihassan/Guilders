@@ -217,6 +217,7 @@ export const transactionRoutes = new Hono<AuthEnv>()
       const { allowed, blocked } = filterLockedUpdate(
         body as Record<string, unknown>,
         existingTransaction.locked_attributes,
+        existingTransaction as unknown as Record<string, unknown>,
       );
 
       if (blocked.length > 0) {

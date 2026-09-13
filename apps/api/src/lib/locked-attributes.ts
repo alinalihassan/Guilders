@@ -45,9 +45,44 @@ export function isFieldLocked(
   return lockedAttributes?.[field] === true;
 }
 
+export function valuesEquivalent(left: unknown, right: unknown): boolean {
+  if (left === right) return true;
+  if (left == null && right == null) return true;
+  if (left == null || right == null) return false;
+
+  const leftTime = asTimestamp(left);
+  const rightTime = asTimestamp(right);
+  if (leftTime !== null && rightTime !== null) return leftTime === rightTime;
+
+  if (isNumericLike(left) && isNumericLike(right)) {
+    return Number(left) === Number(right);
+  }
+
+  return String(left) === String(right);
+}
+
+function asTimestamp(value: unknown): number | null {
+  if (value instanceof Date) {
+    const time = value.getTime();
+    return Number.isNaN(time) ? null : time;
+  }
+  if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}/.test(value)) {
+    const time = new Date(value).getTime();
+    return Number.isNaN(time) ? null : time;
+  }
+  return null;
+}
+
+function isNumericLike(value: unknown): boolean {
+  if (typeof value === "number") return Number.isFinite(value);
+  if (typeof value === "string" && value.trim() !== "") return Number.isFinite(Number(value));
+  return false;
+}
+
 export function filterLockedUpdate<T extends Record<string, unknown>>(
   update: T,
   lockedAttributes: LockedAttributes | null | undefined,
+  current?: Record<string, unknown> | null,
 ): { allowed: Partial<T>; blocked: (keyof T)[] } {
   const allowed: Partial<T> = {};
   const blocked: (keyof T)[] = [];
@@ -56,6 +91,7 @@ export function filterLockedUpdate<T extends Record<string, unknown>>(
     if (value === undefined) continue;
 
     if (isFieldLocked(lockedAttributes, key)) {
+      if (current && valuesEquivalent(value, current[key])) continue;
       blocked.push(key as keyof T);
       continue;
     }
@@ -87,7 +123,6 @@ const SYNCED_ACCOUNT_LOCKED_FIELDS: readonly AccountLockableField[] = [
 const SYNCED_TRANSACTION_LOCKED_FIELDS: readonly TransactionLockableField[] = [
   "account_id",
   "amount",
-  "category_id",
   "currency",
   "timestamp",
   "description",
