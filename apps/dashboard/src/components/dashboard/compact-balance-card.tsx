@@ -1,13 +1,16 @@
 import type { Account } from "@guilders/api/types";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
 import { BalanceChart } from "@/components/common/balance-chart";
 import { ChangeIndicator } from "@/components/common/change-indicator";
+import { PeriodSelector } from "@/components/dashboard/period-selector";
 import { Card, CardContent } from "@/components/ui/card";
 import NumberFlow from "@/components/ui/number-flow";
-import { useBalanceHistories } from "@/lib/queries/useBalanceHistory";
+import { Skeleton } from "@/components/ui/skeleton";
+import { type Period, periodPastLabel, useBalanceHistories } from "@/lib/queries/useBalanceHistory";
 import { useRates } from "@/lib/queries/useRates";
 import { useUser } from "@/lib/queries/useUser";
+import { cn } from "@/lib/utils";
 import { convertToUserCurrency } from "@/lib/utils/financial";
 
 interface CompactBalanceCardProps {
@@ -23,6 +26,7 @@ export function CompactBalanceCard({
   invertColors = false,
   className,
 }: CompactBalanceCardProps) {
+  const [period, setPeriod] = useState<Period>("3M");
   const { data: user } = useUser();
   const { data: rates } = useRates();
   const userCurrency = user?.currency || "EUR";
@@ -33,9 +37,9 @@ export function CompactBalanceCard({
     0,
   );
 
-  const historyQueries = useBalanceHistories(accounts, "1M");
-
+  const historyQueries = useBalanceHistories(accounts, period);
   const allLoaded = historyQueries.every((q) => q.isSuccess);
+  const isLoading = historyQueries.some((q) => q.isLoading);
 
   const chartData = useMemo(() => {
     if (!allLoaded) return [];
@@ -63,10 +67,10 @@ export function CompactBalanceCard({
   }, [allLoaded, historyQueries, accounts, rates, userCurrency]);
 
   const hasData = chartData.length >= 2;
+  const first = hasData ? chartData[0]!.value : totalValue;
 
   const { change, trendColor } = useMemo(() => {
     if (hasData) {
-      const first = chartData[0]!.value;
       const last = chartData[chartData.length - 1]!.value;
       const diff = last - first;
       const effectiveIsPositive = invertColors ? diff <= 0 : diff >= 0;
@@ -76,18 +80,19 @@ export function CompactBalanceCard({
           percentage: first === 0 ? 0 : diff / Math.abs(first),
           currency: userCurrency,
         },
-        trendColor: effectiveIsPositive
-          ? "var(--color-green-500, #22c55e)"
-          : "var(--color-red-500, #ef4444)",
+        trendColor:
+          diff === 0
+            ? "var(--color-gray-400, #9ca3af)"
+            : effectiveIsPositive
+              ? "var(--color-emerald-500, #10b981)"
+              : "var(--color-red-500, #ef4444)",
       };
     }
 
-    // Only use cost-vs-value fallback when queries have finished and returned no data.
-    // While still loading, show neutral 0 change to avoid a jarring flip.
     if (!allLoaded) {
       return {
         change: { value: 0, percentage: 0, currency: userCurrency },
-        trendColor: "var(--color-green-500, #22c55e)",
+        trendColor: "var(--color-gray-400, #9ca3af)",
       };
     }
 
@@ -104,34 +109,62 @@ export function CompactBalanceCard({
         percentage: totalCost ? diff / totalCost : 0,
         currency: userCurrency,
       },
-      trendColor: effectiveIsPositive
-        ? "var(--color-green-500, #22c55e)"
-        : "var(--color-red-500, #ef4444)",
+      trendColor:
+        diff === 0
+          ? "var(--color-gray-400, #9ca3af)"
+          : effectiveIsPositive
+            ? "var(--color-emerald-500, #10b981)"
+            : "var(--color-red-500, #ef4444)",
     };
-  }, [chartData, hasData, allLoaded, accounts, rates, userCurrency, totalValue, invertColors]);
+  }, [
+    chartData,
+    hasData,
+    allLoaded,
+    accounts,
+    rates,
+    userCurrency,
+    totalValue,
+    invertColors,
+    first,
+  ]);
 
   return (
-    <Card className={className}>
-      <CardContent className="flex gap-4 p-6">
-        <div className="flex-1">
-          <h3 className="text-muted-foreground mb-1 text-sm font-medium">{title}</h3>
+    <Card className={cn("shadow-none", className)}>
+      <CardContent className="flex h-full flex-col gap-5 p-6">
+        <div className="flex items-start justify-between gap-3">
+          <p className="text-muted-foreground text-[11px] font-medium tracking-[0.16em] uppercase">
+            {title}
+          </p>
+          <PeriodSelector value={period} onChange={setPeriod} />
+        </div>
+        <div className="flex flex-col gap-2.5">
           <NumberFlow
             value={totalValue}
             format={{ style: "currency", currency: userCurrency }}
-            className="font-mono text-2xl font-normal tracking-tight"
+            className="font-mono text-[2.35rem] leading-none font-normal tracking-tight"
           />
-          <ChangeIndicator change={change} invertColors={invertColors} periodLabel="1 month" />
+          <ChangeIndicator
+            change={change}
+            invertColors={invertColors}
+            periodLabel={periodPastLabel(period)}
+            variant="pill"
+          />
         </div>
-
-        <div className="w-32">
-          <BalanceChart
-            data={chartData}
-            hasData={hasData}
-            trendColor={trendColor}
-            currentValue={totalValue}
-            variant="sparkline"
-            className="h-[80px]"
-          />
+        <div className="min-h-0 flex-1">
+          {isLoading && !chartData.length ? (
+            <Skeleton className="h-[160px] w-full rounded-xl" />
+          ) : (
+            <BalanceChart
+              data={chartData}
+              hasData={hasData}
+              trendColor={trendColor}
+              currentValue={totalValue}
+              variant="full"
+              currency={userCurrency}
+              firstValue={first}
+              className="aspect-auto h-[160px] w-full"
+            />
+          )}
         </div>
       </CardContent>
     </Card>

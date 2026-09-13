@@ -108,17 +108,17 @@ function AccountPage() {
   return (
     <>
       {isLoading ? (
-        <div className="space-y-4 p-4">
-          <Skeleton className="h-[400px] w-full" />
-          <Skeleton className="h-[400px] w-full" />
+        <div className="space-y-6 py-4">
+          <Skeleton className="h-[400px] w-full rounded-xl" />
+          <Skeleton className="h-[400px] w-full rounded-xl" />
         </div>
       ) : !account ? (
-        <div className="p-4">
-          <p>Account not found</p>
+        <div className="py-4">
+          <p className="text-muted-foreground text-sm">Account not found</p>
         </div>
       ) : (
-        <div className="space-y-4 p-4">
-          <div className="flex items-center gap-2">
+        <div className="space-y-6 py-4">
+          <div className="flex items-center gap-3">
             <AccountIcon
               account={account}
               width={40}
@@ -128,7 +128,7 @@ function AccountPage() {
             />
             <div className="flex flex-1 items-center justify-between">
               <div>
-                <h1 className="text-foreground text-xl font-semibold">{account.name}</h1>
+                <h1 className="text-xl font-medium tracking-tight">{account.name}</h1>
                 {account.institutionConnection?.institution?.name && (
                   <p className="text-muted-foreground text-sm">
                     {account.institutionConnection.institution.name}
@@ -197,7 +197,7 @@ function AccountPage() {
             </div>
           </div>
 
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-stretch">
+          <div className="flex flex-col gap-6 sm:flex-row sm:items-stretch">
             <div className="min-w-0 sm:flex-[65]">
               <BalanceCard
                 title={account.subtype === "depository" ? "Balance" : "Value"}
@@ -215,9 +215,7 @@ function AccountPage() {
             ) : null}
           </div>
 
-          {account.subtype === "depository" ? (
-            <TransactionsCard accountId={account.id} menuComponent={<></>} />
-          ) : null}
+          {account.subtype === "depository" ? <TransactionsCard accountId={account.id} /> : null}
           {account.subtype === "brokerage" && (account.children?.length ?? 0) > 0 ? (
             <AccountsCard title="Holdings" accounts={account.children} menuComponent={<></>} />
           ) : null}

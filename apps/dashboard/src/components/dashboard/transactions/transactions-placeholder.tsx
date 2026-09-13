@@ -7,19 +7,12 @@ export function TransactionsEmptyPlaceholder({ accountId }: { accountId?: number
   const { open } = useDialog("addTransaction");
 
   return (
-    <div className="flex shrink-0 items-center justify-center rounded-md p-4">
-      <div className="mx-auto flex flex-col items-center justify-center text-center">
-        <ReceiptEuro className="text-muted-foreground h-10 w-10" />
-
-        <h3 className="mt-4 text-lg font-semibold">No transactions</h3>
-        <p className="text-muted-foreground mt-2 mb-4 text-sm">
-          You have not added any transactions.
-        </p>
-
-        <Button size="sm" className="relative" onClick={() => open({ accountId })}>
-          Add Transaction
-        </Button>
-      </div>
+    <div className="text-muted-foreground flex flex-1 flex-col items-center justify-center py-8 text-center">
+      <ReceiptEuro className="mb-3 h-6 w-6 opacity-50" />
+      <p className="text-sm">Add transactions to see them here.</p>
+      <Button size="sm" className="mt-4" onClick={() => open({ accountId })}>
+        Add Transaction
+      </Button>
     </div>
   );
 }

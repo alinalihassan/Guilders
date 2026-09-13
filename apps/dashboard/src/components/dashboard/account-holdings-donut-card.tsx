@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { Cell, Pie, PieChart } from "recharts";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   type ChartConfig,
   ChartContainer,
@@ -78,23 +78,25 @@ export function AccountHoldingsDonutCard({ holdings, className }: AccountHolding
 
   if (data.length === 0) {
     return (
-      <Card className={cn("flex h-full flex-col", className)}>
-        <CardHeader className="flex flex-col p-6">
-          <CardTitle className="text-lg font-normal">Spread</CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-1 items-center justify-center py-12">
-          <p className="text-muted-foreground text-sm">No holdings</p>
+      <Card className={cn("flex h-full flex-col shadow-none", className)}>
+        <CardContent className="flex h-full flex-col gap-5 p-6">
+          <p className="text-muted-foreground text-[11px] font-medium tracking-[0.16em] uppercase">
+            Spread
+          </p>
+          <div className="flex flex-1 items-center justify-center">
+            <p className="text-muted-foreground text-sm">No holdings</p>
+          </div>
         </CardContent>
       </Card>
     );
   }
 
   return (
-    <Card className={cn("flex h-full flex-col", className)}>
-      <CardHeader className="flex flex-col p-6">
-        <CardTitle className="text-lg font-normal">Spread</CardTitle>
-      </CardHeader>
-      <CardContent className="flex flex-1 flex-col">
+    <Card className={cn("flex h-full flex-col shadow-none", className)}>
+      <CardContent className="flex h-full flex-col gap-5 p-6">
+        <p className="text-muted-foreground text-[11px] font-medium tracking-[0.16em] uppercase">
+          Spread
+        </p>
         <ChartContainer config={chartConfig} className="min-h-[216px] w-full flex-1">
           <PieChart>
             <ChartTooltip
@@ -154,19 +156,25 @@ export function AccountHoldingsDonutCard({ holdings, className }: AccountHolding
             </Pie>
           </PieChart>
         </ChartContainer>
-        <div className="mt-2 flex flex-wrap justify-center gap-x-4 gap-y-1">
-          {data.map((entry) => (
-            <div key={entry.name} className="flex items-center gap-1.5 text-xs">
-              <div
-                className="h-2 w-2 shrink-0 rounded-sm"
-                style={{ backgroundColor: entry.color }}
-              />
-              <span className="text-muted-foreground" title={entry.name}>
-                {truncateLegendLabel(entry.name)}
-              </span>
-            </div>
-          ))}
-        </div>
+        <ul className="flex flex-col gap-2">
+          {data.slice(0, 6).map((entry) => {
+            const share = totalValue === 0 ? 0 : entry.value / totalValue;
+            return (
+              <li key={entry.name} className="flex items-center gap-3 text-sm">
+                <span
+                  className="h-2 w-2 shrink-0 rounded-full"
+                  style={{ backgroundColor: entry.color }}
+                />
+                <span className="text-muted-foreground min-w-0 truncate" title={entry.name}>
+                  {truncateLegendLabel(entry.name)}
+                </span>
+                <span className="text-muted-foreground ml-auto w-10 text-right font-mono text-xs tabular-nums">
+                  {(share * 100).toFixed(0)}%
+                </span>
+              </li>
+            );
+          })}
+        </ul>
       </CardContent>
     </Card>
   );

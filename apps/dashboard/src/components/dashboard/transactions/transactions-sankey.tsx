@@ -2,7 +2,7 @@ import type { Transaction } from "@guilders/api/types";
 import { useMemo } from "react";
 import { Layer, Rectangle, Sankey } from "recharts";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { type ChartConfig, ChartContainer } from "@/components/ui/chart";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCategories } from "@/lib/queries/useCategories";
@@ -367,12 +367,12 @@ export function TransactionsSankey({
 
   if (isLoading) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Cash Flow</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Skeleton className="h-[400px] w-full" />
+      <Card className="shadow-none">
+        <CardContent className="flex flex-col gap-5 p-6">
+          <p className="text-muted-foreground text-[11px] font-medium tracking-[0.16em] uppercase">
+            Cash Flow
+          </p>
+          <Skeleton className="h-[400px] w-full rounded-xl" />
         </CardContent>
       </Card>
     );
@@ -383,11 +383,11 @@ export function TransactionsSankey({
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Cash Flow</CardTitle>
-      </CardHeader>
-      <CardContent>
+    <Card className="shadow-none">
+      <CardContent className="flex flex-col gap-5 p-6">
+        <p className="text-muted-foreground text-[11px] font-medium tracking-[0.16em] uppercase">
+          Cash Flow
+        </p>
         <ChartContainer className="h-[400px] w-full" config={chartConfig}>
           <Sankey
             data={sankeyData}

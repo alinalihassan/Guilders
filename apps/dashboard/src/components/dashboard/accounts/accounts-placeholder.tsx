@@ -7,17 +7,12 @@ export function AccountsEmptyPlaceholder() {
   const { open } = useDialog("addManualAccount");
 
   return (
-    <div className="flex shrink-0 items-center justify-center rounded-md p-4">
-      <div className="mx-auto flex flex-col items-center justify-center text-center">
-        <BadgeEuro className="text-muted-foreground h-10 w-10" />
-
-        <h3 className="mt-4 text-lg font-semibold">No accounts added</h3>
-        <p className="text-muted-foreground mt-2 mb-4 text-sm">You have not added any accounts.</p>
-
-        <Button size="sm" className="relative" onClick={() => open()}>
-          Add Account
-        </Button>
-      </div>
+    <div className="text-muted-foreground flex flex-1 flex-col items-center justify-center py-8 text-center">
+      <BadgeEuro className="mb-3 h-6 w-6 opacity-50" />
+      <p className="text-sm">Add accounts to see them here.</p>
+      <Button size="sm" className="mt-4" onClick={() => open()}>
+        Add Account
+      </Button>
     </div>
   );
 }

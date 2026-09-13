@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Filter, Plus, Search } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 
 import { TransactionsCard } from "@/components/dashboard/transactions/transactions-card";
@@ -7,7 +7,7 @@ import { TransactionsEmptyPlaceholder } from "@/components/dashboard/transaction
 import { TransactionsSankey } from "@/components/dashboard/transactions/transactions-sankey";
 import { TransactionsVirtualList } from "@/components/dashboard/transactions/transactions-virtual-list";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import NumberFlow from "@/components/ui/number-flow";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDialog } from "@/hooks/useDialog";
@@ -88,102 +88,48 @@ function TransactionsPage() {
   });
 
   const menuComponent = (
-    <>
-      <div className="relative flex-1 md:w-64 md:flex-none">
-        <div
-          className={cn(
-            "relative flex w-full items-center",
-            "rounded-md border border-input",
-            "bg-background hover:bg-accent hover:text-accent-foreground",
-            "ring-offset-background",
-            "transition-colors",
-            "focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2",
-          )}
-          onClick={() => searchInputRef.current?.focus()}
-        >
-          <Search className="text-muted-foreground ml-2 h-4 w-4 shrink-0" />
-          <input
-            ref={searchInputRef}
-            type="text"
-            placeholder="Search transactions..."
-            className={cn(
-              "flex w-full bg-transparent px-2 py-2 text-sm",
-              "placeholder:text-muted-foreground",
-              "focus:outline-none focus:ring-0",
-              "disabled:cursor-not-allowed disabled:opacity-50",
-            )}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
-      </div>
-      <Button variant="outline" size="icon" disabled>
-        <Filter className="h-4 w-4" />
-      </Button>
-    </>
+    <div
+      className="bg-muted/70 flex w-full items-center rounded-full px-3 py-1.5 md:w-64"
+      onClick={() => searchInputRef.current?.focus()}
+    >
+      <Search className="text-muted-foreground h-3.5 w-3.5 shrink-0" />
+      <input
+        ref={searchInputRef}
+        type="search"
+        placeholder="Search"
+        className="placeholder:text-muted-foreground ml-2 w-full bg-transparent text-sm outline-none"
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+      />
+    </div>
   );
 
   return (
-    <div className="space-y-4 py-4">
-      <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-foreground text-2xl font-semibold">Transactions</h1>
+    <div className="space-y-6 py-4">
+      <div className="flex items-center justify-between">
+        <h1 className="text-xl font-medium tracking-tight">Transactions</h1>
         <Button onClick={() => openAddTransaction({})} size="sm">
           <Plus className="h-4 w-4" />
           Add Transaction
         </Button>
       </div>
-      {/* Summary Cards */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Transactions</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {isLoading ? <Skeleton className="h-8 w-20" /> : totalTransactions}
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Income</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-              {isLoading || isLoadingUser ? (
-                <Skeleton className="h-8 w-28" />
-              ) : (
-                <NumberFlow
-                  value={totalIncome}
-                  format={{
-                    style: "currency",
-                    currency: userCurrency,
-                  }}
-                />
-              )}
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Expenses</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600 dark:text-red-400">
-              {isLoading || isLoadingUser ? (
-                <Skeleton className="h-8 w-28" />
-              ) : (
-                <NumberFlow
-                  value={totalExpenses}
-                  format={{
-                    style: "currency",
-                    currency: userCurrency,
-                  }}
-                />
-              )}
-            </div>
-          </CardContent>
-        </Card>
+
+      <div className="grid gap-6 md:grid-cols-3">
+        <SummaryStat label="Transactions" value={totalTransactions} isLoading={isLoading} />
+        <SummaryStat
+          label="Income"
+          value={totalIncome}
+          currency={userCurrency}
+          tone="income"
+          isLoading={isLoading || isLoadingUser}
+        />
+        <SummaryStat
+          label="Expenses"
+          value={totalExpenses}
+          currency={userCurrency}
+          tone="expense"
+          isLoading={isLoading || isLoadingUser}
+        />
       </div>
 
       <TransactionsSankey
@@ -193,32 +139,69 @@ function TransactionsPage() {
       />
 
       <TransactionsCard menuComponent={menuComponent}>
-        <div className="space-y-2">
-          {isLoading ? (
-            <div className="space-y-2">
-              {[...Array(4)].map((_, index) => (
-                <Skeleton key={index} className="h-16 w-full" />
-              ))}
-            </div>
-          ) : !filteredTransactions || filteredTransactions.length === 0 ? (
-            searchQuery ? (
-              <div className="text-muted-foreground py-8 text-center">
-                No transactions found matching "{searchQuery}"
-              </div>
-            ) : (
-              <TransactionsEmptyPlaceholder />
-            )
+        {isLoading ? (
+          <div className="flex flex-col gap-2">
+            {[...Array(4)].map((_, index) => (
+              <Skeleton key={index} className="h-12 w-full" />
+            ))}
+          </div>
+        ) : !filteredTransactions || filteredTransactions.length === 0 ? (
+          searchQuery ? (
+            <p className="text-muted-foreground py-8 text-center text-sm">
+              No transactions found matching “{searchQuery}”
+            </p>
           ) : (
-            <TransactionsVirtualList
-              scroll="page"
-              transactions={filteredTransactions.toSorted(
-                (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
-              )}
-              merchantsById={merchantsById}
-            />
-          )}
-        </div>
+            <TransactionsEmptyPlaceholder />
+          )
+        ) : (
+          <TransactionsVirtualList
+            scroll="page"
+            transactions={filteredTransactions.toSorted(
+              (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
+            )}
+            merchantsById={merchantsById}
+          />
+        )}
       </TransactionsCard>
     </div>
+  );
+}
+
+function SummaryStat({
+  label,
+  value,
+  currency,
+  tone,
+  isLoading,
+}: {
+  label: string;
+  value: number;
+  currency?: string;
+  tone?: "income" | "expense";
+  isLoading: boolean;
+}) {
+  return (
+    <Card className="shadow-none">
+      <CardContent className="flex flex-col gap-3 p-6">
+        <p className="text-muted-foreground text-[11px] font-medium tracking-[0.16em] uppercase">
+          {label}
+        </p>
+        {isLoading ? (
+          <Skeleton className="h-8 w-28" />
+        ) : currency ? (
+          <NumberFlow
+            value={value}
+            format={{ style: "currency", currency }}
+            className={cn(
+              "font-mono text-2xl tracking-tight tabular-nums",
+              tone === "income" && "text-emerald-600 dark:text-emerald-400",
+              tone === "expense" && "text-red-600 dark:text-red-400",
+            )}
+          />
+        ) : (
+          <p className="font-mono text-2xl tracking-tight tabular-nums">{value.toLocaleString()}</p>
+        )}
+      </CardContent>
+    </Card>
   );
 }
