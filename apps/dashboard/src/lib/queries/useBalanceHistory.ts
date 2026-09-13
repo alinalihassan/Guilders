@@ -5,7 +5,24 @@ import { api, rpcJson } from "../api";
 
 export type { BalanceSnapshot, NetWorthSnapshot };
 
-export type Period = "1W" | "1M" | "3M" | "6M" | "1Y" | "ALL";
+export type Period = "1W" | "1M" | "3M" | "YTD" | "ALL";
+
+export const PERIODS: Period[] = ["1W", "1M", "3M", "YTD", "ALL"];
+
+export function periodPastLabel(period: Period): string {
+  switch (period) {
+    case "1W":
+      return "past week";
+    case "1M":
+      return "past month";
+    case "3M":
+      return "past 3 months";
+    case "YTD":
+      return "year to date";
+    case "ALL":
+      return "all time";
+  }
+}
 
 export function periodToDateRange(period: Period): { from?: string; to?: string } {
   if (period === "ALL") return {};
@@ -22,11 +39,8 @@ export function periodToDateRange(period: Period): { from?: string; to?: string 
     case "3M":
       start.setMonth(start.getMonth() - 3);
       break;
-    case "6M":
-      start.setMonth(start.getMonth() - 6);
-      break;
-    case "1Y":
-      start.setFullYear(start.getFullYear() - 1);
+    case "YTD":
+      start.setMonth(0, 1);
       break;
   }
   return { from: start.toISOString().split("T")[0]!, to };

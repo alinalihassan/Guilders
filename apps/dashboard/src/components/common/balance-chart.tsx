@@ -38,6 +38,25 @@ function formatDateLabel(raw: string): string {
   });
 }
 
+function formatAxisDate(raw: string): string {
+  const date = parseDate(raw);
+  if (Number.isNaN(date.getTime())) return String(raw);
+  const month = date.toLocaleDateString("en-GB", { month: "short" });
+  return date.getDate() <= 3 ? month : `${date.getDate()} ${month}`;
+}
+
+function pickAxisTicks(data: BalanceChartData[]): string[] | undefined {
+  if (data.length < 2) return undefined;
+  const count = Math.min(6, data.length);
+  const last = data.length - 1;
+  const ticks = new Set<string>();
+  for (let i = 0; i < count; i += 1) {
+    const index = Math.round((i * last) / (count - 1));
+    ticks.add(data[index]!.date);
+  }
+  return [...ticks];
+}
+
 function formatCurrency(amount: number, currency: string): string {
   return amount.toLocaleString(undefined, { style: "currency", currency });
 }
@@ -65,8 +84,8 @@ function PointTooltip({
   const arrow = diff > 0 ? "\u2191" : diff < 0 ? "\u2193" : "";
 
   return (
-    <div className="border-border bg-background rounded-lg border px-3 py-2 text-sm shadow-md">
-      <div className="text-muted-foreground mb-1 text-xs">{formatDateLabel(point.date)}</div>
+    <div className="border-border/60 bg-background/95 rounded-2xl border px-3 py-2 text-sm shadow-none backdrop-blur-sm">
+      <div className="text-muted-foreground mb-1 text-[11px]">{formatDateLabel(point.date)}</div>
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-1.5">
           <span
@@ -168,12 +187,7 @@ export function BalanceChart({
 
   const yDomain = useMemo(() => computeYDomain(effectiveData), [effectiveData]);
 
-  const xTicks = useMemo(() => {
-    if (effectiveData.length >= 2) {
-      return [effectiveData[0]!.date, effectiveData[effectiveData.length - 1]!.date];
-    }
-    return undefined;
-  }, [effectiveData]);
+  const xTicks = useMemo(() => pickAxisTicks(effectiveData), [effectiveData]);
 
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const isHovering = activeIndex !== null;
@@ -224,10 +238,10 @@ export function BalanceChart({
   const mutedLineColor = "#d1d5db";
 
   return (
-    <ChartContainer className={className ?? "max-h-[216px] w-full"} config={chartConfig}>
+    <ChartContainer className={className ?? "aspect-auto h-[220px] w-full"} config={chartConfig}>
       <AreaChart
         data={effectiveData}
-        margin={{ top: 8, right: 12, bottom: 0, left: 12 }}
+        margin={{ top: 12, right: 8, bottom: 0, left: 8 }}
         onMouseMove={(state) => {
           if (state?.activeTooltipIndex != null) setActiveIndex(state.activeTooltipIndex);
         }}
@@ -256,8 +270,9 @@ export function BalanceChart({
           axisLine={false}
           tickMargin={8}
           ticks={xTicks}
-          tickFormatter={formatDateLabel}
-          style={{ fontSize: 12, fontWeight: 500 }}
+          tickFormatter={formatAxisDate}
+          minTickGap={24}
+          style={{ fontSize: 11, fontWeight: 500 }}
           stroke="var(--muted-foreground)"
         />
         {hasData && (
@@ -290,7 +305,7 @@ export function BalanceChart({
           type="monotone"
           fill={hasData && !isHovering ? `url(#fill-${chartId})` : "transparent"}
           stroke={isHovering ? `url(#stroke-split-${chartId})` : "var(--color-value)"}
-          strokeWidth={2}
+          strokeWidth={1.75}
           strokeLinejoin="round"
           strokeLinecap="round"
           dot={false}
