@@ -12,9 +12,16 @@ import { buildCategoryLookup } from "@/lib/utils/category-tree";
 interface TransactionItemProps {
   transaction: Transaction;
   merchant?: Merchant | null;
+  accountName?: string;
+  variant?: "default" | "ledger";
 }
 
-export function TransactionItem({ transaction, merchant }: TransactionItemProps) {
+export function TransactionItem({
+  transaction,
+  merchant,
+  accountName,
+  variant = "default",
+}: TransactionItemProps) {
   const { open } = useDialog("editTransaction");
   const { data: flatCategories } = useCategories();
   const categoryLookup = buildCategoryLookup(flatCategories ?? []);
@@ -29,7 +36,11 @@ export function TransactionItem({ transaction, merchant }: TransactionItemProps)
   const rawDescription = transaction.description?.trim() ?? "";
   const displayName = rawMerchantName || rawDescription || "Unknown Transaction";
   const secondaryName =
-    displayName === rawMerchantName ? rawDescription || undefined : rawMerchantName || undefined;
+    variant === "ledger"
+      ? accountName
+      : displayName === rawMerchantName
+        ? rawDescription || undefined
+        : rawMerchantName || undefined;
 
   return (
     <button
@@ -47,7 +58,14 @@ export function TransactionItem({ transaction, merchant }: TransactionItemProps)
         </div>
       </div>
       <div className="flex shrink-0 items-center gap-2.5 pl-3">
-        {category && <CategoryBadge category={category} className="hidden @[28rem]:inline-flex" />}
+        {category && (
+          <CategoryBadge
+            category={category}
+            className={
+              variant === "ledger" ? "hidden sm:inline-flex" : "hidden @[28rem]:inline-flex"
+            }
+          />
+        )}
         <div className="flex flex-col items-end">
           <NumberFlow
             value={Math.abs(amount)}
@@ -64,15 +82,17 @@ export function TransactionItem({ transaction, merchant }: TransactionItemProps)
                   : "text-foreground",
             )}
           />
-          <div className="text-muted-foreground flex items-center gap-1 text-xs">
-            <span>{formatTransactionDate(timestamp)}</span>
-            {!dateOnly && (
-              <>
-                <span className="hidden sm:inline">•</span>
-                <span className="hidden sm:inline">{timeStr}</span>
-              </>
-            )}
-          </div>
+          {variant !== "ledger" && (
+            <div className="text-muted-foreground flex items-center gap-1 text-xs">
+              <span>{formatTransactionDate(timestamp)}</span>
+              {!dateOnly && (
+                <>
+                  <span className="hidden sm:inline">•</span>
+                  <span className="hidden sm:inline">{timeStr}</span>
+                </>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </button>
