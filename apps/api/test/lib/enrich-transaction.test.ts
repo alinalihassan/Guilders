@@ -1,7 +1,14 @@
 import { describe, expect, it } from "vitest";
 
+import { LEGACY_CATEGORY_RENAMES } from "../../src/lib/categories";
 import { normalizeMerchantName, websiteToLogoUrl } from "../../src/lib/enrich-transaction";
-import { fallbackCategoryId } from "../../src/lib/enrich-transaction-ai";
+import {
+  coerceCategoryId,
+  fallbackCategoryId,
+  isOtherCategoryName,
+  transactionGroupKey,
+  transactionKind,
+} from "../../src/lib/enrich-transaction-ai";
 import { filterLockedUpdate, valuesEquivalent } from "../../src/lib/locked-attributes";
 import { parseProviderTimestamp } from "../../src/lib/provider-timestamp";
 
@@ -36,6 +43,41 @@ describe("enrich transaction", () => {
     expect(fallbackCategoryId([{ id: 9, name: "Coffee", classification: "expense" }], false)).toBe(
       9,
     );
+  });
+
+  it("groups salary, self-transfers, and P2P separately from small incoming", () => {
+    expect(transactionKind("Wage/Salary 00216219/202608", 5471)).toBe("salary");
+    expect(transactionKind("Sent from Revolut", 13.25)).toBe("xfer");
+    expect(transactionKind("Tikkie ID 001287384659, Skate Burgers", 21.27)).toBe("p2p");
+    expect(transactionKind("UBER   *ONE MEMBERSHIP Amsterdam, NL", -8.99)).toBe("sub");
+    expect(transactionGroupKey({ merchantId: 4, description: "Wage/Salary", amount: 5471 })).toBe(
+      "m:4:in:salary",
+    );
+    expect(transactionGroupKey({ merchantId: 4, description: "A. Hassan", amount: 13.42 })).toBe(
+      "m:4:in:std",
+    );
+    expect(isOtherCategoryName("Other Expenses")).toBe(true);
+    expect(isOtherCategoryName("Subscriptions")).toBe(false);
+  });
+
+  it("rejects an income category on an outgoing amount", () => {
+    const categories = [
+      { id: 1, name: "Other Income", classification: "income" },
+      { id: 2, name: "Other Expenses", classification: "expense" },
+      { id: 3, name: "Rent & Mortgage", classification: "expense" },
+      { id: 4, name: "Subscriptions", classification: "expense" },
+    ];
+    const ids = new Set(categories.map((item) => item.id));
+    expect(coerceCategoryId(1, ids, categories, false)).toBe(2);
+    expect(coerceCategoryId(3, ids, categories, false)).toBe(3);
+    expect(coerceCategoryId(4, ids, categories, true, "cashback")).toBe(4);
+    expect(coerceCategoryId(4, ids, categories, true)).toBe(1);
+  });
+
+  it("renames legacy defaults onto the Talvo-style set", () => {
+    expect(LEGACY_CATEGORY_RENAMES["Car Expenses"]).toBe("Transport");
+    expect(LEGACY_CATEGORY_RENAMES.Services).toBe("Subscriptions");
+    expect(LEGACY_CATEGORY_RENAMES["Food & Drink"]).toBe("Drinks & Dining");
   });
 });
 

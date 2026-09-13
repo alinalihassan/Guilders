@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 
 import { account } from "../db/schema/accounts";
 import { AccountSubtypeEnum, AccountTypeEnum } from "../db/schema/enums";
@@ -15,6 +15,7 @@ import { enqueueAccountEnrichment } from "./enrich-transaction-ai";
 import {
   SYNCED_ACCOUNT_LOCKED_ATTRIBUTES,
   SYNCED_TRANSACTION_LOCKED_ATTRIBUTES,
+  isFieldLocked,
 } from "./locked-attributes";
 
 export async function syncConnectionData(params: {
@@ -381,7 +382,12 @@ async function persistProviderTransactions(
   if (!providerTxns.length) return { newTransactions: 0 };
 
   const existingTxnRows = await db
-    .select({ provider_transaction_id: transaction.provider_transaction_id })
+    .select({
+      id: transaction.id,
+      provider_transaction_id: transaction.provider_transaction_id,
+      description: transaction.description,
+      locked_attributes: transaction.locked_attributes,
+    })
     .from(transaction)
     .where(eq(transaction.account_id, accountId));
 
@@ -406,6 +412,8 @@ async function persistProviderTransactions(
     );
   }
 
+  await refreshSyncedTransactionDescriptions(db, existingTxnRows, providerTxns);
+
   await enrichSyncedAccountTransactions(
     db,
     userId,
@@ -426,4 +434,49 @@ async function persistProviderTransactions(
   }
 
   return { newTransactions: newTxns.length };
+}
+
+async function refreshSyncedTransactionDescriptions(
+  db: Database,
+  existingRows: {
+    id: number;
+    provider_transaction_id: string | null;
+    description: string;
+    locked_attributes: Record<string, boolean> | null;
+  }[],
+  providerTxns: ProviderTransaction[],
+): Promise<void> {
+  const existingByProviderId = new Map(
+    existingRows
+      .filter((row) => row.provider_transaction_id)
+      .map((row) => [row.provider_transaction_id!, row]),
+  );
+  const now = new Date();
+  const recategorizeByDescription = new Map<string, number[]>();
+  const keepCategoryByDescription = new Map<string, number[]>();
+
+  for (const txn of providerTxns) {
+    if (!txn.provider_transaction_id) continue;
+    const existing = existingByProviderId.get(txn.provider_transaction_id);
+    if (!existing || existing.description === txn.description) continue;
+    const target = isFieldLocked(existing.locked_attributes, "category_id")
+      ? keepCategoryByDescription
+      : recategorizeByDescription;
+    const ids = target.get(txn.description) ?? [];
+    ids.push(existing.id);
+    target.set(txn.description, ids);
+  }
+
+  for (const [description, ids] of recategorizeByDescription) {
+    await db
+      .update(transaction)
+      .set({ description, category_id: null, updated_at: now })
+      .where(inArray(transaction.id, ids));
+  }
+  for (const [description, ids] of keepCategoryByDescription) {
+    await db
+      .update(transaction)
+      .set({ description, updated_at: now })
+      .where(inArray(transaction.id, ids));
+  }
 }

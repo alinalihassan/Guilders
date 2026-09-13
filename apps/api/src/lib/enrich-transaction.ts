@@ -1,4 +1,4 @@
-import { and, eq, inArray, isNotNull } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 
 import { merchant } from "../db/schema/merchants";
 import { transaction } from "../db/schema/transactions";
@@ -93,7 +93,7 @@ export async function enrichSyncedAccountTransactions(
     const hint = row.provider_transaction_id
       ? hintByProviderId.get(row.provider_transaction_id)
       : undefined;
-    const sourceName = hint?.merchant_name || hint?.description || row.description;
+    const sourceName = hint?.merchant_name || (row.merchant_id == null ? row.description : null);
     const resolved = resolveMerchant(sourceName);
     const nextTimestamp =
       isDateOnlyUtcTimestamp(row.timestamp) && row.timestamp.getUTCHours() === 0
@@ -106,7 +106,6 @@ export async function enrichSyncedAccountTransactions(
       merchantDomain: resolved?.domain ?? null,
       timestamp: nextTimestamp.getTime() === row.timestamp.getTime() ? null : nextTimestamp,
       unlockLocks: row.locked_attributes?.category_id === true,
-      needsCategory: row.category_id == null,
     };
   });
 
@@ -141,48 +140,21 @@ export async function enrichSyncedAccountTransactions(
     }
   }
 
-  const [merchants, categorizedRows] = await Promise.all([
-    db
-      .select({
-        id: merchant.id,
-        name: merchant.name,
-        website_url: merchant.website_url,
-      })
-      .from(merchant)
-      .where(eq(merchant.user_id, userId)),
-    db
-      .select({
-        merchant_id: transaction.merchant_id,
-        category_id: transaction.category_id,
-      })
-      .from(transaction)
-      .where(
-        and(
-          eq(transaction.account_id, accountId),
-          isNotNull(transaction.merchant_id),
-          isNotNull(transaction.category_id),
-        ),
-      ),
-  ]);
+  const merchants = await db
+    .select({
+      id: merchant.id,
+      name: merchant.name,
+    })
+    .from(merchant)
+    .where(eq(merchant.user_id, userId));
 
   const merchantIdByName = new Map(merchants.map((item) => [item.name, item.id]));
-  const knownMerchantIds = new Set(
-    merchants.filter((item) => item.website_url != null).map((item) => item.id),
-  );
-  const categoryByMerchantId = new Map<number, number>();
-  for (const row of categorizedRows) {
-    if (row.merchant_id == null || row.category_id == null) continue;
-    if (!categoryByMerchantId.has(row.merchant_id)) {
-      categoryByMerchantId.set(row.merchant_id, row.category_id);
-    }
-  }
 
   const groups = new Map<
     string,
     {
       ids: number[];
       merchant_id?: number;
-      category_id?: number;
       timestamp?: Date;
       unlockLocks: boolean;
     }
@@ -190,17 +162,12 @@ export async function enrichSyncedAccountTransactions(
 
   for (const item of planned) {
     const merchantId = item.merchantName ? merchantIdByName.get(item.merchantName) : undefined;
-    const reusedCategory =
-      item.needsCategory && merchantId != null && knownMerchantIds.has(merchantId)
-        ? categoryByMerchantId.get(merchantId)
-        : undefined;
-    if (!merchantId && !reusedCategory && !item.timestamp && !item.unlockLocks) continue;
+    if (!merchantId && !item.timestamp && !item.unlockLocks) continue;
 
-    const key = `${merchantId ?? "n"}:${reusedCategory ?? "n"}:${item.timestamp?.toISOString() ?? "n"}:${item.unlockLocks}`;
+    const key = `${merchantId ?? "n"}:${item.timestamp?.toISOString() ?? "n"}:${item.unlockLocks}`;
     const group = groups.get(key) ?? {
       ids: [],
       merchant_id: merchantId,
-      category_id: reusedCategory,
       timestamp: item.timestamp ?? undefined,
       unlockLocks: item.unlockLocks,
     };
@@ -212,13 +179,11 @@ export async function enrichSyncedAccountTransactions(
   for (const group of groups.values()) {
     const patch: {
       merchant_id?: number;
-      category_id?: number;
       timestamp?: Date;
       locked_attributes?: typeof SYNCED_TRANSACTION_LOCKED_ATTRIBUTES;
       updated_at: Date;
     } = { updated_at: now };
     if (group.merchant_id != null) patch.merchant_id = group.merchant_id;
-    if (group.category_id != null) patch.category_id = group.category_id;
     if (group.timestamp) patch.timestamp = group.timestamp;
     if (group.unlockLocks) patch.locked_attributes = SYNCED_TRANSACTION_LOCKED_ATTRIBUTES;
 
