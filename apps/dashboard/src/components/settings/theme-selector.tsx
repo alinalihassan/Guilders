@@ -19,13 +19,17 @@ export function ThemeSelector() {
     setMounted(true);
   }, []);
 
-  // Use a fixed value until after mount so server and client render the same (avoids hydration mismatch with next-themes)
+  // Use a fixed value until after mount so server and client render the same
   const value = mounted ? theme : "system";
 
   return (
     <fieldset className="space-y-4">
       <legend className="text-foreground text-sm leading-none font-medium">Theme Preference</legend>
-      <RadioGroup className="flex gap-3" value={value} onValueChange={(v) => setTheme(v)}>
+      <RadioGroup
+        className="flex gap-3"
+        value={value}
+        onValueChange={(v) => setTheme(v as "light" | "dark" | "system")}
+      >
         {items.map((item) => (
           <label key={item.id} htmlFor={item.id}>
             <RadioGroupItem

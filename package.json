@@ -15,8 +15,11 @@
     "db:down": "docker compose down",
     "db:generate": "bun run --filter @guilders/api db:generate",
     "db:migrate": "bun run --filter @guilders/api db:migrate",
+    "db:migrate:prod": "bun run --filter @guilders/api db:migrate:prod",
     "db:studio": "bun run --filter @guilders/api db:studio",
+    "db:studio:prod": "bun run --filter @guilders/api db:studio:prod",
     "db:init": "bun run --filter @guilders/api db:init",
+    "db:init:prod": "bun run --filter @guilders/api db:init:prod",
     "db:reset": "bun run --filter @guilders/api db:reset",
     "db:query": "bun run --filter @guilders/api db:query",
     "agent:user": "bun run --filter @guilders/api agent:user",
@@ -27,7 +30,7 @@
     "oxlint": "^1.82.0",
     "typescript": "^7.0.2"
   },
-  "packageManager": "bun@1.3.9",
+  "packageManager": "bun@1.4.3",
   "catalog": {
     "react": "19.3.0",
     "react-dom": "19.3.0",

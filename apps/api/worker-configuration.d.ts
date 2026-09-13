@@ -24,8 +24,6 @@ declare namespace Cloudflare {
     DEV_TUNNEL_URL: string;
     SNAPTRADE_CLIENT_ID: string;
     SNAPTRADE_CLIENT_SECRET: string;
-    SALTEDGE_APP_ID: string;
-    SALTEDGE_SECRET: string;
     ENABLEBANKING_CLIENT_ID: string;
     ENABLEBANKING_CLIENT_PRIVATE_KEY: string;
     TELLER_APPLICATION_ID: string;
@@ -55,8 +53,6 @@ declare namespace NodeJS {
       | "DEV_TUNNEL_URL"
       | "SNAPTRADE_CLIENT_ID"
       | "SNAPTRADE_CLIENT_SECRET"
-      | "SALTEDGE_APP_ID"
-      | "SALTEDGE_SECRET"
       | "ENABLEBANKING_CLIENT_ID"
       | "ENABLEBANKING_CLIENT_PRIVATE_KEY"
       | "TELLER_APPLICATION_ID"

@@ -15,10 +15,6 @@
     "port": 3000,
   },
   "routes": [
-    {
-      "custom_domain": true,
-      "pattern": "api.guilders.app",
-    },
     { "pattern": "guilders.app/api*", "zone_name": "guilders.app" },
     { "pattern": "guilders.app/mcp*", "zone_name": "guilders.app" },
     { "pattern": "guilders.app/callback*", "zone_name": "guilders.app" },

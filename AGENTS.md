@@ -28,7 +28,7 @@ guilders/
 │   └── tsconfig/      Shared TypeScript configs
 ```
 
-**Package manager:** Bun 1.3.9
+**Package manager:** Bun 1.4.3
 **Linting:** oxlint
 **Formatting:** oxfmt
 
@@ -47,7 +47,7 @@ guilders/
 | Email         | Cloudflare Email Sending + React Email                                                      |
 | Payments      | Stripe (via Better Auth Stripe plugin)                                                      |
 | Storage       | Cloudflare R2 (public + per-user buckets)                                                   |
-| Providers     | SaltEdge (open banking), SnapTrade (brokerages)                                             |
+| Providers     | EnableBanking (open banking), SnapTrade (brokerages), Teller                                |
 
 ## Data Model
 
@@ -66,7 +66,7 @@ guilders/
 ### Provider / Institution Hierarchy
 
 ```
-Provider  (e.g. SaltEdge, SnapTrade)
+Provider  (e.g. EnableBanking, SnapTrade)
   └─ Institution  (e.g. Revolut, Fidelity)
        └─ Provider Connection  (user ↔ provider auth)
             └─ Institution Connection  (connection to a specific bank)
@@ -92,17 +92,20 @@ Schema files live in `apps/api/src/db/schema/`:
 
 ### Database, Docker, and migrations
 
-Local Postgres is `docker-compose.yml` at the repo root (`postgres:17-alpine`, `guilders` / `postgres` / `postgres`, port 5432).
+Local Postgres is `docker-compose.yml` at the repo root (`postgres:17-alpine`, `guilders` / `postgres` / `postgres`, host port **5433**).
 
 ```bash
-bun run db:up          # docker compose up -d
-bun run db:migrate     # apply Drizzle CLI migrations
-bun run db:init        # seed currencies, countries, providers, institutions, rates
-bun run db:studio      # drizzle-kit studio
-bun run db:reset       # wipe the volume, migrate, re-seed
-bun run db:down        # docker compose down (data kept)
-bun run auth:generate  # regenerate Better Auth tables in src/db/schema/auth.ts
-bun run db:generate    # create a new migration from schema changes
+bun run db:up            # docker compose up -d
+bun run db:migrate       # apply Drizzle CLI migrations (local `.env`)
+bun run db:migrate:prod  # same against `apps/api/.env.production`
+bun run db:init:prod     # seed reference data on production Neon
+bun run db:init          # seed currencies, countries, providers, institutions, rates
+bun run db:studio        # drizzle-kit studio
+bun run db:studio:prod   # studio against production Neon
+bun run db:reset         # wipe the volume, migrate, re-seed
+bun run db:down          # docker compose down (data kept)
+bun run auth:generate    # regenerate Better Auth tables in src/db/schema/auth.ts
+bun run db:generate      # create a new migration from schema changes
 ```
 
 These are also defined on `@guilders/api` (`apps/api/package.json`).
@@ -112,7 +115,7 @@ These are also defined on `@guilders/api` (`apps/api/package.json`).
 1. Change schema in `apps/api/src/db/schema/` (or run `bun run auth:generate` after Better Auth plugin/config changes).
 2. Review `auth.ts` after `auth:generate` — restore app-specific columns (`currency`, `timeFormat`, `stripeCustomerId`) and the `subscription` table if the CLI dropped them (it skips Stripe when Stripe env vars are unset).
 3. `bun run db:generate` — drizzle-kit writes `apps/api/drizzle/<timestamp>_<name>/migration.sql`.
-4. `bun run db:migrate` to apply.
+4. `bun run db:migrate` to apply locally. Production: `bun run db:migrate:prod` (loads `apps/api/.env.production`).
 
 Do not add files under `apps/api/drizzle/` yourself. Do not paste SQL into new migration folders. If a generate step is wrong, fix the TypeScript schema and generate again.
 
@@ -174,7 +177,7 @@ Handled by Better Auth (`apps/api/src/lib/auth.tsx`).
 
 **Supported methods:** email/password, passkeys (WebAuthn), API keys, two-factor authentication, OAuth.
 
-**Plugins:** `@better-auth/infra` `dash()` (hosted admin dashboard + activity tracking), `@better-auth/passkey`, `@better-auth/stripe`, `@better-auth/expo`, `@better-auth/oauth-provider`.
+**Plugins:** `@better-auth/infra` `dash()` (hosted admin dashboard + activity tracking), `@better-auth/mcp`, `@better-auth/passkey`, `@better-auth/stripe`, `@better-auth/expo`.
 
 The dashboard auth client (`apps/dashboard/src/lib/auth-client.ts`) includes `dashClient()` from `@better-auth/infra/client`. Set `BETTER_AUTH_API_KEY` to connect `dash()` to Better Auth Infrastructure.
 
@@ -191,12 +194,7 @@ The auth middleware at `apps/api/src/middleware/auth.ts` is a Hono `requireAuth`
 
 Endpoint: `/mcp` (OAuth-authenticated via Better Auth as OAuth provider).
 
-**Tools:**
-
-| Tool               | Description                                                      |
-| ------------------ | ---------------------------------------------------------------- |
-| `get_accounts`     | Returns user accounts (limit 1–100, default 50)                  |
-| `get_transactions` | Returns user transactions (optional account filter, limit 1–100) |
+**Tools:** `get_accounts`, `get_transactions`, `get_categories`, `get_merchants`, `get_documents`, `get_document_file`, `get_balance_history`, `get_exchange_rates`, `get_institutions`, plus create/update/delete for accounts, transactions, categories, and merchants.
 
 Implementation: `apps/api/src/mcp/`
 
@@ -212,7 +210,7 @@ connect, reconnect, refreshConnection,
 getAccounts, getTransactions
 ```
 
-**Current providers:** SaltEdge (`apps/api/src/providers/saltedge/`), SnapTrade (`apps/api/src/providers/snaptrade/`).
+**Current providers:** EnableBanking (`apps/api/src/providers/enablebanking/`), SnapTrade (`apps/api/src/providers/snaptrade/`), Teller (`apps/api/src/providers/teller/`).
 
 The provider interface is designed so developers can add their own integrations — build a custom bank scraper, crypto exchange connector, or anything else that implements `IProvider`, and push data into Guilders via the API.
 
@@ -321,19 +319,18 @@ POST /api/transaction
 - **Backend / scripts:** Use `process.env` for environment variables (API, db scripts, CLI scripts). This avoids having to determine whether code is used indirectly by scripts (e.g. db code used by `drizzle.config.ts` or migrations).
 - **Frontend:** For dashboard (and other frontend) code that needs env vars, **t3 env is preferred** (`@t3-oss/env-nextjs` or equivalent t3 env setup). You can use `process.env` as well, but t3 env gives validated, typed access and makes which variables are exposed to the client explicit.
 
-**API:** One local file: `apps/api/.env` (see `.env.example`). Wrangler 4 loads `.env` into the Worker during `wrangler dev`. Bun scripts use `--env-file=.env`. **Do not create `.dev.vars`** — if it exists, Wrangler ignores `.env`. Production secrets live in Cloudflare. Prefer `wrangler secret put` for one-off keys. **`wrangler secret bulk` deploys the Worker from the current working tree** — never run it from `dev` or a dirty checkout against production. Types in `apps/api/worker-configuration.d.ts`.
+**API:** One local file: `apps/api/.env` (see `.env.example`). Wrangler 4 loads `.env` into the Worker during `wrangler dev`. Bun scripts use `--env-file=.env`. Production CLI (`db:migrate:prod`, `db:studio:prod`) loads `apps/api/.env.production`. **Do not create `.dev.vars`** — if it exists, Wrangler ignores `.env`. Production Worker secrets live in Cloudflare. Prefer `wrangler secret put NAME` for one-off keys. Do not use `wrangler secret bulk` — it deploys the current working tree. Types in `apps/api/worker-configuration.d.ts`.
 
-| Group             | Variables                                                                                                                                |
-| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| **Database**      | `DATABASE_URL` (PostgreSQL connection string)                                                                                            |
-| **URLs**          | `BACKEND_URL`, `DASHBOARD_URL`                                                                                                           |
-| **Secrets**       | `GUILDERS_SECRET` (provider state verification), `BETTER_AUTH_SECRET`, `BETTER_AUTH_API_KEY` (optional, Better Auth Infrastructure dash) |
-| **Payments**      | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRO_PRICE_ID`, `PRO_FEATURES_FREE_FOR_ALL` (optional; `true` unlocks Pro for all)  |
-| **Email**         | None (Workers `EMAIL` binding — Cloudflare Email Sending). From: `noreply@guilders.app`                                                  |
-| **Cloudflare**    | None in the Worker. `CLOUDFLARE_ACCOUNT_ID` + `CLOUDFLARE_API_TOKEN` are GitHub Actions secrets for deploy. R2 is `USER_BUCKET`.         |
-| **Bindings**      | `AI` (Workers AI), `EMAIL` (send_email), `USER_BUCKET` (R2), `WEBHOOK_QUEUE` (Queue)                                                     |
-| **Dev tunnels**   | `DEV_TUNNEL_URL` (optional; Cloudflare Tunnel `local-dev` → `https://local-dev.guilders.app`)                                            |
-| **SnapTrade**     | `SNAPTRADE_CLIENT_ID`, `SNAPTRADE_CLIENT_SECRET`                                                                                         |
-| **SaltEdge**      | `SALTEDGE_APP_ID`, `SALTEDGE_SECRET`                                                                                                     |
-| **EnableBanking** | `ENABLEBANKING_CLIENT_ID`, `ENABLEBANKING_CLIENT_PRIVATE_KEY`                                                                            |
-| **Teller**        | `TELLER_APPLICATION_ID`, `TELLER_PRIVATE_KEY`, `TELLER_ENVIRONMENT`, `TELLER_WEBHOOK_SECRET`                                             |
+| Group             | Variables                                                                                                                                           |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Database**      | `DATABASE_URL` (local Docker Postgres or Neon). Workers use the Neon HTTP driver when the host is `*.neon.tech`; local Docker uses `node-postgres`. |
+| **URLs**          | `BACKEND_URL`, `DASHBOARD_URL`                                                                                                                      |
+| **Secrets**       | `GUILDERS_SECRET` (provider state verification), `BETTER_AUTH_SECRET`, `BETTER_AUTH_API_KEY` (optional, Better Auth Infrastructure dash)            |
+| **Payments**      | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRO_PRICE_ID`, `PRO_FEATURES_FREE_FOR_ALL` (optional; `true` unlocks Pro for all)             |
+| **Email**         | None (Workers `EMAIL` binding — Cloudflare Email Sending). From: `noreply@guilders.app`                                                             |
+| **Cloudflare**    | None in the Worker. `CLOUDFLARE_ACCOUNT_ID` + `CLOUDFLARE_API_TOKEN` are GitHub Actions secrets for deploy. R2 is `USER_BUCKET`.                    |
+| **Bindings**      | `AI` (Workers AI), `EMAIL` (send_email), `USER_BUCKET` (R2), `WEBHOOK_QUEUE` (Queue)                                                                |
+| **Dev tunnels**   | `DEV_TUNNEL_URL` (optional; Cloudflare Tunnel `local-dev` → `https://local-dev.guilders.app`)                                                       |
+| **SnapTrade**     | `SNAPTRADE_CLIENT_ID`, `SNAPTRADE_CLIENT_SECRET`                                                                                                    |
+| **EnableBanking** | `ENABLEBANKING_CLIENT_ID`, `ENABLEBANKING_CLIENT_PRIVATE_KEY`                                                                                       |
+| **Teller**        | `TELLER_APPLICATION_ID`, `TELLER_PRIVATE_KEY`, `TELLER_ENVIRONMENT`, `TELLER_WEBHOOK_SECRET`                                                        |

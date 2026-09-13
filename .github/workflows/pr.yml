@@ -40,6 +40,7 @@ jobs:
       matrix:
         path:
           - apps/api
+          - apps/dashboard
           - apps/docs
           - apps/website
           - packages/transactional
@@ -68,6 +69,7 @@ jobs:
       matrix:
         path:
           - apps/api
+          - apps/dashboard
     steps:
       - name: Checkout
         uses: actions/checkout@v4

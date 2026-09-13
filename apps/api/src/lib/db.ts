@@ -1,14 +1,29 @@
-import { drizzle } from "drizzle-orm/node-postgres";
+import { neonConfig, Pool } from "@neondatabase/serverless";
+import { drizzle as drizzleNeon } from "drizzle-orm/neon-serverless";
+import { drizzle as drizzlePg } from "drizzle-orm/node-postgres";
 
 import { relations } from "../db/schema/relations";
 
 function nodeDbWithRelations() {
-  return drizzle(process.env.DATABASE_URL!, { relations });
+  return drizzlePg(process.env.DATABASE_URL!, { relations });
 }
 
 export type Database = ReturnType<typeof nodeDbWithRelations>;
 
 let pgliteDb: Database | null = null;
+
+function isNeonConnectionString(url: string): boolean {
+  try {
+    return new URL(url).hostname.endsWith("neon.tech");
+  } catch {
+    return false;
+  }
+}
+
+function neonDbWithRelations(url: string) {
+  neonConfig.webSocketConstructor ??= WebSocket;
+  return drizzleNeon({ client: new Pool({ connectionString: url }), relations });
+}
 
 export async function initPgliteDb(): Promise<void> {
   if (pgliteDb) return;
@@ -37,5 +52,11 @@ export function createDb(): Database {
   if (process.env.USE_PGLITE === "1") {
     return pgliteDb!;
   }
-  return drizzle(process.env.DATABASE_URL, { relations });
+
+  const url = process.env.DATABASE_URL!;
+  if (isNeonConnectionString(url)) {
+    return neonDbWithRelations(url) as unknown as Database;
+  }
+
+  return drizzlePg(url, { relations });
 }

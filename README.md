@@ -41,7 +41,7 @@ Use the hosted version at [guilders.app](https://guilders.app) or self-host the 
 ## Features
 
 - **Unified net worth** — Assets and liabilities across bank accounts, brokerages, crypto wallets, property, vehicles, credit cards, and loans
-- **Automatic syncing** — Connect institutions via SaltEdge (open banking) and SnapTrade (brokerages), with more providers on the way
+- **Automatic syncing** — Connect institutions via EnableBanking (open banking), SnapTrade (brokerages), and Teller, with more providers on the way
 - **Manual accounts** — Track anything that doesn't have an API: cash, collectibles, real estate
 - **Transaction tracking** — Categorize spending with hierarchical, customizable categories
 - **Multi-currency** — Native support for any ISO currency with automatic exchange rate updates
@@ -53,7 +53,7 @@ Use the hosted version at [guilders.app](https://guilders.app) or self-host the 
 
 ### Prerequisites
 
-- [Bun](https://bun.sh) >= 1.3.9
+- [Bun](https://bun.sh) >= 1.4.3
 - [PostgreSQL](https://www.postgresql.org/) (or a [Neon](https://neon.tech) database)
 
 ### Setup

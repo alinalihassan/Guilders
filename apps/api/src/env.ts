@@ -28,10 +28,6 @@ const EnvSchema = z.object({
   SNAPTRADE_CLIENT_ID: z.string().optional(),
   SNAPTRADE_CLIENT_SECRET: z.string().optional(),
 
-  // SaltEdge
-  SALTEDGE_APP_ID: z.string().optional(),
-  SALTEDGE_SECRET: z.string().optional(),
-
   // EnableBanking
   ENABLEBANKING_CLIENT_ID: z.string().optional(),
   ENABLEBANKING_CLIENT_PRIVATE_KEY: z.string().optional(),

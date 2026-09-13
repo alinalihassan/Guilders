@@ -1,5 +1,6 @@
-import { useTheme } from "next-themes";
 import { useCallback } from "react";
+
+import { useTheme, type Theme } from "@/lib/theme";
 
 const TRANSITION_CSS = `
 ::view-transition-group(root) {
@@ -45,7 +46,7 @@ function injectTransitionCSS() {
 }
 
 /**
- * Wraps next-themes' setTheme with View Transition API support.
+ * Wraps setTheme with View Transition API support.
  * Falls back to an instant switch in browsers without view transitions.
  */
 export function useThemeTransition() {
@@ -61,7 +62,7 @@ export function useThemeTransition() {
   );
 
   const setThemeWithTransition = useCallback(
-    (newTheme: string) => {
+    (newTheme: Theme) => {
       if (resolveTheme(newTheme) === resolvedTheme) {
         setTheme(newTheme);
         return;

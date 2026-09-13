@@ -59,7 +59,7 @@ export function getAuthIssuer() {
   return `${process.env.BACKEND_URL}/api/auth`;
 }
 
-/** Cookie / WebAuthn rpID host. `guilders.app` stays apex; `api.guilders.app` becomes `guilders.app`. */
+/** Cookie / WebAuthn rpID host. Apex `guilders.app` stays as-is; subdomains use the registrable domain. */
 function cookieRootDomain(hostname: string): string {
   if (hostname === "localhost" || hostname.endsWith(".localhost")) return hostname;
   const parts = hostname.split(".");

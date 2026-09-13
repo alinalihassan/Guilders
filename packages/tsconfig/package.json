@@ -4,6 +4,7 @@
   "files": [
     "base.json",
     "nextjs.json",
+    "vite.json",
     "react-library.json"
   ],
   "scripts": {
