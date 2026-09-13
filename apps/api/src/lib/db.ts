@@ -3,9 +3,10 @@ import { drizzle as drizzleNeon } from "drizzle-orm/neon-serverless";
 import { drizzle as drizzlePg } from "drizzle-orm/node-postgres";
 
 import { relations } from "../db/schema/relations";
+import { withVerifyFullSsl } from "./database-url";
 
 function nodeDbWithRelations() {
-  return drizzlePg(process.env.DATABASE_URL!, { relations });
+  return drizzlePg(withVerifyFullSsl(process.env.DATABASE_URL!), { relations });
 }
 
 export type Database = ReturnType<typeof nodeDbWithRelations>;
@@ -53,7 +54,7 @@ export function createDb(): Database {
     return pgliteDb!;
   }
 
-  const url = process.env.DATABASE_URL!;
+  const url = withVerifyFullSsl(process.env.DATABASE_URL!);
   if (isNeonConnectionString(url)) {
     return neonDbWithRelations(url) as unknown as Database;
   }

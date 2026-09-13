@@ -1,5 +1,5 @@
 import type { BalanceSnapshot, NetWorthSnapshot } from "@guilders/api/types";
-import { useQueries, useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQueries, useQuery } from "@tanstack/react-query";
 
 import { api, rpcJson } from "../api";
 
@@ -56,6 +56,8 @@ export function useBalanceHistory(accountId: number | undefined, period: Period 
     queryKey: balanceHistoryKey(accountId ?? 0, period),
     queryFn: () => fetchAccountBalanceHistory(accountId!, period),
     enabled: !!accountId,
+    staleTime: 5 * 60 * 1000,
+    placeholderData: keepPreviousData,
   });
 }
 
@@ -67,6 +69,8 @@ export function useBalanceHistories(
     queries: accounts.map((account) => ({
       queryKey: balanceHistoryKey(account.id, period),
       queryFn: () => fetchAccountBalanceHistory(account.id, period),
+      staleTime: 5 * 60 * 1000,
+      placeholderData: keepPreviousData,
     })),
   });
 }
@@ -82,5 +86,7 @@ export function useNetWorthHistory(period: Period | undefined) {
       return Array.isArray(data.snapshots) ? data.snapshots : [];
     },
     enabled: !!period,
+    staleTime: 5 * 60 * 1000,
+    placeholderData: keepPreviousData,
   });
 }

@@ -18,7 +18,7 @@ export async function resetTestDb(): Promise<void> {
     TRUNCATE TABLE
       "oauth_access_token", "oauth_refresh_token", "oauth_consent",
       "oauth_client_resource", "oauth_client_assertion", "oauth_resource", "oauth_client",
-      "balance_snapshot", "document", "transaction", "account", "category",
+      "document", "transaction", "account", "category",
       "institution_connection", "provider_connection", "institution", "provider",
       "rate", "currency", "country", "passkey", "two_factor", "apikey",
       "verification", "subscription", "session", "user_account", "conversation", "user"

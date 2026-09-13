@@ -348,7 +348,7 @@ async function syncSnapTradeConnection(
           cost: (average * units).toString(),
           units: units.toString(),
           currency: symbol?.currency?.code?.toUpperCase() ?? totalCurrency,
-          ticker: symbol?.raw_symbol ?? null,
+          ticker: symbol?.symbol ?? symbol?.raw_symbol ?? null,
           institution_connection_id: institutionConnectionId,
           image: symbol?.logo_url ?? null,
           provider_account_id: null,

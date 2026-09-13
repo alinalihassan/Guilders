@@ -1,11 +1,11 @@
 import { waitUntil } from "cloudflare:workers";
-import { and, eq, gte, lte } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { Hono } from "hono";
 import { z } from "zod";
 
 import { account, selectAccountSchema } from "../../db/schema/accounts";
-import { balanceSnapshot } from "../../db/schema/balance-snapshots";
 import { AccountTypeEnum } from "../../db/schema/enums";
+import { computeAccountHistory } from "../../lib/balance-history";
 import { cleanupAccountDocuments } from "../../lib/cleanup-documents";
 import { documented, idParamSchema, jsonError, successSchema, validate } from "../../lib/http";
 import { filterLockedUpdate } from "../../lib/locked-attributes";
@@ -33,13 +33,6 @@ const snapshotResponseSchema = z.object({
     }),
   ),
 });
-
-function dateConditions(from?: string, to?: string) {
-  const conditions = [];
-  if (from) conditions.push(gte(balanceSnapshot.date, from));
-  if (to) conditions.push(lte(balanceSnapshot.date, to));
-  return conditions;
-}
 
 export const accountRoutes = new Hono<AuthEnv>()
   .use(requireAuth)
@@ -121,7 +114,7 @@ export const accountRoutes = new Hono<AuthEnv>()
     documented({
       tags: ["Balance History"],
       summary: "Get account balance history",
-      description: "Returns daily balance snapshots for a single account",
+      description: "Returns daily balances computed from transactions and market prices",
       responses: { 200: snapshotResponseSchema, 404: errorSchema },
     }),
     validate("param", idParamSchema),
@@ -143,20 +136,10 @@ export const accountRoutes = new Hono<AuthEnv>()
         return jsonError(c, 404, "Account not found");
       }
 
-      const conditions = [
-        eq(balanceSnapshot.account_id, id),
-        ...dateConditions(query.from, query.to),
-      ];
-
-      const snapshots = await db
-        .select({
-          date: balanceSnapshot.date,
-          balance: balanceSnapshot.balance,
-          currency: balanceSnapshot.currency,
-        })
-        .from(balanceSnapshot)
-        .where(and(...conditions))
-        .orderBy(balanceSnapshot.date);
+      const snapshots = await computeAccountHistory(db, user.id, id, query.from, query.to);
+      if (!snapshots) {
+        return jsonError(c, 404, "Account not found");
+      }
 
       return c.json({ snapshots }, 200);
     },
