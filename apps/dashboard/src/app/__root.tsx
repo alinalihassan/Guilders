@@ -64,8 +64,8 @@ function RootLayout() {
       <body className="bg-background text-foreground">
         <Providers>
           <Outlet />
+          <Toaster />
         </Providers>
-        <Toaster />
         <Scripts />
       </body>
     </html>

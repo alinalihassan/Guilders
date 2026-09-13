@@ -32,7 +32,7 @@ export const transactionRoutes = new Hono<AuthEnv>()
 
       const rows = await db.query.transaction.findMany({
         where: {
-          account_id: query.accountId,
+          ...(query.accountId !== undefined ? { account_id: query.accountId } : {}),
           account: {
             user_id: user.id,
           },
