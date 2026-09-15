@@ -243,7 +243,9 @@ export function BalanceChart({
         data={effectiveData}
         margin={{ top: 12, right: 8, bottom: 0, left: 8 }}
         onMouseMove={(state) => {
-          if (state?.activeTooltipIndex != null) setActiveIndex(state.activeTooltipIndex);
+          if (state?.activeTooltipIndex != null) {
+            setActiveIndex(Number(state.activeTooltipIndex));
+          }
         }}
         onMouseLeave={() => setActiveIndex(null)}
       >

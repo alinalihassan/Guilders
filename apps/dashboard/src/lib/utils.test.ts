@@ -26,8 +26,8 @@ describe("convertToUserCurrency", () => {
 
   it("converts using rates", () => {
     const rates = [
-      { currency_code: "USD", rate: "1" },
-      { currency_code: "EUR", rate: "0.5" },
+      { currency_code: "USD", rate: "1", date: "2026-01-01" },
+      { currency_code: "EUR", rate: "0.5", date: "2026-01-01" },
     ] as const;
     expect(convertToUserCurrency(10, "USD", [...rates], "EUR")).toBe(5);
   });

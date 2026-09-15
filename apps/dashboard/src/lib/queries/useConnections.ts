@@ -125,16 +125,15 @@ export function useReconnectConnection() {
   });
 }
 
+type RefreshConnectionResult = {
+  redirectURI?: string;
+  type?: "redirect" | "popup";
+};
+
 export function useRefreshConnection() {
-  return useMutation({
-    mutationFn: async ({
-      providerId,
-      connectionId,
-    }: {
-      providerId: string;
-      connectionId: string;
-    }) =>
-      rpcJson(
+  return useMutation<RefreshConnectionResult, Error, { providerId: string; connectionId: string }>({
+    mutationFn: async ({ providerId, connectionId }) =>
+      rpcJson<RefreshConnectionResult>(
         await api.connections.refresh.$post({
           json: {
             provider_id: providerId,

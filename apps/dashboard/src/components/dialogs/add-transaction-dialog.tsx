@@ -45,7 +45,7 @@ import { useUser } from "@/lib/queries/useUser";
 
 const formSchema = z.object({
   accountId: z.number({
-    required_error: "Please select an account",
+    error: "Please select an account",
   }),
   amount: z
     .string()
@@ -54,7 +54,7 @@ const formSchema = z.object({
   currency: z.string().min(1, "Currency is required."),
   description: z.string().min(1, "Description is required."),
   categoryId: z.number({
-    required_error: "Category is required.",
+    error: "Category is required.",
   }),
   merchantId: z.number().optional(),
   notes: z.string().optional(),

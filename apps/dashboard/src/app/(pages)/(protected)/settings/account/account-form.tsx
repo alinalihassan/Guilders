@@ -52,7 +52,7 @@ import { downloadFile } from "@/lib/utils";
 const accountFormSchema = z.object({
   email: z.string().email(),
   currency: z.string({
-    required_error: "Please select a currency.",
+    error: "Please select a currency.",
   }),
   timeFormat: z.enum(["12", "24"]),
   country: z.string().optional(),

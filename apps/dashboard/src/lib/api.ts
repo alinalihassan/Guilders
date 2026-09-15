@@ -1,4 +1,4 @@
-import type { App } from "@guilders/api/src";
+import type { App } from "@guilders/api/types";
 import { hc } from "hono/client";
 import { toast } from "sonner";
 
