@@ -7,7 +7,10 @@ import {
   jsonb,
   index,
   uniqueIndex,
+  varchar,
 } from "drizzle-orm/pg-core";
+
+import { country } from "./countries";
 
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
@@ -25,6 +28,7 @@ export const user = pgTable("user", {
   stripeCustomerId: text("stripe_customer_id"),
   currency: text("currency").default("EUR"),
   timeFormat: text("time_format").default("24"),
+  country: varchar("country", { length: 2 }).references(() => country.code),
 });
 
 export const session = pgTable(

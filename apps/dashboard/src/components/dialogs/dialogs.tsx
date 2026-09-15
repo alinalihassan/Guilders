@@ -4,8 +4,14 @@ import { useDialog } from "@/hooks/useDialog";
 import { useStore } from "@/lib/store";
 
 const CommandMenu = lazy(() => import("./command-menu").then((m) => ({ default: m.CommandMenu })));
+const AddAccountChooserDialog = lazy(() =>
+  import("./add-account-chooser-dialog").then((m) => ({ default: m.AddAccountChooserDialog })),
+);
 const AddAccountDialog = lazy(() =>
   import("./add-account-dialog").then((m) => ({ default: m.AddAccountDialog })),
+);
+const ConnectBankDialog = lazy(() =>
+  import("./connect-bank-dialog").then((m) => ({ default: m.ConnectBankDialog })),
 );
 const AddLinkedAccountDialog = lazy(() =>
   import("./add-linked-account-dialog").then((m) => ({ default: m.AddLinkedAccountDialog })),
@@ -59,9 +65,19 @@ export const Dialogs = () => {
           <CommandMenu />
         </Suspense>
       )}
+      {dialogTypes.has("addAccount") && (
+        <Suspense fallback={null}>
+          <AddAccountChooserDialog />
+        </Suspense>
+      )}
       {dialogTypes.has("addManualAccount") && (
         <Suspense fallback={null}>
           <AddAccountDialog />
+        </Suspense>
+      )}
+      {dialogTypes.has("connectBank") && (
+        <Suspense fallback={null}>
+          <ConnectBankDialog />
         </Suspense>
       )}
       {dialogTypes.has("addLinkedAccount") && (

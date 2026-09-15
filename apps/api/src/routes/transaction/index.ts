@@ -5,6 +5,7 @@ import { z } from "zod";
 
 import { account } from "../../db/schema/accounts";
 import { selectTransactionSchema, transaction } from "../../db/schema/transactions";
+import { setTransactionTags, validateTagIds } from "../../lib/apply-rules";
 import { cleanupEntityDocuments } from "../../lib/cleanup-documents";
 import { documented, idParamSchema, jsonError, successSchema, validate } from "../../lib/http";
 import { filterLockedUpdate } from "../../lib/locked-attributes";
@@ -12,6 +13,14 @@ import { deliverUserWebhookEvents } from "../../lib/user-webhooks";
 import { requireAuth, type AuthEnv } from "../../middleware/auth";
 import { errorSchema } from "../../utils/error";
 import { createTransactionSchema, transactionQuerySchema } from "./types";
+
+function withTags<T extends { transactionTags?: { tag: unknown }[] }>(row: T) {
+  const { transactionTags, ...rest } = row;
+  return {
+    ...rest,
+    tags: (transactionTags ?? []).map((item) => item.tag).filter(Boolean),
+  };
+}
 
 export const transactionRoutes = new Hono<AuthEnv>()
   .use(requireAuth)
@@ -37,10 +46,17 @@ export const transactionRoutes = new Hono<AuthEnv>()
             user_id: user.id,
           },
         },
+        with: {
+          transactionTags: {
+            with: {
+              tag: true,
+            },
+          },
+        },
         orderBy: (transactions, { desc }) => desc(transactions.timestamp),
       });
 
-      return c.json(rows, 200);
+      return c.json(rows.map(withTags), 200);
     },
   )
   .post(
@@ -61,6 +77,7 @@ export const transactionRoutes = new Hono<AuthEnv>()
       const body = c.req.valid("json");
       const user = c.get("user");
       const db = c.get("db");
+      const tagIds = body.tag_ids ?? [];
 
       const accountResult = await db.query.account.findFirst({
         where: {
@@ -109,6 +126,10 @@ export const transactionRoutes = new Hono<AuthEnv>()
         }
       }
 
+      if (!(await validateTagIds(db, user.id, tagIds))) {
+        return jsonError(c, 404, "One or more tags were not found");
+      }
+
       const currentValue = parseFloat(accountResult.value.toString());
       const newValue = currentValue + amount;
 
@@ -126,6 +147,7 @@ export const transactionRoutes = new Hono<AuthEnv>()
             currency: body.currency,
             timestamp: new Date(body.timestamp),
             description: body.description,
+            notes: body.notes ?? "",
             category_id: body.category_id,
             merchant_id: body.merchant_id,
             provider_transaction_id: body.provider_transaction_id || null,
@@ -140,13 +162,20 @@ export const transactionRoutes = new Hono<AuthEnv>()
         return jsonError(c, 500, "Failed to create transaction");
       }
 
+      await setTransactionTags(db, newTransaction.id, tagIds);
+
+      const full = await db.query.transaction.findFirst({
+        where: { id: newTransaction.id },
+        with: { transactionTags: { with: { tag: true } } },
+      });
+
       waitUntil(
         deliverUserWebhookEvents(db, user.id, "transaction.created", {
-          transaction: newTransaction,
+          transaction: full ? withTags(full) : { ...newTransaction, tags: [] },
         }),
       );
 
-      return c.json(newTransaction, 200);
+      return c.json(full ? withTags(full) : { ...newTransaction, tags: [] }, 200);
     },
   )
   .get(
@@ -170,13 +199,20 @@ export const transactionRoutes = new Hono<AuthEnv>()
             user_id: user.id,
           },
         },
+        with: {
+          transactionTags: {
+            with: {
+              tag: true,
+            },
+          },
+        },
       });
 
       if (!transactionResult) {
         return jsonError(c, 404, "Transaction not found");
       }
 
-      return c.json(transactionResult, 200);
+      return c.json(withTags(transactionResult), 200);
     },
   )
   .put(
@@ -200,6 +236,7 @@ export const transactionRoutes = new Hono<AuthEnv>()
       const body = c.req.valid("json");
       const user = c.get("user");
       const db = c.get("db");
+      const tagIds = body.tag_ids;
 
       const existingTransaction = await db.query.transaction.findFirst({
         where: {
@@ -245,6 +282,8 @@ export const transactionRoutes = new Hono<AuthEnv>()
       const effectiveTimestamp =
         typeof rawTimestamp === "string" ? new Date(rawTimestamp) : rawTimestamp;
       const effectiveDescription = unlockedBody.description ?? existingTransaction.description;
+      const effectiveNotes =
+        "notes" in unlockedBody ? (unlockedBody.notes ?? "") : existingTransaction.notes;
       const effectiveDocuments = unlockedBody.documents ?? existingTransaction.documents;
       const effectiveProviderTransactionId =
         unlockedBody.provider_transaction_id ?? existingTransaction.provider_transaction_id;
@@ -294,6 +333,10 @@ export const transactionRoutes = new Hono<AuthEnv>()
         }
       }
 
+      if (tagIds && !(await validateTagIds(db, user.id, tagIds))) {
+        return jsonError(c, 404, "One or more tags were not found");
+      }
+
       const oldTransactionAmount = parseFloat(existingTransaction.amount.toString());
       const newTransactionAmount = parseFloat(effectiveAmount.toString());
       const amountDiff = newTransactionAmount - oldTransactionAmount;
@@ -314,6 +357,7 @@ export const transactionRoutes = new Hono<AuthEnv>()
             currency: effectiveCurrency,
             timestamp: effectiveTimestamp,
             description: effectiveDescription,
+            notes: effectiveNotes,
             category_id: effectiveCategoryId,
             merchant_id: effectiveMerchantId,
             provider_transaction_id: effectiveProviderTransactionId,
@@ -330,13 +374,22 @@ export const transactionRoutes = new Hono<AuthEnv>()
         return jsonError(c, 500, "Failed to update transaction");
       }
 
+      if (tagIds) {
+        await setTransactionTags(db, id, tagIds);
+      }
+
+      const full = await db.query.transaction.findFirst({
+        where: { id },
+        with: { transactionTags: { with: { tag: true } } },
+      });
+
       waitUntil(
         deliverUserWebhookEvents(db, user.id, "transaction.updated", {
-          transaction: updatedTransaction,
+          transaction: full ? withTags(full) : { ...updatedTransaction, tags: [] },
         }),
       );
 
-      return c.json(updatedTransaction, 200);
+      return c.json(full ? withTags(full) : { ...updatedTransaction, tags: [] }, 200);
     },
   )
   .delete(

@@ -40,6 +40,7 @@ export const transaction = pgTable(
       .notNull()
       .references(() => currency.code),
     description: text("description").notNull(),
+    notes: text("notes").notNull().default(""),
     documents: varchar("documents", { length: 255 }).array(),
     id: serial("id").primaryKey(),
     locked_attributes: jsonb("locked_attributes")

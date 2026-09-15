@@ -68,7 +68,7 @@ function TransactionsPage() {
   const { data: user, isLoading: isLoadingUser } = useUser();
   const { open: openAddTransaction } = useDialog("addTransaction");
   const [searchQuery, setSearchQuery] = useState("");
-  const [period, setPeriod] = useState<Period>("3M");
+  const [period, setPeriod] = useState<Period>("1M");
   const [kind, setKind] = useState<TransactionKindFilter>("all");
   const searchInputRef = useRef<HTMLInputElement>(null);
   const userCurrency = user?.currency ?? "EUR";
@@ -133,6 +133,14 @@ function TransactionsPage() {
         </Button>
       </div>
 
+      <TransactionStats
+        count={periodTransactions.length}
+        income={totalIncome}
+        expenses={totalExpenses}
+        currency={userCurrency}
+        isLoading={isLoading || isLoadingUser}
+      />
+
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div
           className="bg-muted/70 flex w-full items-center rounded-full px-3 py-1.5 md:max-w-xs"
@@ -153,14 +161,6 @@ function TransactionsPage() {
           <PeriodSelector value={period} onChange={setPeriod} />
         </div>
       </div>
-
-      <TransactionStats
-        count={periodTransactions.length}
-        income={totalIncome}
-        expenses={totalExpenses}
-        currency={userCurrency}
-        isLoading={isLoading || isLoadingUser}
-      />
 
       {isLoading ? (
         <div className="flex flex-col gap-2">

@@ -21,6 +21,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
   Form,
@@ -31,12 +32,15 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
+import { Textarea } from "@/components/ui/textarea";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useDialog } from "@/hooks/useDialog";
 import { isDateOnlyTimestamp } from "@/lib/format-time";
 import { useFiles } from "@/lib/queries/useFiles";
 import { useMerchants } from "@/lib/queries/useMerchants";
+import { useAddRule } from "@/lib/queries/useRules";
 import { useRemoveTransaction, useUpdateTransaction } from "@/lib/queries/useTransactions";
 
 import { AccountSelector } from "../common/account-selector";
@@ -45,6 +49,7 @@ import { DatePicker } from "../common/date-picker";
 import { FileUploader } from "../common/file-uploader";
 import { MerchantLogo } from "../common/merchant-logo";
 import { MerchantSelector } from "../common/merchant-selector";
+import { TagSelector } from "../common/tag-selector";
 import { TimePicker } from "../common/time-picker";
 
 const formSchema = z.object({
@@ -60,8 +65,11 @@ const formSchema = z.object({
     required_error: "Category is required.",
   }),
   merchantId: z.number().optional(),
+  notes: z.string().optional(),
+  tagIds: z.array(z.number()),
   timestamp: z.date(),
   documents: z.array(z.custom<File>()).optional(),
+  rememberCategory: z.boolean(),
 });
 
 type FormSchema = z.infer<typeof formSchema>;
@@ -70,6 +78,7 @@ export function EditTransactionDialog() {
   const { isOpen, data, close } = useDialog("editTransaction");
   const { mutate: updateTransaction, isPending: isUpdating } = useUpdateTransaction();
   const { mutate: deleteTransaction, isPending: isDeleting } = useRemoveTransaction();
+  const { mutate: addRule } = useAddRule();
   const { data: merchants } = useMerchants();
   const { documents, isLoadingDocuments, uploadFile, deleteFile, getFileUrl, isUploading } =
     useFiles({
@@ -88,9 +97,12 @@ export function EditTransactionDialog() {
         description: data?.transaction?.description ?? "",
         categoryId: data?.transaction?.category_id ?? undefined,
         merchantId: data?.transaction?.merchant_id ?? undefined,
+        notes: data?.transaction?.notes ?? "",
+        tagIds: data?.transaction?.tags?.map((tag) => tag.id) ?? [],
         timestamp:
           data?.transaction?.timestamp != null ? new Date(data.transaction.timestamp) : new Date(),
         documents: [],
+        rememberCategory: false,
       };
     })(),
   });
@@ -103,15 +115,20 @@ export function EditTransactionDialog() {
         description: data.transaction.description,
         categoryId: data.transaction.category_id ?? undefined,
         merchantId: data.transaction.merchant_id ?? undefined,
+        notes: data.transaction.notes ?? "",
+        tagIds: data.transaction.tags?.map((tag) => tag.id) ?? [],
         timestamp:
           data.transaction.timestamp != null ? new Date(data.transaction.timestamp) : new Date(),
         documents: [],
+        rememberCategory: false,
       });
     }
   }, [data?.transaction, form]);
 
   const merchantId = form.watch("merchantId");
   const formDescription = form.watch("description");
+  const categoryId = form.watch("categoryId");
+  const rememberCategory = form.watch("rememberCategory");
 
   if (!data?.transaction) return null;
   const { transaction } = data;
@@ -127,6 +144,11 @@ export function EditTransactionDialog() {
   const headerSubtitle =
     merchantName && description && merchantName !== description ? description : undefined;
 
+  const originalCategoryId = transaction.category_id ?? undefined;
+  const categoryChanged = categoryId !== originalCategoryId;
+  const payeeForRule = merchantName || description;
+  const showRememberCategory = categoryChanged && !!payeeForRule && !!categoryId;
+
   const handleSubmit = form.handleSubmit((formData) => {
     const updatedTransaction = {
       id: transaction.id,
@@ -135,6 +157,8 @@ export function EditTransactionDialog() {
       description: formData.description,
       category_id: formData.categoryId,
       merchant_id: formData.merchantId,
+      notes: formData.notes ?? "",
+      tag_ids: formData.tagIds ?? [],
       timestamp: formData.timestamp,
       currency: transaction.currency,
       documents: transaction.documents,
@@ -147,7 +171,21 @@ export function EditTransactionDialog() {
         transaction: updatedTransaction,
       },
       {
-        onSuccess: () => close(),
+        onSuccess: () => {
+          if (formData.rememberCategory && formData.categoryId && payeeForRule) {
+            addRule({
+              enabled: true,
+              payee_enabled: true,
+              payee_match: "contains",
+              payee_value: payeeForRule,
+              amount_enabled: false,
+              account_ids: [],
+              set_category_id: formData.categoryId,
+              tag_ids: [],
+            });
+          }
+          close();
+        },
         onError: (error) => {
           console.error("Error updating transaction:", error);
         },
@@ -315,6 +353,52 @@ export function EditTransactionDialog() {
                   />
                 </div>
 
+                {showRememberCategory && (
+                  <FormField
+                    control={form.control}
+                    name="rememberCategory"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-y-0 space-x-3 rounded-md border p-3">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={(checked) => field.onChange(checked === true)}
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <Label
+                            className="cursor-pointer font-normal"
+                            onClick={() => field.onChange(!rememberCategory)}
+                          >
+                            Remember this category for future transactions
+                          </Label>
+                          <p className="text-muted-foreground text-xs">
+                            Creates a rule matching “{payeeForRule}”.
+                          </p>
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+                )}
+
+                <FormField
+                  control={form.control}
+                  name="tagIds"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Tags</FormLabel>
+                      <FormControl>
+                        <TagSelector
+                          value={field.value}
+                          onChange={field.onChange}
+                          placeholder="Select or add tags"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
                 <FormField
                   control={form.control}
                   name="timestamp"
@@ -342,6 +426,24 @@ export function EditTransactionDialog() {
                             </div>
                           )}
                         </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="notes"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Notes</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Add notes..."
+                          className="min-h-[80px] resize-y"
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

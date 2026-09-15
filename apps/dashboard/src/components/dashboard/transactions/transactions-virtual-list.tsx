@@ -63,26 +63,89 @@ function buildRows(transactions: Transaction[]): ListRow[] {
   return rows;
 }
 
-export function TransactionsVirtualList({
+function TransactionRow({
+  transaction,
+  merchantsById,
+  accountsById,
+  variant,
+}: {
+  transaction: Transaction;
+  merchantsById: Map<number, Merchant>;
+  accountsById?: Map<number, string>;
+  variant: "default" | "ledger";
+}) {
+  return (
+    <TransactionItem
+      transaction={transaction}
+      merchant={
+        transaction.merchant_id != null ? merchantsById.get(transaction.merchant_id) : undefined
+      }
+      accountName={
+        transaction.account_id != null ? accountsById?.get(transaction.account_id) : undefined
+      }
+      variant={variant}
+    />
+  );
+}
+
+function LedgerList({
   transactions,
   merchantsById,
   accountsById,
   className,
-  scroll = "local",
-  variant = "default",
 }: {
   transactions: Transaction[];
   merchantsById: Map<number, Merchant>;
   accountsById?: Map<number, string>;
   className?: string;
-  scroll?: "local" | "page";
-  variant?: "default" | "ledger";
+}) {
+  const rows = buildRows(transactions);
+
+  return (
+    <div className={cn("flex w-full flex-col", className)}>
+      {rows.map((row) =>
+        row.type === "header" ? (
+          <p
+            key={`header-${row.key}`}
+            className="text-muted-foreground pt-3 pb-1 text-[11px] font-medium tracking-[0.16em] uppercase"
+          >
+            {row.label}
+          </p>
+        ) : (
+          <TransactionRow
+            key={row.transaction.id}
+            transaction={row.transaction}
+            merchantsById={merchantsById}
+            accountsById={accountsById}
+            variant="ledger"
+          />
+        ),
+      )}
+    </div>
+  );
+}
+
+function VirtualizedList({
+  transactions,
+  merchantsById,
+  accountsById,
+  className,
+  scroll,
+  variant,
+}: {
+  transactions: Transaction[];
+  merchantsById: Map<number, Merchant>;
+  accountsById?: Map<number, string>;
+  className?: string;
+  scroll: "local" | "page";
+  variant: "default" | "ledger";
 }) {
   const { scrollElement } = useMainScroll();
   const listRef = useRef<HTMLDivElement>(null);
   const [scrollMargin, setScrollMargin] = useState(0);
   const usePageScroll = scroll === "page" && scrollElement != null;
   const rows = variant === "ledger" ? buildRows(transactions) : null;
+  const itemCount = rows?.length ?? transactions.length;
 
   useLayoutEffect(() => {
     if (!usePageScroll || !listRef.current || !scrollElement) {
@@ -90,13 +153,24 @@ export function TransactionsVirtualList({
       return;
     }
     setScrollMargin(offsetWithinScrollParent(listRef.current, scrollElement));
-  }, [usePageScroll, scrollElement, transactions.length]);
+  }, [usePageScroll, scrollElement, itemCount]);
 
-  const itemCount = rows?.length ?? transactions.length;
   const virtualizer = useVirtualizer({
     count: itemCount,
     getScrollElement: () => (usePageScroll ? scrollElement : listRef.current),
-    estimateSize: (index) => (rows?.[index]?.type === "header" ? 36 : 56),
+    estimateSize: (index) => {
+      if (rows?.[index]?.type === "header") return 36;
+      return variant === "ledger" ? 56 : 52;
+    },
+    getItemKey: (index) => {
+      if (rows) {
+        const row = rows[index];
+        if (!row) return index;
+        return row.type === "header" ? `header-${row.key}` : `tx-${row.transaction.id}`;
+      }
+      const transaction = transactions[index];
+      return transaction ? `tx-${transaction.id}` : index;
+    },
     overscan: 12,
     gap: 4,
     scrollMargin: usePageScroll ? scrollMargin : 0,
@@ -116,7 +190,7 @@ export function TransactionsVirtualList({
 
           return (
             <div
-              key={row.type === "header" ? `header-${row.key}` : row.transaction.id}
+              key={virtualItem.key}
               data-index={virtualItem.index}
               ref={virtualizer.measureElement}
               className="absolute top-0 left-0 w-full"
@@ -129,18 +203,10 @@ export function TransactionsVirtualList({
                   {row.label}
                 </p>
               ) : (
-                <TransactionItem
+                <TransactionRow
                   transaction={row.transaction}
-                  merchant={
-                    row.transaction.merchant_id != null
-                      ? merchantsById.get(row.transaction.merchant_id)
-                      : undefined
-                  }
-                  accountName={
-                    row.transaction.account_id != null
-                      ? accountsById?.get(row.transaction.account_id)
-                      : undefined
-                  }
+                  merchantsById={merchantsById}
+                  accountsById={accountsById}
                   variant={variant}
                 />
               )}
@@ -149,5 +215,44 @@ export function TransactionsVirtualList({
         })}
       </div>
     </div>
+  );
+}
+
+export function TransactionsVirtualList({
+  transactions,
+  merchantsById,
+  accountsById,
+  className,
+  scroll = "local",
+  variant = "default",
+}: {
+  transactions: Transaction[];
+  merchantsById: Map<number, Merchant>;
+  accountsById?: Map<number, string>;
+  className?: string;
+  scroll?: "local" | "page";
+  variant?: "default" | "ledger";
+}) {
+  // Page ledger uses normal flow so row spacing comes from content, not size estimates.
+  if (scroll === "page" && variant === "ledger") {
+    return (
+      <LedgerList
+        transactions={transactions}
+        merchantsById={merchantsById}
+        accountsById={accountsById}
+        className={className}
+      />
+    );
+  }
+
+  return (
+    <VirtualizedList
+      transactions={transactions}
+      merchantsById={merchantsById}
+      accountsById={accountsById}
+      className={className}
+      scroll={scroll}
+      variant={variant}
+    />
   );
 }

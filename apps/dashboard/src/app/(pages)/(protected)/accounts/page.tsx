@@ -16,7 +16,7 @@ export const Route = createFileRoute("/(pages)/(protected)/accounts/")({
 
 function AccountsPage() {
   const { data: accounts, isLoading, error } = useAccounts();
-  const { open: openAddAccount } = useDialog("addManualAccount");
+  const { open: openAddAccount } = useDialog("addAccount");
 
   const topLevelAccounts =
     accounts?.filter((account) => (account as { parent?: number | null }).parent == null) ?? [];

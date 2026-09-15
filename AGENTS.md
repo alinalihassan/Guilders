@@ -77,18 +77,20 @@ Provider  (e.g. EnableBanking, SnapTrade)
 
 Schema files live in `apps/api/src/db/schema/`:
 
-| File              | Tables                                                                                                       |
-| ----------------- | ------------------------------------------------------------------------------------------------------------ |
-| `auth.ts`         | user (incl. `lastActiveAt` for dash), session, user_account, apikey, twoFactor, passkey, OAuth, subscription |
-| `accounts.ts`     | account                                                                                                      |
-| `transactions.ts` | transaction                                                                                                  |
-| `categories.ts`   | category                                                                                                     |
-| `providers.ts`    | provider, institution, provider_connection, institution_connection                                           |
-| `currencies.ts`   | currency, rate                                                                                               |
-| `countries.ts`    | country                                                                                                      |
-| `documents.ts`    | documents                                                                                                    |
-| `webhooks.ts`     | webhook                                                                                                      |
-| `relations.ts`    | Drizzle relation definitions                                                                                 |
+| File              | Tables                                                                                                                         |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `auth.ts`         | user (incl. `lastActiveAt`, `country`, currency prefs), session, user_account, apikey, twoFactor, passkey, OAuth, subscription |
+| `accounts.ts`     | account                                                                                                                        |
+| `transactions.ts` | transaction (incl. `notes`)                                                                                                    |
+| `categories.ts`   | category                                                                                                                       |
+| `tags.ts`         | tag, transaction_tag                                                                                                           |
+| `rules.ts`        | rule, rule_account, rule_tag                                                                                                   |
+| `providers.ts`    | provider, institution, provider_connection, institution_connection                                                             |
+| `currencies.ts`   | currency, rate                                                                                                                 |
+| `countries.ts`    | country                                                                                                                        |
+| `documents.ts`    | documents                                                                                                                      |
+| `webhooks.ts`     | webhook                                                                                                                        |
+| `relations.ts`    | Drizzle relation definitions                                                                                                   |
 
 ### Database, Docker, and migrations
 
@@ -139,6 +141,16 @@ All routes live under `/api` (see `apps/api/src/routes/`).
 | `GET`    | `/api/account/:id/transaction` | Transactions for one account  |
 | `GET`    | `/api/category`                | List categories               |
 | `POST`   | `/api/category`                | Create category               |
+| `GET`    | `/api/tag`                     | List tags                     |
+| `POST`   | `/api/tag`                     | Create tag                    |
+| `DELETE` | `/api/tag/:id`                 | Delete tag                    |
+| `GET`    | `/api/rule`                    | List transaction rules        |
+| `POST`   | `/api/rule`                    | Create rule                   |
+| `PUT`    | `/api/rule/:id`                | Update rule                   |
+| `DELETE` | `/api/rule/:id`                | Delete rule                   |
+| `POST`   | `/api/rule/preview`            | Preview rule matches          |
+| `POST`   | `/api/rule/:id/apply`          | Apply rule to existing txns   |
+| `GET`    | `/api/geo`                     | Detect country from CF edge   |
 
 ### Connections & Providers
 
@@ -194,7 +206,7 @@ The auth middleware at `apps/api/src/middleware/auth.ts` is a Hono `requireAuth`
 
 Endpoint: `/mcp` (OAuth-authenticated via Better Auth as OAuth provider).
 
-**Tools:** `get_accounts`, `get_transactions`, `get_categories`, `get_merchants`, `get_documents`, `get_document_file`, `get_balance_history`, `get_exchange_rates`, `get_institutions`, plus create/update/delete for accounts, transactions, categories, and merchants.
+**Tools:** `get_accounts`, `get_transactions`, `get_categories`, `get_tags`, `get_rules`, `get_merchants`, `get_documents`, `get_document_file`, `get_balance_history`, `get_exchange_rates`, `get_institutions`, plus create/update/delete for accounts, transactions, categories, merchants, tags, and rules (`apply_rule`, `preview_rule`).
 
 Implementation: `apps/api/src/mcp/`
 

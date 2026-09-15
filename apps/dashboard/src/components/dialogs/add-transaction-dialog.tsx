@@ -9,6 +9,7 @@ import { AccountSelector } from "@/components/common/account-selector";
 import { CategorySelector } from "@/components/common/category-selector";
 import { DatePicker } from "@/components/common/date-picker";
 import { MerchantSelector } from "@/components/common/merchant-selector";
+import { TagSelector } from "@/components/common/tag-selector";
 import { TimePicker } from "@/components/common/time-picker";
 import { Button } from "@/components/ui/button";
 import {
@@ -35,6 +36,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { useDialog } from "@/hooks/useDialog";
 import { useAccounts } from "@/lib/queries/useAccounts";
 import { useCurrencies } from "@/lib/queries/useCurrencies";
@@ -55,6 +57,8 @@ const formSchema = z.object({
     required_error: "Category is required.",
   }),
   merchantId: z.number().optional(),
+  notes: z.string().optional(),
+  tagIds: z.array(z.number()),
   timestamp: z.date(),
 });
 
@@ -77,6 +81,8 @@ export function AddTransactionDialog() {
       description: "",
       categoryId: undefined,
       merchantId: undefined,
+      notes: "",
+      tagIds: [],
       timestamp: new Date(),
     },
   });
@@ -125,6 +131,8 @@ export function AddTransactionDialog() {
       description: data.description,
       category_id: data.categoryId,
       merchant_id: data.merchantId,
+      notes: data.notes ?? "",
+      tag_ids: data.tagIds ?? [],
       timestamp: data.timestamp,
     });
     close();
@@ -260,6 +268,24 @@ export function AddTransactionDialog() {
 
             <FormField
               control={form.control}
+              name="tagIds"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Tags</FormLabel>
+                  <FormControl>
+                    <TagSelector
+                      value={field.value}
+                      onChange={field.onChange}
+                      placeholder="Select or add tags"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
               name="timestamp"
               render={({ field }) => (
                 <FormItem>
@@ -278,6 +304,24 @@ export function AddTransactionDialog() {
                         <TimePicker date={field.value} onDateChange={field.onChange} />
                       </div>
                     </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="notes"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Notes</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Add notes..."
+                      className="min-h-[80px] resize-y"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

@@ -41,8 +41,11 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/lib/api";
 import { authClient } from "@/lib/auth-client";
+import { countryCodeToFlag } from "@/lib/country-flag";
 import { clientEnv } from "@/lib/env";
+import { useCountries } from "@/lib/queries/useCountries";
 import { useCurrencies } from "@/lib/queries/useCurrencies";
+import { useGeo } from "@/lib/queries/useGeo";
 import { useDeleteAccount, useUpdateUserSettings, useUser } from "@/lib/queries/useUser";
 import { downloadFile } from "@/lib/utils";
 
@@ -52,6 +55,7 @@ const accountFormSchema = z.object({
     required_error: "Please select a currency.",
   }),
   timeFormat: z.enum(["12", "24"]),
+  country: z.string().optional(),
 });
 
 type AccountFormValues = z.infer<typeof accountFormSchema>;
@@ -66,6 +70,8 @@ export function AccountForm() {
 
   const { data: user, isLoading: isUserLoading, error: userError } = useUser();
   const { mutateAsync: updateUserSettings } = useUpdateUserSettings();
+  const { data: geo } = useGeo();
+  const { data: countries, isLoading: isCountriesLoading, error: countriesError } = useCountries();
 
   const {
     data: currencies,
@@ -83,6 +89,7 @@ export function AccountForm() {
       email: user?.email ?? "",
       currency: user?.currency ?? "",
       timeFormat: (user?.timeFormat ?? "24") as "12" | "24",
+      country: user?.country ?? "",
     },
   });
 
@@ -93,13 +100,15 @@ export function AccountForm() {
           email: user.email,
           currency: user.currency,
           timeFormat: (user.timeFormat ?? "24") as "12" | "24",
+          // Prefer saved country; only fall back to geo when unset
+          country: user.country ?? geo?.country ?? "",
         },
         {
           keepDirtyValues: true,
         },
       );
     }
-  }, [user, form]);
+  }, [user, geo?.country, form]);
 
   const sortedCurrencies = (() => {
     if (!currencies) return [];
@@ -115,6 +124,8 @@ export function AccountForm() {
     return [...orderedCurrencies, ...remainingCurrencies];
   })();
 
+  const sortedCountries = (countries ?? []).toSorted((a, b) => a.name.localeCompare(b.name));
+
   const handleDeleteAccount = async () => {
     setIsDeletingAccount(true);
     try {
@@ -128,19 +139,22 @@ export function AccountForm() {
     }
   };
 
-  const profileError = userError ?? currenciesError;
-  const isProfileLoading = !mounted || isUserLoading || isCurrenciesLoading;
+  const profileError = userError ?? currenciesError ?? countriesError;
+  const isProfileLoading = !mounted || isUserLoading || isCurrenciesLoading || isCountriesLoading;
 
   async function onSubmit(data: AccountFormValues) {
     try {
       const isEmailChanged = data.email !== user?.email;
       const isCurrencyChanged = data.currency !== user?.currency;
       const isTimeFormatChanged = data.timeFormat !== (user?.timeFormat ?? "24");
+      const nextCountry = data.country || null;
+      const isCountryChanged = nextCountry !== (user?.country ?? null);
 
-      if (isCurrencyChanged || isTimeFormatChanged) {
+      if (isCurrencyChanged || isTimeFormatChanged || isCountryChanged) {
         await updateUserSettings({
           ...(isCurrencyChanged && { currency: data.currency }),
           ...(isTimeFormatChanged && { timeFormat: data.timeFormat }),
+          ...(isCountryChanged && { country: nextCountry }),
         });
       }
 
@@ -153,9 +167,9 @@ export function AccountForm() {
         if (error) throw new Error(error.message || "Failed to request email change");
       }
 
-      if (isEmailChanged && isCurrencyChanged) {
+      if (isEmailChanged && (isCurrencyChanged || isCountryChanged)) {
         toast.success("Account updated", {
-          description: "Currency updated and email verification sent.",
+          description: "Settings updated and email verification sent.",
         });
       } else if (isEmailChanged) {
         toast.success("Email verification sent", {
@@ -200,13 +214,13 @@ export function AccountForm() {
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           <SettingsSubsection
             title="Profile"
-            description="Account settings: email, default currency and time format."
+            description="Account settings: email, country, default currency and time format."
           >
             {profileError ? (
               <p className="text-destructive text-sm">
                 {userError
                   ? "Error loading user data. Please try again later."
-                  : "Error loading currencies. Please try again later."}
+                  : "Error loading profile options. Please try again later."}
               </p>
             ) : null}
             <div className="space-y-6">
@@ -229,6 +243,53 @@ export function AccountForm() {
                     <FormMessage />
                   </FormItem>
                 )}
+              />
+              <FormField
+                control={form.control}
+                name="country"
+                render={({ field }) => {
+                  const countryValue = field.value || "";
+                  return (
+                    <FormItem>
+                      <FormLabel>Country</FormLabel>
+                      {isProfileLoading ? (
+                        <Skeleton className="h-10 w-full" />
+                      ) : (
+                        <Select onValueChange={field.onChange} value={countryValue || undefined}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select country">
+                                {countryValue ? (
+                                  <span className="flex items-center gap-2">
+                                    <span aria-hidden>{countryCodeToFlag(countryValue)}</span>
+                                    <span>
+                                      {sortedCountries.find((c) => c.code === countryValue)?.name ??
+                                        countryValue}
+                                    </span>
+                                  </span>
+                                ) : null}
+                              </SelectValue>
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {sortedCountries.map((country) => (
+                              <SelectItem key={country.code} value={country.code}>
+                                <span className="flex items-center gap-2">
+                                  <span aria-hidden>{countryCodeToFlag(country.code)}</span>
+                                  <span>{country.name}</span>
+                                </span>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                      <FormDescription>
+                        Used to suggest banks when connecting accounts.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  );
+                }}
               />
               <FormField
                 control={form.control}

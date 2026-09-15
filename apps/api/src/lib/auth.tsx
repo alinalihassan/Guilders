@@ -104,6 +104,11 @@ export function createAuth(db?: Database) {
           required: false,
           defaultValue: "24",
         },
+        country: {
+          type: "string",
+          required: false,
+          input: true,
+        },
       },
       changeEmail: {
         enabled: true,

@@ -47,7 +47,14 @@ type SectionConfig = {
 };
 
 export function CategoriesForm() {
-  const { categoryTree, data: flatCategories, isLoading } = useCategories();
+  const {
+    categoryTree,
+    data: flatCategories,
+    isLoading,
+    isError,
+    refetch,
+    isFetching,
+  } = useCategories();
   const { mutate: addCategory, isPending: isAdding } = useAddCategory();
   const { mutate: updateCategory } = useUpdateCategory();
   const { mutate: removeCategory, isPending: isRemoving } = useRemoveCategory();
@@ -258,36 +265,51 @@ export function CategoriesForm() {
 
   return (
     <div className="space-y-6">
-      <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
-        {renderSection({
-          classification: "income",
-          list: incomeList,
-          title: "Income categories",
-          addName: newIncomeName,
-          setAddName: setNewIncomeName,
-          addColor: newIncomeColor,
-          setAddColor: setNewIncomeColor,
-          addIcon: newIncomeIcon,
-          setAddIcon: setNewIncomeIcon,
-          onAdd: handleAddIncome,
-          rootId: "root-income",
-          rootLabel: "Drop here for top-level income",
-        })}
-        {renderSection({
-          classification: "expense",
-          list: expenseList,
-          title: "Expense categories",
-          addName: newExpenseName,
-          setAddName: setNewExpenseName,
-          addColor: newExpenseColor,
-          setAddColor: setNewExpenseColor,
-          addIcon: newExpenseIcon,
-          setAddIcon: setNewExpenseIcon,
-          onAdd: handleAddExpense,
-          rootId: "root-expense",
-          rootLabel: "Drop here for top-level expense",
-        })}
-      </DndContext>
+      {isError ? (
+        <div className="text-muted-foreground flex flex-col items-center gap-3 py-8 text-center text-sm">
+          <p>Couldn’t load categories. Try again in a moment.</p>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => refetch()}
+            disabled={isFetching}
+          >
+            Retry
+          </Button>
+        </div>
+      ) : (
+        <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+          {renderSection({
+            classification: "income",
+            list: incomeList,
+            title: "Income categories",
+            addName: newIncomeName,
+            setAddName: setNewIncomeName,
+            addColor: newIncomeColor,
+            setAddColor: setNewIncomeColor,
+            addIcon: newIncomeIcon,
+            setAddIcon: setNewIncomeIcon,
+            onAdd: handleAddIncome,
+            rootId: "root-income",
+            rootLabel: "Drop here for top-level income",
+          })}
+          {renderSection({
+            classification: "expense",
+            list: expenseList,
+            title: "Expense categories",
+            addName: newExpenseName,
+            setAddName: setNewExpenseName,
+            addColor: newExpenseColor,
+            setAddColor: setNewExpenseColor,
+            addIcon: newExpenseIcon,
+            setAddIcon: setNewExpenseIcon,
+            onAdd: handleAddExpense,
+            rootId: "root-expense",
+            rootLabel: "Drop here for top-level expense",
+          })}
+        </DndContext>
+      )}
     </div>
   );
 }

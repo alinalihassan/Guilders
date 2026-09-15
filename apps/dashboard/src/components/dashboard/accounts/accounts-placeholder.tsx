@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useDialog } from "@/hooks/useDialog";
 
 export function AccountsEmptyPlaceholder() {
-  const { open } = useDialog("addManualAccount");
+  const { open } = useDialog("addAccount");
 
   return (
     <div className="text-muted-foreground flex flex-1 flex-col items-center justify-center py-8 text-center">

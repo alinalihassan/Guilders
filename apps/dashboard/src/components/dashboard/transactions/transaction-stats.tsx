@@ -1,5 +1,3 @@
-import type { ReactNode } from "react";
-
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
@@ -26,52 +24,60 @@ export function TransactionStats({
   isLoading,
 }: TransactionStatsProps) {
   const net = income - expenses;
+  const netTone =
+    net > 0
+      ? "text-emerald-600 dark:text-emerald-400"
+      : net < 0
+        ? "text-red-600 dark:text-red-400"
+        : "text-foreground";
 
   return (
-    <div className="grid grid-cols-2 gap-x-6 gap-y-4 md:grid-cols-4">
-      <Stat label="Transactions" isLoading={isLoading}>
-        <p className="font-mono text-lg tracking-tight tabular-nums">{count.toLocaleString()}</p>
-      </Stat>
-      <Stat label="Expenses" isLoading={isLoading}>
-        <p className="font-mono text-lg tracking-tight text-red-600 tabular-nums dark:text-red-400">
-          {formatMoney(-Math.abs(expenses), currency)}
+    <div className="flex flex-col items-center gap-4 py-1">
+      <div className="flex flex-col items-center gap-1.5 text-center">
+        <p className="text-muted-foreground text-[11px] font-medium tracking-[0.16em] uppercase">
+          Net
         </p>
-      </Stat>
-      <Stat label="Income" isLoading={isLoading}>
-        <p className="font-mono text-lg tracking-tight text-emerald-600 tabular-nums dark:text-emerald-400">
-          {formatMoney(income, currency)}
-        </p>
-      </Stat>
-      <Stat label="Net" isLoading={isLoading}>
-        <p
-          className={cn(
-            "font-mono text-lg tabular-nums tracking-tight",
-            net > 0 && "text-emerald-600 dark:text-emerald-400",
-            net < 0 && "text-red-600 dark:text-red-400",
-          )}
-        >
-          {formatMoney(net, currency)}
-        </p>
-      </Stat>
-    </div>
-  );
-}
+        {isLoading ? (
+          <Skeleton className="h-9 w-40" />
+        ) : (
+          <p
+            className={cn(
+              "font-mono text-[2rem] leading-none tracking-tight tabular-nums",
+              netTone,
+            )}
+          >
+            {formatMoney(net, currency)}
+          </p>
+        )}
+        {isLoading ? (
+          <Skeleton className="mt-1 h-4 w-28" />
+        ) : (
+          <p className="text-muted-foreground text-sm">
+            {count.toLocaleString()} transaction{count === 1 ? "" : "s"}
+          </p>
+        )}
+      </div>
 
-function Stat({
-  label,
-  isLoading,
-  children,
-}: {
-  label: string;
-  isLoading: boolean;
-  children: ReactNode;
-}) {
-  return (
-    <div className="flex flex-col gap-1">
-      <p className="text-muted-foreground text-[11px] font-medium tracking-[0.16em] uppercase">
-        {label}
-      </p>
-      {isLoading ? <Skeleton className="h-6 w-24" /> : children}
+      <div className="flex flex-wrap items-center justify-center gap-2">
+        {isLoading ? (
+          <>
+            <Skeleton className="h-8 w-36 rounded-full" />
+            <Skeleton className="h-8 w-36 rounded-full" />
+          </>
+        ) : (
+          <>
+            <span className="rounded-full bg-red-50 px-3 py-1.5 text-sm font-medium text-red-700 dark:bg-red-950/40 dark:text-red-400">
+              Expenses{" "}
+              <span className="font-mono tabular-nums">
+                {formatMoney(-Math.abs(expenses), currency)}
+              </span>
+            </span>
+            <span className="rounded-full bg-emerald-50 px-3 py-1.5 text-sm font-medium text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400">
+              Income <span className="font-mono tabular-nums">{formatMoney(income, currency)}</span>
+            </span>
+          </>
+        )}
+      </div>
     </div>
   );
 }

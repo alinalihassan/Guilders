@@ -9,6 +9,7 @@ import * as lunchFlowClient from "../providers/lunchflow/client";
 import { getSnapTradeClient } from "../providers/snaptrade/client";
 import * as tellerClient from "../providers/teller/client";
 import type { ProviderName, ProviderTransaction } from "../providers/types";
+import { applyRulesToTransactions } from "./apply-rules";
 import { createDb, type Database } from "./db";
 import { enrichSyncedAccountTransactions, toInsertTransaction } from "./enrich-transaction";
 import { enqueueAccountEnrichment } from "./enrich-transaction-ai";
@@ -426,6 +427,28 @@ async function persistProviderTransactions(
       amount: t.amount,
     })),
   );
+
+  if (newTxns.length) {
+    const providerIds = newTxns
+      .map((t) => t.provider_transaction_id)
+      .filter((id): id is string => !!id);
+    if (providerIds.length) {
+      const inserted = await db
+        .select({ id: transaction.id })
+        .from(transaction)
+        .where(
+          and(
+            eq(transaction.account_id, accountId),
+            inArray(transaction.provider_transaction_id, providerIds),
+          ),
+        );
+      await applyRulesToTransactions(
+        db,
+        userId,
+        inserted.map((row) => row.id),
+      );
+    }
+  }
 
   try {
     await enqueueAccountEnrichment(userId, accountId);

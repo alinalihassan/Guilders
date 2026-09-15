@@ -18,9 +18,8 @@ const SheetOverlay = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof SheetPrimitive.Overlay>
 >(({ className, ...props }, ref) => (
   <SheetPrimitive.Overlay
-    forceMount
     className={cn(
-      "fixed inset-0 z-50 bg-background/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:duration-200 data-[state=open]:duration-300 data-[state=closed]:pointer-events-none data-[state=closed]:[animation-fill-mode:forwards]",
+      "fixed inset-0 z-50 bg-background/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:duration-200 data-[state=open]:duration-300",
       className,
     )}
     {...props}
@@ -57,17 +56,12 @@ const SheetContent = React.forwardRef<
   React.ElementRef<typeof SheetPrimitive.Content>,
   SheetContentProps
 >(({ side = "right", className, children, ...props }, ref) => (
-  <SheetPortal forceMount>
+  <SheetPortal>
     <SheetOverlay />
     <SheetPrimitive.Content
       ref={ref}
-      forceMount
       aria-describedby={undefined}
-      className={cn(
-        sheetVariants({ side }),
-        "data-[state=closed]:pointer-events-none data-[state=closed]:[animation-fill-mode:forwards]",
-        className,
-      )}
+      className={cn(sheetVariants({ side }), className)}
       {...props}
     >
       {children}

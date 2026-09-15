@@ -76,6 +76,13 @@ export const openApiDocumentation = {
     { name: "Currencies", description: currencyText },
     { name: "Rates", description: rateText },
     { name: "Countries", description: countryText },
+    { name: "Geo", description: "Request geo hints such as inferred country from the edge." },
+    { name: "Tags", description: "User-defined tags that can be attached to transactions." },
+    {
+      name: "Rules",
+      description:
+        "Automation rules that categorize, tag, or rename merchants for matching transactions.",
+    },
     { name: "Documents", description: "Document upload, metadata, and download." },
     { name: "Webhook", description: "Webhook endpoints and event delivery config." },
   ],

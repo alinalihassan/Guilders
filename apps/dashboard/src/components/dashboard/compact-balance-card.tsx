@@ -26,7 +26,7 @@ export function CompactBalanceCard({
   invertColors = false,
   className,
 }: CompactBalanceCardProps) {
-  const [period, setPeriod] = useState<Period>("3M");
+  const [period, setPeriod] = useState<Period>("1M");
   const { data: user } = useUser();
   const { data: rates } = useRates();
   const userCurrency = user?.currency || "EUR";

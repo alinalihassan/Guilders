@@ -3,6 +3,16 @@ import { createMiddleware } from "hono/factory";
 
 export const RATE_LIMIT_PERIOD_SECONDS = 60;
 
+/** Local wrangler counters exhaust easily under HMR / React Query; skip there. */
+export function shouldEnforceApiRateLimit(): boolean {
+  const backendUrl = process.env.BACKEND_URL ?? "";
+  return !(
+    backendUrl.includes("localhost") ||
+    backendUrl.includes("127.0.0.1") ||
+    process.env.NODE_ENV === "development"
+  );
+}
+
 async function hashApiKey(apiKey: string): Promise<string> {
   const data = new TextEncoder().encode(apiKey);
   const hash = await crypto.subtle.digest("SHA-256", data);
@@ -14,7 +24,7 @@ async function hashApiKey(apiKey: string): Promise<string> {
 
 export const apiKeyRateLimit = createMiddleware(async (c, next) => {
   const rateLimit = env.RATE_LIMIT;
-  if (rateLimit == null) {
+  if (rateLimit == null || !shouldEnforceApiRateLimit()) {
     await next();
     return;
   }

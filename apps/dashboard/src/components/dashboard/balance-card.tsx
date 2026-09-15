@@ -37,7 +37,7 @@ export function BalanceCard({
   isNetWorth,
   className,
 }: BalanceCardProps) {
-  const [period, setPeriod] = useState<Period>("3M");
+  const [period, setPeriod] = useState<Period>("1M");
 
   const accountHistory = useBalanceHistory(!isNetWorth ? accountId : undefined, period);
   const netWorthHistory = useNetWorthHistory(isNetWorth ? period : undefined);

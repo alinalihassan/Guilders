@@ -49,11 +49,29 @@ export function TransactionItem({
       onClick={() => open({ transaction })}
     >
       <div className="flex min-w-0 items-center gap-3 overflow-hidden">
-        <MerchantLogo name={displayName} logoUrl={merchant?.logo_url} className="size-7" />
-        <div className="flex min-w-0 flex-col overflow-hidden">
-          <p className="text-foreground truncate text-sm">{displayName}</p>
-          {secondaryName && secondaryName !== displayName && (
-            <p className="text-muted-foreground truncate text-xs">{secondaryName}</p>
+        <MerchantLogo
+          name={displayName}
+          logoUrl={merchant?.logo_url}
+          className={variant === "ledger" ? "size-10 text-sm" : "size-9 text-sm"}
+        />
+        <div className="flex min-w-0 items-center gap-2 overflow-hidden">
+          <div className="flex min-w-0 flex-col overflow-hidden">
+            <p className="text-foreground truncate text-sm font-medium">{displayName}</p>
+            {secondaryName && secondaryName !== displayName && (
+              <p className="text-muted-foreground truncate text-xs">{secondaryName}</p>
+            )}
+          </div>
+          {transaction.tags && transaction.tags.length > 0 && (
+            <div className="flex shrink-0 flex-wrap gap-1">
+              {transaction.tags.map((tag) => (
+                <span
+                  key={tag.id}
+                  className="bg-muted text-muted-foreground inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-medium"
+                >
+                  {tag.name}
+                </span>
+              ))}
+            </div>
           )}
         </div>
       </div>

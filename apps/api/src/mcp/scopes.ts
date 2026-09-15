@@ -17,6 +17,7 @@ export const MCP_SCOPE_INFO: Record<McpScope, McpScopeInfo> = {
     description: "View your financial data",
     capabilities: [
       "View your accounts, transactions, and categories",
+      "View your tags and transaction rules",
       "View your documents and file attachments",
       "View net worth and balance history",
       "View exchange rates and available institutions",
@@ -28,7 +29,8 @@ export const MCP_SCOPE_INFO: Record<McpScope, McpScopeInfo> = {
     capabilities: [
       "Create, update, and delete accounts",
       "Create, update, and delete transactions",
-      "Create transaction categories",
+      "Create, update, and delete categories, tags, and merchants",
+      "Create, update, delete, preview, and apply transaction rules",
     ],
   },
 };

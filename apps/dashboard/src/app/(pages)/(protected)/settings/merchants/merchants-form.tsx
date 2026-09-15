@@ -26,7 +26,7 @@ import {
 import { cn } from "@/lib/utils";
 
 export function MerchantsForm() {
-  const { data: merchants, isLoading } = useMerchants();
+  const { data: merchants, isLoading, isError, refetch, isFetching } = useMerchants();
   const { mutate: addMerchant, isPending: isAdding } = useAddMerchant();
 
   const [newMerchantName, setNewMerchantName] = useState("");
@@ -77,6 +77,19 @@ export function MerchantsForm() {
                 <Skeleton className="h-5 w-32" />
               </div>
             ))
+          ) : isError ? (
+            <div className="text-muted-foreground flex flex-col items-center gap-3 py-4 text-center text-sm">
+              <p>Couldn’t load merchants. Try again in a moment.</p>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => refetch()}
+                disabled={isFetching}
+              >
+                Retry
+              </Button>
+            </div>
           ) : merchants?.length === 0 ? (
             <div className="text-muted-foreground py-4 text-center text-sm">
               No merchants found.

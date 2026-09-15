@@ -31,6 +31,7 @@ function mapRawToUser(
     email: (user?.email as string) ?? "",
     currency: (user?.currency as string) ?? "EUR",
     timeFormat: (user?.timeFormat as "12" | "24") ?? "24",
+    country: (user?.country as string | null | undefined) ?? null,
     subscription,
   } as User;
 }
@@ -64,9 +65,14 @@ export function useUpdateUserSettings() {
 
   return useMutation({
     mutationFn: async (input: UpdateUser) => {
-      const updates: { currency?: string; timeFormat?: "12" | "24" } = {};
+      const updates: {
+        currency?: string;
+        timeFormat?: "12" | "24";
+        country?: string | null;
+      } = {};
       if (input.currency) updates.currency = input.currency;
       if (input.timeFormat !== undefined) updates.timeFormat = input.timeFormat;
+      if (input.country !== undefined) updates.country = input.country;
       if (Object.keys(updates).length > 0) {
         await authClient.updateUser(updates);
       }

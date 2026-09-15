@@ -18,12 +18,15 @@ export type { Provider, Providers } from "./routes/provider/types";
 export type { Webhook, WebhookCreateResponse } from "./routes/webhook/types";
 export type { Rate, Rates } from "./routes/rate/types";
 export type { Transaction, TransactionInsert } from "./routes/transaction/types";
+export type { Tag, Tags, TagInsert } from "./routes/tag/types";
+export type { Rule, RuleInsert } from "./routes/rule/types";
 export type AccountSubtype = import("./routes/account/types").Account["subtype"];
 
 export type User = {
   email: string;
   currency: string;
   timeFormat?: "12" | "24";
+  country?: string | null;
   subscription: {
     status: string | null;
     current_period_end: string | null;
@@ -35,6 +38,7 @@ export type User = {
 export type UpdateUser = {
   currency?: string;
   timeFormat?: "12" | "24";
+  country?: string | null;
   subscription?: Partial<User["subscription"]>;
   email?: string;
   password?: string;

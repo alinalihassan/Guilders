@@ -29,6 +29,8 @@ import { merchant } from "./merchants";
 import { providerConnection } from "./provider-connections";
 import { provider } from "./providers";
 import { rate } from "./rates";
+import { rule, ruleAccount, ruleTag } from "./rules";
+import { tag, transactionTag } from "./tags";
 import { transaction } from "./transactions";
 import { webhook } from "./webhooks";
 
@@ -59,6 +61,11 @@ const schema = {
   providerConnection,
   provider,
   rate,
+  rule,
+  ruleAccount,
+  ruleTag,
+  tag,
+  transactionTag,
   transaction,
   verification,
   webhook,
@@ -125,6 +132,19 @@ export const relations = defineRelations(schema, (r) => ({
     webhooks: r.many.webhook({
       from: r.user.id,
       to: r.webhook.user_id,
+    }),
+    tags: r.many.tag({
+      from: r.user.id,
+      to: r.tag.user_id,
+    }),
+    rules: r.many.rule({
+      from: r.user.id,
+      to: r.rule.user_id,
+    }),
+    countryRel: r.one.country({
+      from: r.user.country,
+      to: r.country.code,
+      alias: "userCountry",
     }),
   },
   subscription: {
@@ -314,6 +334,72 @@ export const relations = defineRelations(schema, (r) => ({
       from: r.transaction.merchant_id,
       to: r.merchant.id,
     }),
+    transactionTags: r.many.transactionTag({
+      from: r.transaction.id,
+      to: r.transactionTag.transaction_id,
+    }),
+  },
+  tag: {
+    user: r.one.user({
+      from: r.tag.user_id,
+      to: r.user.id,
+    }),
+    transactionTags: r.many.transactionTag({
+      from: r.tag.id,
+      to: r.transactionTag.tag_id,
+    }),
+    ruleTags: r.many.ruleTag({
+      from: r.tag.id,
+      to: r.ruleTag.tag_id,
+    }),
+  },
+  transactionTag: {
+    transaction: r.one.transaction({
+      from: r.transactionTag.transaction_id,
+      to: r.transaction.id,
+    }),
+    tag: r.one.tag({
+      from: r.transactionTag.tag_id,
+      to: r.tag.id,
+    }),
+  },
+  rule: {
+    user: r.one.user({
+      from: r.rule.user_id,
+      to: r.user.id,
+    }),
+    category: r.one.category({
+      from: r.rule.set_category_id,
+      to: r.category.id,
+    }),
+    ruleAccounts: r.many.ruleAccount({
+      from: r.rule.id,
+      to: r.ruleAccount.rule_id,
+    }),
+    ruleTags: r.many.ruleTag({
+      from: r.rule.id,
+      to: r.ruleTag.rule_id,
+    }),
+  },
+  ruleAccount: {
+    rule: r.one.rule({
+      from: r.ruleAccount.rule_id,
+      to: r.rule.id,
+    }),
+    account: r.one.account({
+      from: r.ruleAccount.account_id,
+      to: r.account.id,
+    }),
+  },
+  ruleTag: {
+    rule: r.one.rule({
+      from: r.ruleTag.rule_id,
+      to: r.rule.id,
+    }),
+    tag: r.one.tag({
+      from: r.ruleTag.tag_id,
+      to: r.tag.id,
+    }),
   },
   currency: {
     accounts: r.many.account({
@@ -410,6 +496,10 @@ export const relations = defineRelations(schema, (r) => ({
       from: r.country.currency_code,
       to: r.currency.code,
       alias: "currencyRel",
+    }),
+    users: r.many.user({
+      from: r.country.code,
+      to: r.user.country,
     }),
   },
 }));

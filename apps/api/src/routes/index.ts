@@ -14,12 +14,15 @@ import { countryRoutes } from "./country";
 import { currencyRoutes } from "./currency";
 import { documentRoutes } from "./document";
 import { exportRoutes } from "./export";
+import { geoRoutes } from "./geo";
 import { institutionRoutes } from "./institution";
 import { institutionConnectionRoutes } from "./institution-connection";
 import { merchantRoutes } from "./merchant";
 import { providerRoutes } from "./provider";
 import { providerConnectionRoutes } from "./provider-connection";
 import { rateRoutes } from "./rate";
+import { ruleRoutes } from "./rule";
+import { tagRoutes } from "./tag";
 import { transactionRoutes } from "./transaction";
 import { webhookRoutes } from "./webhook";
 
@@ -37,11 +40,14 @@ export const api = new Hono()
   .route("/currency", currencyRoutes)
   .route("/document", documentRoutes)
   .route("/export", exportRoutes)
+  .route("/geo", geoRoutes)
   .route("/merchant", merchantRoutes)
   .route("/rate", rateRoutes)
   .route("/provider", providerRoutes)
   .route("/institution", institutionRoutes)
   .route("/provider-connection", providerConnectionRoutes)
   .route("/institution-connection", institutionConnectionRoutes)
+  .route("/rule", ruleRoutes)
+  .route("/tag", tagRoutes)
   .route("/transaction", transactionRoutes)
   .route("/webhook", webhookRoutes);

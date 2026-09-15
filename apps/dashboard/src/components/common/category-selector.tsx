@@ -24,12 +24,14 @@ import { CategoryColorIcon } from "./category-color-icon";
 
 type CategorySelectorProps = {
   value?: number;
-  onChange: (value: number) => void;
+  onChange: (value: number | undefined) => void;
   disabled?: boolean;
   placeholder?: string;
   className?: string;
   /** When set, only categories with this classification are shown. Use with transaction amount: positive → income, negative → expense. */
   classification?: "income" | "expense";
+  /** When true, show a None option to clear the selection. */
+  allowClear?: boolean;
 };
 
 export function CategorySelector({
@@ -39,6 +41,7 @@ export function CategorySelector({
   placeholder = "Select category",
   className,
   classification,
+  allowClear = false,
 }: CategorySelectorProps) {
   const { categoryTree, data: flatCategories, isLoading } = useCategories();
   const { mutate: addCategory, isPending: isCreating } = useAddCategory();
@@ -151,6 +154,18 @@ export function CategorySelector({
               )}
             </CommandEmpty>
             <CommandGroup>
+              {allowClear && (
+                <CommandItem
+                  value="__clear_category__"
+                  onSelect={() => {
+                    onChange(undefined);
+                    setOpen(false);
+                    setSearch("");
+                  }}
+                >
+                  <span className="text-muted-foreground">None</span>
+                </CommandItem>
+              )}
               {isLoading ? (
                 <CommandItem disabled>Loading categories...</CommandItem>
               ) : (

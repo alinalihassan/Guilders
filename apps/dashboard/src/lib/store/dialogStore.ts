@@ -8,7 +8,13 @@ export type DialogState =
       pages: string[];
     }
   | {
+      type: "addAccount";
+    }
+  | {
       type: "addManualAccount";
+    }
+  | {
+      type: "connectBank";
     }
   | {
       type: "addLinkedAccount";
